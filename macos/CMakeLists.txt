@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.9)
+project(jwm LANGUAGES CXX OBJC)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(NOT ARCH AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+    set(ARCH "arm64")
+else()
+    set(ARCH "x64")
+endif()
+
+file(GLOB SOURCES_OBJC ${CMAKE_SOURCE_DIR}/src/*.mm)
+file(GLOB SOURCES_CXX ${CMAKE_SOURCE_DIR}/src/*.cc)
+add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX})
+target_include_directories(jwm PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/darwin)
+set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${ARCH}")
+
+target_link_libraries(jwm
+    "-framework Cocoa"
+    "-framework AppKit"
+    "-framework CoreData"
+    "-framework Foundation"
+)
