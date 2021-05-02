@@ -1,14 +1,23 @@
 package org.jetbrains.jwm;
 
 import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.impl.*;
 
 public class App {
-   static { Library.staticLoad(); }
+    static { Library.staticLoad(); }
 
-   public static void runEventLoop() {
-      _nRunEventLoop();
-   }
+    public static void init() {
+        _nInit();
+    }
+
+    public static int runEventLoop() {
+        return _nRunEventLoop();
+    }
+
+    public static void terminate() {
+        _nTerminate();
+    }
    
-   @ApiStatus.Internal public static native void _nRunEventLoop();
+    @ApiStatus.Internal public static native void _nInit();
+    @ApiStatus.Internal public static native int  _nRunEventLoop();
+    @ApiStatus.Internal public static native void _nTerminate();
 }

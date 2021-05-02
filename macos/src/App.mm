@@ -6,6 +6,8 @@
 */
 
 #import <Cocoa/Cocoa.h>
+#include <jni.h>
+#include "Window.hh"
 
 @interface AppDelegate : NSObject<NSApplicationDelegate, NSWindowDelegate>
 
@@ -36,13 +38,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char * argv[]) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
+  (JNIEnv* env, jclass jclass) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
     // we only run on systems that support at least Core Profile 3.2
     return EXIT_FAILURE;
 #endif
-
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     [NSApplication sharedApplication];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -63,7 +65,13 @@ int main(int argc, char * argv[]) {
     [subMenu addItem:item];
     [item release];
     [subMenu release];
+    [menuBar release];
+    [pool release];
+}
 
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
+  (JNIEnv* env, jclass jclass) {
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     // Set AppDelegate to catch certain global events
     AppDelegate* appDelegate = [[AppDelegate alloc] init];
     [NSApp setDelegate:appDelegate];
@@ -100,8 +108,13 @@ int main(int argc, char * argv[]) {
     [NSApp setDelegate:nil];
     [appDelegate release];
 
-    [menuBar release];
+    // [menuBar release];
     [pool release];
 
     return EXIT_SUCCESS;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
+  (JNIEnv* env, jclass jclass) {
+    [NSApp terminate:nil];
 }

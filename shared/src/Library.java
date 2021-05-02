@@ -1,4 +1,4 @@
-package org.jetbrains.jwm.impl;
+package org.jetbrains.jwm;
 
 import java.io.*;
 import java.net.*;
@@ -65,7 +65,7 @@ public class Library {
         }
         
         _loaded = true;
-        // _nAfterLoad();
+        _nAfterLoad();
     }
 
     @ApiStatus.Internal
@@ -91,5 +91,5 @@ public class Library {
         return file;
     }
 
-    // @ApiStatus.Internal public static native void _nAfterLoad();
+    @ApiStatus.Internal public static native void _nAfterLoad();
 }

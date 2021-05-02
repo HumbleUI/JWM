@@ -9,7 +9,7 @@ def main():
   native_build.main()
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('example', nargs='?', default='Window')
+  parser.add_argument('example', nargs='?', default='SingleWindow')
   args = parser.parse_args()
 
   os.chdir(os.path.dirname(__file__) + '/..')
