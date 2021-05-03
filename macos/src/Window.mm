@@ -1,23 +1,10 @@
 #include <iostream>
 #include <jni.h>
 #include "Library.hh"
+#include "MainView.hh"
 #include <memory>
 #include "Window.hh"
-
-@interface WindowDelegate : NSObject<NSWindowDelegate>
-
-- (WindowDelegate*)initWithWindow:(jwm::Window*)initWindow;
-
-@end
-
-@interface MainView : NSView
-
-- (MainView*)initWithWindow:(jwm::Window*)initWindow;
-
-@end
-
-
-// jwm::Window
+#include "WindowDelegate.hh"
 
 bool jwm::Window::init() {
     // Create a delegate to track certain events
@@ -68,26 +55,28 @@ float jwm::Window::scaleFactor() const {
 }
 
 void jwm::Window::onEvent(jobject event) {
-    jwm::classes::Window::onEvent(fEnv, fJavaWindow, event);
+    if (fEventListener)
+        jwm::classes::Consumer::accept(fEnv, fEventListener, event);
 }
 
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nCreate
-  (JNIEnv* env, jclass jclass, jobject javaWindow) {
-    std::unique_ptr<jwm::Window> instance(new jwm::Window(env, javaWindow));
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nMake
+  (JNIEnv* env, jclass jclass) {
+    std::unique_ptr<jwm::Window> instance(new jwm::Window(env));
     if (instance->init())
       return reinterpret_cast<jlong>(instance.release());
     else
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nClose
-  (JNIEnv* env, jclass jclass, jlong ptr) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetEventListener
+  (JNIEnv* env, jclass jclass, jlong ptr, jobject listener) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(static_cast<uintptr_t>(ptr));
-    [instance->fNSWindow close];
-    delete instance;
+    if (instance->fEventListener)
+        env->DeleteGlobalRef(instance->fEventListener);
+    instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nShow
@@ -98,106 +87,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nShow
     [instance->fNSWindow makeKeyAndOrderFront:NSApp];
 }
 
-// WindowDelegate
-
-@implementation WindowDelegate {
-    jwm::Window* fWindow;
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nClose
+  (JNIEnv* env, jclass jclass, jlong ptr) {
+    jwm::Window* instance = reinterpret_cast<jwm::Window*>(static_cast<uintptr_t>(ptr));
+    [instance->fNSWindow close];
+    delete instance;
 }
-
-- (WindowDelegate*)initWithWindow:(jwm::Window*)initWindow {
-    fWindow = initWindow;
-    return self;
-}
-
-- (void)windowDidResize:(NSNotification *)notification {
-    NSView* view = fWindow->fNSWindow.contentView;
-    CGFloat scale = fWindow->scaleFactor();
-
-    jwm::AutoLocal<jobject> event(fWindow->fEnv, jwm::classes::ResizeEvent::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
-    fWindow->onEvent(event.get());
-    // fWindow->inval();
-}
-
-- (BOOL)windowShouldClose:(NSWindow*)sender {
-    // fWindow->closeWindow();
-    jwm::AutoLocal<jobject> event(fWindow->fEnv, jwm::classes::CloseEvent::make(fWindow->fEnv));
-    fWindow->onEvent(event.get());
-    return FALSE;
-}
-
-@end
-
-// MainView
-
-namespace jwm {
-enum class ModifierKey {
-    kNone       = 0,
-    kShift      = 1 << 0,
-    kControl    = 1 << 1,
-    kOption     = 1 << 2,   // same as ALT
-    kCommand    = 1 << 3,
-    kFirstPress = 1 << 4,
-};
-}
-
-@implementation MainView {
-    jwm::Window* fWindow;
-    // A TrackingArea prevents us from capturing events outside the view
-    NSTrackingArea* fTrackingArea;
-    // We keep track of the state of the modifier keys on each event in order to synthesize
-    // key-up/down events for each modifier.
-    jwm::ModifierKey fLastModifiers;
-}
-
-- (MainView*)initWithWindow:(jwm::Window*)initWindow {
-    self = [super init];
-
-    fWindow = initWindow;
-    fTrackingArea = nil;
-
-    [self updateTrackingAreas];
-
-    return self;
-}
-
-- (void)dealloc
-{
-    [fTrackingArea release];
-    [super dealloc];
-}
-
-- (BOOL)isOpaque {
-    return YES;
-}
-
-- (BOOL)canBecomeKeyView {
-    return YES;
-}
-
-- (BOOL)acceptsFirstResponder {
-    return YES;
-}
-
-- (void)updateTrackingAreas {
-    if (fTrackingArea != nil) {
-        [self removeTrackingArea:fTrackingArea];
-        [fTrackingArea release];
-    }
-
-    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
-                                          NSTrackingActiveInKeyWindow |
-                                          NSTrackingEnabledDuringMouseDrag |
-                                          NSTrackingCursorUpdate |
-                                          NSTrackingInVisibleRect |
-                                          NSTrackingAssumeInside;
-
-    fTrackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
-                                                 options:options
-                                                   owner:self
-                                                userInfo:nil];
-
-    [self addTrackingArea:fTrackingArea];
-    [super updateTrackingAreas];
-}
-
-@end

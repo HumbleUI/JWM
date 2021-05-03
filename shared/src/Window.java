@@ -11,10 +11,22 @@ public class Window implements AutoCloseable {
     public final long _ptr;
 
     public Window() {
-        long ptr = _nCreate(this);
+        long ptr = _nMake();
         if (ptr == 0)
             throw new IllegalArgumentException("org.jetbrains.jwm.Window: Can't wrap nullptr");
         _ptr = ptr;
+    }
+
+    @NotNull @Contract("-> this")
+    public Window setEventListener(@NotNull Consumer<Event> eventListener) {
+        _nSetEventListener(_ptr, eventListener);
+        return this;
+    }
+
+    @NotNull @Contract("-> this")
+    public Window show() {
+        _nShow(_ptr);
+        return this;
     }
 
     @Override
@@ -22,16 +34,8 @@ public class Window implements AutoCloseable {
         _nClose(_ptr);
     }
 
-    public Window show() {
-        _nShow(_ptr);
-        return this;
-    }
-
-    @ApiStatus.OverrideOnly
-    public void onEvent(Event e) {
-    }
-
-    @ApiStatus.Internal public static native long _nCreate(Window window);
-    @ApiStatus.Internal public static native void _nClose(long ptr);
+    @ApiStatus.Internal public static native long _nMake();
+    @ApiStatus.Internal public static native void _nSetEventListener(long ptr, Consumer<Event> listener);
     @ApiStatus.Internal public static native void _nShow(long ptr);
+    @ApiStatus.Internal public static native void _nClose(long ptr);
 }

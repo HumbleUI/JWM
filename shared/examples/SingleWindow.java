@@ -8,17 +8,15 @@ import org.jetbrains.jwm.*;
 public class SingleWindow {
     public static void main(String[] args) {
         App.init();
-        Window w = new Window() {
-            @Override
-            public void onEvent(Event e) {
-                System.out.println(e);
-                if (e instanceof CloseEvent) {
-                    close();
-                    App.terminate();
-                }
+        Window window = new Window();
+        window.setEventListener(e -> {
+            System.out.println(e);
+            if (e instanceof CloseEvent) {
+                window.close();
+                App.terminate();
             }
-        };
-        w.show();
+        });
+        window.show();
         App.runEventLoop();
     }
 }
