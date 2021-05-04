@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "Library.hh"
+#include "impl/Library.hh"
 #include "Window.hh"
 #include "WindowDelegate.hh"
 

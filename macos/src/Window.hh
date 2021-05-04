@@ -5,28 +5,17 @@
 namespace jwm {
     class Window {
     public:
-        Window(JNIEnv* env): fEnv(env) {
-        }
-
-        ~Window() {
-            if (fEventListener)
-                fEnv->DeleteGlobalRef(fEventListener);
-            // this->closeWindow();
-        }
-
+        Window(JNIEnv* env): fEnv(env) {}
+        ~Window();
         bool init();
-        // void setTitle(const char*);
-        // void show();
-        // void onInval() {}
         float scaleFactor() const;
-
-        // void closeWindow();
-
         void onEvent(jobject event);
 
-        NSWindow* fNSWindow;
+        NSWindow* fNSWindow = nullptr;
         // NSInteger fNSWindowNumber;
-        JNIEnv* fEnv;
+        JNIEnv* fEnv = nullptr;
         jobject fEventListener = nullptr;
     };
+
+    void deleteWindow(jwm::Window* instance);
 }

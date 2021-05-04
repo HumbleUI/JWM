@@ -1,4 +1,4 @@
-package org.jetbrains.jwm;
+package org.jetbrains.impl.jwm;
 
 import java.io.*;
 import java.net.*;

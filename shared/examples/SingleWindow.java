@@ -9,6 +9,8 @@ public class SingleWindow {
     public static void main(String[] args) {
         App.init();
         Window window = new Window();
+        MetalContext context = new MetalContext(true);
+        window.attach(context);
         window.setEventListener(e -> {
             System.out.println(e);
             if (e instanceof CloseEvent) {

@@ -10,8 +10,8 @@ else()
 endif()
 
 file(GLOB SOURCES_OBJC ${CMAKE_SOURCE_DIR}/src/*.mm)
-file(GLOB SOURCES_CXX ${CMAKE_SOURCE_DIR}/src/*.cc)
-add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX})
+file(GLOB SOURCES_OBJC_IMPL ${CMAKE_SOURCE_DIR}/src/impl/*.mm)
+add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_OBJC_IMPL})
 target_include_directories(jwm PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/darwin)
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${ARCH}")
 
@@ -19,5 +19,7 @@ target_link_libraries(jwm
     "-framework Cocoa"
     "-framework AppKit"
     "-framework CoreData"
+    "-framework QuartzCore"
     "-framework Foundation"
+    "-framework Metal"
 )

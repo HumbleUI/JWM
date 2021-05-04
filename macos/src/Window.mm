@@ -1,17 +1,23 @@
 #include <iostream>
 #include <jni.h>
-#include "Library.hh"
+#include "impl/Library.hh"
 #include "MainView.hh"
+#include "MetalContext.hh"
 #include <memory>
 #include "Window.hh"
 #include "WindowDelegate.hh"
 
+jwm::Window::~Window() {
+    if (fEventListener)
+        fEnv->DeleteGlobalRef(fEventListener);
+    [fNSWindow close];
+}
+
 bool jwm::Window::init() {
     // Create a delegate to track certain events
     WindowDelegate* delegate = [[WindowDelegate alloc] initWithWindow:this];
-    if (nil == delegate) {
+    if (nil == delegate)
         return false;
-    }
 
     // Create Cocoa window
     constexpr int initialWidth = 800;
@@ -62,6 +68,15 @@ void jwm::Window::onEvent(jobject event) {
 
 // JNI
 
+void jwm::deleteWindow(jwm::Window* instance) {
+    delete instance;
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nGetFinalizer
+  (JNIEnv* env, jclass jclass) {
+    return static_cast<jlong>(reinterpret_cast<uintptr_t>(&jwm::deleteWindow));
+}
+
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nMake
   (JNIEnv* env, jclass jclass) {
     std::unique_ptr<jwm::Window> instance(new jwm::Window(env));
@@ -79,17 +94,17 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetEventListe
     instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nAttach
+  (JNIEnv* env, jclass jclass, jlong ptr, jlong contextPtr) {
+    jwm::Window* instance = reinterpret_cast<jwm::Window*>(static_cast<uintptr_t>(ptr));
+    jwm::MetalContext* context = reinterpret_cast<jwm::MetalContext*>(static_cast<uintptr_t>(contextPtr));
+    context->attach([instance->fNSWindow contentView]);
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nShow
   (JNIEnv* env, jclass jclass, jlong ptr) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(static_cast<uintptr_t>(ptr));
     [instance->fNSWindow orderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [instance->fNSWindow makeKeyAndOrderFront:NSApp];
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nClose
-  (JNIEnv* env, jclass jclass, jlong ptr) {
-    jwm::Window* instance = reinterpret_cast<jwm::Window*>(static_cast<uintptr_t>(ptr));
-    [instance->fNSWindow close];
-    delete instance;
 }

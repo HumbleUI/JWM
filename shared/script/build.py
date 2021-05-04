@@ -7,7 +7,7 @@ def main():
     common.fetch_maven('org.projectlombok', 'lombok', '1.18.20'),
     common.fetch_maven('org.jetbrains', 'annotations', '19.0.0')
   ]
-  sources = glob.glob('src/*.java')
+  sources = glob.glob('src/impl/*.java') + glob.glob('src/*.java') 
   common.javac(classpath, sources, 'target/classes')
   return 0
 
