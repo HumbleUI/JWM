@@ -1,17 +1,18 @@
 #pragma once
 #import <Cocoa/Cocoa.h>
+#include "Context.hh"
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 namespace jwm {
-    class MetalContext {
+    class MetalContext: public Context {
     public:
         MetalContext(bool vsync): fVsync(vsync) {}
         ~MetalContext();
 
         void attach(NSView* mainView);
-        void swapBuffers();
-        void resize();
+        void swapBuffers() override;
+        void resize() override;
 
         int fWidth = 0;
         int fHeight = 0;

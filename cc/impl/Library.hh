@@ -45,6 +45,11 @@ namespace jwm {
             void accept(JNIEnv* env, jobject consumer, jobject event);
         }
 
+        namespace Native {
+            extern jfieldID kPtr;
+            uintptr_t fromJava(JNIEnv* env, jobject object);
+        }
+
         namespace CloseEvent {
             extern jclass kCls;
             extern jmethodID kCtor;
@@ -55,6 +60,12 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint x, jint y);
+        }
+
+        namespace PaintEvent {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env);
         }
 
         namespace ResizeEvent {

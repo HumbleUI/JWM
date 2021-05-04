@@ -3,11 +3,11 @@
 namespace jwm {
     class Context {
     public:
-        Context();
-        virtual ~Context();
+        Context() = default;
+        virtual ~Context() = default;
 
-        void swapBuffers();
-        void resize();
+        virtual void swapBuffers() = 0;
+        virtual void resize() = 0;
     };
 
     void deleteContext(Context* instance);

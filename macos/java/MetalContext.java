@@ -13,5 +13,11 @@ public class MetalContext extends Context {
         super(_nMake(vsync));
     }
 
+    public native long getDevicePtr();
+    public native long getQueuePtr();
+    public native long nextDrawableTexturePtr();
+    public native int getWidth();
+    public native int getHeight();
+ 
     @ApiStatus.Internal public static native long _nMake(boolean vsync);
 }

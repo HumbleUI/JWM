@@ -1,4 +1,5 @@
 #include <jni.h>
+#include "impl/Library.hh"
 #include "MetalContext.hh"
 #import <QuartzCore/CAConstraintLayoutManager.h>
 
@@ -33,6 +34,8 @@ void jwm::MetalContext::attach(NSView* mainView) {
     fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
     fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
     fMetalLayer.contentsGravity = kCAGravityTopLeft;
+    // fMetalLayer.needsDisplayOnBoundsChange = YES;
+    // fMetalLayer.presentsWithTransaction = YES;
     fMetalLayer.magnificationFilter = kCAFilterNearest;
     NSColorSpace* cs = fMainView.window.colorSpace;
     fMetalLayer.colorspace = cs.CGColorSpace;
@@ -59,18 +62,18 @@ void jwm::MetalContext::resize() {
     fHeight = backingSize.height;
 }
 
-// void jwm::MetalContext::swapBuffers() {
-//     id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>)fDrawableHandle;
+void jwm::MetalContext::swapBuffers() {
+    id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>) fDrawableHandle;
 
-//     id<MTLCommandBuffer> commandBuffer([*fQueue commandBuffer]);
-//     commandBuffer.label = @"Present";
+    id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
+    commandBuffer.label = @"Present";
 
-//     [commandBuffer presentDrawable:currentDrawable];
-//     [commandBuffer commit];
-//     // ARC is off in sk_app, so we need to release the CF ref manually
-//     CFRelease(fDrawableHandle);
-//     fDrawableHandle = nil;
-// }
+    [commandBuffer presentDrawable:currentDrawable];
+    [commandBuffer commit];
+    // ARC is off in sk_app, so we need to release the CF ref manually
+    CFRelease(fDrawableHandle);
+    fDrawableHandle = nil;
+}
 
 // JNI
 
@@ -80,8 +83,34 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_MetalContext__1n
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_macos_MetalContext__1nClose
-  (JNIEnv* env, jclass jclass, jboolean vsync) {
-    jwm::MetalContext* instance = new jwm::MetalContext(vsync);
-    delete instance;
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_MetalContext_getDevicePtr
+  (JNIEnv* env, jobject obj) {
+    jwm::MetalContext* instance = reinterpret_cast<jwm::MetalContext*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->fDevice);
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_MetalContext_getQueuePtr
+  (JNIEnv* env, jobject obj) {
+    jwm::MetalContext* instance = reinterpret_cast<jwm::MetalContext*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->fQueue);
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_MetalContext_nextDrawableTexturePtr
+  (JNIEnv* env, jobject obj) {
+    jwm::MetalContext* instance = reinterpret_cast<jwm::MetalContext*>(jwm::classes::Native::fromJava(env, obj));
+    id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
+    instance->fDrawableHandle = (id<CAMetalDrawable>) CFRetain(currentDrawable);
+    return reinterpret_cast<jlong>(currentDrawable.texture);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_macos_MetalContext_getWidth
+  (JNIEnv* env, jobject obj) {
+    jwm::MetalContext* instance = reinterpret_cast<jwm::MetalContext*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fWidth;
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_macos_MetalContext_getHeight
+  (JNIEnv* env, jobject obj) {
+    jwm::MetalContext* instance = reinterpret_cast<jwm::MetalContext*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fHeight;
 }

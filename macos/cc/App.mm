@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <jni.h>
+#include "impl/Library.hh"
 #include "Window.hh"
 
 @interface AppDelegate : NSObject<NSApplicationDelegate, NSWindowDelegate>
@@ -38,7 +39,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_init
   (JNIEnv* env, jclass jclass) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
     // we only run on systems that support at least Core Profile 3.2
@@ -69,8 +70,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     [pool release];
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
-  (JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_runEventLoop
+  (JNIEnv* env, jclass jclass, jobject eventConsumer) {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     // Set AppDelegate to catch certain global events
     AppDelegate* appDelegate = [[AppDelegate alloc] init];
@@ -100,6 +101,9 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
         // the invalidation flag, effectively removing it from the stream.
         // Window_mac::PaintWindows();
 
+        jwm::AutoLocal<jobject> eventPaint(env, jwm::classes::PaintEvent::make(env));
+        jwm::classes::Consumer::accept(env, eventConsumer, eventPaint.get());
+
         // app->onIdle();
     }
 
@@ -114,7 +118,7 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
     return EXIT_SUCCESS;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
   (JNIEnv* env, jclass jclass) {
     [NSApp terminate:nil];
 }

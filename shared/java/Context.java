@@ -15,5 +15,8 @@ public abstract class Context extends Managed {
         super(ptr, _FinalizerHolder.PTR);
     }
 
+    public native long swapBuffers();
+    public native void resize();
+
     @ApiStatus.Internal public static native long _nGetFinalizer();
 }
