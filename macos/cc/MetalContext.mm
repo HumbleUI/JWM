@@ -74,22 +74,13 @@ void jwm::MetalContext::resize() {
 
 // JNI
 
-void jwm::deleteMetalContext(jwm::MetalContext* instance) {
-    delete instance;
-}
-
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_MetalContext__1nGetFinalizer
-  (JNIEnv* env, jclass jclass) {
-    return static_cast<jlong>(reinterpret_cast<uintptr_t>(&jwm::deleteMetalContext));
-}
-
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_MetalContext__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_MetalContext__1nMake
   (JNIEnv* env, jclass jclass, jboolean vsync) {
     jwm::MetalContext* instance = new jwm::MetalContext(vsync);
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_MetalContext__1nClose
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_macos_MetalContext__1nClose
   (JNIEnv* env, jclass jclass, jboolean vsync) {
     jwm::MetalContext* instance = new jwm::MetalContext(vsync);
     delete instance;

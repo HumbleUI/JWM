@@ -28,7 +28,7 @@ def javac(classpath, sources, target):
   newer = lambda path: path.stem not in classes or path.stat().st_mtime > classes.get(path.stem)
   new_sources = [path for path in sources if newer(pathlib.Path(path))]
   if new_sources:
-    print('Compiling', len(new_sources), 'java files to', target)
+    print('Compiling', len(new_sources), 'java files to', target, ': ', new_sources)
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',

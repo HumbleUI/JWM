@@ -2,17 +2,16 @@
 
 Prerequisites:
 
-Git, CMake, Ninja, JDK 11+, $JAVA_HOME, Python 3.
+Git, CMake, Ninja, C++ compiler, JDK 11+, $JAVA_HOME, Python 3.
 
 Build:
 
 ```
-./macos/script/build.py
-./shared/script/build.py
+./script/build.py
 ```
 
 Run examples:
 
 ```
-./shared/script/run.py SingleWindow
+./script/run.py SingleWindow
 ```

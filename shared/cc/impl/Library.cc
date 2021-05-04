@@ -96,7 +96,7 @@ namespace jwm {
     }
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Library__1nAfterLoad
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLoad
   (JNIEnv* env, jclass jclass) {
     jwm::classes::Throwable::onLoad(env);
     jwm::classes::Consumer::onLoad(env);

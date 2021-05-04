@@ -13,7 +13,7 @@ public class Window extends Managed {
         public static final long PTR = _nGetFinalizer();
     }
 
-    public MetalContext _context = null;
+    public Context _context = null;
 
     public Window() {
         super(_nMake(), _FinalizerHolder.PTR);
@@ -26,10 +26,9 @@ public class Window extends Managed {
     }
 
     @NotNull @Contract("-> this")
-    public Window attach(MetalContext context) {
-        if (_context != null) {
+    public Window attach(Context context) {
+        if (_context != null)
             context.close();
-        }
         _nAttach(_ptr, context._ptr);
         _context = context;
         return this;

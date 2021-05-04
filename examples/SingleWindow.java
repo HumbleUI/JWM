@@ -4,6 +4,7 @@ import java.util.function.*;
 import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
+import org.jetbrains.jwm.macos.*;
 
 public class SingleWindow {
     public static void main(String[] args) {
