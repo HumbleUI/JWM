@@ -75,4 +75,16 @@
     fWindow->onEvent(eventObj.get());
 }
 
+- (void)keyDown:(NSEvent *)event {
+    jwm::AutoLocal<jobject> eventObj(fWindow->fEnv, jwm::classes::KeyboardEvent::make(fWindow->fEnv, (jint) [event keyCode],
+                                                                                      (jboolean) true));
+    fWindow->onEvent(eventObj.get());
+}
+
+- (void)keyUp:(NSEvent *)event {
+    jwm::AutoLocal<jobject> eventObj(fWindow->fEnv, jwm::classes::KeyboardEvent::make(fWindow->fEnv, (jint) [event keyCode],
+                                                                                      (jboolean) false));
+    fWindow->onEvent(eventObj.get());
+}
+
 @end

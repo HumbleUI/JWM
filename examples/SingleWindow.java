@@ -67,6 +67,14 @@ public class SingleWindow {
                 mtlContext.resize();
                 paint();
             }
+            if (e instanceof KeyboardEvent) {
+                KeyboardEvent keyboardEvent = (KeyboardEvent) e;
+                if (keyboardEvent.getKeyCode() == 53 // Esc
+                 && keyboardEvent.isPressed() == true) {
+                    window.close();
+                    App.terminate();
+                }
+            }
         });
         window.show();
         App.runEventLoop(e -> paint());

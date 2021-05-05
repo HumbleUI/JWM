@@ -92,6 +92,24 @@ namespace jwm {
             }
         }
 
+        namespace KeyboardEvent {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/KeyboardEvent");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IZ)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint keyCode, jboolean isPressed) {
+                jobject res = env->NewObject(kCls, kCtor, keyCode, isPressed);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace PaintEvent {
             jclass kCls;
             jmethodID kCtor;
@@ -137,6 +155,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Native::onLoad(env);
     jwm::classes::CloseEvent::onLoad(env);
     jwm::classes::MouseMoveEvent::onLoad(env);
+    jwm::classes::KeyboardEvent::onLoad(env);
     jwm::classes::PaintEvent::onLoad(env);
     jwm::classes::ResizeEvent::onLoad(env);
 }

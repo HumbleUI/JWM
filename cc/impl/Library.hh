@@ -62,6 +62,12 @@ namespace jwm {
             jobject make(JNIEnv* env, jint x, jint y);
         }
 
+        namespace KeyboardEvent {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint keyCode, jboolean isPressed);
+        }
+
         namespace PaintEvent {
             extern jclass kCls;
             extern jmethodID kCtor;
