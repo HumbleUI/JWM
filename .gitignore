@@ -1,3 +1,4 @@
 target
 build
 __pycache__
+.idea
