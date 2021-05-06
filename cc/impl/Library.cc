@@ -134,7 +134,7 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
                 jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventPaint;");
                 jobject instance = env->GetStaticObjectField(cls, field);
-                kInstance = env->NewGlobalRef(cls);
+                kInstance = env->NewGlobalRef(instance);
             }
         }
 
