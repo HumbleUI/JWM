@@ -1,10 +1,10 @@
 #pragma once
 #import <Cocoa/Cocoa.h>
-#include "Window.hh"
+#include "WindowMac.hh"
 
 @interface MainView : NSView
 
-- (MainView*)initWithWindow:(jwm::Window*)initWindow;
+- (MainView*)initWithWindow:(jwm::WindowMac*)initWindow;
 
 @end
 

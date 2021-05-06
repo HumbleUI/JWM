@@ -40,6 +40,22 @@ namespace jwm {
             }
         }
 
+        namespace Runnable {
+            jmethodID kRun;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("java/lang/Runnable");
+                Throwable::exceptionThrown(env);
+                kRun = env->GetMethodID(cls, "run", "()V");
+                Throwable::exceptionThrown(env);
+            }
+
+            void run(JNIEnv* env, jobject consumer) {
+                env->CallVoidMethod(consumer, kRun);
+                Throwable::exceptionThrown(env);
+            }
+        }
+
         namespace Native {
             jfieldID kPtr;
 
@@ -56,12 +72,12 @@ namespace jwm {
             }
         }
 
-        namespace CloseEvent {
+        namespace EventClose {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/CloseEvent");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventClose");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "()V");
@@ -74,12 +90,12 @@ namespace jwm {
             }
         }
 
-        namespace MouseMoveEvent {
+        namespace EventMouseMove {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/MouseMoveEvent");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseMove");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
@@ -92,12 +108,12 @@ namespace jwm {
             }
         }
 
-        namespace KeyboardEvent {
+        namespace EventKeyboard {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/KeyboardEvent");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventKeyboard");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IZ)V");
@@ -110,30 +126,24 @@ namespace jwm {
             }
         }
 
-        namespace PaintEvent {
-            jclass kCls;
-            jmethodID kCtor;
+        namespace EventPaint {
+            jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/PaintEvent");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventPaint");
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "()V");
-                Throwable::exceptionThrown(env);
-            }
-
-            jobject make(JNIEnv* env) {
-                jobject res = env->NewObject(kCls, kCtor);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventPaint;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(cls);
             }
         }
 
-        namespace ResizeEvent {
+        namespace EventResize {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/ResizeEvent");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventResize");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
@@ -152,10 +162,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
   (JNIEnv* env, jclass jclass) {
     jwm::classes::Throwable::onLoad(env);
     jwm::classes::Consumer::onLoad(env);
+    jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);
-    jwm::classes::CloseEvent::onLoad(env);
-    jwm::classes::MouseMoveEvent::onLoad(env);
-    jwm::classes::KeyboardEvent::onLoad(env);
-    jwm::classes::PaintEvent::onLoad(env);
-    jwm::classes::ResizeEvent::onLoad(env);
+    jwm::classes::EventClose::onLoad(env);
+    jwm::classes::EventKeyboard::onLoad(env);
+    jwm::classes::EventMouseMove::onLoad(env);
+    jwm::classes::EventPaint::onLoad(env);
+    jwm::classes::EventResize::onLoad(env);
 }

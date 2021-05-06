@@ -6,6 +6,7 @@ namespace jwm {
         Context() = default;
         virtual ~Context() = default;
 
+        virtual void attach(void* window) = 0;
         virtual void swapBuffers() = 0;
         virtual void resize() = 0;
     };

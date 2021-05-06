@@ -6,21 +6,25 @@ import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
 
 public class Window extends Managed {
-    static { Library.staticLoad(); }
-
     @ApiStatus.Internal
     public static class _FinalizerHolder {
         public static final long PTR = _nGetFinalizer();
     }
 
+    @ApiStatus.Internal
     public Context _context = null;
 
+    @ApiStatus.Internal
+    public Consumer<Event> _eventListener =  null;
+
+    @ApiStatus.Internal
     public Window() {
         super(_nMake(), _FinalizerHolder.PTR);
     }
 
     @NotNull @Contract("-> this")
-    public Window setEventListener(@NotNull Consumer<Event> eventListener) {
+    public Window setEventListener(@Nullable Consumer<Event> eventListener) {
+        _eventListener = eventListener;
         _nSetEventListener(_ptr, eventListener);
         return this;
     }
@@ -38,6 +42,12 @@ public class Window extends Managed {
     public Window show() {
         _nShow(_ptr);
         return this;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        App._windows.remove(this);
     }
 
     @ApiStatus.Internal public static native long _nGetFinalizer();

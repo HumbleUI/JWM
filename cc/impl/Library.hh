@@ -45,36 +45,39 @@ namespace jwm {
             void accept(JNIEnv* env, jobject consumer, jobject event);
         }
 
+        namespace Runnable {
+            extern jmethodID kRun;
+            void run(JNIEnv* env, jobject object);
+        }
+
         namespace Native {
             extern jfieldID kPtr;
             uintptr_t fromJava(JNIEnv* env, jobject object);
         }
 
-        namespace CloseEvent {
+        namespace EventClose {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env);
         }
 
-        namespace MouseMoveEvent {
+        namespace EventMouseMove {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint x, jint y);
         }
 
-        namespace KeyboardEvent {
+        namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint keyCode, jboolean isPressed);
         }
 
-        namespace PaintEvent {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env);
+        namespace EventPaint {
+            extern jobject kInstance;
         }
 
-        namespace ResizeEvent {
+        namespace EventResize {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint width, jint height);

@@ -5,12 +5,12 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 namespace jwm {
-    class MetalContext: public Context {
+    class ContextMetal: public Context {
     public:
-        MetalContext(bool vsync): fVsync(vsync) {}
-        ~MetalContext();
+        ContextMetal(bool vsync): fVsync(vsync) {}
+        ~ContextMetal();
 
-        void attach(NSView* mainView);
+        void attach(void* window) override;
         void swapBuffers() override;
         void resize() override;
 
@@ -28,5 +28,5 @@ namespace jwm {
         // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
     };
 
-    void deleteMetalContext(MetalContext* instance);
+    void deleteContextMetal(ContextMetal* instance);
 }

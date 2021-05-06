@@ -9,21 +9,21 @@ import org.jetbrains.skija.*;
 
 public class SingleWindow {
     public Window window;
-    public MetalContext mtlContext;
+    public ContextMetal contextMtl;
     public DirectContext directContext;
     public int angle = 0;
 
     public void paint() {
-        long texturePtr = mtlContext.nextDrawableTexturePtr();
-        int width = mtlContext.getWidth();
-        int height = mtlContext.getHeight();
+        long texturePtr = contextMtl.nextDrawableTexturePtr();
+        int width = contextMtl.getWidth();
+        int height = contextMtl.getHeight();
         try (var renderTarget = BackendRenderTarget.makeMetal(width, height, texturePtr);
              var surface = Surface.makeFromBackendRenderTarget(
                              directContext,
                              renderTarget,
                              SurfaceOrigin.TOP_LEFT,
                              SurfaceColorFormat.BGRA_8888,
-                             ColorSpace.getDisplayP3(),  // TODO load monitor profile
+                             ColorSpace.getSRGB(),  // TODO load monitor profile
                              new SurfaceProps(PixelGeometry.RGB_H)))
         {
             var canvas = surface.getCanvas();
@@ -48,36 +48,33 @@ public class SingleWindow {
             }
 
             surface.flushAndSubmit();
-            mtlContext.swapBuffers();
+            contextMtl.swapBuffers();
         }
     }
 
     public void run() {
         App.init();
-        window = new Window();
-        mtlContext = new MetalContext(true);
-        window.attach(mtlContext);
-        directContext = DirectContext.makeMetal(mtlContext.getDevicePtr(), mtlContext.getQueuePtr());
+        window = App.makeWindow();
+        contextMtl = new ContextMetal(true);
+        window.attach(contextMtl);
+        directContext = DirectContext.makeMetal(contextMtl.getDevicePtr(), contextMtl.getQueuePtr());
         window.setEventListener(e -> {
-            if (e instanceof CloseEvent) {
+            if (e instanceof EventClose) {
                 window.close();
                 App.terminate();
-            }
-            if (e instanceof ResizeEvent) {
-                mtlContext.resize();
-                paint();
-            }
-            if (e instanceof KeyboardEvent) {
-                KeyboardEvent keyboardEvent = (KeyboardEvent) e;
-                if (keyboardEvent.getKeyCode() == 53 // Esc
-                 && keyboardEvent.isPressed() == true) {
+            } else if (e instanceof EventKeyboard) {
+                EventKeyboard eventKeyboard = (EventKeyboard) e;
+                if (eventKeyboard.getKeyCode() == 53 // Esc
+                    && eventKeyboard.isPressed() == true)
+                {
                     window.close();
                     App.terminate();
                 }
-            }
+            } else if (e instanceof EventPaint)
+                paint();
         });
         window.show();
-        App.runEventLoop(e -> paint());
+        App.runEventLoop();
     }
 
     public static void main(String[] args) {

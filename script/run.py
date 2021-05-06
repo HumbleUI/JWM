@@ -42,7 +42,7 @@ def main():
     + ['-Djava.awt.headless=true',
     '-enableassertions',
     '-enablesystemassertions',
-    '-Xcheck:jni',
+    # '-Xcheck:jni',
     'org.jetbrains.jwm.examples.' + args.example
   ])
 

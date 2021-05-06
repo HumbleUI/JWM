@@ -6,10 +6,8 @@ import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
-public class MetalContext extends Context {
-    static { Library.staticLoad(); }
-
-    public MetalContext(boolean vsync) {
+public class ContextMetal extends Context {
+    public ContextMetal(boolean vsync) {
         super(_nMake(vsync));
     }
 
