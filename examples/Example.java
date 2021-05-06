@@ -8,10 +8,11 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.macos.*;
 import org.jetbrains.skija.*;
 
-public class SingleWindow {
+public class Example implements Consumer<Event> {
     public Window window;
     public ContextMetal contextMtl;
     public DirectContext directContext;
+
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
@@ -28,7 +29,15 @@ public class SingleWindow {
     public double[] times = new double[180];
     public int timesIdx = 0;
 
+    public Example() {
+        window = App.makeWindow();
+        window.setEventListener(this);
+        changeContext();
+        window.show();
+    }
+
     public void paint() {
+        // System.out.println(System.currentTimeMillis() + " " + "paint()");
         if (contextMtl == null || directContext == null)
             return;
         
@@ -87,16 +96,33 @@ public class SingleWindow {
             // HUD
             try (var paint = new Paint()) {
                 canvas.save();
-                canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 32 + 8 + 8));
+                canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
 
                 // bg
-                paint.setColor(0x80000000);
-                canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 32 + 8, 4), paint);
+                paint.setColor(0x40000000);
+                canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
                 canvas.translate(8, 8);
 
                 // Variant
+                paint.setColor(0x80000000);
+                canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
                 paint.setColor(0xFFFFFFFF);
-                canvas.drawString("↓↑ " + variants[variantIdx], 0, 12, font, paint);
+                canvas.drawString("↓↑", 0, 12, font, paint);
+                canvas.drawString(variants[variantIdx], 24, 12, font, paint);
+                canvas.translate(0, 24);
+
+                paint.setColor(0x80000000);
+                canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
+                paint.setColor(0xFFFFFFFF);
+                canvas.drawString("N", 3, 12, font, paint);
+                canvas.drawString("New window", 24, 12, font, paint);
+                canvas.translate(0, 24);
+
+                paint.setColor(0x80000000);
+                canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
+                paint.setColor(0xFFFFFFFF);
+                canvas.drawString("W", 3, 12, font, paint);
+                canvas.drawString("Close window", 24, 12, font, paint);
                 canvas.translate(0, 24);
 
                 int frames = 0;
@@ -152,38 +178,38 @@ public class SingleWindow {
         directContext = DirectContext.makeMetal(contextMtl.getDevicePtr(), contextMtl.getQueuePtr());
     }
 
-    public void run() {
-        App.init();
-        window = App.makeWindow();
-        changeContext();
-        window.setEventListener(e -> {
-            if (e instanceof EventClose) {
-                window.close();
+    @Override
+    public void accept(Event e) {
+        if (e instanceof EventClose) {
+            window.close();
+            if (App._windows.size() == 0)
                 App.terminate();
-            } else if (e instanceof EventKeyboard) {
-                EventKeyboard eventKeyboard = (EventKeyboard) e;
-                if (eventKeyboard.isPressed() == true) {
-                    if (eventKeyboard.getKeyCode() == 53) { // Esc
-                        window.close();
+        } else if (e instanceof EventKeyboard) {
+            EventKeyboard eventKeyboard = (EventKeyboard) e;
+            if (eventKeyboard.isPressed() == true) {
+                if (eventKeyboard.getKeyCode() == 45) { // n
+                    new Example();
+                } else if (eventKeyboard.getKeyCode() == 13 || eventKeyboard.getKeyCode() == 53) { // w || Esc
+                    window.close();
+                    if (App._windows.size() == 0)
                         App.terminate();
-                    } else if (eventKeyboard.getKeyCode() == 125) { // ↓
-                        variantIdx = (variantIdx + 1) % variants.length;
-                        changeContext();
-                    } else if (eventKeyboard.getKeyCode() == 126) { // ↑
-                        variantIdx = (variantIdx + variants.length - 1) % variants.length;
-                        changeContext();
-                    } else 
-                        System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
-                }
-            } else if (e instanceof EventPaint) {
-                paint();
+                } else if (eventKeyboard.getKeyCode() == 125) { // ↓
+                    variantIdx = (variantIdx + 1) % variants.length;
+                    changeContext();
+                } else if (eventKeyboard.getKeyCode() == 126) { // ↑
+                    variantIdx = (variantIdx + variants.length - 1) % variants.length;
+                    changeContext();
+                } else 
+                    System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
             }
-        });
-        window.show();
-        App.runEventLoop();
+        } else if (e instanceof EventPaint) {
+            paint();
+        }
     }
 
     public static void main(String[] args) {
-        new SingleWindow().run();
+        App.init();
+        new Example();
+        App.runEventLoop();
     }
 }

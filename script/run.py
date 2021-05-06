@@ -5,7 +5,7 @@ def main():
   os.chdir(os.path.dirname(__file__) + '/..')
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('example', nargs='?', default='SingleWindow')
+  parser.add_argument('example', nargs='?', default='Example')
   args = parser.parse_args()
 
   space = 'https://packages.jetbrains.team/maven/p/skija/maven'
@@ -20,7 +20,7 @@ def main():
     # '/Users/prokopov/ws/skija/native/build',
     # '/Users/prokopov/ws/skija/shared/target/classes',
   ]
-  sources = ['examples/' + args.example + '.java']
+  sources = glob.glob('examples/*.java')
   common.javac(compile_classpath, sources, 'examples/target/classes')
 
   run_classpath = [

@@ -22,7 +22,7 @@ bool jwm::WindowMac::init() {
     // Create Cocoa window
     constexpr int initialWidth = 800;
     constexpr int initialHeight = 600;
-    NSRect windowRect = NSMakeRect(100, 100, initialWidth, initialHeight);
+    NSRect windowRect = NSMakeRect(100 + rand() % 100, 100 + rand() % 100, initialWidth, initialHeight);
 
     NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 

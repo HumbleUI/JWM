@@ -13,5 +13,5 @@ Build:
 Run examples:
 
 ```
-./script/run.py SingleWindow
+./script/run.py Example
 ```
