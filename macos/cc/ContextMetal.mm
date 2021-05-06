@@ -79,6 +79,7 @@ void jwm::ContextMetal::swapBuffers() {
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
     commandBuffer.label = @"Present";
 
+    // [commandBuffer presentDrawable:currentDrawable];
     [commandBuffer commit];
     [commandBuffer waitUntilScheduled];
     [currentDrawable present];
