@@ -14,6 +14,7 @@ public class SingleWindow {
     public DirectContext directContext;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
+    public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
 
     public String[] variants = new String[] {
         "Metal +vsync +transact", 
@@ -49,6 +50,7 @@ public class SingleWindow {
             width = (int) (width / scale);
             height = (int) (height / scale);
 
+            // Triangles
             try (var paint = new Paint()) {
                 int[] colors = new int[] { 0xFFe76f51, 0xFF2a9d8f, 0xFFe9c46a };
                 canvas.drawTriangles(new Point[] { new Point(10, 10), new Point(200, 10), new Point (10, 200) }, colors, paint);
@@ -67,8 +69,20 @@ public class SingleWindow {
                 canvas.restore();
             }
 
-            try (var paint = new Paint();)
-            {
+            // VSync
+            try (var paint = new Paint()) {
+                canvas.save();
+                canvas.translate(width / 2 - 100, height - 120);
+                paint.setColor(0xFFE0E0E0);
+                canvas.drawRRect(RRect.makeXYWH(0, 0, 200, 80, 4), paint);
+                paint.setColor(angle % 2 == 0 ? 0xFFEF8784 : 0xFFA1FCFE);
+                var bounds = font48.measureText("VSYNC");
+                canvas.drawString("VSYNC", (200 - bounds.getWidth()) / 2, (80 + font48.getMetrics().getCapHeight()) / 2, font48, paint);
+                canvas.restore();
+            }
+
+            // HUD
+            try (var paint = new Paint()) {
                 canvas.save();
                 canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 32 + 8 + 8));
 
