@@ -33,18 +33,26 @@ void jwm::ContextMetal::attach(void* windowPtr) {
 
     this->resize();
 
+    fMetalLayer.allowsNextDrawableTimeout = NO;
     fMetalLayer.displaySyncEnabled = fVsync ? YES : NO;  // TODO: need solution for 10.12 or lower
     fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
     fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
     fMetalLayer.contentsGravity = kCAGravityTopLeft;
-    // fMetalLayer.needsDisplayOnBoundsChange = YES;
-    // fMetalLayer.presentsWithTransaction = YES;
+    fMetalLayer.needsDisplayOnBoundsChange = YES;
+    fMetalLayer.presentsWithTransaction = YES;
     fMetalLayer.magnificationFilter = kCAFilterNearest;
     NSColorSpace* cs = fMainView.window.colorSpace;
     fMetalLayer.colorspace = cs.CGColorSpace;
 
     fMainView.layer = fMetalLayer;
     fMainView.wantsLayer = YES;
+
+    fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+
+    // This property only matters in the case of a rendering glitch, which shouldn't happen anymore
+    // The .topLeft version makes glitches less noticeable for normal UIs,
+    // while .scaleAxesIndependently matches what MTKView does and makes them very noticeable
+    fMainView.layerContentsPlacement = NSViewLayerContentsPlacementScaleAxesIndependently;
 
     fValid = true;
 }
@@ -71,8 +79,9 @@ void jwm::ContextMetal::swapBuffers() {
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
     commandBuffer.label = @"Present";
 
-    [commandBuffer presentDrawable:currentDrawable];
     [commandBuffer commit];
+    [commandBuffer waitUntilScheduled];
+    [currentDrawable present];
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
