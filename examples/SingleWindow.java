@@ -18,9 +18,9 @@ public class SingleWindow {
 
     public String[] variants = new String[] {
         "Metal +vsync +transact", 
-        "Metal +vsync -transact",
-        "Metal -vsync +transact",
-        "Metal -vsync -transact",
+        "Metal +vsync −transact",
+        "Metal −vsync +transact",
+        "Metal −vsync −transact",
     };
     public int variantIdx = 0;
 
@@ -29,6 +29,9 @@ public class SingleWindow {
     public int timesIdx = 0;
 
     public void paint() {
+        if (contextMtl == null || directContext == null)
+            return;
+        
         long texturePtr = contextMtl.nextDrawableTexturePtr();
         float scale = 2; // TODO
         int width = contextMtl.getWidth();
@@ -136,12 +139,23 @@ public class SingleWindow {
         }
     }
 
+    public void changeContext() {
+        if (directContext != null) {
+            directContext.abandon();
+            directContext.close();
+        }
+
+        boolean vsync = variants[variantIdx].indexOf("+vsync") >= 0;
+        boolean transact = variants[variantIdx].indexOf("+transact") >= 0;
+        contextMtl = new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withTransact(transact));
+        window.attach(contextMtl);
+        directContext = DirectContext.makeMetal(contextMtl.getDevicePtr(), contextMtl.getQueuePtr());
+    }
+
     public void run() {
         App.init();
         window = App.makeWindow();
-        contextMtl = new ContextMetal(true);
-        window.attach(contextMtl);
-        directContext = DirectContext.makeMetal(contextMtl.getDevicePtr(), contextMtl.getQueuePtr());
+        changeContext();
         window.setEventListener(e -> {
             if (e instanceof EventClose) {
                 window.close();
@@ -154,8 +168,10 @@ public class SingleWindow {
                         App.terminate();
                     } else if (eventKeyboard.getKeyCode() == 125) { // ↓
                         variantIdx = (variantIdx + 1) % variants.length;
+                        changeContext();
                     } else if (eventKeyboard.getKeyCode() == 126) { // ↑
                         variantIdx = (variantIdx + variants.length - 1) % variants.length;
+                        changeContext();
                     } else 
                         System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
                 }

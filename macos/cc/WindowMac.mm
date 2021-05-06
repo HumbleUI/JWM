@@ -60,24 +60,10 @@ float jwm::WindowMac::scaleFactor() const {
     return screen.backingScaleFactor;
 }
 
-void jwm::WindowMac::onEvent(jobject event) {
-    if (fEventListener)
-        jwm::classes::Consumer::accept(fEnv, fEventListener, event);
-}
-
 
 // JNI
 
-void jwm::deleteWindowMac(jwm::WindowMac* instance) {
-    delete instance;
-}
-
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nGetFinalizer
-  (JNIEnv* env, jclass jclass) {
-    return static_cast<jlong>(reinterpret_cast<uintptr_t>(&jwm::deleteWindowMac));
-}
-
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_WindowMac__1nMake
   (JNIEnv* env, jclass jclass) {
     std::unique_ptr<jwm::WindowMac> instance(new jwm::WindowMac(env));
     if (instance->init())
@@ -86,24 +72,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_Window__1nMake
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetEventListener
-  (JNIEnv* env, jclass jclass, jlong ptr, jobject listener) {
-    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(static_cast<uintptr_t>(ptr));
-    if (instance->fEventListener)
-        env->DeleteGlobalRef(instance->fEventListener);
-    instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nAttach
-  (JNIEnv* env, jclass jclass, jlong ptr, jlong contextPtr) {
-    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(static_cast<uintptr_t>(ptr));
-    jwm::Context* context = reinterpret_cast<jwm::Context*>(static_cast<uintptr_t>(contextPtr));
-    context->attach(instance);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nShow
-  (JNIEnv* env, jclass jclass, jlong ptr) {
-    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(static_cast<uintptr_t>(ptr));
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_macos_WindowMac__1nShow
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     [instance->fNSWindow orderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [instance->fNSWindow makeKeyAndOrderFront:NSApp];

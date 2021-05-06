@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "Context.hh"
+#include "Window.hh"
 #include "impl/Library.hh"
 
 void jwm::deleteContext(jwm::Context* instance) {

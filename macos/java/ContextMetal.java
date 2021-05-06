@@ -7,8 +7,8 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
 public class ContextMetal extends Context {
-    public ContextMetal(boolean vsync) {
-        super(_nMake(vsync));
+    public ContextMetal(ContextMetalOpts opts) {
+        super(_nMake(opts._vsync, opts._transact));
     }
 
     public native long getDevicePtr();
@@ -17,5 +17,5 @@ public class ContextMetal extends Context {
     public native int getWidth();
     public native int getHeight();
  
-    @ApiStatus.Internal public static native long _nMake(boolean vsync);
+    @ApiStatus.Internal public static native long _nMake(boolean vsync, boolean transact);
 }

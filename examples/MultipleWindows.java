@@ -61,7 +61,7 @@ class SkiaWindow {
 
     public static SkiaWindow create() {
         final Window window = App.makeWindow();
-        final ContextMetal contextMtl = new ContextMetal(true);
+        final ContextMetal contextMtl = new ContextMetal(ContextMetalOpts.DEFAULT);
         window.attach(contextMtl);
         final DirectContext directContext = DirectContext.makeMetal(contextMtl.getDevicePtr(), contextMtl.getQueuePtr());
         final SkiaWindow skiaWindow = new SkiaWindow(window, contextMtl, directContext);

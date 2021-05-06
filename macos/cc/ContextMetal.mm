@@ -17,10 +17,9 @@ jwm::ContextMetal::~ContextMetal() {
     CFRelease(fDevice);
 }
 
-void jwm::ContextMetal::attach(void* windowPtr) {
-    jwm::WindowMac* window = reinterpret_cast<jwm::WindowMac*>(windowPtr);
-    window->fContext = this;
-    fMainView = [window->fNSWindow contentView];
+void jwm::ContextMetal::attach(jwm::Window* window) {
+    jwm::WindowMac* windowMac = reinterpret_cast<jwm::WindowMac*>(window);
+    fMainView = [windowMac->fNSWindow contentView];
 
     // MetalWindowContext
     fDevice = MTLCreateSystemDefaultDevice();
@@ -38,21 +37,18 @@ void jwm::ContextMetal::attach(void* windowPtr) {
     fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
     fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
     fMetalLayer.contentsGravity = kCAGravityTopLeft;
-    fMetalLayer.needsDisplayOnBoundsChange = YES;
-    fMetalLayer.presentsWithTransaction = YES;
+    if (fTransact) {
+      fMetalLayer.needsDisplayOnBoundsChange = YES;
+      fMetalLayer.presentsWithTransaction = YES;
+    }
     fMetalLayer.magnificationFilter = kCAFilterNearest;
     NSColorSpace* cs = fMainView.window.colorSpace;
     fMetalLayer.colorspace = cs.CGColorSpace;
 
+    fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+    fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     fMainView.layer = fMetalLayer;
     fMainView.wantsLayer = YES;
-
-    fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
-
-    // This property only matters in the case of a rendering glitch, which shouldn't happen anymore
-    // The .topLeft version makes glitches less noticeable for normal UIs,
-    // while .scaleAxesIndependently matches what MTKView does and makes them very noticeable
-    fMainView.layerContentsPlacement = NSViewLayerContentsPlacementScaleAxesIndependently;
 
     fValid = true;
 }
@@ -77,22 +73,27 @@ void jwm::ContextMetal::swapBuffers() {
     id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>) fDrawableHandle;
 
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
-    commandBuffer.label = @"Present";
+    // commandBuffer.label = @"Present";
 
-    // [commandBuffer presentDrawable:currentDrawable];
-    [commandBuffer commit];
-    [commandBuffer waitUntilScheduled];
-    [currentDrawable present];
+    if (fTransact) {
+      [commandBuffer commit];
+      [commandBuffer waitUntilScheduled];
+      [currentDrawable present];
+    } else {
+      [commandBuffer presentDrawable:currentDrawable];
+      [commandBuffer commit];
+    }
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
 }
 
+
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal__1nMake
-  (JNIEnv* env, jclass jclass, jboolean vsync) {
-    jwm::ContextMetal* instance = new jwm::ContextMetal(vsync);
+  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean transact) {
+    jwm::ContextMetal* instance = new jwm::ContextMetal(vsync, transact);
     return reinterpret_cast<jlong>(instance);
 }
 

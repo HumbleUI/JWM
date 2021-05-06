@@ -5,7 +5,7 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
 
-public class Window extends Managed {
+public abstract class Window extends Managed {
     @ApiStatus.Internal
     public static class _FinalizerHolder {
         public static final long PTR = _nGetFinalizer();
@@ -18,31 +18,35 @@ public class Window extends Managed {
     public Consumer<Event> _eventListener =  null;
 
     @ApiStatus.Internal
-    public Window() {
-        super(_nMake(), _FinalizerHolder.PTR);
+    public Window(long ptr) {
+        super(ptr, _FinalizerHolder.PTR);
     }
 
     @NotNull @Contract("-> this")
     public Window setEventListener(@Nullable Consumer<Event> eventListener) {
         _eventListener = eventListener;
-        _nSetEventListener(_ptr, eventListener);
+        _nSetEventListener(eventListener);
         return this;
     }
 
     @NotNull @Contract("-> this")
-    public Window attach(Context context) {
-        if (_context != null)
-            context.close();
-        _nAttach(_ptr, context._ptr);
+    public Window attach(@Nullable Context context) {
+        if (_context != null) {
+            _nDetach();
+            _context.close();
+            _context = null;
+        }
+        
+        if (context != null)
+            _nAttach(context);
+
         _context = context;
+        
         return this;
     }
 
     @NotNull @Contract("-> this")
-    public Window show() {
-        _nShow(_ptr);
-        return this;
-    }
+    public abstract Window show();
 
     @Override
     public void close() {
@@ -51,8 +55,7 @@ public class Window extends Managed {
     }
 
     @ApiStatus.Internal public static native long _nGetFinalizer();
-    @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public static native void _nSetEventListener(long ptr, Consumer<Event> listener);
-    @ApiStatus.Internal public static native void _nAttach(long ptr, long contextPtr);
-    @ApiStatus.Internal public static native void _nShow(long ptr);
+    @ApiStatus.Internal public native void _nSetEventListener(Consumer<Event> listener);
+    @ApiStatus.Internal public native void _nAttach(Context context);
+    @ApiStatus.Internal public native void _nDetach();
 }
