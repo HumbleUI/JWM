@@ -88,3 +88,8 @@
 }
 
 @end
+
+CGFloat jwm::backingScaleFactor(NSView* mainView) {
+    NSScreen* screen = mainView.window.screen ?: [NSScreen mainScreen];
+    return screen.backingScaleFactor;
+}

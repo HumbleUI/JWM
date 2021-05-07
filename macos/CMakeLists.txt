@@ -17,10 +17,11 @@ target_include_directories(jwm PRIVATE ${CMAKE_SOURCE_DIR}/../shared/cc $ENV{JAV
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${ARCH}")
 
 target_link_libraries(jwm
-    "-framework Cocoa"
     "-framework AppKit"
+    "-framework Cocoa"
     "-framework CoreData"
-    "-framework QuartzCore"
     "-framework Foundation"
     "-framework Metal"
+    "-framework OpenGL"
+    "-framework QuartzCore"
 )

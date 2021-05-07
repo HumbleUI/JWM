@@ -2,7 +2,6 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "MainView.hh"
-#include "ContextMetal.hh"
 #include <memory>
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"

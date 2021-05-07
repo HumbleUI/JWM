@@ -8,3 +8,6 @@
 
 @end
 
+namespace jwm {
+    CGFloat backingScaleFactor(NSView* mainView);
+}

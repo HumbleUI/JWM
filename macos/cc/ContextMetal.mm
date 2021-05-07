@@ -1,24 +1,47 @@
+#import <QuartzCore/CAMetalLayer.h>
+#import <QuartzCore/CAConstraintLayoutManager.h>
+#import <Cocoa/Cocoa.h>
 #include <jni.h>
 #include "impl/Library.hh"
-#include "ContextMetal.hh"
-#import <QuartzCore/CAConstraintLayoutManager.h>
+#include "MainView.hh"
+#import <Metal/Metal.h>
 #include "WindowMac.hh"
 
-jwm::ContextMetal::~ContextMetal() {
+namespace jwm {
+
+class ContextMetal: public Context {
+public:
+    ContextMetal(bool vsync, bool transact): fVsync(vsync), fTransact(transact) {}
+    ~ContextMetal();
+
+    void attach(Window* window) override;
+    void swapBuffers() override;
+    void resize() override;
+
+    bool fVsync;
+    bool fTransact;
+    id<MTLDevice>       fDevice;
+    id<MTLCommandQueue> fQueue;
+    CAMetalLayer*       fMetalLayer;
+    NSView*             fMainView;
+    id<CAMetalDrawable> fDrawableHandle;
+    // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
+};
+
+ContextMetal::~ContextMetal() {
     // MetalWindowContext_mac
     fMainView.layer = nil;
     fMainView.wantsLayer = NO;
     
     // MetalWindowContext   
     fMetalLayer = nil;
-    fValid = false;
 
     CFRelease(fQueue);
     CFRelease(fDevice);
 }
 
-void jwm::ContextMetal::attach(jwm::Window* window) {
-    jwm::WindowMac* windowMac = reinterpret_cast<jwm::WindowMac*>(window);
+void ContextMetal::attach(Window* window) {
+    WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
     fMainView = [windowMac->fNSWindow contentView];
 
     // MetalWindowContext
@@ -49,14 +72,10 @@ void jwm::ContextMetal::attach(jwm::Window* window) {
     fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     fMainView.layer = fMetalLayer;
     fMainView.wantsLayer = YES;
-
-    fValid = true;
 }
 
-void jwm::ContextMetal::resize() {
-    // CGFloat backingScaleFactor = sk_app::GetBackingScaleFactor(fMainView);
-    NSScreen* screen = fMainView.window.screen ?: [NSScreen mainScreen];
-    CGFloat backingScaleFactor = screen.backingScaleFactor;
+void ContextMetal::resize() {
+    CGFloat backingScaleFactor = jwm::backingScaleFactor(fMainView);
 
     CGSize backingSize = fMainView.bounds.size;
     backingSize.width *= backingScaleFactor;
@@ -67,9 +86,10 @@ void jwm::ContextMetal::resize() {
 
     fWidth = backingSize.width;
     fHeight = backingSize.height;
+    fScale = jwm::backingScaleFactor(fMainView);
 }
 
-void jwm::ContextMetal::swapBuffers() {
+void ContextMetal::swapBuffers() {
     id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>) fDrawableHandle;
 
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
@@ -86,6 +106,8 @@ void jwm::ContextMetal::swapBuffers() {
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
+}
+
 }
 
 
@@ -115,16 +137,4 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_nextDrawa
     id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
     instance->fDrawableHandle = (id<CAMetalDrawable>) CFRetain(currentDrawable);
     return reinterpret_cast<jlong>(currentDrawable.texture);
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_ContextMetal_getWidth
-  (JNIEnv* env, jobject obj) {
-    jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->fWidth;
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_ContextMetal_getHeight
-  (JNIEnv* env, jobject obj) {
-    jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->fHeight;
 }

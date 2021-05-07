@@ -17,6 +17,9 @@ public abstract class Context extends Managed {
 
     public native long swapBuffers();
     public native void resize();
+    public native int getWidth();
+    public native int getHeight();
+    public native float getScale();
 
     @ApiStatus.Internal public static native long _nGetFinalizer();
 }
