@@ -19,7 +19,7 @@ public class App {
     public static Window makeWindow() {
         Window window;
         if (Platform.CURRENT == Platform.MACOS)
-            window = (Window) App.class.forName("org.jetbrains.jwm.macos.WindowMac").getDeclaredConstructor().newInstance();
+            window = (Window) App.class.forName("org.jetbrains.jwm.WindowMac").getDeclaredConstructor().newInstance();
         else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
         _windows.add(window);

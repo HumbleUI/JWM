@@ -5,7 +5,6 @@ import java.util.function.*;
 import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
-import org.jetbrains.jwm.macos.*;
 import org.jetbrains.skija.*;
 
 public class Example implements Consumer<Event> {
@@ -23,7 +22,7 @@ public class Example implements Consumer<Event> {
         "Metal −vsync +transact",
         "Metal −vsync −transact",
     };
-    public int variantIdx = 0;
+    public int variantIdx = 1;
 
     public long t0 = System.nanoTime();
     public double[] times = new double[180];

@@ -91,25 +91,25 @@ void jwm::ContextMetal::swapBuffers() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal__1nMake
   (JNIEnv* env, jclass jclass, jboolean vsync, jboolean transact) {
     jwm::ContextMetal* instance = new jwm::ContextMetal(vsync, transact);
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_getDevicePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getDevicePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fDevice);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_getQueuePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getQueuePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fQueue);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_nextDrawableTexturePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_nextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
     id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
@@ -117,13 +117,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_nex
     return reinterpret_cast<jlong>(currentDrawable.texture);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_getWidth
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_ContextMetal_getWidth
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
     return instance->fWidth;
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_macos_ContextMetal_getHeight
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_ContextMetal_getHeight
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
     return instance->fHeight;

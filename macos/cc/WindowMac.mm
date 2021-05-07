@@ -63,7 +63,7 @@ float jwm::WindowMac::scaleFactor() const {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_WindowMac__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
   (JNIEnv* env, jclass jclass) {
     std::unique_ptr<jwm::WindowMac> instance(new jwm::WindowMac(env));
     if (instance->init())
@@ -72,7 +72,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_macos_WindowMac__1nMak
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_macos_WindowMac__1nShow
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nShow
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     [instance->fNSWindow orderFront:nil];

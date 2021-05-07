@@ -1,4 +1,4 @@
-package org.jetbrains.jwm.macos;
+package org.jetbrains.jwm;
 
 import java.util.function.*;
 import lombok.*;
