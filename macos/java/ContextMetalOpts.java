@@ -5,7 +5,7 @@ import org.jetbrains.annotations.*;
 
 @ToString @EqualsAndHashCode @Getter
 public class ContextMetalOpts {
-    public static final ContextMetalOpts DEFAULT = new ContextMetalOpts(true, true);
+    public static final ContextMetalOpts DEFAULT = new ContextMetalOpts(true, false);
 
     public final boolean _vsync;
     public final boolean _transact;

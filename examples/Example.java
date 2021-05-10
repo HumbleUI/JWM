@@ -11,19 +11,17 @@ public class Example implements Consumer<Event> {
     public Window window;
     public SkijaBridge bridge;
 
+    public boolean vsync = true;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
 
     public String[] variants = new String[] {
-        "Metal +vsync +transact", 
-        "Metal +vsync −transact",
-        "Metal −vsync +transact",
-        "Metal −vsync −transact",
-        "GL +vsync",
-        "GL −vsync",
+        "Metal",
+        "Metal+transact", 
+        "OpenGL",
     };
-    public int variantIdx = 1;
+    public int variantIdx = 0;
 
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
@@ -83,11 +81,11 @@ public class Example implements Consumer<Event> {
         // HUD
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
+            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
 
             // bg
             paint.setColor(0x40000000);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
             canvas.translate(8, 8);
 
             // Variant
@@ -96,6 +94,13 @@ public class Example implements Consumer<Event> {
             paint.setColor(0xFFFFFFFF);
             canvas.drawString("↓↑", 0, 12, font, paint);
             canvas.drawString(variants[variantIdx], 24, 12, font, paint);
+            canvas.translate(0, 24);
+
+            paint.setColor(0x80000000);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawString("V", 3, 12, font, paint);
+            canvas.drawString("Vsync: " + (vsync ? "ON" : "OFF"), 24, 12, font, paint);
             canvas.translate(0, 24);
 
             paint.setColor(0x80000000);
@@ -154,14 +159,12 @@ public class Example implements Consumer<Event> {
         if (bridge != null)
             bridge.close();
 
-        if (variants[variantIdx].startsWith("Metal")) {
-            boolean vsync = variants[variantIdx].indexOf("+vsync") >= 0;
-            boolean transact = variants[variantIdx].indexOf("+transact") >= 0;
-            bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withTransact(transact)));
-        } else if (variants[variantIdx].startsWith("GL")) {
-            boolean vsync = variants[variantIdx].indexOf("+vsync") >= 0;
+        if (variants[variantIdx].startsWith("Metal"))
+            bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync)));
+        else if ("Metal+transact".equals(variants[variantIdx]))
+            bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withTransact(true)));
+        else if (variants[variantIdx].startsWith("OpenGL"))
             bridge = new SkijaBridgeGL(window, new ContextGL(ContextGLOpts.DEFAULT.withVsync(vsync)));
-        }
     }
 
     @Override
@@ -181,6 +184,9 @@ public class Example implements Consumer<Event> {
                     window.close();
                     if (App._windows.size() == 0)
                         App.terminate();
+                } else if (eventKeyboard.getKeyCode() == 9) { // v
+                    vsync = !vsync;
+                    changeContext();
                 } else if (eventKeyboard.getKeyCode() == 125) { // ↓
                     variantIdx = (variantIdx + 1) % variants.length;
                     changeContext();
