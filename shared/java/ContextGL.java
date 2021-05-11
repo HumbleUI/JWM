@@ -8,8 +8,8 @@ import org.jetbrains.jwm.impl.*;
 
 public class ContextGL extends Context {
     public ContextGL(ContextGLOpts opts) {
-        super(_nMake(opts._vsync));
+        super(_nMake(opts._vsync, opts._displayLink));
     }
 
-    @ApiStatus.Internal public static native long _nMake(boolean vsync);
+    @ApiStatus.Internal public static native long _nMake(boolean vsync, boolean displayLink);
 }

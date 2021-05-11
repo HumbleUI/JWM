@@ -11,17 +11,22 @@ public class Example implements Consumer<Event> {
     public Window window;
     public SkijaBridge bridge;
 
-    public boolean vsync = true;
+    public boolean vsync = false;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
+    public int x = 0;
+    public int y = 0;
 
     public String[] variants = new String[] {
         "Metal",
-        "Metal+transact", 
+        "Metal + transact",
+        "Metal + link",
+        "Metal + transact + link",
         "OpenGL",
+        "OpenGL + link",
     };
-    public int variantIdx = 0;
+    public int variantIdx = 3;
 
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
@@ -47,14 +52,15 @@ public class Example implements Consumer<Event> {
         int height = (int) (bridge.getContext().getHeight() / scale);
         canvas.scale(scale, scale);
 
-        // Triangles
         try (var paint = new Paint()) {
+            // Triangles
             int[] colors = new int[] { 0xFFe76f51, 0xFF2a9d8f, 0xFFe9c46a };
             canvas.drawTriangles(new Point[] { new Point(10, 10), new Point(200, 10), new Point (10, 200) }, colors, paint);
             canvas.drawTriangles(new Point[] { new Point(width - 10, 10), new Point(width - 200, 10), new Point(width - 10, 200) }, colors, paint);
             canvas.drawTriangles(new Point[] { new Point(10, height - 10), new Point(200, height - 10), new Point (10, height - 200) }, colors, paint);
             // canvas.drawTriangles(new Point[] { new Point(width - 10, height - 10), new Point(width - 200, height - 10), new Point(width - 10, height - 200) }, colors, paint);
 
+            // Pill
             canvas.save();
             canvas.translate(width / 2, height / 2);
             paint.setColor(0xFFFFFFFF);
@@ -63,6 +69,14 @@ public class Example implements Consumer<Event> {
             canvas.rotate(angle);
             paint.setColor(0xFF264653);
             canvas.drawRect(Rect.makeXYWH(-7, -100, 14, 200), paint);
+            canvas.restore();
+
+            // Cursor
+            canvas.save();
+            canvas.translate(x, y);
+            paint.setColor(0xFFCC3333);
+            canvas.drawRect(Rect.makeLTRB(-1, -20, 1, 20), paint);
+            canvas.drawRect(Rect.makeLTRB(-20, -1, 20, 1), paint);
             canvas.restore();
         }
 
@@ -159,12 +173,18 @@ public class Example implements Consumer<Event> {
         if (bridge != null)
             bridge.close();
 
-        if (variants[variantIdx].startsWith("Metal"))
+        if ("Metal".equals(variants[variantIdx]))
             bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync)));
-        else if ("Metal+transact".equals(variants[variantIdx]))
+        else if ("Metal + transact".equals(variants[variantIdx]))
             bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withTransact(true)));
-        else if (variants[variantIdx].startsWith("OpenGL"))
+        else if ("Metal + link".equals(variants[variantIdx]))
+            bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withDisplayLink(true)));
+        else if ("Metal + transact + link".equals(variants[variantIdx]))
+            bridge = new SkijaBridgeMetal(window, new ContextMetal(ContextMetalOpts.DEFAULT.withVsync(vsync).withTransact(true).withDisplayLink(true)));
+        else if ("OpenGL".equals(variants[variantIdx]))
             bridge = new SkijaBridgeGL(window, new ContextGL(ContextGLOpts.DEFAULT.withVsync(vsync)));
+        else if ("OpenGL + link".equals(variants[variantIdx]))
+            bridge = new SkijaBridgeGL(window, new ContextGL(ContextGLOpts.DEFAULT.withVsync(vsync).withDisplayLink(true)));
     }
 
     @Override
@@ -175,6 +195,9 @@ public class Example implements Consumer<Event> {
                 App.terminate();
         } else if (e instanceof EventResize && bridge != null) {
             bridge.resize();
+        } else if (e instanceof EventMouseMove) {
+            x = (int) (((EventMouseMove) e).getX() / bridge.getContext().getScale());
+            y = (int) (((EventMouseMove) e).getY() / bridge.getContext().getScale());
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {

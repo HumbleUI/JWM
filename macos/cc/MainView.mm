@@ -23,8 +23,7 @@
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     [fTrackingArea release];
     [super dealloc];
 }

@@ -14,7 +14,7 @@ namespace jwm {
 
 class ContextGL: public Context {
 public:
-    ContextGL(bool vsync): fVsync(vsync) {}
+    ContextGL(bool vsync, bool useDisplayLink): fVsync(vsync), fUseDisplayLink(useDisplayLink) {}
     ~ContextGL();
 
     void attach(Window* window) override;
@@ -23,19 +23,36 @@ public:
     void resize() override;
 
     bool fVsync;
+    bool fUseDisplayLink;
     int fStencilBits;
     int fSampleCount;
     NSView* fMainView;
     NSOpenGLContext*     fGLContext;
     NSOpenGLPixelFormat* fPixelFormat;
+    CVDisplayLinkRef  fDisplayLink;
+    volatile int      fSwapIntervalsPassed = 0;
+    id                fSwapIntervalCond;
 };
 
 ContextGL::~ContextGL() {
+    if (fUseDisplayLink) {
+        CVDisplayLinkStop(fDisplayLink);
+        CVDisplayLinkRelease(fDisplayLink);
+    }
     [NSOpenGLContext clearCurrentContext];
     [fPixelFormat release];
     fPixelFormat = nil;
     [fGLContext release];
     fGLContext = nil;
+}
+
+static CVReturn glDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
+    ContextGL* self = (ContextGL*) ctx;
+    [self->fSwapIntervalCond lock];
+    self->fSwapIntervalsPassed++;
+    [self->fSwapIntervalCond signal];
+    [self->fSwapIntervalCond unlock];
+    return kCVReturnSuccess;
 }
 
 void ContextGL::attach(Window* window) {
@@ -84,6 +101,17 @@ void ContextGL::attach(Window* window) {
         return;
     }
 
+    // Setup display link.
+    if (fUseDisplayLink) {
+      CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
+      CVDisplayLinkSetOutputCallback(fDisplayLink, &glDisplayLinkCallback, this);
+      CVDisplayLinkStart(fDisplayLink);
+      CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(fDisplayLink,
+                                                        (CGLContextObj) fGLContext,
+                                                        (CGLPixelFormatObj) fPixelFormat);
+      fSwapIntervalCond = [NSCondition new];
+    }
+
     [fMainView setWantsBestResolutionOpenGLSurface:YES];
     [fGLContext setView:fMainView];
 
@@ -118,6 +146,14 @@ void ContextGL::update() {
 
 void ContextGL::swapBuffers() {
     [fGLContext flushBuffer];
+    if (fUseDisplayLink) {
+        [this->fSwapIntervalCond lock];
+        do {
+            [this->fSwapIntervalCond wait];
+        } while (this->fSwapIntervalsPassed == 0);
+        this->fSwapIntervalsPassed = 0;
+        [this->fSwapIntervalCond unlock];
+    }
 }
 
 void ContextGL::resize() {
@@ -130,8 +166,8 @@ void ContextGL::resize() {
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextGL__1nMake
-  (JNIEnv* env, jclass jclass, jboolean vsync) {
-    jwm::ContextGL* instance = new jwm::ContextGL(vsync);
+  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean displayLink) {
+    jwm::ContextGL* instance = new jwm::ContextGL(vsync, displayLink);
     return reinterpret_cast<jlong>(instance);
 }
 

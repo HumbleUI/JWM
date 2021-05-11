@@ -1,6 +1,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 #import <QuartzCore/CAConstraintLayoutManager.h>
 #import <Cocoa/Cocoa.h>
+#import <CoreVideo/CoreVideo.h>
 #include <jni.h>
 #include "impl/Library.hh"
 #include "MainView.hh"
@@ -11,7 +12,7 @@ namespace jwm {
 
 class ContextMetal: public Context {
 public:
-    ContextMetal(bool vsync, bool transact): fVsync(vsync), fTransact(transact) {}
+    ContextMetal(bool vsync, bool transact, bool useDisplayLink): fVsync(vsync), fTransact(transact), fUseDisplayLink(useDisplayLink) {}
     ~ContextMetal();
 
     void attach(Window* window) override;
@@ -20,15 +21,24 @@ public:
 
     bool fVsync;
     bool fTransact;
+    bool fUseDisplayLink;
     id<MTLDevice>       fDevice;
     id<MTLCommandQueue> fQueue;
     CAMetalLayer*       fMetalLayer;
     NSView*             fMainView;
     id<CAMetalDrawable> fDrawableHandle;
     // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
+    CVDisplayLinkRef  fDisplayLink;
+    volatile int      fSwapIntervalsPassed = 0;
+    id                fSwapIntervalCond;
 };
 
 ContextMetal::~ContextMetal() {
+    if (fUseDisplayLink) {
+        CVDisplayLinkStop(fDisplayLink);
+        CVDisplayLinkRelease(fDisplayLink);
+    }
+
     // MetalWindowContext_mac
     fMainView.layer = nil;
     fMainView.wantsLayer = NO;
@@ -40,9 +50,26 @@ ContextMetal::~ContextMetal() {
     CFRelease(fDevice);
 }
 
+static CVReturn metalDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
+    ContextMetal* self = (ContextMetal*) ctx;
+    [self->fSwapIntervalCond lock];
+    self->fSwapIntervalsPassed++;
+    [self->fSwapIntervalCond signal];
+    [self->fSwapIntervalCond unlock];
+    return kCVReturnSuccess;
+}
+
 void ContextMetal::attach(Window* window) {
     WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
     fMainView = [windowMac->fNSWindow contentView];
+
+    // Setup display link.
+    if (fUseDisplayLink) {
+      CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
+      CVDisplayLinkSetOutputCallback(fDisplayLink, &metalDisplayLinkCallback, this);
+      CVDisplayLinkStart(fDisplayLink);
+      fSwapIntervalCond = [NSCondition new];
+    }
 
     // MetalWindowContext
     fDevice = MTLCreateSystemDefaultDevice();
@@ -106,6 +133,15 @@ void ContextMetal::swapBuffers() {
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
+
+    if (fUseDisplayLink) {
+        [this->fSwapIntervalCond lock];
+        do {
+            [this->fSwapIntervalCond wait];
+        } while (this->fSwapIntervalsPassed == 0);
+        this->fSwapIntervalsPassed = 0;
+        [this->fSwapIntervalCond unlock];
+    }
 }
 
 }
@@ -114,8 +150,8 @@ void ContextMetal::swapBuffers() {
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal__1nMake
-  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean transact) {
-    jwm::ContextMetal* instance = new jwm::ContextMetal(vsync, transact);
+  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean transact, jboolean displayLink) {
+    jwm::ContextMetal* instance = new jwm::ContextMetal(vsync, transact, displayLink);
     return reinterpret_cast<jlong>(instance);
 }
 
