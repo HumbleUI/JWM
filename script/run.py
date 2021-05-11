@@ -32,8 +32,6 @@ def main():
     common.fetch_maven('org.jetbrains.skija', skija_native, '0.91.3', repo=space),
     # '/Users/prokopov/ws/skija/native/build',
     # '/Users/prokopov/ws/skija/shared/target/classes',
-    # '/Users/prokopov/ws/skija/native/build',
-    # '/Users/prokopov/ws/skija/shared/target/classes',
   ]
   subprocess.check_call([
     'java',
