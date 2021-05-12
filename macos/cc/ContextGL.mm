@@ -2,8 +2,10 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 #include <algorithm>
-#import <Cocoa/Cocoa.h>
-#include "Context.hh"
+#import  <Cocoa/Cocoa.h>
+#include "ContextMac.hh"
+#import  <CoreVideo/CoreVideo.h>
+#include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
 #include "MainView.hh"
@@ -12,33 +14,23 @@
 
 namespace jwm {
 
-class ContextGL: public Context {
+class ContextGL: public ContextMac {
 public:
-    ContextGL(bool vsync, bool useDisplayLink): fVsync(vsync), fUseDisplayLink(useDisplayLink) {}
+    ContextGL(bool useVsync, bool useDisplayLink): ContextMac(useVsync, useDisplayLink) {}
     ~ContextGL();
 
     void attach(Window* window) override;
-    void update();
-    void swapBuffers() override;
+    void reinit() override;
     void resize() override;
+    void swapBuffers() override;
 
-    bool fVsync;
-    bool fUseDisplayLink;
     int fStencilBits;
     int fSampleCount;
-    NSView* fMainView;
     NSOpenGLContext*     fGLContext;
     NSOpenGLPixelFormat* fPixelFormat;
-    CVDisplayLinkRef  fDisplayLink;
-    volatile int      fSwapIntervalsPassed = 0;
-    id                fSwapIntervalCond;
 };
 
 ContextGL::~ContextGL() {
-    if (fUseDisplayLink) {
-        CVDisplayLinkStop(fDisplayLink);
-        CVDisplayLinkRelease(fDisplayLink);
-    }
     [NSOpenGLContext clearCurrentContext];
     [fPixelFormat release];
     fPixelFormat = nil;
@@ -46,18 +38,8 @@ ContextGL::~ContextGL() {
     fGLContext = nil;
 }
 
-static CVReturn glDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
-    ContextGL* self = (ContextGL*) ctx;
-    [self->fSwapIntervalCond lock];
-    self->fSwapIntervalsPassed++;
-    [self->fSwapIntervalCond signal];
-    [self->fSwapIntervalCond unlock];
-    return kCVReturnSuccess;
-}
-
 void ContextGL::attach(Window* window) {
-    WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
-    fMainView = [windowMac->fNSWindow contentView];
+    ContextMac::attach(window);
 
     // set up pixel format
     constexpr int kMaxAttributes = 19;
@@ -101,25 +83,21 @@ void ContextGL::attach(Window* window) {
         return;
     }
 
-    // Setup display link.
-    if (fUseDisplayLink) {
-      CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
-      CVDisplayLinkSetOutputCallback(fDisplayLink, &glDisplayLinkCallback, this);
-      CVDisplayLinkStart(fDisplayLink);
-      CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(fDisplayLink,
-                                                        (CGLContextObj) fGLContext,
-                                                        (CGLPixelFormatObj) fPixelFormat);
-      fSwapIntervalCond = [NSCondition new];
-    }
-
     [fMainView setWantsBestResolutionOpenGLSurface:YES];
     [fGLContext setView:fMainView];
 
-    update();
+    reinit();
 }
 
-void ContextGL::update() {
-    GLint swapInterval = fVsync ? 1 : 0;
+void ContextGL::reinit() {
+    ContextMac::reinit();
+    resize();
+}
+
+void ContextGL::resize() {
+    [fGLContext update];
+
+    GLint swapInterval = fUseVsync ? 1 : 0;
     [fGLContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
     [fGLContext makeCurrentContext];
@@ -146,19 +124,7 @@ void ContextGL::update() {
 
 void ContextGL::swapBuffers() {
     [fGLContext flushBuffer];
-    if (fUseDisplayLink) {
-        [this->fSwapIntervalCond lock];
-        do {
-            [this->fSwapIntervalCond wait];
-        } while (this->fSwapIntervalsPassed == 0);
-        this->fSwapIntervalsPassed = 0;
-        [this->fSwapIntervalCond unlock];
-    }
-}
-
-void ContextGL::resize() {
-    [fGLContext update];
-    update();
+    ContextMac::swapBuffers();
 }
 
 }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
 #include "WindowMac.hh"
@@ -22,6 +23,13 @@
     fWindow->onEvent(eventResize.get());
 
     fWindow->onEvent(jwm::classes::EventPaint::kInstance);
+}
+
+- (void)windowDidChangeScreen:(NSNotification*)notification {
+    NSWindow* window = fWindow->fNSWindow;
+    CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
+    std::cout << "windowDidChangeScreen to " << displayID << std::endl;
+    fWindow->fContext->reinit();
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {

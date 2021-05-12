@@ -8,12 +8,12 @@ import org.jetbrains.jwm.impl.*;
 
 public class ContextMetal extends Context {
     public ContextMetal(ContextMetalOpts opts) {
-        super(_nMake(opts._vsync, opts._transact, opts._displayLink));
+        super(_nMake(opts._vsync, opts._displayLink, opts._transact));
     }
 
     public native long getDevicePtr();
     public native long getQueuePtr();
     public native long nextDrawableTexturePtr();
 
-    @ApiStatus.Internal public static native long _nMake(boolean vsync, boolean transact, boolean displayLink);
+    @ApiStatus.Internal public static native long _nMake(boolean vsync, boolean displayLink, boolean transact);
 }

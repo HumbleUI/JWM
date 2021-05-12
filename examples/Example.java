@@ -15,8 +15,7 @@ public class Example implements Consumer<Event> {
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
-    public int x = 0;
-    public int y = 0;
+    public int x = 0, y = 0, lastX = 0, lastY = 0;
 
     public String[] variants = new String[] {
         "Metal",
@@ -72,12 +71,7 @@ public class Example implements Consumer<Event> {
             canvas.restore();
 
             // Cursor
-            canvas.save();
-            canvas.translate(x, y);
-            paint.setColor(0xFFCC3333);
-            canvas.drawRect(Rect.makeLTRB(-1, -20, 1, 20), paint);
-            canvas.drawRect(Rect.makeLTRB(-20, -1, 20, 1), paint);
-            canvas.restore();
+            canvas.drawTriangles(new Point[] { new Point(x, y), new Point(x + 5, y + 10), new Point (x, y + 15) }, new int[] {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, paint);
         }
 
         // VSync
@@ -196,6 +190,8 @@ public class Example implements Consumer<Event> {
         } else if (e instanceof EventResize && bridge != null) {
             bridge.resize();
         } else if (e instanceof EventMouseMove) {
+            lastX = x;
+            lastY = y;
             x = (int) (((EventMouseMove) e).getX() / bridge.getContext().getScale());
             y = (int) (((EventMouseMove) e).getY() / bridge.getContext().getScale());
         } else if (e instanceof EventKeyboard) {
