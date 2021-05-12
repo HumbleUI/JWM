@@ -33,7 +33,7 @@ bool jwm::WindowMac::init() {
     }
 
     // create view
-    MainView* view = [[MainView alloc] initWithWindow:this];
+    MainView* view = [[MainView alloc] initWithWindow:this frame:windowRect];
     if (nil == view) {
         [fNSWindow release];
         [delegate release];
@@ -45,6 +45,7 @@ bool jwm::WindowMac::init() {
     [fNSWindow setDelegate:delegate];
     [fNSWindow setAcceptsMouseMovedEvents:YES];
     [fNSWindow setRestorable:NO];
+    [fNSWindow center];
 
     // Should be retained by window now
     [view release];

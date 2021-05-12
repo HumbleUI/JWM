@@ -22,6 +22,7 @@ target_link_libraries(jwm
     "-framework CoreData"
     "-framework Foundation"
     "-framework Metal"
+    "-framework MetalKit"
     "-framework OpenGL"
     "-framework QuartzCore"
 )

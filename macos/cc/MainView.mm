@@ -1,3 +1,4 @@
+#include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
 #include "WindowMac.hh"
@@ -10,10 +11,25 @@
     // We keep track of the state of the modifier keys on each event in order to synthesize
     // key-up/down events for each modifier.
     jwm::ModifierKey fLastModifiers;
+    id<MTLDevice> fDevice;
+    id<MTLCommandQueue> fQueue;
 }
 
-- (MainView*)initWithWindow:(jwm::WindowMac*)initWindow {
-    self = [super init];
+- (MainView*)initWithWindow:(jwm::WindowMac*)initWindow frame:(CGRect)frameRect {
+    fDevice = MTLCreateSystemDefaultDevice();
+    fQueue = [fDevice newCommandQueue];
+    self = [super initWithFrame:frameRect device:fDevice];
+
+    [self setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
+    [self setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
+    [self setSampleCount:1];
+
+    self.delegate = self;
+    self.paused = NO;
+    self.enableSetNeedsDisplay = NO;
+    self.needsDisplay = YES;
+    self.preferredFramesPerSecond = 120;
+    // self.presentsWithTransaction = YES;
 
     fWindow = initWindow;
     fTrackingArea = nil;
@@ -22,6 +38,38 @@
 
     return self;
 }
+
+int now() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+}
+
+- (void)drawInMTKView:(nonnull MTKView *)view {
+    std::cout << "drawInMTKView " << now() << std::endl;
+
+    MTLRenderPassDescriptor* desc = view.currentRenderPassDescriptor;
+    fWindow->onEvent(jwm::classes::EventPaint::kInstance);
+
+    id<MTLCommandBuffer> buffer([fQueue commandBuffer]);
+    id<MTLRenderCommandEncoder> encoder = [buffer renderCommandEncoderWithDescriptor:desc];
+
+    [encoder endEncoding];
+    [buffer presentDrawable:view.currentDrawable];
+    [buffer commit];
+}
+
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
+    std::cout << "drawableSizeWillChange " << now() << " size=" << size.width << "x" << size.height << std::endl;
+    self.needsDisplay = YES;
+}
+
+- (id<MTLDevice>)getDevice {
+    return fDevice;
+}
+
+- (id<MTLCommandQueue>)getQueue {
+    return fQueue;
+}
+
 
 - (void)dealloc {
     [fTrackingArea release];

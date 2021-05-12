@@ -30,19 +30,22 @@ public class SkijaBridgeMetal implements SkijaBridge {
 
     @Override
     public Canvas beforePaint() {
-        long texturePtr = _context.nextDrawableTexturePtr();
+        long mtkViewPtr = _context.nextDrawableTexturePtr();
         float scale = _context.getScale();
         int width = _context.getWidth();
         int height = _context.getHeight();
 
-        _renderTarget = BackendRenderTarget.makeMetal(width, height, texturePtr);
-        _surface = Surface.makeFromBackendRenderTarget(
+        // _renderTarget = BackendRenderTarget.makeMetal(width, height, texturePtr);
+        _surface = Surface.makeFromMTKView(
                      _directContext,
-                     _renderTarget,
+                     mtkViewPtr,
                      SurfaceOrigin.TOP_LEFT,
+                     1,
                      SurfaceColorFormat.BGRA_8888,
                      ColorSpace.getSRGB(),  // TODO load monitor profile
-                     new SurfaceProps(PixelGeometry.RGB_H));
+                     null
+                     // new SurfaceProps(PixelGeometry.RGB_H)
+                     );
         return _surface.getCanvas();
     }
 
@@ -52,7 +55,7 @@ public class SkijaBridgeMetal implements SkijaBridge {
         _context.swapBuffers();
 
         _surface.close();
-        _renderTarget.close();
+        // _renderTarget.close();
     }
 
     @Override

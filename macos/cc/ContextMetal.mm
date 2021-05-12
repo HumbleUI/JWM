@@ -12,7 +12,7 @@ namespace jwm {
 
 class ContextMetal: public Context {
 public:
-    ContextMetal(bool vsync, bool transact, bool useDisplayLink): fVsync(vsync), fTransact(transact), fUseDisplayLink(useDisplayLink) {}
+    ContextMetal(bool vsync, bool transact, bool useDisplayLink): fVsync(vsync) {}
     ~ContextMetal();
 
     void attach(Window* window) override;
@@ -20,85 +20,61 @@ public:
     void resize() override;
 
     bool fVsync;
-    bool fTransact;
-    bool fUseDisplayLink;
-    id<MTLDevice>       fDevice;
-    id<MTLCommandQueue> fQueue;
-    CAMetalLayer*       fMetalLayer;
-    NSView*             fMainView;
-    id<CAMetalDrawable> fDrawableHandle;
-    // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
-    CVDisplayLinkRef  fDisplayLink;
-    volatile int      fSwapIntervalsPassed = 0;
-    id                fSwapIntervalCond;
+    // id<MTLDevice>       fDevice;
+    // id<MTLCommandQueue> fQueue;
+    MainView*           fMainView;
+    // id<CAMetalDrawable> fDrawableHandle;
 };
 
 ContextMetal::~ContextMetal() {
-    if (fUseDisplayLink) {
-        CVDisplayLinkStop(fDisplayLink);
-        CVDisplayLinkRelease(fDisplayLink);
-    }
-
-    // MetalWindowContext_mac
-    fMainView.layer = nil;
-    fMainView.wantsLayer = NO;
+    // // MetalWindowContext_mac
+    // fMainView.layer = nil;
+    // fMainView.wantsLayer = NO;
     
-    // MetalWindowContext   
-    fMetalLayer = nil;
+    // // MetalWindowContext   
+    // fMetalLayer = nil;
 
-    CFRelease(fQueue);
-    CFRelease(fDevice);
+    // CFRelease(fQueue);
+    // CFRelease(fDevice);
 }
 
-static CVReturn metalDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
-    ContextMetal* self = (ContextMetal*) ctx;
-    [self->fSwapIntervalCond lock];
-    self->fSwapIntervalsPassed++;
-    [self->fSwapIntervalCond signal];
-    [self->fSwapIntervalCond unlock];
-    return kCVReturnSuccess;
-}
+// int now() {
+//     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+// }
 
 void ContextMetal::attach(Window* window) {
     WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
-    fMainView = [windowMac->fNSWindow contentView];
-
-    // Setup display link.
-    if (fUseDisplayLink) {
-      CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
-      CVDisplayLinkSetOutputCallback(fDisplayLink, &metalDisplayLinkCallback, this);
-      CVDisplayLinkStart(fDisplayLink);
-      fSwapIntervalCond = [NSCondition new];
-    }
+    fMainView = (MainView*) [windowMac->fNSWindow contentView];
 
     // MetalWindowContext
-    fDevice = MTLCreateSystemDefaultDevice();
-    fQueue = [fDevice newCommandQueue];
+    // fDevice = MTLCreateSystemDefaultDevice();
+    // id<MTLDevice> device = [fMainView getDevice];
+    // fQueue = [device newCommandQueue];
 
     // MetalWindowContext_mac
-    fMetalLayer = [CAMetalLayer layer];
-    fMetalLayer.device = fDevice;
-    fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    // fMetalLayer = [CAMetalLayer layer];
+    // fMetalLayer.device = fDevice;
+    // fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
 
     this->resize();
 
-    fMetalLayer.allowsNextDrawableTimeout = NO;
-    fMetalLayer.displaySyncEnabled = fVsync ? YES : NO;  // TODO: need solution for 10.12 or lower
-    fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
-    fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
-    fMetalLayer.contentsGravity = kCAGravityTopLeft;
-    if (fTransact) {
-      fMetalLayer.needsDisplayOnBoundsChange = YES;
-      fMetalLayer.presentsWithTransaction = YES;
-    }
-    fMetalLayer.magnificationFilter = kCAFilterNearest;
-    NSColorSpace* cs = fMainView.window.colorSpace;
-    fMetalLayer.colorspace = cs.CGColorSpace;
+    // fMetalLayer.allowsNextDrawableTimeout = NO;
+    // fMetalLayer.displaySyncEnabled = fVsync ? YES : NO;  // TODO: need solution for 10.12 or lower
+    // fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
+    // fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
+    // fMetalLayer.contentsGravity = kCAGravityTopLeft;
+    // if (fTransact) {
+    //   fMetalLayer.needsDisplayOnBoundsChange = YES;
+    //   fMetalLayer.presentsWithTransaction = YES;
+    // }
+    // fMetalLayer.magnificationFilter = kCAFilterNearest;
+    // NSColorSpace* cs = fMainView.window.colorSpace;
+    // fMetalLayer.colorspace = cs.CGColorSpace;
 
-    fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
-    fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
-    fMainView.layer = fMetalLayer;
-    fMainView.wantsLayer = YES;
+    // fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+    // fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+    // fMainView.layer = fMetalLayer;
+    // fMainView.wantsLayer = YES;
 }
 
 void ContextMetal::resize() {
@@ -108,8 +84,8 @@ void ContextMetal::resize() {
     backingSize.width *= backingScaleFactor;
     backingSize.height *= backingScaleFactor;
 
-    fMetalLayer.drawableSize = backingSize;
-    fMetalLayer.contentsScale = backingScaleFactor;
+    // fMetalLayer.drawableSize = backingSize;
+    // fMetalLayer.contentsScale = backingScaleFactor;
 
     fWidth = backingSize.width;
     fHeight = backingSize.height;
@@ -117,31 +93,17 @@ void ContextMetal::resize() {
 }
 
 void ContextMetal::swapBuffers() {
-    id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>) fDrawableHandle;
+    // id<CAMetalDrawable> currentDrawable = (id<CAMetalDrawable>) fDrawableHandle;
 
-    id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
-    // commandBuffer.label = @"Present";
+    // id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
+    // // commandBuffer.label = @"Present";
 
-    if (fTransact) {
-      [commandBuffer commit];
-      [commandBuffer waitUntilScheduled];
-      [currentDrawable present];
-    } else {
-      [commandBuffer presentDrawable:currentDrawable];
-      [commandBuffer commit];
-    }
-    // ARC is off in sk_app, so we need to release the CF ref manually
-    CFRelease(fDrawableHandle);
-    fDrawableHandle = nil;
+    // [commandBuffer presentDrawable:currentDrawable];
+    // [commandBuffer commit];
 
-    if (fUseDisplayLink) {
-        [this->fSwapIntervalCond lock];
-        do {
-            [this->fSwapIntervalCond wait];
-        } while (this->fSwapIntervalsPassed == 0);
-        this->fSwapIntervalsPassed = 0;
-        [this->fSwapIntervalCond unlock];
-    }
+    // // ARC is off in sk_app, so we need to release the CF ref manually
+    // CFRelease(fDrawableHandle);
+    // fDrawableHandle = nil;
 }
 
 }
@@ -158,19 +120,21 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal__1nMake
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getDevicePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
-    return reinterpret_cast<jlong>(instance->fDevice);
+    return reinterpret_cast<jlong>([instance->fMainView getDevice]);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getQueuePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
-    return reinterpret_cast<jlong>(instance->fQueue);
+    return reinterpret_cast<jlong>([instance->fMainView getQueue]);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_nextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
     jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
-    id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
-    instance->fDrawableHandle = (id<CAMetalDrawable>) CFRetain(currentDrawable);
-    return reinterpret_cast<jlong>(currentDrawable.texture);
+    // return reinterpret_cast<jlong>(instance->fMainView.currentDrawable.texture);
+    return reinterpret_cast<jlong>(instance->fMainView);
+    // id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
+    // instance->fDrawableHandle = (id<CAMetalDrawable>) CFRetain(currentDrawable);
+    // return reinterpret_cast<jlong>(currentDrawable.texture);
 }

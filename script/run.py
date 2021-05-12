@@ -15,8 +15,8 @@ def main():
     common.fetch_maven('org.jetbrains', 'annotations', '19.0.0'),
     'shared/target/classes',
     common.system + '/target/classes',
-    common.fetch_maven('org.jetbrains.skija', 'skija-shared', '0.91.3', repo=space),
-    common.fetch_maven('org.jetbrains.skija', skija_native, '0.91.3', repo=space),
+    common.fetch_maven('org.jetbrains.skija', 'skija-shared', '0.91.4', repo=space),
+    common.fetch_maven('org.jetbrains.skija', skija_native, '0.91.4', repo=space),
     # '/Users/prokopov/ws/skija/native/build',
     # '/Users/prokopov/ws/skija/shared/target/classes',
   ]
@@ -28,8 +28,8 @@ def main():
     common.system + '/build',
     common.system + '/target/classes',
     'examples/target/classes',
-    common.fetch_maven('org.jetbrains.skija', 'skija-shared', '0.91.3', repo=space),
-    common.fetch_maven('org.jetbrains.skija', skija_native, '0.91.3', repo=space),
+    common.fetch_maven('org.jetbrains.skija', 'skija-shared', '0.91.4', repo=space),
+    common.fetch_maven('org.jetbrains.skija', skija_native, '0.91.4', repo=space),
     # '/Users/prokopov/ws/skija/native/build',
     # '/Users/prokopov/ws/skija/shared/target/classes',
   ]

@@ -87,7 +87,7 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
         NSEvent* event;
         do {
             event = [NSApp nextEventMatchingMask:NSEventMaskAny
-                                       untilDate:[NSDate distantPast]
+                                       untilDate:[NSDate distantFuture]
                                           inMode:NSDefaultRunLoopMode
                                          dequeue:YES];
             [NSApp sendEvent:event];
@@ -102,7 +102,7 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
         // Window_mac::PaintWindows();
         // jwm::AutoLocal<jobject> eventPaint(env, jwm::classes::EventPaint::make(env));
         // jwm::classes::Consumer::accept(env, eventConsumer, eventPaint.get());
-        jwm::classes::Runnable::run(env, onIdle);
+        // jwm::classes::Runnable::run(env, onIdle);
         // app->onIdle();
     }
 
