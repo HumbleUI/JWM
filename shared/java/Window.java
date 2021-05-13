@@ -50,6 +50,8 @@ public abstract class Window extends Managed {
 
     @Override
     public void close() {
+        if (_context != null)
+            _nDetach();
         super.close();
         App._windows.remove(this);
     }

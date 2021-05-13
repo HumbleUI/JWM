@@ -28,12 +28,10 @@
 - (void)windowDidChangeScreen:(NSNotification*)notification {
     NSWindow* window = fWindow->fNSWindow;
     CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-    std::cout << "windowDidChangeScreen to " << displayID << std::endl;
     fWindow->fContext->reinit();
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {
-    // fWindow->closeWindow();
     jwm::AutoLocal<jobject> event(fWindow->fEnv, jwm::classes::EventClose::make(fWindow->fEnv));
     fWindow->onEvent(event.get());
     return FALSE;

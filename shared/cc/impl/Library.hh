@@ -45,11 +45,6 @@ namespace jwm {
             void accept(JNIEnv* env, jobject consumer, jobject event);
         }
 
-        namespace Runnable {
-            extern jmethodID kRun;
-            void run(JNIEnv* env, jobject object);
-        }
-
         namespace Native {
             extern jfieldID kPtr;
             uintptr_t fromJava(JNIEnv* env, jobject object);

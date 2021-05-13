@@ -1,3 +1,4 @@
+#include <iostream>
 #include <jni.h>
 #include "Context.hh"
 #include "Window.hh"
@@ -36,5 +37,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nAttach
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nDetach
   (JNIEnv* env, jobject obj) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
-    instance->fContext = nullptr;
+    if (instance->fContext) {
+        instance->fContext->detach();
+        instance->fContext = nullptr;
+    }
 }

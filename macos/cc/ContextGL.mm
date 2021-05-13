@@ -16,10 +16,11 @@ namespace jwm {
 
 class ContextGL: public ContextMac {
 public:
-    ContextGL(bool useVsync, bool useDisplayLink): ContextMac(useVsync, useDisplayLink) {}
-    ~ContextGL();
+    ContextGL() = default;
+    ~ContextGL() = default;
 
     void attach(Window* window) override;
+    void detach() override;
     void reinit() override;
     void resize() override;
     void swapBuffers() override;
@@ -29,14 +30,6 @@ public:
     NSOpenGLContext*     fGLContext;
     NSOpenGLPixelFormat* fPixelFormat;
 };
-
-ContextGL::~ContextGL() {
-    [NSOpenGLContext clearCurrentContext];
-    [fPixelFormat release];
-    fPixelFormat = nil;
-    [fGLContext release];
-    fGLContext = nil;
-}
 
 void ContextGL::attach(Window* window) {
     ContextMac::attach(window);
@@ -89,6 +82,20 @@ void ContextGL::attach(Window* window) {
     reinit();
 }
 
+void ContextGL::detach() {
+    CVDisplayLinkStop(fDisplayLink);
+    CVDisplayLinkRelease(fDisplayLink);
+
+    [NSOpenGLContext clearCurrentContext];
+    [fPixelFormat release];
+    fPixelFormat = nil;
+    [fGLContext release];
+    fGLContext = nil;
+
+    fWindow = nullptr;
+    fMainView = nullptr;
+}
+
 void ContextGL::reinit() {
     ContextMac::reinit();
     resize();
@@ -97,7 +104,7 @@ void ContextGL::reinit() {
 void ContextGL::resize() {
     [fGLContext update];
 
-    GLint swapInterval = fUseVsync ? 1 : 0;
+    GLint swapInterval = 0;
     [fGLContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
     [fGLContext makeCurrentContext];
@@ -124,7 +131,6 @@ void ContextGL::resize() {
 
 void ContextGL::swapBuffers() {
     [fGLContext flushBuffer];
-    ContextMac::swapBuffers();
 }
 
 }
@@ -132,8 +138,8 @@ void ContextGL::swapBuffers() {
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextGL__1nMake
-  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean displayLink) {
-    jwm::ContextGL* instance = new jwm::ContextGL(vsync, displayLink);
+  (JNIEnv* env, jclass jclass) {
+    jwm::ContextGL* instance = new jwm::ContextGL();
     return reinterpret_cast<jlong>(instance);
 }
 

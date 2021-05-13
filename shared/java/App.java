@@ -27,17 +27,11 @@ public class App {
     }
 
     public static int runEventLoop() {
-        return _nRunEventLoop(() -> {
-            synchronized (_windows) {
-                for (var window: _windows)
-                    if (window._eventListener != null)
-                        window._eventListener.accept(EventPaint.INSTANCE);
-            }
-        });
+        return _nRunEventLoop();
     }
 
     public static native void terminate();
 
-    @ApiStatus.Internal public static native int _nRunEventLoop(Runnable onIdle);
+    @ApiStatus.Internal public static native int _nRunEventLoop();
     @ApiStatus.Internal public static native void _nInit();
 }

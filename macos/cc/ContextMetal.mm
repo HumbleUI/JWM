@@ -14,33 +14,21 @@ namespace jwm {
 
 class ContextMetal: public ContextMac {
 public:
-    ContextMetal(bool useVsync, bool useDisplayLink, bool useTransact): ContextMac(useVsync, useDisplayLink), fUseTransact(useTransact) {}
-    ~ContextMetal();
+    ContextMetal() = default;
+    ~ContextMetal() = default;
 
     void attach(Window* window) override;
+    void detach() override;
     void reinit() override;
     void resize() override;
     void swapBuffers() override;
 
-    bool fUseTransact;
     id<MTLDevice>       fDevice;
     id<MTLCommandQueue> fQueue;
     CAMetalLayer*       fMetalLayer;
     id<CAMetalDrawable> fDrawableHandle;
     // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
 };
-
-ContextMetal::~ContextMetal() {
-    // MetalWindowContext_mac
-    fMainView.layer = nil;
-    fMainView.wantsLayer = NO;
-    
-    // MetalWindowContext   
-    fMetalLayer = nil;
-
-    CFRelease(fQueue);
-    CFRelease(fDevice);
-}
 
 void ContextMetal::attach(Window* window) {
     ContextMac::attach(window);
@@ -55,14 +43,12 @@ void ContextMetal::attach(Window* window) {
     fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
 
     fMetalLayer.allowsNextDrawableTimeout = NO;
-    fMetalLayer.displaySyncEnabled = fUseVsync ? YES : NO;  // TODO: need solution for 10.12 or lower
+    fMetalLayer.displaySyncEnabled = NO;
     fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
     fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
     fMetalLayer.contentsGravity = kCAGravityTopLeft;
-    if (fUseTransact) {
-      fMetalLayer.needsDisplayOnBoundsChange = YES;
-      fMetalLayer.presentsWithTransaction = YES;
-    }
+    fMetalLayer.needsDisplayOnBoundsChange = YES;
+    fMetalLayer.presentsWithTransaction = YES;
     fMetalLayer.magnificationFilter = kCAFilterNearest;
 
     fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
@@ -71,6 +57,24 @@ void ContextMetal::attach(Window* window) {
     fMainView.wantsLayer = YES;
 
     reinit();
+}
+
+void ContextMetal::detach() {
+    CVDisplayLinkStop(fDisplayLink);
+    CVDisplayLinkRelease(fDisplayLink);
+
+    // MetalWindowContext_mac
+    fMainView.layer = nil;
+    fMainView.wantsLayer = NO;
+    
+    // MetalWindowContext   
+    fMetalLayer = nil;
+
+    CFRelease(fQueue);
+    CFRelease(fDevice);
+
+    fWindow = nullptr;
+    fMainView = nullptr;
 }
 
 void ContextMetal::reinit() {
@@ -101,19 +105,13 @@ void ContextMetal::swapBuffers() {
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
     commandBuffer.label = @"Present";
 
-    if (fUseTransact) {
-      [commandBuffer commit];
-      [commandBuffer waitUntilScheduled];
-      [fDrawableHandle present];
-    } else {
-      [commandBuffer presentDrawable:fDrawableHandle];
-      [commandBuffer commit];
-    }
+    [commandBuffer commit];
+    [commandBuffer waitUntilScheduled];
+    [fDrawableHandle present];
+
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
-    
-    ContextMac::swapBuffers();
 }
 
 }
@@ -122,8 +120,8 @@ void ContextMetal::swapBuffers() {
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal__1nMake
-  (JNIEnv* env, jclass jclass, jboolean vsync, jboolean displayLink, jboolean transact) {
-    jwm::ContextMetal* instance = new jwm::ContextMetal(vsync, displayLink, transact);
+  (JNIEnv* env, jclass jclass) {
+    jwm::ContextMetal* instance = new jwm::ContextMetal();
     return reinterpret_cast<jlong>(instance);
 }
 

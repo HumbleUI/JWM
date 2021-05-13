@@ -40,22 +40,6 @@ namespace jwm {
             }
         }
 
-        namespace Runnable {
-            jmethodID kRun;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("java/lang/Runnable");
-                Throwable::exceptionThrown(env);
-                kRun = env->GetMethodID(cls, "run", "()V");
-                Throwable::exceptionThrown(env);
-            }
-
-            void run(JNIEnv* env, jobject consumer) {
-                env->CallVoidMethod(consumer, kRun);
-                Throwable::exceptionThrown(env);
-            }
-        }
-
         namespace Native {
             jfieldID kPtr;
 
@@ -162,7 +146,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
   (JNIEnv* env, jclass jclass) {
     jwm::classes::Throwable::onLoad(env);
     jwm::classes::Consumer::onLoad(env);
-    jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);

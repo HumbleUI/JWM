@@ -71,7 +71,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
-  (JNIEnv* env, jclass jclass, jobject onIdle) {
+  (JNIEnv* env, jclass jclass) {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     // Set AppDelegate to catch certain global events
     AppDelegate* appDelegate = [[AppDelegate alloc] init];
@@ -87,7 +87,7 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
         NSEvent* event;
         do {
             event = [NSApp nextEventMatchingMask:NSEventMaskAny
-                                       untilDate:[NSDate distantPast]
+                                       untilDate:[NSDate distantFuture]
                                           inMode:NSDefaultRunLoopMode
                                          dequeue:YES];
             [NSApp sendEvent:event];
@@ -95,15 +95,6 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
 
         [pool drain];
         pool = [[NSAutoreleasePool alloc] init];
-
-        // Rather than depending on a Mac event to drive this, we treat our window
-        // invalidation flag as a separate event stream. Window::onPaint() will clear
-        // the invalidation flag, effectively removing it from the stream.
-        // Window_mac::PaintWindows();
-        // jwm::AutoLocal<jobject> eventPaint(env, jwm::classes::EventPaint::make(env));
-        // jwm::classes::Consumer::accept(env, eventConsumer, eventPaint.get());
-        jwm::classes::Runnable::run(env, onIdle);
-        // app->onIdle();
     }
 
     // delete app;

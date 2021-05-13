@@ -7,9 +7,13 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
 public class ContextGL extends Context {
-    public ContextGL(ContextGLOpts opts) {
-        super(_nMake(opts._vsync, opts._displayLink));
+    public ContextGL() {
+        this(ContextGLOpts.DEFAULT);
     }
 
-    @ApiStatus.Internal public static native long _nMake(boolean vsync, boolean displayLink);
+    public ContextGL(ContextGLOpts opts) {
+        super(_nMake());
+    }
+
+    @ApiStatus.Internal public static native long _nMake();
 }
