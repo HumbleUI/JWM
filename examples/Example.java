@@ -27,7 +27,7 @@ public class Example implements Consumer<Event> {
     public int timesIdx = 0;
 
     public Example() {
-        window = App.makeWindow();
+        window = App.makeWindow(null);
         window.setEventListener(this);
         changeContext();
         window.show();
@@ -66,7 +66,9 @@ public class Example implements Consumer<Event> {
             canvas.restore();
 
             // Cursor
-            canvas.drawTriangles(new Point[] { new Point(x, y), new Point(x + 5, y + 10), new Point (x, y + 15) }, new int[] {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, paint);
+            paint.setColor(0x20FFFFFF);
+            canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
+            canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
         }
 
         // VSync
@@ -200,6 +202,6 @@ public class Example implements Consumer<Event> {
     public static void main(String[] args) {
         App.init();
         new Example();
-        App.runEventLoop();
+        App.run();
     }
 }

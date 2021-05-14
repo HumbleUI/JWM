@@ -1,43 +1,7 @@
-/*
-* Copyright 2019 Google Inc.
-*
-* Use of this source code is governed by a BSD-style license that can be
-* found in the LICENSE file.
-*/
-
 #import <Cocoa/Cocoa.h>
 #include <jni.h>
 #include "impl/Library.hh"
 #include "WindowMac.hh"
-
-@interface AppDelegate : NSObject<NSApplicationDelegate, NSWindowDelegate>
-
-@property (nonatomic, assign) BOOL done;
-
-@end
-
-@implementation AppDelegate : NSObject
-
-@synthesize done = _done;
-
-- (id)init {
-    self = [super init];
-    _done = FALSE;
-    return self;
-}
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    _done = TRUE;
-    return NSTerminateCancel;
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    [NSApp stop:nil];
-}
-
-@end
-
-///////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {
@@ -70,45 +34,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     [pool release];
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nRunEventLoop
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_run
   (JNIEnv* env, jclass jclass) {
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    // Set AppDelegate to catch certain global events
-    AppDelegate* appDelegate = [[AppDelegate alloc] init];
-    [NSApp setDelegate:appDelegate];
-
-    // Application* app = Application::Create(argc, argv, nullptr);
-
-    // This will run until the application finishes launching, then lets us take over
     [NSApp run];
-
-    // Now we process the events
-    while (![appDelegate done]) {
-        NSEvent* event;
-        do {
-            event = [NSApp nextEventMatchingMask:NSEventMaskAny
-                                       untilDate:[NSDate distantFuture]
-                                          inMode:NSDefaultRunLoopMode
-                                         dequeue:YES];
-            [NSApp sendEvent:event];
-        } while (event != nil);
-
-        [pool drain];
-        pool = [[NSAutoreleasePool alloc] init];
-    }
-
-    // delete app;
-
-    [NSApp setDelegate:nil];
-    [appDelegate release];
-
-    // [menuBar release];
-    [pool release];
-
     return EXIT_SUCCESS;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
   (JNIEnv* env, jclass jclass) {
+    [NSApp stop:nil];
     [NSApp terminate:nil];
 }

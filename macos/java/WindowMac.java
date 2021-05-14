@@ -8,7 +8,7 @@ import org.jetbrains.jwm.impl.*;
 
 public class WindowMac extends Window {
     @ApiStatus.Internal
-    public WindowMac() {
+    public WindowMac(WindowOpts opts) {
         super(_nMake());
     }
 
