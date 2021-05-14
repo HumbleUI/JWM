@@ -1,4 +1,5 @@
 #include <iostream>
+#include "impl/JNILocal.hh"
 #include <jni.h>
 #include "Library.hh"
 
@@ -14,7 +15,7 @@ namespace jwm {
 
             bool exceptionThrown(JNIEnv* env) {
                 if (env->ExceptionCheck()) {
-                    jwm::AutoLocal<jthrowable> th(env, env->ExceptionOccurred());
+                    jwm::JNILocal<jthrowable> th(env, env->ExceptionOccurred());
                     env->CallVoidMethod(th.get(), kPrintStackTrace);
                     if (env->ExceptionCheck())
                         env->DeleteLocalRef(env->ExceptionOccurred()); // ignore

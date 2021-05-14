@@ -1,4 +1,5 @@
 #include <jni.h>
+#include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "WindowMac.hh"
 #include "MainView.hh"
@@ -70,18 +71,18 @@
 
     const NSPoint pos = [event locationInWindow];
     const NSRect rect = [view frame];
-    jwm::AutoLocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseMove::make(fWindow->fEnv, (jint) (pos.x * scale), (jint) ((rect.size.height - pos.y) * scale)));
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseMove::make(fWindow->fEnv, (jint) (pos.x * scale), (jint) ((rect.size.height - pos.y) * scale)));
     fWindow->onEvent(eventObj.get());
 }
 
 - (void)keyDown:(NSEvent *)event {
-    jwm::AutoLocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
                                                                                       (jboolean) true));
     fWindow->onEvent(eventObj.get());
 }
 
 - (void)keyUp:(NSEvent *)event {
-    jwm::AutoLocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
                                                                                       (jboolean) false));
     fWindow->onEvent(eventObj.get());
 }

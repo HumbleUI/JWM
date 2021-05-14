@@ -31,7 +31,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nAttach
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
     jwm::Context* context = reinterpret_cast<jwm::Context*>(jwm::classes::Native::fromJava(env, contextObj));
     context->attach(instance);
-    instance->fContext = context;
+    instance->fContext = jwm::ref(context);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nDetach
@@ -39,6 +39,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nDetach
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
     if (instance->fContext) {
         instance->fContext->detach();
-        instance->fContext = nullptr;
+        jwm::unref(&instance->fContext);
     }
 }

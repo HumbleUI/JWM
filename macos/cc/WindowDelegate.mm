@@ -1,5 +1,6 @@
 #include <iostream>
 #include <jni.h>
+#include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
@@ -19,7 +20,7 @@
 
     fWindow->fContext->resize();
 
-    jwm::AutoLocal<jobject> eventResize(fWindow->fEnv, jwm::classes::EventResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
+    jwm::JNILocal<jobject> eventResize(fWindow->fEnv, jwm::classes::EventResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
     fWindow->onEvent(eventResize.get());
 
     fWindow->onEvent(jwm::classes::EventPaint::kInstance);
@@ -32,7 +33,7 @@
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {
-    jwm::AutoLocal<jobject> event(fWindow->fEnv, jwm::classes::EventClose::make(fWindow->fEnv));
+    jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventClose::make(fWindow->fEnv));
     fWindow->onEvent(event.get());
     return FALSE;
 }

@@ -1,9 +1,10 @@
 #pragma once
+#include "impl/RefCounted.hh"
 
 namespace jwm {
     class Window;
 
-    class Context {
+    class Context: public RefCounted {
     public:
         Context() = default;
         virtual ~Context() = default;
@@ -18,6 +19,4 @@ namespace jwm {
         int fHeight = 0;
         float fScale = 0;
     };
-
-    void deleteContext(Context* instance);
 }

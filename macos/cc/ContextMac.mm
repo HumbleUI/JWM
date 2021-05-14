@@ -5,11 +5,13 @@ namespace jwm {
 static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
     ContextMac* self = (ContextMac*) ctx;
     if (self->fDrawMutex.try_lock()) {
+        self->ref();
         dispatch_async(dispatch_get_main_queue(), ^{
             if (self->fWindow) {
                 self->fWindow->onEvent(jwm::classes::EventPaint::kInstance);
                 self->fDrawMutex.unlock();
             }
+            self->unref();
         });
     }
     return kCVReturnSuccess;

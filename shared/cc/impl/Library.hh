@@ -2,29 +2,6 @@
 #include <jni.h>
 
 namespace jwm {
-    template <typename T>
-    class AutoLocal {
-    public:
-        AutoLocal(JNIEnv* env, T ref): fEnv(env), fRef(ref) {
-        }
-
-        AutoLocal(const AutoLocal&) = delete;
-        AutoLocal(AutoLocal&&) = default;
-        AutoLocal& operator=(AutoLocal const&) = delete;
-
-        ~AutoLocal() {
-            if (fRef)
-                fEnv->DeleteLocalRef(fRef);
-        }
-
-        T get() {
-            return fRef;
-        }
-    private:
-        JNIEnv* fEnv;
-        T fRef;
-    };
-
     enum class ModifierKey {
         kNone       = 0,
         kShift      = 1 << 0,
