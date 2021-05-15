@@ -8,10 +8,6 @@ import org.jetbrains.jwm.impl.*;
 
 public class ContextGL extends Context {
     public ContextGL() {
-        this(ContextGLOpts.DEFAULT);
-    }
-
-    public ContextGL(ContextGLOpts opts) {
         super(_nMake());
     }
 

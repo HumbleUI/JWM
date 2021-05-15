@@ -15,4 +15,7 @@ public abstract class Context extends RefCounted {
     public native int getWidth();
     public native int getHeight();
     public native float getScale();
+
+    @ApiStatus.Internal public native void _nAttach(Window window);
+    @ApiStatus.Internal public native void _nDetach();
 }

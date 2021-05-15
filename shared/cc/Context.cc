@@ -32,3 +32,23 @@ extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_Context_getScale
     jwm::Context* instance = reinterpret_cast<jwm::Context*>(jwm::classes::Native::fromJava(env, obj));
     return instance->fScale;
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Context__1nAttach
+  (JNIEnv* env, jobject obj, jobject windowObj) {
+    jwm::Context* instance = reinterpret_cast<jwm::Context*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::Window* window = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, windowObj));
+    instance->fWindow = window;
+    instance->attach(window);
+    instance->invalidate();
+    instance->resize();
+    window->fContext = jwm::ref(instance);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Context__1nDetach
+  (JNIEnv* env, jobject obj) {
+    jwm::Context* instance = reinterpret_cast<jwm::Context*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::Window* window = instance->fWindow;
+    jwm::unref(&window->fContext);
+    instance->detach();
+    instance->fWindow = nullptr;
+}

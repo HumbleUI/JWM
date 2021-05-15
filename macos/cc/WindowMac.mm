@@ -6,9 +6,24 @@
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
 
+static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
+    jwm::WindowMac* self = (jwm::WindowMac*) ctx;
+    if (self->fNeedRedraw) {
+        self->fNeedRedraw = false;
+        self->ref();
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self->fContext)
+                self->onEvent(jwm::classes::EventPaint::kInstance);
+            self->unref();
+            self->fNeedRedraw = true;
+        });
+    }
+    return kCVReturnSuccess;
+}
+
 jwm::WindowMac::~WindowMac() {
-    if (fEventListener)
-        fEnv->DeleteGlobalRef(fEventListener);
+    CVDisplayLinkStop(fDisplayLink);
+    CVDisplayLinkRelease(fDisplayLink);
     [fNSWindow close];
 }
 
@@ -49,9 +64,20 @@ bool jwm::WindowMac::init() {
     // Should be retained by window now
     [view release];
 
-    // fWindowNumber = fNSWindow.windowNumber;
-    // gWindowMap.add(this);
     return true;
+}
+
+void jwm::WindowMac::invalidate() {
+    if (!fDisplayLink) {
+        CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
+        CVDisplayLinkSetOutputCallback(fDisplayLink, &displayLinkCallback, this);
+        CVDisplayLinkStart(fDisplayLink);
+    }
+
+    CGDirectDisplayID currentDisplay = (CGDirectDisplayID)[[[[fNSWindow screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
+    CGDirectDisplayID oldDisplay = CVDisplayLinkGetCurrentCGDisplay(fDisplayLink);
+    if (currentDisplay != oldDisplay)
+        CVDisplayLinkSetCurrentCGDisplay(fDisplayLink, currentDisplay);
 }
 
 float jwm::WindowMac::scaleFactor() const {
@@ -77,4 +103,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nShow
     [instance->fNSWindow orderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [instance->fNSWindow makeKeyAndOrderFront:NSApp];
+    instance->invalidate();
 }

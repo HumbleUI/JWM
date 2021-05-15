@@ -3,8 +3,7 @@
 
 #include <algorithm>
 #import  <Cocoa/Cocoa.h>
-#include "ContextMac.hh"
-#import  <CoreVideo/CoreVideo.h>
+#include "Context.hh"
 #include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
@@ -14,25 +13,27 @@
 
 namespace jwm {
 
-class ContextGL: public ContextMac {
+class ContextGL: public Context {
 public:
     ContextGL() = default;
     ~ContextGL() = default;
 
     void attach(Window* window) override;
-    void detach() override;
-    void reinit() override;
+    void invalidate() override;
     void resize() override;
     void swapBuffers() override;
+    void detach() override;
 
+    NSView* fMainView;
     int fStencilBits;
     int fSampleCount;
-    NSOpenGLContext*     fGLContext;
+    NSOpenGLContext* fGLContext;
     NSOpenGLPixelFormat* fPixelFormat;
 };
 
 void ContextGL::attach(Window* window) {
-    ContextMac::attach(window);
+    WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
+    fMainView = [windowMac->fNSWindow contentView];
 
     // set up pixel format
     constexpr int kMaxAttributes = 19;
@@ -78,27 +79,9 @@ void ContextGL::attach(Window* window) {
 
     [fMainView setWantsBestResolutionOpenGLSurface:YES];
     [fGLContext setView:fMainView];
-
-    reinit();
 }
 
-void ContextGL::detach() {
-    CVDisplayLinkStop(fDisplayLink);
-    CVDisplayLinkRelease(fDisplayLink);
-
-    [NSOpenGLContext clearCurrentContext];
-    [fPixelFormat release];
-    fPixelFormat = nil;
-    [fGLContext release];
-    fGLContext = nil;
-
-    fWindow = nullptr;
-    fMainView = nullptr;
-}
-
-void ContextGL::reinit() {
-    ContextMac::reinit();
-    resize();
+void ContextGL::invalidate() {
 }
 
 void ContextGL::resize() {
@@ -131,6 +114,16 @@ void ContextGL::resize() {
 
 void ContextGL::swapBuffers() {
     [fGLContext flushBuffer];
+}
+
+void ContextGL::detach() {
+    [NSOpenGLContext clearCurrentContext];
+    [fPixelFormat release];
+    fPixelFormat = nil;
+    [fGLContext release];
+    fGLContext = nil;
+
+    fMainView = nullptr;
 }
 
 }

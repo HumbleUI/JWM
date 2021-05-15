@@ -8,10 +8,6 @@ import org.jetbrains.jwm.impl.*;
 
 public class ContextMetal extends Context {
     public ContextMetal() {
-        this(ContextMetalOpts.DEFAULT);
-    }
-
-    public ContextMetal(ContextMetalOpts opts) {
         super(_nMake());
     }
 

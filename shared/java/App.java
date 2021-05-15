@@ -21,14 +21,14 @@ public class App {
     }
 
     @NotNull @SneakyThrows
-    public static Window makeWindow(@Nullable WindowOpts opts) {
+    public static Window makeWindow() {
         Class cls;
         if (Platform.CURRENT == Platform.MACOS)
             cls = App.class.forName("org.jetbrains.jwm.WindowMac");
         else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
-        Constructor<Window> ctor = cls.getDeclaredConstructor(WindowOpts.class);
-        Window window = ctor.newInstance(opts);
+        Constructor<Window> ctor = cls.getDeclaredConstructor();
+        Window window = ctor.newInstance();
         _windows.add(window);
         return window;
     }

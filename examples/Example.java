@@ -27,7 +27,7 @@ public class Example implements Consumer<Event> {
     public int timesIdx = 0;
 
     public Example() {
-        window = App.makeWindow(null);
+        window = App.makeWindow();
         window.setEventListener(this);
         changeContext();
         window.show();

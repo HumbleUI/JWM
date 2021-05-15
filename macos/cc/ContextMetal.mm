@@ -1,8 +1,7 @@
 #import  <QuartzCore/CAMetalLayer.h>
 #import  <QuartzCore/CAConstraintLayoutManager.h>
 #import  <Cocoa/Cocoa.h>
-#include "ContextMac.hh"
-#import  <CoreVideo/CoreVideo.h>
+#include "Context.hh"
 #include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
@@ -12,17 +11,18 @@
 
 namespace jwm {
 
-class ContextMetal: public ContextMac {
+class ContextMetal: public Context {
 public:
     ContextMetal() = default;
     ~ContextMetal() = default;
 
     void attach(Window* window) override;
-    void detach() override;
-    void reinit() override;
+    void invalidate() override;
     void resize() override;
     void swapBuffers() override;
+    void detach() override;
 
+    NSView* fMainView;
     id<MTLDevice>       fDevice;
     id<MTLCommandQueue> fQueue;
     CAMetalLayer*       fMetalLayer;
@@ -31,7 +31,8 @@ public:
 };
 
 void ContextMetal::attach(Window* window) {
-    ContextMac::attach(window);
+    WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
+    fMainView = [windowMac->fNSWindow contentView];
 
     // MetalWindowContext
     fDevice = MTLCreateSystemDefaultDevice();
@@ -55,35 +56,11 @@ void ContextMetal::attach(Window* window) {
     fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     fMainView.layer = fMetalLayer;
     fMainView.wantsLayer = YES;
-
-    reinit();
 }
 
-void ContextMetal::detach() {
-    CVDisplayLinkStop(fDisplayLink);
-    CVDisplayLinkRelease(fDisplayLink);
-
-    // MetalWindowContext_mac
-    fMainView.layer = nil;
-    fMainView.wantsLayer = NO;
-    
-    // MetalWindowContext   
-    fMetalLayer = nil;
-
-    CFRelease(fQueue);
-    CFRelease(fDevice);
-
-    fWindow = nullptr;
-    fMainView = nullptr;
-}
-
-void ContextMetal::reinit() {
-    ContextMac::reinit();
-
+void ContextMetal::invalidate() {
     NSColorSpace* cs = fMainView.window.colorSpace;
     fMetalLayer.colorspace = cs.CGColorSpace;
-
-    resize();
 }
 
 void ContextMetal::resize() {
@@ -112,6 +89,20 @@ void ContextMetal::swapBuffers() {
     // ARC is off in sk_app, so we need to release the CF ref manually
     CFRelease(fDrawableHandle);
     fDrawableHandle = nil;
+}
+
+void ContextMetal::detach() {
+    // MetalWindowContext_mac
+    fMainView.layer = nil;
+    fMainView.wantsLayer = NO;
+    
+    // MetalWindowContext   
+    fMetalLayer = nil;
+
+    CFRelease(fQueue);
+    CFRelease(fDevice);
+
+    fMainView = nullptr;
 }
 
 }

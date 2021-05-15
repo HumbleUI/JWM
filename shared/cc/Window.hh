@@ -1,17 +1,20 @@
 #pragma once
 #include <jni.h>
-
+#include "impl/RefCounted.hh"
 
 namespace jwm {
     class Context;
     
-    class Window {
+    class Window: public RefCounted {
     public:
-        Window(JNIEnv* env): fEnv(env) {}
+        Window(JNIEnv* env): fEnv(env) {
+        }
 
-        virtual ~Window() = default;
+        virtual ~Window();
 
         virtual bool init() = 0;
+
+        virtual void invalidate() = 0;
 
         virtual float scaleFactor() const = 0;
 
@@ -21,6 +24,4 @@ namespace jwm {
         jobject fEventListener = nullptr;
         Context* fContext = nullptr;
     };
-
-    void deleteWindow(jwm::Window* instance);
 }

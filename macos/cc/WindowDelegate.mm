@@ -29,7 +29,9 @@
 - (void)windowDidChangeScreen:(NSNotification*)notification {
     NSWindow* window = fWindow->fNSWindow;
     CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-    fWindow->fContext->reinit();
+    fWindow->invalidate();
+    fWindow->fContext->invalidate();
+    fWindow->fContext->resize();
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {
