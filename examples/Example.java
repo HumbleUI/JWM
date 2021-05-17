@@ -202,6 +202,6 @@ public class Example implements Consumer<Event> {
     public static void main(String[] args) {
         App.init();
         new Example();
-        App.run();
+        App.start();
     }
 }

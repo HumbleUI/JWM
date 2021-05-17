@@ -34,7 +34,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     [pool release];
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_run
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_start
   (JNIEnv* env, jclass jclass) {
     [NSApp run];
     return EXIT_SUCCESS;
@@ -44,4 +44,18 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
   (JNIEnv* env, jclass jclass) {
     [NSApp stop:nil];
     [NSApp terminate:nil];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_runOnUIThread
+  (JNIEnv* env, jclass jclass, jobject callback) {
+    JavaVM* javaVM;
+    env->GetJavaVM(&javaVM);
+    auto callbackRef = env->NewGlobalRef(callback);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        JNIEnv* env2;
+        if (javaVM->GetEnv(reinterpret_cast<void**>(&env2), JNI_VERSION_1_8) == JNI_OK) {
+          jwm::classes::Runnable::run(env2, callbackRef);
+          env2->DeleteGlobalRef(callbackRef);
+        }
+    });
 }

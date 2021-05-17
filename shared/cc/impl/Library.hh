@@ -19,7 +19,12 @@ namespace jwm {
 
         namespace Consumer {
             extern jmethodID kAccept;
-            void accept(JNIEnv* env, jobject consumer, jobject event);
+            bool accept(JNIEnv* env, jobject consumer, jobject event);
+        }
+
+        namespace Runnable {
+            extern jmethodID kRun;
+            bool run(JNIEnv* env, jobject runnable);
         }
 
         namespace Native {

@@ -35,9 +35,25 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
             }
 
-            void accept(JNIEnv* env, jobject consumer, jobject event) {
+            bool accept(JNIEnv* env, jobject consumer, jobject event) {
                 env->CallVoidMethod(consumer, kAccept, event);
+                return Throwable::exceptionThrown(env);
+            }
+        }
+
+        namespace Runnable {
+            jmethodID kRun;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("java/lang/Runnable");
                 Throwable::exceptionThrown(env);
+                kRun = env->GetMethodID(cls, "run", "()V");
+                Throwable::exceptionThrown(env);
+            }
+
+            bool run(JNIEnv* env, jobject runnable) {
+                env->CallVoidMethod(runnable, kRun);
+                return Throwable::exceptionThrown(env);
             }
         }
 
@@ -147,6 +163,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
   (JNIEnv* env, jclass jclass) {
     jwm::classes::Throwable::onLoad(env);
     jwm::classes::Consumer::onLoad(env);
+    jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);

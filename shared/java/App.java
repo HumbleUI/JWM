@@ -36,7 +36,9 @@ public class App {
     /**
      * Will block until you call {@link #terminate()}
      */
-    public static native int run();
+    public static native int start();
+
+    public static native void runOnUIThread(Runnable callback);
 
     public static native void terminate();
 
