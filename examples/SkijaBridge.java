@@ -5,7 +5,7 @@ import org.jetbrains.skija.*;
 
 public interface SkijaBridge extends AutoCloseable {
     void close();
-    Context getContext();
+    Layer getLayer();
     Canvas beforePaint();
     void afterPaint();
     void resize();

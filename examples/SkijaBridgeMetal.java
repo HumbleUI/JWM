@@ -4,20 +4,20 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class SkijaBridgeMetal implements SkijaBridge {
-    public ContextMetal _context;
+    public LayerMetal _layer;
     public DirectContext _directContext;
     public BackendRenderTarget _renderTarget;
     public Surface _surface;
 
-    public SkijaBridgeMetal(Window window, ContextMetal context) {
-        _context = context;
-        window.attach(_context);
-        _directContext = DirectContext.makeMetal(_context.getDevicePtr(), _context.getQueuePtr());
+    public SkijaBridgeMetal(Window window, LayerMetal layer) {
+        _layer = layer;
+        window.attach(_layer);
+        _directContext = DirectContext.makeMetal(_layer.getDevicePtr(), _layer.getQueuePtr());
     }
 
     @Override
-    public Context getContext() {
-        return _context;
+    public Layer getLayer() {
+        return _layer;
     }
 
     @Override
@@ -30,10 +30,10 @@ public class SkijaBridgeMetal implements SkijaBridge {
 
     @Override
     public Canvas beforePaint() {
-        long texturePtr = _context.nextDrawableTexturePtr();
-        float scale = _context.getScale();
-        int width = _context.getWidth();
-        int height = _context.getHeight();
+        long texturePtr = _layer.nextDrawableTexturePtr();
+        float scale = _layer.getScale();
+        int width = _layer.getWidth();
+        int height = _layer.getHeight();
 
         _renderTarget = BackendRenderTarget.makeMetal(width, height, texturePtr);
         _surface = Surface.makeFromBackendRenderTarget(
@@ -49,7 +49,7 @@ public class SkijaBridgeMetal implements SkijaBridge {
     @Override
     public void afterPaint() {
         _surface.flushAndSubmit();
-        _context.swapBuffers();
+        _layer.swapBuffers();
 
         _surface.close();
         _renderTarget.close();

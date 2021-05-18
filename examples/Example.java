@@ -10,6 +10,7 @@ import org.jetbrains.skija.*;
 public class Example implements Consumer<Event> {
     public Window window;
     public SkijaBridge bridge;
+    public Timer timer = new Timer(true);
 
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
@@ -29,7 +30,7 @@ public class Example implements Consumer<Event> {
     public Example() {
         window = App.makeWindow();
         window.setEventListener(this);
-        changeContext();
+        changeLayer();
         window.show();
     }
 
@@ -41,9 +42,9 @@ public class Example implements Consumer<Event> {
 
         canvas.clear(0xFF264653);
         int layer = canvas.save();
-        float scale = bridge.getContext().getScale();
-        int width = (int) (bridge.getContext().getWidth() / scale);
-        int height = (int) (bridge.getContext().getHeight() / scale);
+        float scale = bridge.getLayer().getScale();
+        int width = (int) (bridge.getLayer().getWidth() / scale);
+        int height = (int) (bridge.getLayer().getHeight() / scale);
         canvas.scale(scale, scale);
 
         try (var paint = new Paint()) {
@@ -69,6 +70,11 @@ public class Example implements Consumer<Event> {
             paint.setColor(0x20FFFFFF);
             canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
             canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
+
+            // paint.setColor(0x80FFFFFF).setMode(PaintMode.STROKE).setStrokeWidth(1);
+            // var radius = (float) Math.hypot(x - lastX, y - lastY);
+            // canvas.drawCircle(x, y, radius, paint);
+            // canvas.drawCircle(x, y, radius * 2, paint);
         }
 
         // VSync
@@ -115,27 +121,29 @@ public class Example implements Consumer<Event> {
             canvas.drawString("Close window", 24, 12, font, paint);
             canvas.translate(0, 24);
 
-            int frames = 0;
-            double time = 0;
-            for (int i = 0; i < times.length; ++i) {
-                var idx = (timesIdx - i + times.length) % times.length;
-                time += times[idx];
-                frames++;
-                if (time > 1000)
-                    break;
-            }
-            canvas.drawString("FPS: " + String.format("%.01f", (frames / time * 1000)), 0, 12, font, paint);
-            canvas.translate(0, 24);
-
             // FPS
             long t1 = System.nanoTime();
             times[timesIdx] = (t1 - t0) / 1000000.0;
             t0 = t1;
             timesIdx = (timesIdx + 1) % times.length;
-            
+            int frames = 0;
+            double time = 0;
+            for (int i = 0; i < times.length; ++i) {
+                var idx = (timesIdx - i + times.length) % times.length;
+                if (times[idx] > 0) {
+                    time += times[idx];
+                    frames++;
+                }
+                if (time > 1000)
+                    break;
+            }
+            String fps = String.format("%.01f", (frames / time * 1000));
+            canvas.drawString("FPS: " + fps, 0, 12, font, paint);
+            canvas.translate(0, 24);
+
+            // FPS graph
             paint.setColor(0x4033cc33);
             canvas.drawRRect(RRect.makeXYWH(-2, -2, 184, 36, 2), paint);
-
             paint.setColor(0xFF33CC33);
             for (int i = 0; i < times.length; ++i) {
                 var idx = (timesIdx + i) % times.length;
@@ -153,15 +161,17 @@ public class Example implements Consumer<Event> {
         bridge.afterPaint();
     }
 
-    public void changeContext() {
+    public void changeLayer() {
         if (bridge != null)
             bridge.close();
 
         if ("Metal".equals(variants[variantIdx]))
-            bridge = new SkijaBridgeMetal(window, new ContextMetal());
+            bridge = new SkijaBridgeMetal(window, new LayerMetal());
         else if ("OpenGL".equals(variants[variantIdx]))
-            bridge = new SkijaBridgeGL(window, new ContextGL());
+            bridge = new SkijaBridgeGL(window, new LayerGL());
     }
+
+    public static long tt = System.currentTimeMillis();
 
     @Override
     public void accept(Event e) {
@@ -174,8 +184,9 @@ public class Example implements Consumer<Event> {
         } else if (e instanceof EventMouseMove) {
             lastX = x;
             lastY = y;
-            x = (int) (((EventMouseMove) e).getX() / bridge.getContext().getScale());
-            y = (int) (((EventMouseMove) e).getY() / bridge.getContext().getScale());
+            x = (int) (((EventMouseMove) e).getX() / bridge.getLayer().getScale());
+            y = (int) (((EventMouseMove) e).getY() / bridge.getLayer().getScale());
+            // System.out.println((System.currentTimeMillis() - tt) + " MouseMove");
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {
@@ -187,15 +198,21 @@ public class Example implements Consumer<Event> {
                         App.terminate();
                 } else if (eventKeyboard.getKeyCode() == 125) { // ↓
                     variantIdx = (variantIdx + 1) % variants.length;
-                    changeContext();
+                    changeLayer();
                 } else if (eventKeyboard.getKeyCode() == 126) { // ↑
                     variantIdx = (variantIdx + variants.length - 1) % variants.length;
-                    changeContext();
+                    changeLayer();
                 } else 
                     System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
             }
         } else if (e instanceof EventPaint) {
             paint();
+            // System.out.println((System.currentTimeMillis() - tt) + " PaintEvent");
+            // timer.schedule(new TimerTask() {
+            //     public void run() {
+            //         App.runOnUIThread(() -> { System.out.println((System.currentTimeMillis() - tt) + " Paint"); paint(); });
+            //     }
+            // }, 10);
         }
     }
 

@@ -8,7 +8,7 @@ import org.jetbrains.jwm.impl.*;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal
-    public Context _context = null;
+    public Layer _layer = null;
 
     @ApiStatus.Internal
     public Consumer<Event> _eventListener = null;
@@ -22,16 +22,16 @@ public abstract class Window extends RefCounted {
     public native Window setEventListener(@Nullable Consumer<Event> eventListener);
 
     @NotNull @Contract("-> this")
-    public Window attach(@Nullable Context context) {
-        if (_context != null) {
-            _context._nDetach();
-            _context = null;
+    public Window attach(@Nullable Layer layer) {
+        if (_layer != null) {
+            _layer._nDetach();
+            _layer = null;
         }
         
-        if (context != null)
-            context._nAttach(this);
+        if (layer != null)
+            layer._nAttach(this);
 
-        _context = context;
+        _layer = layer;
         
         return this;
     }
@@ -41,9 +41,9 @@ public abstract class Window extends RefCounted {
 
     @Override
     public void close() {
-        if (_context != null) {
-            _context._nDetach();
-            _context = null;
+        if (_layer != null) {
+            _layer._nDetach();
+            _layer = null;
         }
         super.close();
         App._windows.remove(this);

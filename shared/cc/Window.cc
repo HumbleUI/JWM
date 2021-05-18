@@ -1,6 +1,5 @@
 #include <iostream>
 #include <jni.h>
-#include "Context.hh"
 #include "Window.hh"
 #include "impl/Library.hh"
 

@@ -12,7 +12,7 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         self->fNeedRedraw = false;
         self->ref();
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (self->fContext)
+            if (self->fLayer)
                 self->onEvent(jwm::classes::EventPaint::kInstance);
             self->unref();
             self->fNeedRedraw = true;

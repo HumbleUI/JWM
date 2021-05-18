@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #import  <Cocoa/Cocoa.h>
-#include "Context.hh"
+#include "Layer.hh"
 #include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
@@ -13,10 +13,10 @@
 
 namespace jwm {
 
-class ContextGL: public Context {
+class LayerGL: public Layer {
 public:
-    ContextGL() = default;
-    ~ContextGL() = default;
+    LayerGL() = default;
+    ~LayerGL() = default;
 
     void attach(Window* window) override;
     void invalidate() override;
@@ -31,7 +31,7 @@ public:
     NSOpenGLPixelFormat* fPixelFormat;
 };
 
-void ContextGL::attach(Window* window) {
+void LayerGL::attach(Window* window) {
     WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
     fMainView = [windowMac->fNSWindow contentView];
 
@@ -81,10 +81,10 @@ void ContextGL::attach(Window* window) {
     [fGLContext setView:fMainView];
 }
 
-void ContextGL::invalidate() {
+void LayerGL::invalidate() {
 }
 
-void ContextGL::resize() {
+void LayerGL::resize() {
     [fGLContext update];
 
     GLint swapInterval = 0;
@@ -112,11 +112,11 @@ void ContextGL::resize() {
     glViewport(0, 0, fWidth, fHeight);
 }
 
-void ContextGL::swapBuffers() {
+void LayerGL::swapBuffers() {
     [fGLContext flushBuffer];
 }
 
-void ContextGL::detach() {
+void LayerGL::detach() {
     [NSOpenGLContext clearCurrentContext];
     [fPixelFormat release];
     fPixelFormat = nil;
@@ -130,9 +130,9 @@ void ContextGL::detach() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextGL__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerGL__1nMake
   (JNIEnv* env, jclass jclass) {
-    jwm::ContextGL* instance = new jwm::ContextGL();
+    jwm::LayerGL* instance = new jwm::LayerGL();
     return reinterpret_cast<jlong>(instance);
 }
 

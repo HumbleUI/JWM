@@ -6,8 +6,8 @@ import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
-public class ContextGL extends Context {
-    public ContextGL() {
+public class LayerGL extends Layer {
+    public LayerGL() {
         super(_nMake());
     }
 

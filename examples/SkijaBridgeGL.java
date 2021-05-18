@@ -4,19 +4,19 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class SkijaBridgeGL implements SkijaBridge {
-    public ContextGL _context;
+    public LayerGL _layer;
     public DirectContext _directContext;
     public BackendRenderTarget _renderTarget;
     public Surface _surface;
 
-    public SkijaBridgeGL(Window window, ContextGL context) {
-        _context = context;
-        window.attach(_context);
+    public SkijaBridgeGL(Window window, LayerGL layer) {
+        _layer = layer;
+        window.attach(_layer);
     }
 
     @Override
-    public Context getContext() {
-        return _context;
+    public Layer getLayer() {
+        return _layer;
     }
 
     @Override
@@ -40,8 +40,8 @@ public class SkijaBridgeGL implements SkijaBridge {
 
     @Override
     public Canvas beforePaint() {
-        int width = _context.getWidth();
-        int height = _context.getHeight();
+        int width = _layer.getWidth();
+        int height = _layer.getHeight();
 
         if (_directContext == null)
             _directContext = DirectContext.makeGL();
@@ -70,7 +70,7 @@ public class SkijaBridgeGL implements SkijaBridge {
     @Override
     public void afterPaint() {
         _surface.flushAndSubmit();
-        _context.swapBuffers();
+        _layer.swapBuffers();
     }
 
     @Override

@@ -1,7 +1,7 @@
 #import  <QuartzCore/CAMetalLayer.h>
 #import  <QuartzCore/CAConstraintLayoutManager.h>
 #import  <Cocoa/Cocoa.h>
-#include "Context.hh"
+#include "Layer.hh"
 #include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
@@ -11,10 +11,10 @@
 
 namespace jwm {
 
-class ContextMetal: public Context {
+class LayerMetal: public Layer {
 public:
-    ContextMetal() = default;
-    ~ContextMetal() = default;
+    LayerMetal() = default;
+    ~LayerMetal() = default;
 
     void attach(Window* window) override;
     void invalidate() override;
@@ -30,7 +30,7 @@ public:
     // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
 };
 
-void ContextMetal::attach(Window* window) {
+void LayerMetal::attach(Window* window) {
     WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
     fMainView = [windowMac->fNSWindow contentView];
 
@@ -58,12 +58,12 @@ void ContextMetal::attach(Window* window) {
     fMainView.wantsLayer = YES;
 }
 
-void ContextMetal::invalidate() {
+void LayerMetal::invalidate() {
     NSColorSpace* cs = fMainView.window.colorSpace;
     fMetalLayer.colorspace = cs.CGColorSpace;
 }
 
-void ContextMetal::resize() {
+void LayerMetal::resize() {
     CGFloat backingScaleFactor = jwm::backingScaleFactor(fMainView);
 
     CGSize backingSize = fMainView.bounds.size;
@@ -78,7 +78,7 @@ void ContextMetal::resize() {
     fScale = jwm::backingScaleFactor(fMainView);
 }
 
-void ContextMetal::swapBuffers() {
+void LayerMetal::swapBuffers() {
     id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
     commandBuffer.label = @"Present";
 
@@ -91,7 +91,7 @@ void ContextMetal::swapBuffers() {
     fDrawableHandle = nil;
 }
 
-void ContextMetal::detach() {
+void LayerMetal::detach() {
     // MetalWindowContext_mac
     fMainView.layer = nil;
     fMainView.wantsLayer = NO;
@@ -110,27 +110,27 @@ void ContextMetal::detach() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nMake
   (JNIEnv* env, jclass jclass) {
-    jwm::ContextMetal* instance = new jwm::ContextMetal();
+    jwm::LayerMetal* instance = new jwm::LayerMetal();
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getDevicePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_getDevicePtr
   (JNIEnv* env, jobject obj) {
-    jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fDevice);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_getQueuePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_getQueuePtr
   (JNIEnv* env, jobject obj) {
-    jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fQueue);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_ContextMetal_nextDrawableTexturePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_nextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
-    jwm::ContextMetal* instance = reinterpret_cast<jwm::ContextMetal*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];
     instance->fDrawableHandle = (id<CAMetalDrawable>) CFRetain(currentDrawable);
     return reinterpret_cast<jlong>(currentDrawable.texture);

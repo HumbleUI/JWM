@@ -2,6 +2,7 @@
 #include <jni.h>
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
+#include "Layer.hh"
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
 
@@ -18,7 +19,7 @@
     NSView* view = fWindow->fNSWindow.contentView;
     CGFloat scale = fWindow->scaleFactor();
 
-    fWindow->fContext->resize();
+    fWindow->fLayer->resize();
 
     jwm::JNILocal<jobject> eventResize(fWindow->fEnv, jwm::classes::EventResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
     fWindow->onEvent(eventResize.get());
@@ -30,8 +31,8 @@
     NSWindow* window = fWindow->fNSWindow;
     CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
     fWindow->invalidate();
-    fWindow->fContext->invalidate();
-    fWindow->fContext->resize();
+    fWindow->fLayer->invalidate();
+    fWindow->fLayer->resize();
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {

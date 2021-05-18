@@ -6,8 +6,8 @@ import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
-public class ContextMetal extends Context {
-    public ContextMetal() {
+public class LayerMetal extends Layer {
+    public LayerMetal() {
         super(_nMake());
     }
 

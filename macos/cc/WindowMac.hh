@@ -1,6 +1,5 @@
 #pragma once
 #import <Cocoa/Cocoa.h>
-#include "Context.hh"
 #import  <CoreVideo/CoreVideo.h>
 #include "Window.hh"
 #include <jni.h>

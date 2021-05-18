@@ -3,7 +3,7 @@
 #include "impl/RefCounted.hh"
 
 namespace jwm {
-    class Context;
+    class Layer;
     
     class Window: public RefCounted {
     public:
@@ -22,6 +22,6 @@ namespace jwm {
 
         JNIEnv* fEnv = nullptr;
         jobject fEventListener = nullptr;
-        Context* fContext = nullptr;
+        Layer* fLayer = nullptr;
     };
 }

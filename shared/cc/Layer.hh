@@ -1,12 +1,13 @@
 #pragma once
 #include "impl/RefCounted.hh"
-#include "Window.hh"
 
 namespace jwm {
-    class Context: public RefCounted {
+    class Window;
+
+    class Layer: public RefCounted {
     public:
-        Context() = default;
-        virtual ~Context() = default;
+        Layer() = default;
+        virtual ~Layer() = default;
 
         virtual void attach(Window* window) = 0;
         virtual void detach() = 0;

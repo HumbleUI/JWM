@@ -4,9 +4,9 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
 
-public abstract class Context extends RefCounted {
+public abstract class Layer extends RefCounted {
     @ApiStatus.Internal
-    public Context(long ptr) {
+    public Layer(long ptr) {
         super(ptr);
     }
 
