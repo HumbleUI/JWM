@@ -38,7 +38,7 @@ JavaFX:
 - VSync is weird in multi-monitor case
 - No real extensibility
 
-[Winit](github.com/rust-windowing/winit):
+[Winit](https://github.com/rust-windowing/winit):
 
 - Tried at JetBrains
 - Complicated event loop model (tries to unify desktop + web + mobile)
