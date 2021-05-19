@@ -36,7 +36,6 @@ public class Library {
             File library = _extract("/", file, tempDir);
             System.load(library.getAbsolutePath());
         } else if (Platform.CURRENT == Platform.WINDOWS) {
-            _extract("/", "icudtl.dat", tempDir);
             File library = _extract("/", "jwm.dll", tempDir);
             System.load(library.getAbsolutePath());
         } else if (Platform.CURRENT == Platform.X11) {

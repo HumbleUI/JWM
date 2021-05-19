@@ -1,0 +1,30 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jetbrains.jwm</groupId>
+    <artifactId>jwm-macos-x64</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>20.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.jwm</groupId>
+            <artifactId>jwm-shared</artifactId>
+            <version>0.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>space-maven</id>
+            <url>https://packages.jetbrains.team/maven/p/jwm/maven</url>
+        </repository>
+    </distributionManagement>
+</project>

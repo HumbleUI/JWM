@@ -8,6 +8,8 @@ parser.add_argument('--arch', default=arch)
 arch = args.arch
 system = {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows'}[platform.system()]
 classpath_separator = ';' if system == 'windows' else ':'
+mvn = "mvn.cmd" if system == "windows" else "mvn"
+space = 'https://packages.jetbrains.team/maven/p/skija/maven'
 
 def fetch(url, file):
   if not os.path.exists(file):
@@ -23,12 +25,18 @@ def fetch_maven(group, name, version, classifier=None, repo='https://repo1.maven
   fetch(repo + '/' + path, file)
   return file
 
+def deps():
+  return [
+    fetch_maven('org.projectlombok', 'lombok', '1.18.20'),
+    fetch_maven('org.jetbrains', 'annotations', '20.1.0'),
+  ]
+
 def javac(classpath, sources, target):
   classes = {path.stem: path.stat().st_mtime for path in pathlib.Path(target).rglob('*.class') if '$' not in path.stem}
   newer = lambda path: path.stem not in classes or path.stat().st_mtime > classes.get(path.stem)
   new_sources = [path for path in sources if newer(pathlib.Path(path))]
   if new_sources:
-    print('Compiling', len(new_sources), 'java files to', target, ': ', new_sources)
+    print('Compiling', len(new_sources), 'java files to', target + ':', new_sources)
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',
