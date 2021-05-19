@@ -53,7 +53,7 @@ def main():
       "-Dfile=target/" + artifact + "-" + rev + ".jar",
       "-DpomFile=deploy/META-INF/maven/org.jetbrains.jwm/" + artifact + "/pom.xml",
       "-DrepositoryId=space-maven",
-      "-Durl=https://packages.jetbrains.team/maven/p/jwm/maven",
+      "-Durl=" + common.space_jwm,
     ])
 
   # -sources.jar
@@ -94,7 +94,7 @@ def main():
       "-Dfile=target/" + artifact + "-" + rev + "-sources.jar",
       "-DpomFile=deploy/META-INF/maven/org.jetbrains.jwm/" + artifact + "/pom.xml",
       "-DrepositoryId=space-maven",
-      "-Durl=https://packages.jetbrains.team/maven/p/jwm/maven",
+      "-Durl=" + common.space_jwm,
     ])
 
   # Restore poms

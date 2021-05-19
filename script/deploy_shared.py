@@ -46,7 +46,7 @@ def main():
       "-Dfile=target/jwm-shared-" + rev + ".jar",
       "-DpomFile=deploy/META-INF/maven/org.jetbrains.jwm/jwm-shared/pom.xml",
       "-DrepositoryId=space-maven",
-      "-Durl=https://packages.jetbrains.team/maven/p/jwm/maven",
+      "-Durl=" + common.space_jwm,
     ])
 
   # jwm-shared-*-sources.jar
@@ -84,7 +84,7 @@ def main():
       "-Dfile=target/jwm-shared-" + rev + "-sources.jar",
       "-DpomFile=deploy/META-INF/maven/org.jetbrains.jwm/jwm-shared/pom.xml",
       "-DrepositoryId=space-maven",
-      "-Durl=https://packages.jetbrains.team/maven/p/jwm/maven",
+      "-Durl=" + common.space_jwm,
     ])
 
   # Restore poms
