@@ -26,12 +26,14 @@ public class Example implements Consumer<Event> {
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
     public int timesIdx = 0;
+    public boolean _paused = false;
 
     public Example() {
         _window = App.makeWindow();
         _window.setEventListener(this);
         changeLayer();
         _window.show();
+        _window.requestFrame();
     }
 
     public void paint() {
@@ -92,11 +94,11 @@ public class Example implements Consumer<Event> {
         // HUD
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
+            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
 
             // bg
             paint.setColor(0x40000000);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
             canvas.translate(8, 8);
 
             // Dimensions
@@ -114,6 +116,13 @@ public class Example implements Consumer<Event> {
             paint.setColor(0xFFFFFFFF);
             canvas.drawString("↓↑", 0, 12, font, paint);
             canvas.drawString(variants[variantIdx], 24, 12, font, paint);
+            canvas.translate(0, 24);
+
+            paint.setColor(0x80000000);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawString("P", 3, 12, font, paint);
+            canvas.drawString(_paused ? "Paused" : "Not paused", 24, 12, font, paint);
             canvas.translate(0, 24);
 
             paint.setColor(0x80000000);
@@ -201,7 +210,11 @@ public class Example implements Consumer<Event> {
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {
-                if (eventKeyboard.getKeyCode() == 45) { // n
+                if (eventKeyboard.getKeyCode() == 35) { // p
+                    _paused = !_paused;
+                    if (!_paused)
+                        _window.requestFrame();
+                } else if (eventKeyboard.getKeyCode() == 45) { // n
                     new Example();
                 } else if (eventKeyboard.getKeyCode() == 13 || eventKeyboard.getKeyCode() == 53) { // w || Esc
                     accept(EventClose.INSTANCE);
@@ -216,6 +229,8 @@ public class Example implements Consumer<Event> {
             }
         } else if (e instanceof EventFrame) {
             paint();
+            if (!_paused)
+                _window.requestFrame();
             // System.out.println((System.currentTimeMillis() - tt) + " PaintEvent");
             // timer.schedule(new TimerTask() {
             //     public void run() {

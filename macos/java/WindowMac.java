@@ -12,8 +12,8 @@ public class WindowMac extends Window {
         super(_nMake());
     }
 
-    @Override @NotNull @Contract("-> this")
-    public native Window show();
+    @Override
+    public native void show();
 
     @Override 
     public native int getLeft();
@@ -30,11 +30,18 @@ public class WindowMac extends Window {
     @Override 
     public native float getScale();
 
-    @Override @NotNull @Contract("-> this")
-    public native Window move(int left, int top);
+    @Override
+    public void move(int left, int top) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-    @Override @NotNull @Contract("-> this")
-    public native Window resize(int width, int height);
+    @Override
+    public void resize(int width, int height)  {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public native void requestFrame();
 
     @Override
     public void close() {

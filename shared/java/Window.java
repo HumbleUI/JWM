@@ -18,8 +18,7 @@ public abstract class Window extends RefCounted {
     @NotNull @Contract("-> this")
     public native Window setEventListener(@Nullable Consumer<Event> eventListener);
 
-    @NotNull @Contract("-> this")
-    public abstract Window show();
+    public abstract void show();
 
     public abstract int getLeft();
 
@@ -31,11 +30,11 @@ public abstract class Window extends RefCounted {
 
     public abstract float getScale(); // TODO Screen API
 
-    @NotNull @Contract("-> this")
-    public abstract Window move(int left, int top);
+    public abstract void move(int left, int top);
 
-    @NotNull @Contract("-> this")
-    public abstract Window resize(int width, int height);
+    public abstract void resize(int width, int height);
+
+    public abstract void requestFrame();
 
     @Override
     public void close() {

@@ -10,12 +10,15 @@ namespace jwm {
         WindowMac(JNIEnv* env): Window(env) {}
         ~WindowMac() override;
         bool init();
+        void show();
         void reconfigure();
         float getScale() const;
+        void requestFrame();
         void close();
 
         NSWindow* fNSWindow = nullptr;
         CVDisplayLinkRef fDisplayLink = 0;
-        volatile bool fNeedsRedraw = true;
+        volatile bool fFrameRequested = false;
+        volatile bool fFrameScheduled = false;
     };
 }
