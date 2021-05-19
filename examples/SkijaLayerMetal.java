@@ -3,39 +3,20 @@ package org.jetbrains.jwm.examples;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
-public class SkijaBridgeMetal implements SkijaBridge {
-    public LayerMetal _layer;
+public class SkijaLayerMetal extends LayerMetal implements SkijaLayer {
     public DirectContext _directContext;
     public BackendRenderTarget _renderTarget;
     public Surface _surface;
 
-    public SkijaBridgeMetal(Window window, LayerMetal layer) {
-        _layer = layer;
-        window.attach(_layer);
-        _directContext = DirectContext.makeMetal(_layer.getDevicePtr(), _layer.getQueuePtr());
-    }
-
     @Override
-    public Layer getLayer() {
-        return _layer;
-    }
-
-    @Override
-    public void close() {
-        if (_directContext != null) {
-            _directContext.abandon();
-            _directContext.close();
-        }
+    public void attach(Window window) {
+        super.attach(window);
+        _directContext = DirectContext.makeMetal(getDevicePtr(), getQueuePtr());
     }
 
     @Override
     public Canvas beforePaint() {
-        long texturePtr = _layer.nextDrawableTexturePtr();
-        float scale = _layer.getScale();
-        int width = _layer.getWidth();
-        int height = _layer.getHeight();
-
-        _renderTarget = BackendRenderTarget.makeMetal(width, height, texturePtr);
+        _renderTarget = BackendRenderTarget.makeMetal(getWidth(), getHeight(), nextDrawableTexturePtr());
         _surface = Surface.makeFromBackendRenderTarget(
                      _directContext,
                      _renderTarget,
@@ -49,13 +30,18 @@ public class SkijaBridgeMetal implements SkijaBridge {
     @Override
     public void afterPaint() {
         _surface.flushAndSubmit();
-        _layer.swapBuffers();
+        swapBuffers();
 
         _surface.close();
         _renderTarget.close();
     }
 
     @Override
-    public void resize() {
+    public void close() {
+        if (_directContext != null) {
+            _directContext.abandon();
+            _directContext.close();
+        }
+        super.close();
     }
 }

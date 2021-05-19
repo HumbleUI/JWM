@@ -7,7 +7,3 @@
 - (MainView*)initWithWindow:(jwm::WindowMac*)initWindow;
 
 @end
-
-namespace jwm {
-    CGFloat backingScaleFactor(NSView* mainView);
-}

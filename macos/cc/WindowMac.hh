@@ -9,12 +9,13 @@ namespace jwm {
     public:
         WindowMac(JNIEnv* env): Window(env) {}
         ~WindowMac() override;
-        bool init() override;
-        void invalidate() override;
-        float scaleFactor() const override;
+        bool init();
+        void reconfigure();
+        float getScale() const;
+        void close();
 
         NSWindow* fNSWindow = nullptr;
         CVDisplayLinkRef fDisplayLink = 0;
-        volatile bool fNeedRedraw = true;
+        volatile bool fNeedsRedraw = true;
     };
 }

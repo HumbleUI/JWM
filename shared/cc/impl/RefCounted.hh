@@ -23,6 +23,7 @@ public:
     void ref() const {
         assert(getRefCount() > 0);
         (void) fRefCount.fetch_add(+1, std::memory_order_relaxed);
+        // std::cout << "ref() " << this << " to " << fRefCount.load() << std::endl;
     }
 
     /** 
@@ -32,8 +33,10 @@ public:
      */
     void unref() const {
         assert(getRefCount() > 0);
+        // std::cout << "unref() " << this << " from " << fRefCount.load() << std::endl;
         // A release here acts in place of all releases we "should" have been doing in ref().
         if (1 == fRefCount.fetch_add(-1, std::memory_order_acq_rel)) {
+            // std::cout << "delete() " << this << std::endl;
             // Like unique(), the acquire is only needed on success, to make sure
             // code in internal_dispose() doesn't happen before the decrement.
             // std::cout << "unref " << getRefCount() << std::endl;

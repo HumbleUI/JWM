@@ -8,8 +8,8 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class Example implements Consumer<Event> {
-    public Window window;
-    public SkijaBridge bridge;
+    public Window _window;
+    public SkijaLayer _layer;
     public Timer timer = new Timer(true);
 
     public int angle = 0;
@@ -28,23 +28,23 @@ public class Example implements Consumer<Event> {
     public int timesIdx = 0;
 
     public Example() {
-        window = App.makeWindow();
-        window.setEventListener(this);
+        _window = App.makeWindow();
+        _window.setEventListener(this);
         changeLayer();
-        window.show();
+        _window.show();
     }
 
     public void paint() {
-        if (bridge == null)
+        if (_layer == null)
             return;
 
-        var canvas = bridge.beforePaint();
+        var canvas = _layer.beforePaint();
 
         canvas.clear(0xFF264653);
         int layer = canvas.save();
-        float scale = bridge.getLayer().getScale();
-        int width = (int) (bridge.getLayer().getWidth() / scale);
-        int height = (int) (bridge.getLayer().getHeight() / scale);
+        float scale = _window.getScale();
+        int width = (int) (_window.getWidth() / scale);
+        int height = (int) (_window.getHeight() / scale);
         canvas.scale(scale, scale);
 
         try (var paint = new Paint()) {
@@ -92,12 +92,21 @@ public class Example implements Consumer<Event> {
         // HUD
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
+            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
 
             // bg
             paint.setColor(0x40000000);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
             canvas.translate(8, 8);
+
+            // Dimensions
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawString("Position: " + _window.getLeft() + "×" + _window.getTop(), 0, 12, font, paint);
+            canvas.translate(0, 24);
+            canvas.drawString("Size: " + _window.getWidth() + "×" + _window.getHeight(), 0, 12, font, paint);
+            canvas.translate(0, 24);
+            canvas.drawString("Scale: " + _window.getScale(), 0, 12, font, paint);
+            canvas.translate(0, 24);
 
             // Variant
             paint.setColor(0x80000000);
@@ -158,44 +167,44 @@ public class Example implements Consumer<Event> {
 
         canvas.restoreToCount(layer);
 
-        bridge.afterPaint();
+        _layer.afterPaint();
     }
 
     public void changeLayer() {
-        if (bridge != null)
-            bridge.close();
+        if (_layer != null)
+            _layer.close();
 
         if ("Metal".equals(variants[variantIdx]))
-            bridge = new SkijaBridgeMetal(window, new LayerMetal());
+            _layer = new SkijaLayerMetal();
         else if ("OpenGL".equals(variants[variantIdx]))
-            bridge = new SkijaBridgeGL(window, new LayerGL());
-    }
+            _layer = new SkijaLayerGL();
 
-    public static long tt = System.currentTimeMillis();
+        _layer.attach(_window);
+        _layer.reconfigure();
+        _layer.resize(_window.getWidth(), _window.getHeight());
+    }
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventClose) {
-            window.close();
-            if (App._windows.size() == 0)
-                App.terminate();
-        } else if (e instanceof EventResize && bridge != null) {
-            bridge.resize();
+        if (e instanceof EventReconfigure) {
+            _layer.reconfigure();
+            accept(new EventResize(_window.getWidth(), _window.getHeight()));
+        } else if (e instanceof EventResize) {
+            EventResize er = (EventResize) e;
+            _layer.resize(er.getWidth(), er.getHeight());
+            paint();
         } else if (e instanceof EventMouseMove) {
             lastX = x;
             lastY = y;
-            x = (int) (((EventMouseMove) e).getX() / bridge.getLayer().getScale());
-            y = (int) (((EventMouseMove) e).getY() / bridge.getLayer().getScale());
-            // System.out.println((System.currentTimeMillis() - tt) + " MouseMove");
+            x = (int) (((EventMouseMove) e).getX() / _window.getScale());
+            y = (int) (((EventMouseMove) e).getY() / _window.getScale());
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {
                 if (eventKeyboard.getKeyCode() == 45) { // n
                     new Example();
                 } else if (eventKeyboard.getKeyCode() == 13 || eventKeyboard.getKeyCode() == 53) { // w || Esc
-                    window.close();
-                    if (App._windows.size() == 0)
-                        App.terminate();
+                    accept(EventClose.INSTANCE);
                 } else if (eventKeyboard.getKeyCode() == 125) { // ↓
                     variantIdx = (variantIdx + 1) % variants.length;
                     changeLayer();
@@ -205,7 +214,7 @@ public class Example implements Consumer<Event> {
                 } else 
                     System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
             }
-        } else if (e instanceof EventPaint) {
+        } else if (e instanceof EventFrame) {
             paint();
             // System.out.println((System.currentTimeMillis() - tt) + " PaintEvent");
             // timer.schedule(new TimerTask() {
@@ -213,6 +222,11 @@ public class Example implements Consumer<Event> {
             //         App.runOnUIThread(() -> { System.out.println((System.currentTimeMillis() - tt) + " Paint"); paint(); });
             //     }
             // }, 10);
+        } else if (e instanceof EventClose) {
+            _layer.close();
+            _window.close();
+            if (App._windows.size() == 0)
+                App.terminate();
         }
     }
 

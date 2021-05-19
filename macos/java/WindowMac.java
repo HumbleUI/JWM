@@ -13,11 +13,35 @@ public class WindowMac extends Window {
     }
 
     @Override @NotNull @Contract("-> this")
-    public Window show() {
-        _nShow(_ptr);
-        return this;
+    public native Window show();
+
+    @Override 
+    public native int getLeft();
+
+    @Override 
+    public native int getTop();
+
+    @Override 
+    public native int getWidth();
+
+    @Override 
+    public native int getHeight();
+
+    @Override 
+    public native float getScale();
+
+    @Override @NotNull @Contract("-> this")
+    public native Window move(int left, int top);
+
+    @Override @NotNull @Contract("-> this")
+    public native Window resize(int width, int height);
+
+    @Override
+    public void close() {
+        _nClose();
+        super.close();
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nShow(long ptr);
+    @ApiStatus.Internal public native void _nClose();
 }

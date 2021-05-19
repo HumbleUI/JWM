@@ -1,7 +1,6 @@
 #import  <QuartzCore/CAMetalLayer.h>
 #import  <QuartzCore/CAConstraintLayoutManager.h>
 #import  <Cocoa/Cocoa.h>
-#include "Layer.hh"
 #include <iostream>
 #include <jni.h>
 #include "impl/Library.hh"
@@ -11,101 +10,87 @@
 
 namespace jwm {
 
-class LayerMetal: public Layer {
+class LayerMetal: public RefCounted {
 public:
     LayerMetal() = default;
     ~LayerMetal() = default;
 
-    void attach(Window* window) override;
-    void invalidate() override;
-    void resize() override;
-    void swapBuffers() override;
-    void detach() override;
-
+    WindowMac* fWindow;
     NSView* fMainView;
     id<MTLDevice>       fDevice;
     id<MTLCommandQueue> fQueue;
     CAMetalLayer*       fMetalLayer;
     id<CAMetalDrawable> fDrawableHandle;
     // id<MTLBinaryArchive> fPipelineArchive API_AVAILABLE(macos(11.0), ios(14.0));
+
+    void attach(WindowMac* window) {
+        fWindow = jwm::ref(window);
+        fMainView = [fWindow->fNSWindow contentView];
+
+        // MetalWindowContext
+        fDevice = MTLCreateSystemDefaultDevice();
+        fQueue = [fDevice newCommandQueue];
+
+        // MetalWindowContext_mac
+        fMetalLayer = [CAMetalLayer layer];
+        fMetalLayer.device = fDevice;
+        fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+
+        fMetalLayer.allowsNextDrawableTimeout = NO;
+        fMetalLayer.displaySyncEnabled = NO;
+        fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
+        fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
+        fMetalLayer.contentsGravity = kCAGravityTopLeft;
+        fMetalLayer.needsDisplayOnBoundsChange = YES;
+        fMetalLayer.presentsWithTransaction = YES;
+        fMetalLayer.magnificationFilter = kCAFilterNearest;
+
+        fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+        fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+        fMainView.layer = fMetalLayer;
+        fMainView.wantsLayer = YES;
+    }
+
+    void reconfigure() {
+        NSColorSpace* cs = fMainView.window.colorSpace;
+        fMetalLayer.colorspace = cs.CGColorSpace;
+    }
+
+    void resize(int width, int height) {
+        fMetalLayer.contentsScale = fWindow->getScale();
+        fMetalLayer.drawableSize = {(CGFloat) width, (CGFloat) height};
+    }
+
+    void swapBuffers() {
+        id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
+        commandBuffer.label = @"Present";
+
+        [commandBuffer commit];
+        [commandBuffer waitUntilScheduled];
+        [fDrawableHandle present];
+
+        // ARC is off in sk_app, so we need to release the CF ref manually
+        CFRelease(fDrawableHandle);
+        fDrawableHandle = nil;
+    }
+
+    void close() {
+        // MetalWindowContext_mac
+        fMainView.layer = nil;
+        fMainView.wantsLayer = NO;
+        
+        // MetalWindowContext   
+        fMetalLayer = nil;
+
+        CFRelease(fQueue);
+        CFRelease(fDevice);
+
+        fMainView = nullptr;
+        jwm::unref(&fWindow);
+    }
 };
 
-void LayerMetal::attach(Window* window) {
-    WindowMac* windowMac = reinterpret_cast<WindowMac*>(window);
-    fMainView = [windowMac->fNSWindow contentView];
-
-    // MetalWindowContext
-    fDevice = MTLCreateSystemDefaultDevice();
-    fQueue = [fDevice newCommandQueue];
-
-    // MetalWindowContext_mac
-    fMetalLayer = [CAMetalLayer layer];
-    fMetalLayer.device = fDevice;
-    fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
-
-    fMetalLayer.allowsNextDrawableTimeout = NO;
-    fMetalLayer.displaySyncEnabled = NO;
-    fMetalLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
-    fMetalLayer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
-    fMetalLayer.contentsGravity = kCAGravityTopLeft;
-    fMetalLayer.needsDisplayOnBoundsChange = YES;
-    fMetalLayer.presentsWithTransaction = YES;
-    fMetalLayer.magnificationFilter = kCAFilterNearest;
-
-    fMainView.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
-    fMainView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
-    fMainView.layer = fMetalLayer;
-    fMainView.wantsLayer = YES;
-}
-
-void LayerMetal::invalidate() {
-    NSColorSpace* cs = fMainView.window.colorSpace;
-    fMetalLayer.colorspace = cs.CGColorSpace;
-}
-
-void LayerMetal::resize() {
-    CGFloat backingScaleFactor = jwm::backingScaleFactor(fMainView);
-
-    CGSize backingSize = fMainView.bounds.size;
-    backingSize.width *= backingScaleFactor;
-    backingSize.height *= backingScaleFactor;
-
-    fMetalLayer.drawableSize = backingSize;
-    fMetalLayer.contentsScale = backingScaleFactor;
-
-    fWidth = backingSize.width;
-    fHeight = backingSize.height;
-    fScale = jwm::backingScaleFactor(fMainView);
-}
-
-void LayerMetal::swapBuffers() {
-    id<MTLCommandBuffer> commandBuffer([fQueue commandBuffer]);
-    commandBuffer.label = @"Present";
-
-    [commandBuffer commit];
-    [commandBuffer waitUntilScheduled];
-    [fDrawableHandle present];
-
-    // ARC is off in sk_app, so we need to release the CF ref manually
-    CFRelease(fDrawableHandle);
-    fDrawableHandle = nil;
-}
-
-void LayerMetal::detach() {
-    // MetalWindowContext_mac
-    fMainView.layer = nil;
-    fMainView.wantsLayer = NO;
-    
-    // MetalWindowContext   
-    fMetalLayer = nil;
-
-    CFRelease(fQueue);
-    CFRelease(fDevice);
-
-    fMainView = nullptr;
-}
-
-}
+} // namespace jwm
 
 
 // JNI
@@ -114,6 +99,37 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nMake
   (JNIEnv* env, jclass jclass) {
     jwm::LayerMetal* instance = new jwm::LayerMetal();
     return reinterpret_cast<jlong>(instance);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nAttach
+  (JNIEnv* env, jobject obj, jobject windowObj) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::WindowMac* window = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, windowObj));
+    instance->attach(window);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nReconfigure
+  (JNIEnv* env, jobject obj) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    instance->reconfigure();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nResize
+  (JNIEnv* env, jobject obj, jint width, jint height) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    instance->resize(width, height);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nSwapBuffers
+  (JNIEnv* env, jobject obj) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    instance->swapBuffers();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nClose
+  (JNIEnv* env, jobject obj) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    instance->close();
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_getDevicePtr

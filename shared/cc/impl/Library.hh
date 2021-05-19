@@ -33,9 +33,11 @@ namespace jwm {
         }
 
         namespace EventClose {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env);
+            extern jobject kInstance;
+        }
+
+        namespace EventFrame {
+            extern jobject kInstance;
         }
 
         namespace EventMouseMove {
@@ -50,7 +52,7 @@ namespace jwm {
             jobject make(JNIEnv* env, jint keyCode, jboolean isPressed);
         }
 
-        namespace EventPaint {
+        namespace EventReconfigure {
             extern jobject kInstance;
         }
 

@@ -8,9 +8,6 @@ import org.jetbrains.jwm.impl.*;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal
-    public Layer _layer = null;
-
-    @ApiStatus.Internal
     public Consumer<Event> _eventListener = null;
 
     @ApiStatus.Internal
@@ -22,31 +19,28 @@ public abstract class Window extends RefCounted {
     public native Window setEventListener(@Nullable Consumer<Event> eventListener);
 
     @NotNull @Contract("-> this")
-    public Window attach(@Nullable Layer layer) {
-        if (_layer != null) {
-            _layer._nDetach();
-            _layer = null;
-        }
-        
-        if (layer != null)
-            layer._nAttach(this);
+    public abstract Window show();
 
-        _layer = layer;
-        
-        return this;
-    }
+    public abstract int getLeft();
+
+    public abstract int getTop();
+
+    public abstract int getWidth();
+
+    public abstract int getHeight();
+
+    public abstract float getScale(); // TODO Screen API
 
     @NotNull @Contract("-> this")
-    public abstract Window show();
+    public abstract Window move(int left, int top);
+
+    @NotNull @Contract("-> this")
+    public abstract Window resize(int width, int height);
 
     @Override
     public void close() {
-        if (_layer != null) {
-            _layer._nDetach();
-            _layer = null;
-        }
-        super.close();
+        setEventListener(null);
         App._windows.remove(this);
-        Reference.reachabilityFence(_eventListener);
+        super.close();
     }
 }

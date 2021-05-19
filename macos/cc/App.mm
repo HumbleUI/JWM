@@ -1,7 +1,6 @@
 #import <Cocoa/Cocoa.h>
 #include <jni.h>
 #include "impl/Library.hh"
-#include "WindowMac.hh"
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {

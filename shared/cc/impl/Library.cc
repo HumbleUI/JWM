@@ -74,20 +74,26 @@ namespace jwm {
         }
 
         namespace EventClose {
-            jclass kCls;
-            jmethodID kCtor;
+            jobject kInstance;
 
             void onLoad(JNIEnv* env) {
                 jclass cls = env->FindClass("org/jetbrains/jwm/EventClose");
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "()V");
-                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventClose;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
             }
+        }
 
-            jobject make(JNIEnv* env) {
-                jobject res = env->NewObject(kCls, kCtor);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
+        namespace EventFrame {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventFrame");
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventFrame;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
             }
         }
 
@@ -127,13 +133,13 @@ namespace jwm {
             }
         }
 
-        namespace EventPaint {
+        namespace EventReconfigure {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventPaint");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventReconfigure");
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventPaint;");
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventReconfigure;");
                 jobject instance = env->GetStaticObjectField(cls, field);
                 kInstance = env->NewGlobalRef(instance);
             }
@@ -166,8 +172,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
+    jwm::classes::EventFrame::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
-    jwm::classes::EventPaint::onLoad(env);
+    jwm::classes::EventReconfigure::onLoad(env);
     jwm::classes::EventResize::onLoad(env);
 }

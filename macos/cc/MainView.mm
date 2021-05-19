@@ -65,31 +65,26 @@
 
 - (void)mouseMoved:(NSEvent *)event {
     NSView* view = fWindow->fNSWindow.contentView;
-    CGFloat scale = fWindow->scaleFactor();
+    CGFloat scale = fWindow->getScale();
 
     // skui::ModifierKey modifiers = [self updateModifierKeys:event];
 
     const NSPoint pos = [event locationInWindow];
     const NSRect rect = [view frame];
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseMove::make(fWindow->fEnv, (jint) (pos.x * scale), (jint) ((rect.size.height - pos.y) * scale)));
-    fWindow->onEvent(eventObj.get());
+    fWindow->dispatch(eventObj.get());
 }
 
 - (void)keyDown:(NSEvent *)event {
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
                                                                                       (jboolean) true));
-    fWindow->onEvent(eventObj.get());
+    fWindow->dispatch(eventObj.get());
 }
 
 - (void)keyUp:(NSEvent *)event {
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, (jint) [event keyCode],
                                                                                       (jboolean) false));
-    fWindow->onEvent(eventObj.get());
+    fWindow->dispatch(eventObj.get());
 }
 
 @end
-
-CGFloat jwm::backingScaleFactor(NSView* mainView) {
-    NSScreen* screen = mainView.window.screen ?: [NSScreen mainScreen];
-    return screen.backingScaleFactor;
-}

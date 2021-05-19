@@ -8,7 +8,7 @@ jwm::Window::~Window() {
         fEnv->DeleteGlobalRef(fEventListener);
 }
 
-void jwm::Window::onEvent(jobject event) {
+void jwm::Window::dispatch(jobject event) {
   if (fEventListener)
       jwm::classes::Consumer::accept(fEnv, fEventListener, event);
 }

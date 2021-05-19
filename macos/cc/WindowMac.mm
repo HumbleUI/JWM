@@ -7,23 +7,20 @@
 #include "WindowDelegate.hh"
 
 static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
-    jwm::WindowMac* self = (jwm::WindowMac*) ctx;
-    if (self->fNeedRedraw) {
-        self->fNeedRedraw = false;
-        self->ref();
+    jwm::WindowMac* window = (jwm::WindowMac*) ctx;
+    if (window->fNeedsRedraw) {
+        window->fNeedsRedraw = false;
+        window->ref();
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (self->fLayer)
-                self->onEvent(jwm::classes::EventPaint::kInstance);
-            self->unref();
-            self->fNeedRedraw = true;
+            window->dispatch(jwm::classes::EventFrame::kInstance);
+            window->unref();
+            window->fNeedsRedraw = true;
         });
     }
     return kCVReturnSuccess;
 }
 
 jwm::WindowMac::~WindowMac() {
-    CVDisplayLinkStop(fDisplayLink);
-    CVDisplayLinkRelease(fDisplayLink);
     [fNSWindow close];
 }
 
@@ -67,11 +64,12 @@ bool jwm::WindowMac::init() {
     return true;
 }
 
-void jwm::WindowMac::invalidate() {
+void jwm::WindowMac::reconfigure() {
     if (!fDisplayLink) {
         CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
         CVDisplayLinkSetOutputCallback(fDisplayLink, &displayLinkCallback, this);
         CVDisplayLinkStart(fDisplayLink);
+        ref(); // keep this alive during CVDisplayLink callback
     }
 
     CGDirectDisplayID currentDisplay = (CGDirectDisplayID)[[[[fNSWindow screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
@@ -80,11 +78,15 @@ void jwm::WindowMac::invalidate() {
         CVDisplayLinkSetCurrentCGDisplay(fDisplayLink, currentDisplay);
 }
 
-float jwm::WindowMac::scaleFactor() const {
-    NSScreen* screen = fNSWindow.contentView.window.screen ?: [NSScreen mainScreen];
-    return screen.backingScaleFactor;
+float jwm::WindowMac::getScale() const {
+    return (fNSWindow.screen ?: [NSScreen mainScreen]).backingScaleFactor;
 }
 
+void jwm::WindowMac::close() {
+    CVDisplayLinkStop(fDisplayLink);
+    CVDisplayLinkRelease(fDisplayLink);
+    unref(); // for reconfigure
+}
 
 // JNI
 
@@ -97,11 +99,49 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nShow
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac_show
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     [instance->fNSWindow orderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [instance->fNSWindow makeKeyAndOrderFront:NSApp];
-    instance->invalidate();
+    instance->reconfigure();
+    return obj;
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowMac_getLeft
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fNSWindow.frame.origin.x * instance->getScale();
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowMac_getTop
+  (JNIEnv* env, jobject obj) {
+    // TODO calc from the top
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fNSWindow.frame.origin.y * instance->getScale();
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowMac_getWidth
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fNSWindow.contentView.bounds.size.width * instance->getScale();
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowMac_getHeight
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->fNSWindow.contentView.bounds.size.height * instance->getScale();
+}
+
+extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac_getScale
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getScale();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nClose
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    instance->close();
 }

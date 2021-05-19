@@ -1,21 +1,18 @@
 package org.jetbrains.jwm;
 
-import lombok.*;
-import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.impl.*;
+public interface Layer extends AutoCloseable {
+    void attach(Window window);
 
-public abstract class Layer extends RefCounted {
-    @ApiStatus.Internal
-    public Layer(long ptr) {
-        super(ptr);
-    }
+    void reconfigure();
 
-    public native long swapBuffers();
-    public native void resize();
-    public native int getWidth();
-    public native int getHeight();
-    public native float getScale();
+    void resize(int width, int height);
 
-    @ApiStatus.Internal public native void _nAttach(Window window);
-    @ApiStatus.Internal public native void _nDetach();
+    int getWidth();
+
+    int getHeight();
+
+    void swapBuffers();
+
+    @Override
+    void close();
 }
