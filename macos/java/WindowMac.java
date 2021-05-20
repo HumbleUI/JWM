@@ -31,14 +31,10 @@ public class WindowMac extends Window {
     public native float getScale();
 
     @Override
-    public void move(int left, int top) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public native void move(int left, int top);
 
     @Override
-    public void resize(int width, int height)  {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public native void resize(int width, int height);
 
     @Override
     public native void requestFrame();

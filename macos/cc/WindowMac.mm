@@ -88,6 +88,19 @@ float jwm::WindowMac::getScale() const {
     return (fNSWindow.screen ?: [NSScreen mainScreen]).backingScaleFactor;
 }
 
+void jwm::WindowMac::move(int left, int top) {
+  auto screen = fNSWindow.screen ?: [NSScreen mainScreen];
+  auto scale = screen.backingScaleFactor;
+  NSPoint point {(CGFloat) left / scale, screen.frame.size.height - (CGFloat) top / scale};
+  [fNSWindow setFrameTopLeftPoint:point];
+}
+
+void jwm::WindowMac::resize(int width, int height) {
+  auto scale = getScale();
+  NSSize size {(CGFloat) width / scale, (CGFloat) height / scale};
+  [fNSWindow setContentSize:size];
+}
+
 void jwm::WindowMac::requestFrame() {
     fFrameRequested = true;
     if (!CVDisplayLinkIsRunning(fDisplayLink))
@@ -149,10 +162,22 @@ extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac_getScale
     return instance->getScale();
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_move
+  (JNIEnv* env, jobject obj, int left, int top) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    instance->move(left, top);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_resize
+  (JNIEnv* env, jobject obj, int width, int height) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    instance->resize(width, height);
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_requestFrame
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->requestFrame();
+    instance->requestFrame();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nClose
