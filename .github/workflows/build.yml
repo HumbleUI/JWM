@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - 'examples/**'
       - .gitignore
+      - extras
       - LICENSE
       - README.md
 

@@ -1,5 +1,7 @@
 # Java Window Management library
 
+<img src="./extras/jwm_logo.svg" height="400">
+
 ## Vision
 
 JWM is a cross-platform Java window management and OS integration library.
