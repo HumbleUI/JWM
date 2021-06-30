@@ -1,6 +1,8 @@
 # Java Window Management library
 
-<img src="./extras/jwm_logo.svg" height="400">
+<p align="center">
+  <img src="./extras/jwm_logo.svg" height="400">
+</p>
 
 ## Vision
 
