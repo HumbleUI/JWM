@@ -19,8 +19,20 @@ namespace jwm {
         int getTop();
         int getWidth();
         int getHeight();
-
         float getScale();
+        void move(int left, int top);
+        void resize(int width, int height);
+        void requestRedraw() {
+            _isRedrawRequested = true;
+        }
+        void unsetRedrawRequest() {
+            _isRedrawRequested = false;
+        }
+        bool isRedrawRequested() {
+            return _isRedrawRequested;
+        }
+
+        bool _isRedrawRequested = false;
 
         WindowManagerX11& _windowManager;
         ::Window _x11Window = 0;

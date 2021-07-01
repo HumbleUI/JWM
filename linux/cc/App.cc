@@ -4,8 +4,8 @@
 jwm::App jwm::app;
 
 
-void jwm::App::init() {
-
+void jwm::App::init(JNIEnv* jniEnv) {
+    _jniEnv = jniEnv;
 }
 
 void jwm::App::start() {
@@ -15,7 +15,7 @@ void jwm::App::start() {
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit(JNIEnv* env, jclass jclass) {
-    jwm::app.init();
+    jwm::app.init(env);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_start(JNIEnv* env, jclass jclass) {
