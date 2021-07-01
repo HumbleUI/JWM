@@ -1,6 +1,8 @@
 #include "WindowManagerX11.hh"
+#include "WindowX11.hh"
 #include <cstdio>
 #include <limits>
+#include <impl/Library.hh>
 
 using namespace jwm;
 
@@ -115,6 +117,26 @@ void WindowManagerX11::runLoop() {
     for (;;) {
         while (XPending(display)) {
             XNextEvent(display, &ev);
+            WindowX11* myWindow = nullptr;
+            auto it = _nativeWindowToMy.find(ev.xkey.window);
+            if (it != _nativeWindowToMy.end()) {
+                myWindow = it->second;
+            }
+            if (myWindow) {
+                myWindow->dispatch(jwm::classes::EventFrame::kInstance);
+            }
         }
+    }
+}
+
+
+void WindowManagerX11::registerWindow(WindowX11* window) {
+    _nativeWindowToMy[window->_x11Window] = window;
+}
+
+void WindowManagerX11::unregisterWindow(WindowX11* window) {
+    auto it = _nativeWindowToMy.find(window->_x11Window);
+    if (it != _nativeWindowToMy.end()) {
+        _nativeWindowToMy.erase(it);
     }
 }
