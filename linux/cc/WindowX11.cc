@@ -103,6 +103,14 @@ bool WindowX11::init()
     return true;
 }
 
+void WindowX11::move(int left, int top) {
+    XMoveWindow(_windowManager.display, _x11Window, left, top);
+}
+
+void WindowX11::resize(int width, int height) {
+    XResizeWindow(_windowManager.display, _x11Window, width, height);
+}
+
 
 void WindowX11::show() {
     XMapWindow(_windowManager.getDisplay(), _x11Window);
@@ -157,17 +165,18 @@ extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowX11_getScale
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_move
   (JNIEnv* env, jobject obj, int left, int top) {
-    
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->move(left, top);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_resize
   (JNIEnv* env, jobject obj, int width, int height) {
-    
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_requestFrame
   (JNIEnv* env, jobject obj) {
     
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->requestRedraw();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose

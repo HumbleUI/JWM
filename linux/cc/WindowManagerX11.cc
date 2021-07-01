@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <limits>
 #include <impl/Library.hh>
+#include <impl/JNILocal.hh>
+#include "App.hh"
 
 using namespace jwm;
 
@@ -115,6 +117,7 @@ WindowManagerX11::WindowManagerX11() {
 void WindowManagerX11::runLoop() {
     XEvent ev;
     for (;;) {
+        using namespace classes;
         while (XPending(display)) {
             XNextEvent(display, &ev);
             WindowX11* myWindow = nullptr;
@@ -122,8 +125,38 @@ void WindowManagerX11::runLoop() {
             if (it != _nativeWindowToMy.end()) {
                 myWindow = it->second;
             }
-            if (myWindow) {
-                myWindow->dispatch(jwm::classes::EventFrame::kInstance);
+
+            switch (ev.type) {
+                case Expose: { // resize
+                    jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xexpose.width, ev.xexpose.height));
+                    myWindow->dispatch(eventResize.get());
+                    break;
+                }
+
+                case MotionNotify: { // mouse move
+                    jwm::JNILocal<jobject> eventMove(app.getJniEnv(), EventMouseMove::make(app.getJniEnv(), ev.xmotion.x, ev.xmotion.y));
+                    myWindow->dispatch(eventMove.get());
+                    break;
+                }
+
+                case KeyPress: { // keyboard down
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), ev.xkey.keycode, true));
+                    myWindow->dispatch(eventKeyboard.get());
+                    break;
+                }
+
+                case KeyRelease: { // keyboard down
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), ev.xkey.keycode, false));
+                    myWindow->dispatch(eventKeyboard.get());
+                    break;
+                }
+            }
+        }
+
+        for (auto& p : _nativeWindowToMy) {
+            if (p.second->isRedrawRequested()) {
+                p.second->unsetRedrawRequest();
+                p.second->dispatch(EventFrame::kInstance);
             }
         }
     }

@@ -33,7 +33,6 @@ public:
     }
 
     void resize(int width, int height) {
-        printf("resize %d %d", width, height);
         glClearStencil(0);
         glClearColor(0, 0, 0, 255);
         glStencilMask(0xffffffff);
@@ -43,7 +42,6 @@ public:
     }
 
     void swapBuffers() {
-        printf("swap\n");
         glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
     }
 
