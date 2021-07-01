@@ -12,10 +12,13 @@ WindowX11::WindowX11(JNIEnv* env, WindowManagerX11& windowManager):
     jwm::Window(env),
     _windowManager(windowManager)
 {
-
 }
 
-
+WindowX11::~WindowX11() {
+    if (_x11Window) {
+        _windowManager.unregisterWindow(this);
+    }
+}
 
 bool WindowX11::init()
 {
@@ -30,6 +33,7 @@ bool WindowX11::init()
                                CWColormap | CWEventMask | CWCursor,
                                &_windowManager.getSWA()
     );
+    _windowManager.registerWindow(this);
     return true;
 }
 
@@ -71,19 +75,19 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getTop
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getWidth
   (JNIEnv* env, jobject obj) {
     
-      return 0;
+      return 800;
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getHeight
   (JNIEnv* env, jobject obj) {
     
-      return 0;
+      return 500;
 }
 
 extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowX11_getScale
   (JNIEnv* env, jobject obj) {
    
-      return 0;
+      return 1.f;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_move

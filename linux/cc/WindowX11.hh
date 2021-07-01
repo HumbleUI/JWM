@@ -10,14 +10,14 @@ namespace jwm {
     class WindowX11: public jwm::Window {
     public:
         WindowX11(JNIEnv* env, WindowManagerX11& windowManager);
-        ~WindowX11() override = default;
+        ~WindowX11() override;
 
         void show();
 
         bool init();
 
         WindowManagerX11& _windowManager;
-        ::Window _x11Window;
+        ::Window _x11Window = 0;
 
     };
 }

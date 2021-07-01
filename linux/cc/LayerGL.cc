@@ -11,6 +11,7 @@ namespace jwm {
 class LayerGL: public RefCounted {
 public:
     WindowX11* fWindow;
+    GLXContext _context = nullptr;
 
     LayerGL() = default;
     ~LayerGL() = default;
@@ -18,9 +19,21 @@ public:
     void attach(WindowX11* window) {
         fWindow = jwm::ref(window);
 
+        if (_context == nullptr) {
+            _context = glXCreateContext(window->_windowManager.getDisplay(),
+                                        window->_windowManager.getVisualInfo(),
+                                        nullptr,
+                                        true);
+                                
+        }
+        
+        glXMakeCurrent(window->_windowManager.getDisplay(),
+                       window->_x11Window,
+                       _context);
     }
 
     void resize(int width, int height) {
+        printf("resize %d %d", width, height);
         glClearStencil(0);
         glClearColor(0, 0, 0, 255);
         glStencilMask(0xffffffff);
@@ -30,6 +43,8 @@ public:
     }
 
     void swapBuffers() {
+        printf("swap\n");
+        glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
     }
 
     void close() {
