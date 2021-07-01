@@ -12,9 +12,9 @@ if(NOT JWM_ARCH)
 endif()
 
 find_package(X11 REQUIRED)
+find_package(OpenGL REQUIRED)
 
-file(GLOB SOURCES_OBJC ${CMAKE_SOURCE_DIR}/cc/*.mm)
-file(GLOB SOURCES_CXX ${CMAKE_SOURCE_DIR}/../shared/cc/*.cc)
+file(GLOB SOURCES_CXX ${CMAKE_SOURCE_DIR}/../shared/cc/*.cc ${CMAKE_SOURCE_DIR}/cc/*.cc)
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_SOURCE_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 
@@ -34,3 +34,4 @@ set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
 
 target_link_libraries(jwm PRIVATE ${X11_LIBRARIES})
+target_link_libraries(jwm PRIVATE OpenGL::GL)

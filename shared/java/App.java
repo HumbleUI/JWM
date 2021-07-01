@@ -25,6 +25,8 @@ public class App {
         Class cls;
         if (Platform.CURRENT == Platform.MACOS)
             cls = App.class.forName("org.jetbrains.jwm.WindowMac");
+        else if (Platform.CURRENT == Platform.X11)
+            cls = App.class.forName("org.jetbrains.jwm.WindowX11");
         else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
         Constructor<Window> ctor = cls.getDeclaredConstructor();
