@@ -3,6 +3,7 @@
 #include <memory>
 #include "App.hh"
 #include "impl/Library.hh"
+#include <X11/Xresource.h>
 
 
 using namespace jwm;
@@ -18,6 +19,71 @@ WindowX11::~WindowX11() {
     if (_x11Window) {
         _windowManager.unregisterWindow(this);
     }
+}
+
+void WindowX11::getPosition(int& posX, int& posY) {
+    int x, y;
+    ::Window child;
+    XWindowAttributes xwa;
+    XTranslateCoordinates(_windowManager.display,
+                          _x11Window,
+                          XRootWindow(_windowManager.display, 0),
+                          0, 0,
+                          &x, &y,
+                          &child);
+    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
+    
+    posX = x - xwa.x;
+    posY = y - xwa.y;
+}
+
+int WindowX11::getLeft() {
+    int x, y;
+    getPosition(x, y);
+    return x;
+}
+
+int WindowX11::getTop() {
+    int x, y;
+    getPosition(x, y);
+    return y;
+}
+
+int WindowX11::getWidth() {
+    XWindowAttributes xwa;
+    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
+    return xwa.width;
+}
+
+int WindowX11::getHeight() {
+    XWindowAttributes xwa;
+    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
+    return xwa.height;
+}
+
+float WindowX11::getScale() {
+    char *resourceString = XResourceManagerString(_windowManager.display);
+    XrmDatabase db;
+    XrmValue value;
+    char *type = NULL;
+
+    static struct once {
+        once() {
+            XrmInitialize();
+        }
+    } once;
+
+    db = XrmGetStringDatabase(resourceString);
+
+    if (resourceString) {
+        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
+            if (value.addr) {
+                return atof(value.addr) / 96.f;
+            }
+        }
+    }
+
+    return 1.f;
 }
 
 bool WindowX11::init()
@@ -56,38 +122,37 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_show
   (JNIEnv* env, jobject obj) {
       
-    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    instance->show();
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->show();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getLeft
   (JNIEnv* env, jobject obj) {
-    
-      return 0;
+
+    return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getLeft();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getTop
   (JNIEnv* env, jobject obj) {
     
-      return 0;
+    return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getTop();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getWidth
   (JNIEnv* env, jobject obj) {
     
-      return 800;
+    return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getWidth();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowX11_getHeight
   (JNIEnv* env, jobject obj) {
     
-      return 500;
+    return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getHeight();
 }
 
 extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowX11_getScale
   (JNIEnv* env, jobject obj) {
    
-      return 1.f;
+    return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getScale();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_move

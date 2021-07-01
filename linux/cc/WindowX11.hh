@@ -12,9 +12,15 @@ namespace jwm {
         WindowX11(JNIEnv* env, WindowManagerX11& windowManager);
         ~WindowX11() override;
 
+        void getPosition(int& posX, int& posY);
         void show();
-
         bool init();
+        int getLeft();
+        int getTop();
+        int getWidth();
+        int getHeight();
+
+        float getScale();
 
         WindowManagerX11& _windowManager;
         ::Window _x11Window = 0;
