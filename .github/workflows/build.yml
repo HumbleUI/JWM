@@ -3,9 +3,10 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'examples/**'
       - .gitignore
-      - extras
+      - 'docs/**'
+      - 'examples/**'
+      - 'extras/**'
       - LICENSE
       - README.md
 
