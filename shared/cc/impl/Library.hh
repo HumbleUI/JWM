@@ -1,5 +1,6 @@
 #pragma once
 #include <jni.h>
+#include <cstdint>
 
 namespace jwm {
     enum class ModifierKey {

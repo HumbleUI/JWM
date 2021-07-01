@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <cstdint>
 
 typedef void (*FreeFunction)(void*);
 
