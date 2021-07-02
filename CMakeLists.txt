@@ -7,4 +7,10 @@ project(jwm-project LANGUAGES CXX)
 
 if(APPLE)
     add_subdirectory(macos)
+    message(STATUS "Configure macos platform module")
+endif()
+
+if(WIN32)
+    add_subdirectory(windows)
+    message(STATUS "Configure windows platform module")
 endif()
