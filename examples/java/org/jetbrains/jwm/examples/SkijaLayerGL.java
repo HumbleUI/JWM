@@ -1,4 +1,6 @@
-import org.jetbrains.jwm.*;
+package org.jetbrains.jwm.examples;
+
+import org.jetbrains.jwm.LayerGL;
 import org.jetbrains.skija.*;
 
 public class SkijaLayerGL extends LayerGL implements SkijaLayer {

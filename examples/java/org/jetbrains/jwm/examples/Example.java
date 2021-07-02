@@ -1,9 +1,10 @@
-import java.util.*;
-import java.util.function.*;
-import lombok.*;
-import org.jetbrains.annotations.*;
+package org.jetbrains.jwm.examples;
+
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
+
+import java.util.Timer;
+import java.util.function.Consumer;
 
 public class Example implements Consumer<Event> {
     public Window _window;

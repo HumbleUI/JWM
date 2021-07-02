@@ -1,9 +1,12 @@
 package org.jetbrains.jwm;
 
-import java.util.function.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jwm.impl.RefCounted;
 
-import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.impl.*;
+import java.util.function.Consumer;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal

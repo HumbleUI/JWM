@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.jetbrains.skija:skija-shared:0.91.4" type="repository">
+    <properties maven-id="org.jetbrains.skija:skija-shared:0.91.4" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/skija/skija-shared/0.91.4/skija-shared-0.91.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

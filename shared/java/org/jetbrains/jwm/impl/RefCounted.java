@@ -1,7 +1,6 @@
 package org.jetbrains.jwm.impl;
 
-import java.lang.ref.*;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
 
 public abstract class RefCounted extends Managed {
     @ApiStatus.Internal

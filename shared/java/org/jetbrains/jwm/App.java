@@ -1,13 +1,14 @@
 package org.jetbrains.jwm;
 
-import java.awt.*;
-import java.lang.reflect.*;
-import java.util.*;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jwm.impl.Library;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
-import lombok.*;
-import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.impl.*;
 
 public class App {
     @ApiStatus.Internal

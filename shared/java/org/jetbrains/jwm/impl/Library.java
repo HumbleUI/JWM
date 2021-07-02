@@ -1,12 +1,17 @@
 package org.jetbrains.jwm.impl;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
-import lombok.*;
-import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.*;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.jwm.Platform;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 
 public class Library {
     @ApiStatus.Internal

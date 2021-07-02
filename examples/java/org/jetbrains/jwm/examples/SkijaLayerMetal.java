@@ -1,4 +1,7 @@
-import org.jetbrains.jwm.*;
+package org.jetbrains.jwm.examples;
+
+import org.jetbrains.jwm.LayerMetal;
+import org.jetbrains.jwm.Window;
 import org.jetbrains.skija.*;
 
 public class SkijaLayerMetal extends LayerMetal implements SkijaLayer {

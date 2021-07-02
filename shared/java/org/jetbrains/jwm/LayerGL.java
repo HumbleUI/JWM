@@ -1,7 +1,7 @@
 package org.jetbrains.jwm;
 
-import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.impl.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.jwm.impl.RefCounted;
 
 public class LayerGL extends RefCounted implements Layer {
     @ApiStatus.Internal public Window _window;
