@@ -2,3 +2,6 @@ target
 build
 __pycache__
 .idea
+
+# clion build directories
+/*build*
