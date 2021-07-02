@@ -1,9 +1,6 @@
 package org.jetbrains.jwm;
 
-import java.util.function.*;
-import lombok.*;
 import org.jetbrains.annotations.*;
-import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
 
 public class LayerGL extends RefCounted implements Layer {

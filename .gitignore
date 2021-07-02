@@ -5,3 +5,4 @@ __pycache__
 
 # clion build directories
 /*build*
+/macos/cmake-build-debug

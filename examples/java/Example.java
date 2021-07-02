@@ -1,5 +1,3 @@
-package org.jetbrains.jwm.examples;
-
 import java.util.*;
 import java.util.function.*;
 import lombok.*;

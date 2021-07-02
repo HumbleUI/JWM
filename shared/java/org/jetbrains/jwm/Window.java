@@ -1,8 +1,7 @@
 package org.jetbrains.jwm;
 
-import java.lang.ref.*;
 import java.util.function.*;
-import lombok.*;
+
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
 

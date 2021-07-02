@@ -1,5 +1,3 @@
-package org.jetbrains.jwm.examples;
-
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
