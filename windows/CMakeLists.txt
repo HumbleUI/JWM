@@ -24,6 +24,9 @@ file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc)
+target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cc)
 target_include_directories(jwm PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
 
+target_link_libraries(jwm PRIVATE "-lgdi32")
+target_link_libraries(jwm PRIVATE "-lopengl32")
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
