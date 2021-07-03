@@ -17,12 +17,23 @@ namespace jwm {
             AppWin32& app = AppWin32::getInstance();
             WindowManagerWin32& winMan = app.getWindowManager();
 
+            if (!window) {
+                winMan.sendError("Passed null WindowWin32 object to attach");
+                return;
+            }
+
             _windowWin32 = jwm::ref(window);
 
             // If have no rendering context for window, then create it here
             if (_hRC == nullptr) {
                 // For extension functions access
-                _contextWGL = &app.getContextWGL();
+                ContextWGL& contextWGL = app.getContextWGL();
+
+                // Init context, if it is not initialized yet
+                if (!contextWGL.init()) {
+                    winMan.sendError("Failed to initialize WGL globals");
+                    return;
+                }
 
                 // Get window device context
                 _hDC = GetDC(_windowWin32->_hWnd);
@@ -45,7 +56,7 @@ namespace jwm {
                 int pixelFormatID;
                 UINT numFormats;
 
-                bool status = _contextWGL->wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
+                bool status = contextWGL.wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
 
                 if (!status || numFormats == 0) {
                     winMan.sendError("Failed to chose pixel format");
@@ -68,15 +79,12 @@ namespace jwm {
                 };
 
                 // Shared context? Maybe use this feature future
-                _hRC = _contextWGL->wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
+                _hRC = contextWGL.wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
 
                 if (!_hRC) {
                     winMan.sendError("Failed to create rendering context");
                     return;
                 }
-
-                // todo: remove
-                SetWindowText(_windowWin32->_hWnd, (LPCSTR)glGetString(GL_VERSION));
             }
 
             if (!wglMakeCurrent(_hDC, _hRC)) {
@@ -103,7 +111,6 @@ namespace jwm {
         }
 
         WindowWin32* _windowWin32 = nullptr;
-        ContextWGL* _contextWGL = nullptr;
         HDC _hDC = NULL;
         HGLRC _hRC = NULL;
     };
@@ -127,7 +134,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
-
+    // todo: what to do here?
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
@@ -145,5 +152,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    printf("close layer gl\n");
     instance->close();
 }

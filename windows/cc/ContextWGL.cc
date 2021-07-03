@@ -40,20 +40,21 @@ int jwm::ContextWGL::init() {
 
     HGLRC helperWindowRC = wglCreateContext(helperWindowDC);
 
-    // Used to release helper window temporary rendering context
-    auto releaseHelperWindowRC = [=](){
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(helperWindowRC);
-    };
-
     if (!helperWindowRC) {
         winMan.sendError("Failed to create rendering context for helper window");
         return JWM_FALSE;
     }
 
+    // Used to release helper window temporary rendering context
+    auto releaseHelperWindowResources = [=](){
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(helperWindowRC);
+        ReleaseDC(helperWindow, helperWindowDC);
+    };
+
     if (!wglMakeCurrent(helperWindowDC, helperWindowRC)) {
         winMan.sendError("Failed to make helper window context current");
-        releaseHelperWindowRC();
+        releaseHelperWindowResources();
         return JWM_FALSE;
     }
 
@@ -70,7 +71,7 @@ int jwm::ContextWGL::init() {
     wglSwapIntervalEXT = reinterpret_cast<PFNWGLSWAPINTERVALEXTPROC>
             (wglGetProcAddress("wglSwapIntervalEXT"));
 
-    releaseHelperWindowRC();
+    releaseHelperWindowResources();
 
     return _initialized = JWM_TRUE;
 }

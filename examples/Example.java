@@ -18,8 +18,7 @@ public class Example implements Consumer<Event> {
     public int x = 0, y = 0, lastX = 0, lastY = 0;
 
     public String[] variants = new String[] {
-        "Metal",
-        "OpenGL",
+        "OpenGL"
     };
     public int variantIdx = 0;
 
@@ -186,10 +185,7 @@ public class Example implements Consumer<Event> {
         if (_layer != null)
             _layer.close();
 
-        if ("Metal".equals(variants[variantIdx]))
-            _layer = new SkijaLayerMetal();
-        else if ("OpenGL".equals(variants[variantIdx]))
-            _layer = new SkijaLayerGL();
+        _layer = new SkijaLayerGL();
 
         _layer.attach(_window);
         _layer.reconfigure();

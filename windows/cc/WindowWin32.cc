@@ -63,7 +63,19 @@ void jwm::WindowWin32::show() {
 }
 
 void jwm::WindowWin32::getPosition(int &left, int &top) const {
+    POINT pos = { 0, 0 };
+    ClientToScreen(_hWnd, &pos);
 
+    left = pos.x;
+    top = pos.y;
+}
+
+void jwm::WindowWin32::getSize(int &width, int &height) const {
+    RECT area;
+    GetClientRect(_hWnd, &area);
+
+    width = area.right;
+    height = area.bottom;
 }
 
 int jwm::WindowWin32::getLeft() const {
@@ -79,11 +91,15 @@ int jwm::WindowWin32::getTop() const {
 }
 
 int jwm::WindowWin32::getWidth() const {
-    return 0;
+    int width, height;
+    getSize(width, height);
+    return width;
 }
 
 int jwm::WindowWin32::getHeight() const {
-    return 0;
+    int width, height;
+    getSize(width, height);
+    return height;
 }
 
 float jwm::WindowWin32::getScale() const {
@@ -172,10 +188,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_resize
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::AppWin32& app = jwm::AppWin32::getInstance();
+    jwm::WindowManagerWin32& winMan = app.getWindowManager();
+    winMan.requestFrame(instance);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    printf("close window\n");
     instance->close();
 }

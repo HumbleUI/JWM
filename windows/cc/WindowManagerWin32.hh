@@ -12,6 +12,7 @@ namespace jwm {
         int init();
         int runMainLoop();
         void requestTerminate();
+        void requestFrame(class WindowWin32* window);
         void sendError(const char* what);
 
         HWND getHelperWindow() const { return _hWndHelperWindow; }
@@ -22,11 +23,10 @@ namespace jwm {
         void _unregisterWindow(class WindowWin32& window);
 
         std::unordered_set<class WindowWin32*> _windows;
+        std::unordered_set<class WindowWin32*> _frameRequests;
         std::atomic_bool _terminateRequested{false};
 
         HWND _hWndHelperWindow;
-
-        mutable std::mutex _accessMutex;
     };
 
 }

@@ -1,22 +1,21 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
+#include <impl/Library.hh>
 #include <iostream>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    jwm::WindowWin32* jwmWindow = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
+    jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
 
     switch (uMsg) {
         case WM_KEYDOWN:
             if (wParam == VK_ESCAPE) {
                 jwm::AppWin32::getInstance().terminate();
-                PostQuitMessage(0);
             }
             break;
 
         case WM_CLOSE:
             jwm::AppWin32::getInstance().terminate();
-            PostQuitMessage(0);
             break;
 
         default:
@@ -47,6 +46,15 @@ int jwm::WindowManagerWin32::runMainLoop() {
                 DispatchMessageW(&msg);
             }
         }
+
+        // Dispatch frame request event for those windows,
+        // which want to redraw in the next frame
+        std::unordered_set<WindowWin32*> toProcess;
+        std::swap(toProcess, _frameRequests);
+
+        for (auto window: toProcess) {
+            window->dispatch(classes::EventFrame::kInstance);
+        }
     }
 
     return 0;
@@ -54,6 +62,10 @@ int jwm::WindowManagerWin32::runMainLoop() {
 
 void jwm::WindowManagerWin32::requestTerminate() {
     _terminateRequested.store(true);
+}
+
+void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {
+    _frameRequests.emplace(window);
 }
 
 void jwm::WindowManagerWin32::sendError(const char *what) {
@@ -118,11 +130,9 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
-    std::lock_guard<std::mutex> lockGuard(_accessMutex);
     _windows.emplace(&window);
 }
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
-    std::lock_guard<std::mutex> lockGuard(_accessMutex);
     _windows.erase(&window);
 }
