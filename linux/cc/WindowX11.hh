@@ -32,10 +32,24 @@ namespace jwm {
             return _isRedrawRequested;
         }
 
+        XIC getIC() const {
+            return _ic;
+        }
+
+        /**
+         * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter
+         */
+        struct {
+            uint32_t lo = 0;
+            uint32_t hi = 0;
+            XID counter;
+        } _xsyncRequestCounter;
+
         bool _isRedrawRequested = false;
 
         WindowManagerX11& _windowManager;
         ::Window _x11Window = 0;
+        XIC _ic;
 
     };
 }

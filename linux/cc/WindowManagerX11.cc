@@ -5,6 +5,7 @@
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
 #include "App.hh"
+#include <X11/extensions/sync.h>
 
 using namespace jwm;
 
@@ -15,8 +16,9 @@ int WindowManagerX11::_xerrorhandler(Display* dsp, XErrorEvent* error) {
     return 0;
 }
 
-WindowManagerX11::WindowManagerX11() {
-    display = XOpenDisplay(nullptr);
+WindowManagerX11::WindowManagerX11():
+    display(XOpenDisplay(nullptr)),
+    _atoms(display) {
     XSetErrorHandler(_xerrorhandler);
     screen = DefaultScreenOfDisplay(display);
 
@@ -24,10 +26,10 @@ WindowManagerX11::WindowManagerX11() {
     if (XSupportsLocale()) {
         XSetLocaleModifiers("@im=none");
 
-        im = XOpenIM(display, NULL, NULL, NULL);
-        if (im != NULL) {
+        _im = XOpenIM(display, NULL, NULL, NULL);
+        if (_im != NULL) {
             XIMStyles* styles;
-            if (XGetIMValues(im, XNQueryInputStyle, &styles, NULL)) {
+            if (XGetIMValues(_im, XNQueryInputStyle, &styles, NULL)) {
                 // could not init IM
             }
         }
@@ -110,8 +112,11 @@ WindowManagerX11::WindowManagerX11() {
                           | ButtonReleaseMask
                           | StructureNotifyMask
                           | PointerMotionMask
-                          | PropertyChangeMask;
+                          | PropertyChangeMask
+                          | StructureNotifyMask;
+        x11SWA.override_redirect = true;
     }
+
 }
 
 void WindowManagerX11::runLoop() {
@@ -127,9 +132,31 @@ void WindowManagerX11::runLoop() {
             }
 
             switch (ev.type) {
-                case Expose: { // resize
-                    jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xexpose.width, ev.xexpose.height));
+                case ClientMessage: {
+                    if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
+                        if (ev.xclient.data.l[0] == _atoms._NET_WM_SYNC_REQUEST) {
+                            // flicker-fix sync on resize
+                            myWindow->_xsyncRequestCounter.lo = ev.xclient.data.l[2];
+                            myWindow->_xsyncRequestCounter.hi = ev.xclient.data.l[3];
+                        }
+                    }
+                    break;
+                }
+                case ConfigureNotify: { // resize
+                    jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
                     myWindow->dispatch(eventResize.get());
+                    myWindow->unsetRedrawRequest();
+                    myWindow->dispatch(EventFrame::kInstance);
+
+                    // force redraw
+                    myWindow->unsetRedrawRequest();
+                    myWindow->dispatch(EventFrame::kInstance);
+
+                    XSyncValue syncValue;
+                    XSyncIntsToValue(&syncValue,
+                                     myWindow->_xsyncRequestCounter.lo,
+                                     myWindow->_xsyncRequestCounter.hi);
+                    XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
                     break;
                 }
 
@@ -140,13 +167,32 @@ void WindowManagerX11::runLoop() {
                 }
 
                 case KeyPress: { // keyboard down
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), ev.xkey.keycode, true));
-                    myWindow->dispatch(eventKeyboard.get());
+                    int keycode = ev.xkey.keycode;
+                    int scancode = XLookupKeysym(&ev.xkey, 0);
+                    int count = 0;
+                    KeySym keysym = 0;
+                    char buf[0x20];
+                    Status status = 0;
+                    count = Xutf8LookupString(myWindow->getIC(),
+                                              (XKeyPressedEvent*)&ev,
+                                              buf,
+                                              sizeof(buf),
+                                              &keysym,
+                                              &status);
+
+                    const char* name = "unknown";
+                    if (count) {
+                        name = buf;
+                    }
+
+                    printf("%s %02x %02x\n", name, scancode, keycode);
+                    //jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), XLookupKeysym(&, 0), true));
+                    //myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
 
                 case KeyRelease: { // keyboard down
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), ev.xkey.keycode, false));
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), XLookupKeysym(&ev.xkey, 0), false));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
