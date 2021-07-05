@@ -11,10 +11,7 @@ jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManag
 }
 
 jwm::WindowWin32::~WindowWin32() {
-    if (_hWnd) {
-        _windowManager._unregisterWindow(*this);
-        _hWnd = NULL;
-    }
+    close();
 }
 
 bool jwm::WindowWin32::init() {
@@ -140,11 +137,15 @@ void jwm::WindowWin32::resize(int width, int height) {
 }
 
 void jwm::WindowWin32::close() {
-
+    if (_hWnd) {
+        _windowManager._unregisterWindow(*this);
+        DestroyWindow(_hWnd);
+        _hWnd = NULL;
+    }
 }
 
 DWORD jwm::WindowWin32::_getWindowStyle() const {
-    return WS_OVERLAPPEDWINDOW;
+    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 }
 
 DWORD jwm::WindowWin32::_getWindowExStyle() const {
@@ -221,6 +222,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFram
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    printf("close window\n");
     instance->close();
 }

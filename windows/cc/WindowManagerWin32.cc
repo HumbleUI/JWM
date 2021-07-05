@@ -10,7 +10,6 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
     if (!window) {
         // Handle messages for hidden helper window
-
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
 
@@ -41,13 +40,26 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         }
             break;
 
-        case WM_KEYDOWN:
-            if (wParam == VK_ESCAPE) {
-                jwm::AppWin32::getInstance().terminate();
-            }
+        case WM_KEYDOWN: {
+            int keycode = (int) wParam;
+            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
+            printf("WM_KEYDOWN %i %i\n", keycode, scancode);
+            jwm::JNILocal<jobject> eventKeyboard(env, jwm::classes::EventKeyboard::make(env, scancode, true));
+            window->dispatch(eventKeyboard.get());
+        }
+            break;
+
+        case WM_KEYUP: {
+            int keycode = (int) wParam;
+            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
+            printf("WM_KEYUP %i %i\n", keycode, scancode);
+            jwm::JNILocal<jobject> eventKeyboard(env, jwm::classes::EventKeyboard::make(env, scancode, false));
+            window->dispatch(eventKeyboard.get());
+        }
             break;
 
         case WM_CLOSE:
+        case WM_QUIT:
             jwm::AppWin32::getInstance().terminate();
             break;
 
@@ -168,4 +180,5 @@ void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
     _windows.erase(&window);
+    _frameRequests.erase(&window);
 }

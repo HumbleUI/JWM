@@ -28,6 +28,5 @@ namespace jwm {
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = NULL;
-        long _dpi = 96;
     };
 }
