@@ -5,7 +5,7 @@
 #include <impl/Library.hh>
 #include <memory>
 
-jwm::WindowWin32::WindowWin32(JNIEnv *env, struct WindowManagerWin32 &windowManagerWin32)
+jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
         : Window(env), _windowManager(windowManagerWin32) {
 
 }
@@ -103,7 +103,7 @@ int jwm::WindowWin32::getHeight() const {
 }
 
 float jwm::WindowWin32::getScale() const {
-    return 1.0f;
+    return (float) JWM_DEFAULT_SCREEN_DPI / (float) JWM_DEFAULT_SCREEN_DPI;
 }
 
 void jwm::WindowWin32::move(int left, int top) {

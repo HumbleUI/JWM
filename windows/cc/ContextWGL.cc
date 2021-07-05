@@ -11,7 +11,7 @@ int jwm::ContextWGL::init() {
     HWND helperWindow = winMan.getHelperWindow();
 
     // Create render context for helper window
-    // in order to load wgl extension function to create moder window
+    // in order to load wgl extension functions to create moder context
     // Useful link https://mariuszbartosik.com/opengl-4-x-initialization-in-windows-without-a-framework/
 
     HDC helperWindowDC = GetDC(helperWindow);

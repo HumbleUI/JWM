@@ -27,6 +27,6 @@ target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc)
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cc)
 target_include_directories(jwm PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
 
-target_link_libraries(jwm PRIVATE "-lgdi32")
-target_link_libraries(jwm PRIVATE "-lopengl32")
+target_link_libraries(jwm PRIVATE "gdi32")
+target_link_libraries(jwm PRIVATE "opengl32")
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")

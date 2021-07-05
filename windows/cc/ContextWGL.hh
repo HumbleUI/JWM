@@ -2,7 +2,6 @@
 
 #include <PlatformWin32.hh>
 #include <GL/gl.h>
-#include <GL/glext.h>
 #include <GL/wglext.h>
 
 namespace jwm {
@@ -13,6 +12,7 @@ namespace jwm {
         int finalize();
 
         bool _initialized = false;
+
         PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB = nullptr;
         PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
         PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = nullptr;
