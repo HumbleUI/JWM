@@ -2,12 +2,45 @@
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
 #include <impl/Library.hh>
+#include <impl/JNILocal.hh>
 #include <iostream>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
 
+    if (!window) {
+        // Handle messages for hidden helper window
+
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    }
+
+    JNIEnv* env = window->getJNIEnv();
+
     switch (uMsg) {
+        case WM_SIZE: {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            jwm::JNILocal<jobject> eventResize(env, jwm::classes::EventResize::make(env, width, height));
+            window->dispatch(eventResize.get());
+        }
+            break;
+
+        case WM_MOVE: {
+            int left = LOWORD(lParam);
+            int top = HIWORD(lParam);
+            //jwm::JNILocal<jobject> eventMove(env, jwm::classes::EventMove::make(env, width, height));
+            //window->dispatch(eventMove.get());
+        }
+            break;
+
+        case WM_MOUSEMOVE: {
+            int xPos = LOWORD(lParam);
+            int yPos = HIWORD(lParam);
+            jwm::JNILocal<jobject> eventMouseMove(env, jwm::classes::EventMouseMove::make(env, xPos, yPos));
+            window->dispatch(eventMouseMove.get());
+        }
+            break;
+
         case WM_KEYDOWN:
             if (wParam == VK_ESCAPE) {
                 jwm::AppWin32::getInstance().terminate();

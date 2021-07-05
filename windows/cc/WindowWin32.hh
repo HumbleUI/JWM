@@ -21,6 +21,7 @@ namespace jwm {
         void resize(int width, int height);
         void close();
 
+        JNIEnv* getJNIEnv() const { return fEnv; }
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
 

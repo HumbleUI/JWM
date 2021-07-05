@@ -74,8 +74,9 @@ void jwm::WindowWin32::getSize(int &width, int &height) const {
     RECT area;
     GetClientRect(_hWnd, &area);
 
-    width = area.right;
-    height = area.bottom;
+    // Explicitly clamp size, since w or h cannot be less than 0
+    width = area.right > 0? area.right: 0;
+    height = area.bottom > 0? area.bottom: 0;
 }
 
 int jwm::WindowWin32::getLeft() const {
@@ -114,11 +115,28 @@ float jwm::WindowWin32::getScale() const {
 }
 
 void jwm::WindowWin32::move(int left, int top) {
+    RECT rect = { left, top, left, top };
 
+    AdjustWindowRectEx(&rect, _getWindowStyle(),
+                       FALSE, _getWindowExStyle());
+
+    SetWindowPos(_hWnd, NULL,
+                 rect.left, rect.top,
+                 0, 0,
+                 SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
 }
 
 void jwm::WindowWin32::resize(int width, int height) {
+    RECT rect = { 0, 0, width, height };
 
+    AdjustWindowRectEx(&rect, _getWindowStyle(),
+                       FALSE, _getWindowExStyle());
+
+    SetWindowPos(_hWnd, HWND_TOP,
+                 0, 0,
+                 rect.right - rect.left,
+                 rect.bottom - rect.top,
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void jwm::WindowWin32::close() {
