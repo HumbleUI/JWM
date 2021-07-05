@@ -103,7 +103,14 @@ int jwm::WindowWin32::getHeight() const {
 }
 
 float jwm::WindowWin32::getScale() const {
-    return (float) JWM_DEFAULT_SCREEN_DPI / (float) JWM_DEFAULT_SCREEN_DPI;
+    HMONITOR hMonitor = MonitorFromWindow(_hWnd, MONITOR_DEFAULTTOPRIMARY);
+    DEVICE_SCALE_FACTOR scaleFactor;
+    GetScaleFactorForMonitor(hMonitor, &scaleFactor);
+
+    if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
+        scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
+
+    return (float) scaleFactor / (float) SCALE_100_PERCENT;
 }
 
 void jwm::WindowWin32::move(int left, int top) {

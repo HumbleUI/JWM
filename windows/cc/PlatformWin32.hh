@@ -3,6 +3,7 @@
 #include <cwctype>
 #include <windows.h>
 #include <winuser.h>
+#include <shellscalingapi.h>
 
 #ifndef JWM_TRUE
  #define JWM_TRUE 1
@@ -23,3 +24,7 @@
 #ifndef JWM_DEFAULT_SCREEN_DPI
  #define JWM_DEFAULT_SCREEN_DPI 96
 #endif //JWM_DEFAULT_SCREEN_DPI
+
+#ifndef JWM_DEFAULT_DEVICE_SCALE
+ #define JWM_DEFAULT_DEVICE_SCALE SCALE_100_PERCENT
+#endif //JWM_DEFAULT_DEVICE_SCALE
