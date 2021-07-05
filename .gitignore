@@ -1,7 +1,7 @@
 target
 build
 __pycache__
-.idea
 
 # clion build directories
 /*build*
+/macos/cmake-build-debug

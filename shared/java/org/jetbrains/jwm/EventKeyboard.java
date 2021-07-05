@@ -1,6 +1,6 @@
 package org.jetbrains.jwm;
 
-import lombok.*;
+import lombok.Data;
 
 @Data
 public class EventKeyboard implements Event {

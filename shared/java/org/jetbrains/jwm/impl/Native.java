@@ -1,7 +1,8 @@
 package org.jetbrains.jwm.impl;
 
-import java.lang.ref.*;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
+
+import java.lang.ref.Reference;
 
 public abstract class Native {
     public long _ptr;

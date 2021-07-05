@@ -1,7 +1,8 @@
 package org.jetbrains.jwm.impl;
 
-import org.jetbrains.annotations.*;
-import java.lang.ref.*;
+import org.jetbrains.annotations.ApiStatus;
+
+import java.lang.ref.Cleaner;
 
 public abstract class Managed extends Native implements AutoCloseable {
     @ApiStatus.Internal

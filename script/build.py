@@ -3,7 +3,7 @@ import common, glob, os, platform, subprocess, sys
 
 def build_shared():
   os.chdir(os.path.dirname(__file__) + '/..')
-  sources = glob.glob('shared/java/*.java') + glob.glob('shared/java/impl/*.java')
+  sources = glob.glob('shared/java/**/*.java', recursive=True)
   common.javac(common.deps(), sources, 'shared/target/classes')
 
 target_native = {'macos': 'libjwm_' + common.arch + '.dylib',
@@ -22,7 +22,7 @@ def build_native():
   cwd = common.system)
   subprocess.check_call(["ninja"], cwd = common.system + "/build")
   classpath = common.deps() + ['shared/target/classes']
-  sources = glob.glob(common.system + '/java/*.java')
+  sources = glob.glob(common.system + '/java/**/*.java', recursive=True)
   common.javac(classpath, sources, common.system + '/target/classes')
 
 def main():
