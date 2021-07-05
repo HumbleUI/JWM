@@ -60,8 +60,8 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
         case WM_CLOSE:
         case WM_QUIT:
-            jwm::AppWin32::getInstance().terminate();
-            break;
+            window->dispatch(jwm::classes::EventClose::kInstance);
+            return 0;
 
         default:
             break;
