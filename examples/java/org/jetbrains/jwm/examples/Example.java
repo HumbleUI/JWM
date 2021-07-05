@@ -223,7 +223,7 @@ public class Example implements Consumer<Event> {
                     variantIdx = (variantIdx + variants.length - 1) % variants.length;
                     changeLayer();
                 } else 
-                    System.out.println("Key pressed: " + eventKeyboard.getKeyCode());
+                    System.out.println("Key pressed: 0x" + Integer.toString(eventKeyboard.getKeyCode(), 16));
             }
         } else if (e instanceof EventFrame) {
             paint();
