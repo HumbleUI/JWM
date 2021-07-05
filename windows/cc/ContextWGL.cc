@@ -2,9 +2,9 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 
-int jwm::ContextWGL::init() {
+bool jwm::ContextWGL::init() {
     if (_initialized)
-        return JWM_TRUE;
+        return true;
 
     AppWin32& app = AppWin32::getInstance();
     WindowManagerWin32& winMan = app.getWindowManager();
@@ -30,19 +30,19 @@ int jwm::ContextWGL::init() {
 
     if (!pixelFormatID) {
         winMan.sendError("Failed to choose pixel format for helper window");
-        return JWM_FALSE;
+        return false;
     }
 
     if (!SetPixelFormat(helperWindowDC, pixelFormatID, &helperWindowPFD)) {
         winMan.sendError("Failed to set pixel format for helper window");
-        return JWM_FALSE;
+        return false;
     }
 
     HGLRC helperWindowRC = wglCreateContext(helperWindowDC);
 
     if (!helperWindowRC) {
         winMan.sendError("Failed to create rendering context for helper window");
-        return JWM_FALSE;
+        return false;
     }
 
     // Used to release helper window temporary rendering context
@@ -55,7 +55,7 @@ int jwm::ContextWGL::init() {
     if (!wglMakeCurrent(helperWindowDC, helperWindowRC)) {
         winMan.sendError("Failed to make helper window context current");
         releaseHelperWindowResources();
-        return JWM_FALSE;
+        return false;
     }
 
     // Load functions now
@@ -73,12 +73,12 @@ int jwm::ContextWGL::init() {
 
     releaseHelperWindowResources();
 
-    return _initialized = JWM_TRUE;
+    return _initialized = true;
 }
 
-int jwm::ContextWGL::finalize() {
+bool jwm::ContextWGL::finalize() {
     if (_initialized)
-        _initialized = JWM_FALSE;
+        _initialized = false;
 
-    return JWM_TRUE;
+    return true;
 }

@@ -70,13 +70,13 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-int jwm::WindowManagerWin32::init() {
+bool jwm::WindowManagerWin32::init() {
     if (!_registerWindowClass())
-        return JWM_FALSE;
+        return false;
     if (!_createHelperWindow())
-        return JWM_FALSE;
+        return false;
 
-    return JWM_TRUE;
+    return true;
 }
 
 int jwm::WindowManagerWin32::runMainLoop() {
@@ -141,10 +141,10 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
 
     if (!RegisterClassExW(&wndclassexw)) {
         sendError("Failed to register window class");
-        return JWM_FALSE;
+        return false;
     }
 
-    return JWM_TRUE;
+    return true;
 }
 
 int jwm::WindowManagerWin32::_createHelperWindow() {
@@ -159,7 +159,7 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
 
     if (!_hWndHelperWindow) {
         sendError("Failed to create helper window");
-        return JWM_FALSE;
+        return false;
     }
 
     ShowWindow(_hWndHelperWindow, SW_HIDE);
@@ -171,7 +171,7 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
         DispatchMessageW(&msg);
     }
 
-    return JWM_TRUE;
+    return true;
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {

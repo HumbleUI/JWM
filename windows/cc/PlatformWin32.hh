@@ -5,14 +5,6 @@
 #include <winuser.h>
 #include <shellscalingapi.h>
 
-#ifndef JWM_TRUE
- #define JWM_TRUE 1
-#endif //JWM_TRUE
-
-#ifndef JWM_FALSE
- #define JWM_FALSE 0
-#endif //JWM_FALSE
-
 #ifndef JWM_WIN32_WINDOW_CLASS_NAME
  #define JWM_WIN32_WINDOW_CLASS_NAME L"JWM_WINDOW"
 #endif //JWM_WIN32_WINDOW_CLASS_NAME

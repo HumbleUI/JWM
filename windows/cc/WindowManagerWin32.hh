@@ -9,7 +9,7 @@ namespace jwm {
 
     class WindowManagerWin32 {
     public:
-        int init();
+        bool init();
         int runMainLoop();
         void requestTerminate();
         void requestFrame(class WindowWin32* window);

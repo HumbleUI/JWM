@@ -8,8 +8,8 @@ namespace jwm {
 
     class ContextWGL {
     public:
-        int init();
-        int finalize();
+        bool init();
+        bool finalize();
 
         bool _initialized = false;
 

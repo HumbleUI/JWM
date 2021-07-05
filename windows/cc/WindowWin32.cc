@@ -43,7 +43,7 @@ bool jwm::WindowWin32::init() {
 
     if (!_hWnd) {
         _windowManager.sendError("Failed to init WindowWin32");
-        return JWM_FALSE;
+        return false;
     }
 
     // Set this as property to reference from message callbacks
@@ -52,7 +52,7 @@ bool jwm::WindowWin32::init() {
     // Register window, so manager can process its update
     _windowManager._registerWindow(*this);
 
-    return JWM_TRUE;
+    return true;
 }
 
 void jwm::WindowWin32::show() {
