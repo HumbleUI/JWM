@@ -19,6 +19,13 @@ namespace jwm {
         XVisualInfo* pickVisual();
         static int _xerrorhandler(Display* dsp, XErrorEvent* error);
 
+
+        Display* getDisplay() const { return display; }
+        Screen* getScreen() const { return screen; }
+        XVisualInfo* getVisualInfo() const { return x11VisualInfo; }
+        XSetWindowAttributes& getSWA() { return x11SWA; }
+        XIM getIM() const { return _im; }
+
         Display* display = nullptr;
         Screen* screen;
         XVisualInfo* x11VisualInfo;
@@ -29,11 +36,28 @@ namespace jwm {
         /**
          * Input Manager
          */
-        XIM im;
+        XIM _im;
 
-        Display* getDisplay() const { return display; }
-        Screen* getScreen() const { return screen; }
-        XVisualInfo* getVisualInfo() const { return x11VisualInfo; }
-        XSetWindowAttributes& getSWA() { return x11SWA; }
+        struct Atoms {
+            Atoms(Display* display): _display(display) {}
+
+            // display definition here allows to reference Display* in DEFINE_ATOM
+            Display* _display;
+
+            #define DEFINE_ATOM(name) Atom name = XInternAtom(_display, #name, 0)
+            
+            // protocols
+            // NOTE: WM_DELETE_WINDOW should be the first protocol because WindowX11 references to this variable
+            const static int PROTOCOL_COUNT = 2;
+            DEFINE_ATOM(WM_DELETE_WINDOW);
+            DEFINE_ATOM(_NET_WM_SYNC_REQUEST);
+            
+            // other atoms
+            DEFINE_ATOM(_NET_WM_SYNC_REQUEST_COUNTER);
+            DEFINE_ATOM(WM_PROTOCOLS);
+
+            #undef DEFINE_ATOM
+        } _atoms;
+        Atoms& getAtoms() { return _atoms; }
     };
 }

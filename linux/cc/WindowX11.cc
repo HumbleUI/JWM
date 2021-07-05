@@ -4,6 +4,8 @@
 #include "App.hh"
 #include "impl/Library.hh"
 #include <X11/Xresource.h>
+#include <X11/Xatom.h>
+#include <X11/extensions/sync.h>
 
 
 using namespace jwm;
@@ -76,7 +78,7 @@ float WindowX11::getScale() {
     db = XrmGetStringDatabase(resourceString);
 
     if (resourceString) {
-        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True) {
+        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
             if (value.addr) {
                 return atof(value.addr) / 96.f;
             }
@@ -100,6 +102,39 @@ bool WindowX11::init()
                                &_windowManager.getSWA()
     );
     _windowManager.registerWindow(this);
+    XSetWMProtocols(_windowManager.getDisplay(),
+                    _x11Window,
+                    &_windowManager.getAtoms().WM_DELETE_WINDOW,
+                    WindowManagerX11::Atoms::PROTOCOL_COUNT);
+
+    // IC
+    {
+        _ic = XCreateIC(_windowManager.getIM(),
+                        XNInputStyle,
+                        XIMPreeditNothing | XIMStatusNothing,
+                        XNClientWindow,
+                        _x11Window,
+                        nullptr);
+
+        XSetICFocus(_ic);
+    }
+
+
+
+    // XSync
+    {
+        XSyncValue value;
+        XSyncIntToValue(&value, 0);
+        _xsyncRequestCounter.counter = XSyncCreateCounter(_windowManager.getDisplay(), value);
+        XChangeProperty(_windowManager.getDisplay(),
+                        _x11Window,
+                        _windowManager.getAtoms()._NET_WM_SYNC_REQUEST_COUNTER,
+                        XA_CARDINAL,
+                        32,
+                        PropModeReplace,
+                        (const unsigned char*)&_xsyncRequestCounter.counter, 1);
+        
+    }
     return true;
 }
 

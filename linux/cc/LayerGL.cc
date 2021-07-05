@@ -30,6 +30,16 @@ public:
         glXMakeCurrent(window->_windowManager.getDisplay(),
                        window->_x11Window,
                        _context);
+
+        // this forces vsync      
+        using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
+        glXSwapIntervalEXT_t _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
+
+        if (_glXSwapIntervalEXT) {
+            _glXSwapIntervalEXT(window->_windowManager.getDisplay(),
+                                window->_x11Window,
+                                1);
+        }
     }
 
     void resize(int width, int height) {
