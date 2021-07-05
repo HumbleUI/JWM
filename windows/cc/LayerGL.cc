@@ -16,6 +16,7 @@ namespace jwm {
         void attach(WindowWin32* window) {
             AppWin32& app = AppWin32::getInstance();
             WindowManagerWin32& winMan = app.getWindowManager();
+            ContextWGL& contextWGL = app.getContextWGL();
 
             if (!window) {
                 winMan.sendError("Passed null WindowWin32 object to attach");
@@ -26,9 +27,6 @@ namespace jwm {
 
             // If have no rendering context for window, then create it here
             if (_hRC == nullptr) {
-                // For extension functions access
-                ContextWGL& contextWGL = app.getContextWGL();
-
                 // Init context, if it is not initialized yet
                 if (!contextWGL.init()) {
                     winMan.sendError("Failed to initialize WGL globals");
@@ -91,6 +89,10 @@ namespace jwm {
                 winMan.sendError("Failed to make rendering context current");
                 return;
             }
+
+            if (contextWGL.wglSwapIntervalEXT)
+                // Force v-sync for now
+                contextWGL.wglSwapIntervalEXT(1);
         }
 
         void resize(int width, int height) {
