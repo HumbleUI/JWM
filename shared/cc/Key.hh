@@ -2,7 +2,7 @@
 
 namespace jwm {
     // must be kept in sync with Key.java
-    enum Key {
+    enum class Key {
         ENTER,
         BACK_SPACE,
         TAB,
