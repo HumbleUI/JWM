@@ -26,7 +26,9 @@ public class App {
     @NotNull @SneakyThrows
     public static Window makeWindow() {
         Class cls;
-        if (Platform.CURRENT == Platform.MACOS)
+        if (Platform.CURRENT == Platform.WINDOWS)
+            cls = App.class.forName("org.jetbrains.jwm.WindowWin32");
+        else if (Platform.CURRENT == Platform.MACOS)
             cls = App.class.forName("org.jetbrains.jwm.WindowMac");
         else if (Platform.CURRENT == Platform.X11)
             cls = App.class.forName("org.jetbrains.jwm.WindowX11");

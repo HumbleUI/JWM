@@ -2,6 +2,9 @@ target
 build
 __pycache__
 
+# project meta data folder
+.idea
+
 # clion build directories
 /*build*
 /macos/cmake-build-debug

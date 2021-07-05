@@ -17,7 +17,7 @@ public class Example implements Consumer<Event> {
     public int x = 0, y = 0, lastX = 0, lastY = 0;
 
     public String[] variants = new String[] {
-        "OpenGL",
+        "OpenGL"
     };
     public int variantIdx = 0;
 
