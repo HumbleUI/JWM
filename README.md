@@ -81,7 +81,7 @@ Platform    | groupId             | artifactId        | version
 macOS Intel | `org.jetbrains.jwm` | `jwm-macos-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-x64%2Fmaven-metadata.xml&query=//release)
 macOS M1    | `org.jetbrains.jwm` | `jwm-macos-arm64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-arm64%2Fmaven-metadata.xml&query=//release)
 Linux       | N/A                 | N/A               | N/A
-Windows     | N/A                 | N/A               | N/A
+Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-windows-x64%2Fmaven-metadata.xml&query=//release)
 
 ## Developing
 
