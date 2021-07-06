@@ -2,6 +2,7 @@
 #include "impl/JNILocal.hh"
 #include <jni.h>
 #include "Library.hh"
+#include <cassert>
 
 namespace jwm {
     namespace classes {
@@ -118,17 +119,52 @@ namespace jwm {
         namespace EventKeyboard {
             jclass kCls;
             jmethodID kCtor;
+            jobjectArray kKeys;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventKeyboard");
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IZ)V");
-                Throwable::exceptionThrown(env);
+                // kCls = EventKeyboard
+                {
+                    jclass cls = env->FindClass("org/jetbrains/jwm/EventKeyboard");
+                    Throwable::exceptionThrown(env);
+                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                    assert(kCls);
+                }
+
+                // kCtor = EventKeyboard::<init>(Key key, boolean isPressed)
+                {
+                    kCtor = env->GetMethodID(kCls, "<init>", "(Lorg/jetbrains/jwm/Key;Z)V");
+                    Throwable::exceptionThrown(env);
+                    assert(kCtor);
+                }
+
+                // call Key.values() only once because the value() method of enums is expensive
+                // Key[] kKeys = Key.values()
+                {
+                    // cls = Key
+                    jclass cls = env->FindClass("org/jetbrains/jwm/Key");
+                    Throwable::exceptionThrown(env);
+                    assert(cls);
+
+                    // values = Key::values()
+                    jmethodID values = env->GetStaticMethodID(cls, "values", "()[Lorg/jetbrains/jwm/Key;");
+                    Throwable::exceptionThrown(env);
+                    assert(values);
+
+                    // Key[] kKeys = Key.values()
+                    jobject array = env->CallStaticObjectMethod(cls, values);
+                    Throwable::exceptionThrown(env);
+                    assert(array);
+                    kKeys = static_cast<jobjectArray>(env->NewGlobalRef(array));
+                    assert(kKeys);
+                }
             }
 
             jobject make(JNIEnv* env, jint keyCode, jboolean isPressed) {
-                jobject res = env->NewObject(kCls, kCtor, keyCode, isPressed);
+                // map keyCode to enum org.jetbrains.jwm.Key with kKeys
+                jobject kKeyCodeJavaEnum = env->GetObjectArrayElement(kKeys, keyCode); 
+                Throwable::exceptionThrown(env);
+                assert(kKeyCodeJavaEnum);
+                jobject res = env->NewObject(kCls, kCtor, kKeyCodeJavaEnum, isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
