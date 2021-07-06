@@ -6,6 +6,7 @@
 #include <impl/JNILocal.hh>
 #include "App.hh"
 #include <X11/extensions/sync.h>
+#include "KeyX11.hh"
 
 using namespace jwm;
 
@@ -167,32 +168,13 @@ void WindowManagerX11::runLoop() {
                 }
 
                 case KeyPress: { // keyboard down
-                    int keycode = ev.xkey.keycode;
-                    int scancode = XLookupKeysym(&ev.xkey, 0);
-                    int count = 0;
-                    KeySym keysym = 0;
-                    char buf[0x20];
-                    Status status = 0;
-                    count = Xutf8LookupString(myWindow->getIC(),
-                                              (XKeyPressedEvent*)&ev,
-                                              buf,
-                                              sizeof(buf),
-                                              &keysym,
-                                              &status);
-
-                    const char* name = "unknown";
-                    if (count) {
-                        name = buf;
-                    }
-
-                    printf("%s %02x %02x\n", name, scancode, keycode);
-                    //jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), XLookupKeysym(&, 0), true));
-                    //myWindow->dispatch(eventKeyboard.get());
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), (int)KeyX11::fromNative(ev.xkey.keycode), true));
+                    myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
 
                 case KeyRelease: { // keyboard down
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), XLookupKeysym(&ev.xkey, 0), false));
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), (int)KeyX11::fromNative(ev.xkey.keycode), false));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
