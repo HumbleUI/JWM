@@ -18,7 +18,7 @@ JWM aims to expose an interface that abstracts over window creation, input handl
 Primary goals:
 
 - Native JVM API
-- High-quality OS integration (indistinguashable from native apps)
+- High-quality OS integration (indistinguishable from native apps)
 - Plays well with (but does not require) [Skija](https://github.com/jetbrains/skija)
 
 Motto: **“Electron for JVM, without Chrome and JS”**
