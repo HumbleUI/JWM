@@ -208,22 +208,22 @@ public class Example implements Consumer<Event> {
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {
-                if (eventKeyboard.getKeyCode() == 35) { // p
+                if (eventKeyboard.getKeyCode() == Key.P) {
                     _paused = !_paused;
                     if (!_paused)
                         _window.requestFrame();
-                } else if (eventKeyboard.getKeyCode() == 45) { // n
+                } else if (eventKeyboard.getKeyCode() == Key.N) {
                     new Example();
-                } else if (eventKeyboard.getKeyCode() == 13 || eventKeyboard.getKeyCode() == 53) { // w || Esc
+                } else if (eventKeyboard.getKeyCode() == Key.W || eventKeyboard.getKeyCode() == Key.ESCAPE) {
                     accept(EventClose.INSTANCE);
-                } else if (eventKeyboard.getKeyCode() == 125) { // ↓
+                } else if (eventKeyboard.getKeyCode() == Key.DOWN) { // ↓
                     variantIdx = (variantIdx + 1) % variants.length;
                     changeLayer();
-                } else if (eventKeyboard.getKeyCode() == 126) { // ↑
+                } else if (eventKeyboard.getKeyCode() == Key.UP) { // ↑
                     variantIdx = (variantIdx + variants.length - 1) % variants.length;
                     changeLayer();
                 } else 
-                    System.out.println("Key pressed: 0x" + Integer.toString(eventKeyboard.getKeyCode(), 16));
+                    System.out.println("Key pressed: " + eventKeyboard.getKeyCode().toString());
             }
         } else if (e instanceof EventFrame) {
             paint();

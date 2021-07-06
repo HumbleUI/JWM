@@ -162,19 +162,30 @@ void WindowManagerX11::runLoop() {
                 }
 
                 case MotionNotify: { // mouse move
-                    jwm::JNILocal<jobject> eventMove(app.getJniEnv(), EventMouseMove::make(app.getJniEnv(), ev.xmotion.x, ev.xmotion.y));
+                    jwm::JNILocal<jobject> eventMove(app.getJniEnv(),
+                                                     EventMouseMove::make(app.getJniEnv(),
+                                                     ev.xmotion.x,
+                                                     ev.xmotion.y));
                     myWindow->dispatch(eventMove.get());
                     break;
                 }
 
                 case KeyPress: { // keyboard down
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), (int)KeyX11::fromNative(ev.xkey.keycode), true));
+                    KeySym s = XLookupKeysym(&ev.xkey, 0);
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
+                                                         EventKeyboard::make(app.getJniEnv(),
+                                                                             (int)KeyX11::fromNative(s),
+                                                                             true));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
 
                 case KeyRelease: { // keyboard down
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(), EventKeyboard::make(app.getJniEnv(), (int)KeyX11::fromNative(ev.xkey.keycode), false));
+                    KeySym s = XLookupKeysym(&ev.xkey, 0);
+                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
+                                                         EventKeyboard::make(app.getJniEnv(),
+                                                                             (int)KeyX11::fromNative(s),
+                                                                             false));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
