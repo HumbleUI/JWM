@@ -12,13 +12,13 @@ namespace jwm {
         WindowManagerX11();
 
         void runLoop();
+        void terminate();
 
         void registerWindow(WindowX11* window);
         void unregisterWindow(WindowX11* window);
-
+        
         XVisualInfo* pickVisual();
         static int _xerrorhandler(Display* dsp, XErrorEvent* error);
-
 
         Display* getDisplay() const { return display; }
         Screen* getScreen() const { return screen; }
@@ -30,6 +30,7 @@ namespace jwm {
         Screen* screen;
         XVisualInfo* x11VisualInfo;
         XSetWindowAttributes x11SWA;
+        bool _runLoop;
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
 

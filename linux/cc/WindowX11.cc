@@ -18,8 +18,14 @@ WindowX11::WindowX11(JNIEnv* env, WindowManagerX11& windowManager):
 }
 
 WindowX11::~WindowX11() {
+    close();
+}
+
+void WindowX11::close() {
     if (_x11Window) {
         _windowManager.unregisterWindow(this);
+        XDestroyWindow(_windowManager.display, _x11Window);
+        _x11Window = 0;
     }
 }
 
@@ -216,5 +222,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_requestFrame
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
   (JNIEnv* env, jobject obj) {
-    
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->close();
 }

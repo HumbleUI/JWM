@@ -14,6 +14,7 @@ namespace jwm {
 
         void getPosition(int& posX, int& posY);
         void show();
+        void close();
         bool init();
         int getLeft();
         int getTop();

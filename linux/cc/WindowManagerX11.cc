@@ -121,8 +121,9 @@ WindowManagerX11::WindowManagerX11():
 }
 
 void WindowManagerX11::runLoop() {
+    _runLoop = true;
     XEvent ev;
-    for (;;) {
+    while (_runLoop) {
         using namespace classes;
         while (XPending(display)) {
             XNextEvent(display, &ev);
@@ -131,7 +132,9 @@ void WindowManagerX11::runLoop() {
             if (it != _nativeWindowToMy.end()) {
                 myWindow = it->second;
             }
-
+            if (myWindow == nullptr) {
+                continue;
+            }
             switch (ev.type) {
                 case ClientMessage: {
                     if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
@@ -211,4 +214,8 @@ void WindowManagerX11::unregisterWindow(WindowX11* window) {
     if (it != _nativeWindowToMy.end()) {
         _nativeWindowToMy.erase(it);
     }
+}
+
+void WindowManagerX11::terminate() {
+    _runLoop = false;
 }

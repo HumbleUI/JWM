@@ -56,6 +56,7 @@ public:
     }
 
     void close() {
+        glXDestroyContext(fWindow->_windowManager.getDisplay(), _context);
         jwm::unref(&fWindow);
     }
 };

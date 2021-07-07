@@ -8,6 +8,7 @@ namespace jwm {
     public:
         void init(JNIEnv* jniEnv);
         void start();
+        void terminate();
 
         WindowManagerX11& getWindowManager() {
             return wm;
