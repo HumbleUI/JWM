@@ -1,4 +1,5 @@
 #include <AppWin32.hh>
+#include <iostream>
 
 // Globally accessible instance
 // Will be created as soon as java runtime load this library
@@ -20,6 +21,10 @@ int jwm::AppWin32::start() {
 
 void jwm::AppWin32::terminate() {
     _windowManager.requestTerminate();
+}
+
+void jwm::AppWin32::sendError(const char *what) {
+    std::cerr << "jwm::Error: " << what << std::endl;
 }
 
 // JNI
