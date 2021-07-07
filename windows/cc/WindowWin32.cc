@@ -190,7 +190,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYUP: {
-            bool isPressed = HIWORD(lParam) & KF_UP;
+            bool isPressed = !(HIWORD(lParam) & KF_UP);
             int keycode = (int) wParam;
             int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
             auto& table = _windowManager.getKeyTable();

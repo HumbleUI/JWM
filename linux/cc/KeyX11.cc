@@ -90,7 +90,7 @@ jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
         case XK_KP_Subtract: return Key::SUBTRACT;
         case XK_KP_Decimal: return Key::DECIMAL;
         case XK_KP_Divide: return Key::DIVIDE;
-        case XK_KP_Delete: return Key::JWM_DELETE;
+        case XK_KP_Delete: return Key::DEL;
         case XK_Delete:
         case XK_Num_Lock: return Key::NUM_LOCK;
         case XK_Scroll_Lock: return Key::SCROLL_LOCK;

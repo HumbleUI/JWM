@@ -88,7 +88,7 @@ public enum Key {
     SUBTRACT("Subtract"),
     DECIMAL("Decimal"),
     DIVIDE("Divide"),
-    DELETE("Delete"), /* ASCII:Integer   DEL */
+    DEL("Delete"), /* ASCII:Integer DEL */
     NUM_LOCK("Num Lock"),
     SCROLL_LOCK("Scroll Lock"),
     F1("F1", KeyType.FUNCTION),

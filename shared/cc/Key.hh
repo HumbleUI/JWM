@@ -84,7 +84,7 @@ namespace jwm {
         SUBTRACT,
         DECIMAL,
         DIVIDE,
-        JWM_DELETE,
+        DEL,
         NUM_LOCK,
         SCROLL_LOCK,
         F1,

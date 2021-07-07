@@ -204,7 +204,7 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_SUBTRACT] = Key::SUBTRACT;
     _keyTable[VK_DECIMAL] = Key::DECIMAL;
     _keyTable[VK_DIVIDE] = Key::DIVIDE;
-    _keyTable[VK_DELETE] = Key::JWM_DELETE;
+    _keyTable[VK_DELETE] = Key::DEL;
     _keyTable[VK_NUMLOCK] = Key::NUM_LOCK;
     _keyTable[VK_SCROLL] = Key::SCROLL_LOCK;
 
