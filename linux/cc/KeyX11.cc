@@ -91,7 +91,7 @@ jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
         case XK_KP_Decimal: return Key::DECIMAL;
         case XK_KP_Divide: return Key::DIVIDE;
         case XK_KP_Delete: return Key::DEL;
-        case XK_Delete:
+        case XK_Delete: return Key::DEL;
         case XK_Num_Lock: return Key::NUM_LOCK;
         case XK_Scroll_Lock: return Key::SCROLL_LOCK;
         case XK_F1: return Key::F1;
@@ -121,8 +121,10 @@ jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
         case XK_Print: return Key::PRINTSCREEN;
         case XK_Insert: return Key::INSERT;
         case XK_Help: return Key::HELP;
-        case XK_Meta_R:
-        case XK_Meta_L: return Key::META;
+        case XK_Super_L:
+        case XK_Super_R:
+        case XK_Meta_L:
+        case XK_Meta_R: return Key::META;
         case XK_grave: return Key::BACK_QUOTE;
         case XK_quoteright: return Key::QUOTE;
         case XK_KP_Up: return Key::KP_UP;
