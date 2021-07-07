@@ -20,6 +20,7 @@ namespace jwm {
         void move(int left, int top);
         void resize(int width, int height);
         void close();
+        LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
         JNIEnv* getJNIEnv() const { return fEnv; }
         DWORD _getWindowStyle() const;

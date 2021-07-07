@@ -3,6 +3,7 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <impl/Library.hh>
+#include <impl/JNILocal.hh>
 #include <memory>
 
 jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
@@ -42,7 +43,7 @@ bool jwm::WindowWin32::init() {
     );
 
     if (!_hWnd) {
-        _windowManager.sendError("Failed to init WindowWin32");
+        AppWin32::getInstance().sendError("Failed to init WindowWin32");
         return false;
     }
 
@@ -150,6 +151,63 @@ DWORD jwm::WindowWin32::_getWindowStyle() const {
 
 DWORD jwm::WindowWin32::_getWindowExStyle() const {
     return 0;
+}
+
+LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    JNIEnv* env = getJNIEnv();
+
+    switch (uMsg) {
+        case WM_SIZE: {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            JNILocal<jobject> eventResize(env, classes::EventResize::make(env, width, height));
+            dispatch(eventResize.get());
+        }
+            break;
+
+        case WM_MOVE: {
+            int left = LOWORD(lParam);
+            int top = HIWORD(lParam);
+            //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
+            //window->dispatch(eventMove.get());
+        }
+            break;
+
+        case WM_MOUSEMOVE: {
+            int xPos = LOWORD(lParam);
+            int yPos = HIWORD(lParam);
+            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos));
+            dispatch(eventMouseMove.get());
+        }
+            break;
+
+        case WM_KEYDOWN: {
+            int keycode = (int) wParam;
+            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
+            printf("WM_KEYDOWN %i %i\n", keycode, scancode);
+            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, scancode, true));
+            dispatch(eventKeyboard.get());
+        }
+            break;
+
+        case WM_KEYUP: {
+            int keycode = (int) wParam;
+            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
+            printf("WM_KEYUP %i %i\n", keycode, scancode);
+            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, scancode, false));
+            dispatch(eventKeyboard.get());
+        }
+            break;
+
+        case WM_CLOSE:
+            dispatch(classes::EventClose::kInstance);
+            return 0;
+
+        default:
+            break;
+    }
+
+    return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
 }
 
 // JNI

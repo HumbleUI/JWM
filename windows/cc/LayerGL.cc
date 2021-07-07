@@ -19,7 +19,7 @@ namespace jwm {
             ContextWGL& contextWGL = app.getContextWGL();
 
             if (!window) {
-                winMan.sendError("Passed null WindowWin32 object to attach");
+                app.sendError("Passed null WindowWin32 object to attach");
                 return;
             }
 
@@ -29,7 +29,7 @@ namespace jwm {
             if (_hRC == nullptr) {
                 // Init context, if it is not initialized yet
                 if (!contextWGL.init()) {
-                    winMan.sendError("Failed to initialize WGL globals");
+                    app.sendError("Failed to initialize WGL globals");
                     return;
                 }
 
@@ -57,7 +57,7 @@ namespace jwm {
                 bool status = contextWGL.wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
 
                 if (!status || numFormats == 0) {
-                    winMan.sendError("Failed to chose pixel format");
+                    app.sendError("Failed to chose pixel format");
                     return;
                 }
 
@@ -65,7 +65,7 @@ namespace jwm {
                 DescribePixelFormat(_hDC, pixelFormatID, sizeof(PFD), &PFD);
 
                 if (!SetPixelFormat(_hDC, pixelFormatID, &PFD)) {
-                    winMan.sendError("Failed to set selected pixel format");
+                    app.sendError("Failed to set selected pixel format");
                     return;
                 }
 
@@ -80,13 +80,13 @@ namespace jwm {
                 _hRC = contextWGL.wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
 
                 if (!_hRC) {
-                    winMan.sendError("Failed to create rendering context");
+                    app.sendError("Failed to create rendering context");
                     return;
                 }
             }
 
             if (!wglMakeCurrent(_hDC, _hRC)) {
-                winMan.sendError("Failed to make rendering context current");
+                app.sendError("Failed to make rendering context current");
                 return;
             }
 

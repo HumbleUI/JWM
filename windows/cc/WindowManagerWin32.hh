@@ -13,7 +13,6 @@ namespace jwm {
         int runMainLoop();
         void requestTerminate();
         void requestFrame(class WindowWin32* window);
-        void sendError(const char* what);
 
         HWND getHelperWindow() const { return _hWndHelperWindow; }
 

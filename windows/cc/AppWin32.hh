@@ -11,6 +11,7 @@ namespace jwm {
         void init(JNIEnv* jniEnv);
         int start();
         void terminate();
+        void sendError(const char* what);
 
         WindowManagerWin32& getWindowManager() { return _windowManager; }
         ContextWGL& getContextWGL() { return _wglContext; }

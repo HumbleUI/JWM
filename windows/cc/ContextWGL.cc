@@ -29,19 +29,19 @@ bool jwm::ContextWGL::init() {
     int pixelFormatID = ChoosePixelFormat(helperWindowDC, &helperWindowPFD);
 
     if (!pixelFormatID) {
-        winMan.sendError("Failed to choose pixel format for helper window");
+        app.sendError("Failed to choose pixel format for helper window");
         return false;
     }
 
     if (!SetPixelFormat(helperWindowDC, pixelFormatID, &helperWindowPFD)) {
-        winMan.sendError("Failed to set pixel format for helper window");
+        app.sendError("Failed to set pixel format for helper window");
         return false;
     }
 
     HGLRC helperWindowRC = wglCreateContext(helperWindowDC);
 
     if (!helperWindowRC) {
-        winMan.sendError("Failed to create rendering context for helper window");
+        app.sendError("Failed to create rendering context for helper window");
         return false;
     }
 
@@ -53,7 +53,7 @@ bool jwm::ContextWGL::init() {
     };
 
     if (!wglMakeCurrent(helperWindowDC, helperWindowRC)) {
-        winMan.sendError("Failed to make helper window context current");
+        app.sendError("Failed to make helper window context current");
         releaseHelperWindowResources();
         return false;
     }

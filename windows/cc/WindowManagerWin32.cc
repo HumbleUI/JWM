@@ -2,8 +2,6 @@
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
 #include <impl/Library.hh>
-#include <impl/JNILocal.hh>
-#include <iostream>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
@@ -13,61 +11,7 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
 
-    JNIEnv* env = window->getJNIEnv();
-
-    switch (uMsg) {
-        case WM_SIZE: {
-            int width = LOWORD(lParam);
-            int height = HIWORD(lParam);
-            jwm::JNILocal<jobject> eventResize(env, jwm::classes::EventResize::make(env, width, height));
-            window->dispatch(eventResize.get());
-        }
-            break;
-
-        case WM_MOVE: {
-            int left = LOWORD(lParam);
-            int top = HIWORD(lParam);
-            //jwm::JNILocal<jobject> eventMove(env, jwm::classes::EventMove::make(env, width, height));
-            //window->dispatch(eventMove.get());
-        }
-            break;
-
-        case WM_MOUSEMOVE: {
-            int xPos = LOWORD(lParam);
-            int yPos = HIWORD(lParam);
-            jwm::JNILocal<jobject> eventMouseMove(env, jwm::classes::EventMouseMove::make(env, xPos, yPos));
-            window->dispatch(eventMouseMove.get());
-        }
-            break;
-
-        case WM_KEYDOWN: {
-            int keycode = (int) wParam;
-            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
-            printf("WM_KEYDOWN %i %i\n", keycode, scancode);
-            jwm::JNILocal<jobject> eventKeyboard(env, jwm::classes::EventKeyboard::make(env, scancode, true));
-            window->dispatch(eventKeyboard.get());
-        }
-            break;
-
-        case WM_KEYUP: {
-            int keycode = (int) wParam;
-            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
-            printf("WM_KEYUP %i %i\n", keycode, scancode);
-            jwm::JNILocal<jobject> eventKeyboard(env, jwm::classes::EventKeyboard::make(env, scancode, false));
-            window->dispatch(eventKeyboard.get());
-        }
-            break;
-
-        case WM_CLOSE:
-        case WM_QUIT:
-            window->dispatch(jwm::classes::EventClose::kInstance);
-            return 0;
-
-        default:
-            break;
-    }
-
-    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    return window->processEvent(uMsg, wParam, lParam);
 }
 
 bool jwm::WindowManagerWin32::init() {
@@ -113,10 +57,6 @@ void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {
     _frameRequests.emplace(window);
 }
 
-void jwm::WindowManagerWin32::sendError(const char *what) {
-    std::cerr << "jwm::WindowManagerWin32::Error: " << what << std::endl;
-}
-
 int jwm::WindowManagerWin32::_registerWindowClass() {
     WNDCLASSEXW wndclassexw;
 
@@ -140,7 +80,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     }
 
     if (!RegisterClassExW(&wndclassexw)) {
-        sendError("Failed to register window class");
+        AppWin32::getInstance().sendError("Failed to register window class");
         return false;
     }
 
@@ -158,7 +98,7 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
                                         NULL);
 
     if (!_hWndHelperWindow) {
-        sendError("Failed to create helper window");
+        AppWin32::getInstance().sendError("Failed to create helper window");
         return false;
     }
 
