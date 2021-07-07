@@ -2,6 +2,7 @@
 #include <AppWin32.hh>
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
+#include <Key.hh>
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
 #include <memory>
@@ -173,6 +174,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
             break;
 
+        case WM_PAINT:
+            dispatch(classes::EventFrame::kInstance);
+            return 0;
+
         case WM_MOUSEMOVE: {
             int xPos = LOWORD(lParam);
             int yPos = HIWORD(lParam);
@@ -181,20 +186,22 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
             break;
 
-        case WM_KEYDOWN: {
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        case WM_KEYUP:
+        case WM_SYSKEYUP: {
+            bool isPressed = HIWORD(lParam) & KF_UP;
             int keycode = (int) wParam;
             int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
-            printf("WM_KEYDOWN %i %i\n", keycode, scancode);
-            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, scancode, true));
-            dispatch(eventKeyboard.get());
-        }
-            break;
+            auto& table = _windowManager.getKeyTable();
+            auto mapping = table.find(keycode);
 
-        case WM_KEYUP: {
-            int keycode = (int) wParam;
-            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
-            printf("WM_KEYUP %i %i\n", keycode, scancode);
-            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, scancode, false));
+            Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
+
+            printf("WM_KEY win keycode:%i win scancode:%i Key:%i isPressed:%i\n",
+                   keycode, scancode, (int)key, (int)isPressed);
+
+            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, static_cast<int>(key), isPressed));
             dispatch(eventKeyboard.get());
         }
             break;

@@ -11,6 +11,7 @@ public class Example implements Consumer<Event> {
     public SkijaLayer _layer;
     public Timer timer = new Timer(true);
 
+    public long paintCount = 0;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
@@ -38,6 +39,8 @@ public class Example implements Consumer<Event> {
     }
 
     public void paint() {
+        paintCount += 1;
+
         if (_layer == null)
             return;
 
@@ -222,8 +225,9 @@ public class Example implements Consumer<Event> {
                 } else if (eventKeyboard.getKeyCode() == Key.UP) { // ↑
                     variantIdx = (variantIdx + variants.length - 1) % variants.length;
                     changeLayer();
-                } else 
-                    System.out.println("Key pressed: " + eventKeyboard.getKeyCode().toString());
+                }
+
+                System.out.println("Key pressed: " + eventKeyboard.getKeyCode().toString());
             }
         } else if (e instanceof EventFrame) {
             paint();
