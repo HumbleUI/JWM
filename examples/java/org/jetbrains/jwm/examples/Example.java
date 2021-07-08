@@ -17,9 +17,7 @@ public class Example implements Consumer<Event> {
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
     public int x = 0, y = 0, lastX = 0, lastY = 0;
 
-    public String[] variants = new String[] {
-        "OpenGL"
-    };
+    public String[] variants;
     public int variantIdx = 0;
 
     public long t0 = System.nanoTime();
@@ -28,6 +26,10 @@ public class Example implements Consumer<Event> {
     public boolean _paused = false;
 
     public Example() {
+        variants = Platform.CURRENT == Platform.MACOS
+            ? new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" }
+            : new String[] { "SkijaLayerGL" };
+
         _window = App.makeWindow();
         _window.setEventListener(this);
         changeLayer();
@@ -187,7 +189,14 @@ public class Example implements Consumer<Event> {
         if (_layer != null)
             _layer.close();
 
-        _layer = new SkijaLayerGL();
+        String className = "org.jetbrains.jwm.examples." + variants[variantIdx];
+        try {
+            _layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            System.err.println("Failed to create class " + className);
+            e.printStackTrace();
+            _layer = null;
+        }
 
         _layer.attach(_window);
         _layer.reconfigure();
