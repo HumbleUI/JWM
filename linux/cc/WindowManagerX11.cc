@@ -145,6 +145,9 @@ void WindowManagerX11::runLoop() {
                             // flicker-fix sync on resize
                             myWindow->_xsyncRequestCounter.lo = ev.xclient.data.l[2];
                             myWindow->_xsyncRequestCounter.hi = ev.xclient.data.l[3];
+                        } else if (ev.xclient.data.l[0] == _atoms.WM_DELETE_WINDOW) {
+                            // close button clicked
+                            myWindow->dispatch(EventClose::kInstance);
                         }
                     }
                     break;
@@ -152,8 +155,6 @@ void WindowManagerX11::runLoop() {
                 case ConfigureNotify: { // resize
                     jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
                     myWindow->dispatch(eventResize.get());
-                    myWindow->unsetRedrawRequest();
-                    myWindow->dispatch(EventFrame::kInstance);
 
                     // force redraw
                     myWindow->unsetRedrawRequest();
