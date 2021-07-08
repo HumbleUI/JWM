@@ -5,6 +5,7 @@
 #include <X11/Xlib.h>
 #include "Window.hh"
 #include "WindowManagerX11.hh"
+#include "ILayer.hh"
 
 namespace jwm {
     class WindowX11: public jwm::Window {
@@ -49,6 +50,7 @@ namespace jwm {
         bool _isRedrawRequested = false;
 
         WindowManagerX11& _windowManager;
+        ILayer* _layer = nullptr;
         ::Window _x11Window = 0;
         XIC _ic;
 

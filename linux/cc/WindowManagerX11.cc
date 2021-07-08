@@ -135,6 +135,9 @@ void WindowManagerX11::runLoop() {
             if (myWindow == nullptr) {
                 continue;
             }
+            if (myWindow->_layer) {
+                myWindow->_layer->makeCurrent();
+            }
             switch (ev.type) {
                 case ClientMessage: {
                     if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
@@ -198,6 +201,9 @@ void WindowManagerX11::runLoop() {
         for (auto& p : _nativeWindowToMy) {
             if (p.second->isRedrawRequested()) {
                 p.second->unsetRedrawRequest();
+                if (p.second->_layer) {
+                    p.second->_layer->makeCurrent();
+                }
                 p.second->dispatch(EventFrame::kInstance);
             }
         }
