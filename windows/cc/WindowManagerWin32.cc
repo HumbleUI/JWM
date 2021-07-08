@@ -29,7 +29,7 @@ int jwm::WindowManagerWin32::runMainLoop() {
     while (!_terminateRequested.load()) {
         MSG msg;
 
-        while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+        while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
             if (msg.message == WM_QUIT) {
                 // post close event to managed windows?
             } else {
@@ -64,7 +64,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
 
     ZeroMemory(&wndclassexw, sizeof(wndclassexw));
     wndclassexw.cbSize        = sizeof(wndclassexw);
-    wndclassexw.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
     wndclassexw.hInstance     = GetModuleHandleW(NULL);
     wndclassexw.hCursor       = LoadCursorA(NULL, IDC_ARROW);
@@ -140,7 +140,7 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_OEM_COMMA] = Key::COMMA;
     _keyTable[VK_OEM_MINUS] = Key::MINUS;
     _keyTable[VK_OEM_PERIOD] = Key::PERIOD;
-    _keyTable[VK_DIVIDE] = Key::SLASH;
+    _keyTable[VK_OEM_2] = Key::SLASH;
 
     _keyTable[0x30] = Key::DIGIT0;
     _keyTable[0x31] = Key::DIGIT1;

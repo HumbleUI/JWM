@@ -37,18 +37,18 @@ namespace jwm {
                 _hDC = GetDC(_windowWin32->_hWnd);
 
                 const int pixelAttribs[] = {
-                        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-                        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-                        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-                        WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-                        WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-                        WGL_COLOR_BITS_ARB, 32,
-                        WGL_ALPHA_BITS_ARB, 8,
-                        WGL_DEPTH_BITS_ARB, 24,
-                        WGL_STENCIL_BITS_ARB, 8,
-                        WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-                        WGL_SAMPLES_ARB, 4,
-                        0
+                    WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+                    WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+                    WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+                    WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+                    WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+                    WGL_COLOR_BITS_ARB, 32,
+                    WGL_ALPHA_BITS_ARB, 8,
+                    WGL_DEPTH_BITS_ARB, 24,
+                    WGL_STENCIL_BITS_ARB, 8,
+                    WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+                    WGL_SAMPLES_ARB, 4,
+                    0
                 };
 
                 int pixelFormatID;
@@ -58,6 +58,7 @@ namespace jwm {
 
                 if (!status || numFormats == 0) {
                     app.sendError("Failed to chose pixel format");
+                    _releaseInternal();
                     return;
                 }
 
@@ -66,14 +67,15 @@ namespace jwm {
 
                 if (!SetPixelFormat(_hDC, pixelFormatID, &PFD)) {
                     app.sendError("Failed to set selected pixel format");
+                    _releaseInternal();
                     return;
                 }
 
                 int  contextAttribs[] = {
-                        WGL_CONTEXT_MAJOR_VERSION_ARB, GL_MAJOR_MIN,
-                        WGL_CONTEXT_MINOR_VERSION_ARB, GL_MINOR_MIN,
-                        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-                        0
+                    WGL_CONTEXT_MAJOR_VERSION_ARB, GL_MAJOR_MIN,
+                    WGL_CONTEXT_MINOR_VERSION_ARB, GL_MINOR_MIN,
+                    WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                    0
                 };
 
                 // Shared context? Maybe use this feature future
@@ -81,12 +83,14 @@ namespace jwm {
 
                 if (!_hRC) {
                     app.sendError("Failed to create rendering context");
+                    _releaseInternal();
                     return;
                 }
             }
 
             if (!wglMakeCurrent(_hDC, _hRC)) {
                 app.sendError("Failed to make rendering context current");
+                _releaseInternal();
                 return;
             }
 
@@ -96,6 +100,8 @@ namespace jwm {
         }
 
         void resize(int width, int height) {
+            makeCurrent();
+
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);
@@ -105,11 +111,36 @@ namespace jwm {
         }
 
         void swapBuffers() {
+            makeCurrent();
+
+            assert(_hDC);
             SwapBuffers(_hDC);
         }
 
+        void makeCurrent() {
+            assert(_hDC);
+            assert(_hRC);
+            wglMakeCurrent(_hDC, _hRC);
+        }
+
         void close() {
-            jwm::unref(&_windowWin32);
+            _releaseInternal();
+        }
+
+        void _releaseInternal() {
+            if (_hRC) {
+                wglDeleteContext(_hRC);
+                _hRC = nullptr;
+            }
+
+            if (_hDC) {
+                ReleaseDC(_windowWin32->_hWnd, _hDC);
+                _hDC = nullptr;
+            }
+
+            if (_windowWin32) {
+                jwm::unref(&_windowWin32);
+            }
         }
 
         WindowWin32* _windowWin32 = nullptr;
@@ -149,6 +180,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
     jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->swapBuffers();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nMakeCurrent
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    instance->makeCurrent();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nClose

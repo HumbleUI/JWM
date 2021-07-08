@@ -31,16 +31,16 @@ bool jwm::WindowWin32::init() {
     LPVOID lpParam = NULL;
 
     _hWnd = CreateWindowExW(
-            exStyle,
-            JWM_WIN32_WINDOW_CLASS_NAME,
-            JWM_WIN32_WINDOW_DEFAULT_NAME,
-            style,
-            x, y,
-            width, height,
-            hWndParent,
-            hMenu,
-            hInstance,
-            lpParam
+        exStyle,
+        JWM_WIN32_WINDOW_CLASS_NAME,
+        JWM_WIN32_WINDOW_DEFAULT_NAME,
+        style,
+        x, y,
+        width, height,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam
     );
 
     if (!_hWnd) {
@@ -167,6 +167,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_MOVE: {
+            printf("Move %p\n", this);
             int left = LOWORD(lParam);
             int top = HIWORD(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
@@ -175,8 +176,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_PAINT:
+            printf("Paint %p\n", this);
             dispatch(classes::EventFrame::kInstance);
-            return 0;
+            break;
 
         case WM_MOUSEMOVE: {
             int xPos = LOWORD(lParam);
@@ -198,7 +200,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
-            printf("WM_KEY win keycode:%i win scancode:%i Key:%i isPressed:%i\n",
+            printf("WM_KEY win keycode: 0x%x win scancode: 0x%x Key: 0x%x isPressed:%i\n",
                    keycode, scancode, (int)key, (int)isPressed);
 
             JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, static_cast<int>(key), isPressed));

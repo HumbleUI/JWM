@@ -10,6 +10,8 @@ public class SkijaLayerGL extends LayerGL implements SkijaLayer {
 
     @Override
     public Canvas beforePaint() {
+        makeCurrent();
+
         if (_directContext == null)
             _directContext = DirectContext.makeGL();
 
@@ -63,6 +65,8 @@ public class SkijaLayerGL extends LayerGL implements SkijaLayer {
 
     @Override
     public void close() {
+        makeCurrent();
+
         if (_directContext != null) {
             _directContext.abandon();
             _directContext.close();
