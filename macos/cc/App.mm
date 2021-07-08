@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #include <jni.h>
 #include "impl/Library.hh"
+#include "MainView.hh"
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {
@@ -31,6 +32,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     [subMenu release];
     [menuBar release];
     [pool release];
+
+    jwm::initKeyTable();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_start
