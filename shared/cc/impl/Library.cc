@@ -161,10 +161,10 @@ namespace jwm {
 
             jobject make(JNIEnv* env, jint keyCode, jboolean isPressed) {
                 // map keyCode to enum org.jetbrains.jwm.Key with kKeys
-                jobject kKeyCodeJavaEnum = env->GetObjectArrayElement(kKeys, keyCode); 
+                jwm::JNILocal<jobject> kKeyCodeJavaEnum(env, env->GetObjectArrayElement(kKeys, keyCode)); 
                 Throwable::exceptionThrown(env);
-                assert(kKeyCodeJavaEnum);
-                jobject res = env->NewObject(kCls, kCtor, kKeyCodeJavaEnum, isPressed);
+                assert(kKeyCodeJavaEnum.get());
+                jobject res = env->NewObject(kCls, kCtor, kKeyCodeJavaEnum.get(), isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
