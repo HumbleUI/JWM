@@ -1,12 +1,7 @@
 package org.jetbrains.jwm;
 
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jwm.impl.RefCounted;
-import java.util.List;
-import java.util.ArrayList;
+import org.jetbrains.annotations.*;
+import java.util.*;
 
 import java.util.function.Consumer;
 
@@ -17,7 +12,12 @@ public abstract class Screens {
     @ApiStatus.Internal
     public static native Screens _nInstantiate();
 
+
+    @ApiStatus.Internal
+    public abstract List<Screen> _getAll();
+
+
     public static List<Screen> getAll() {
-        return null;
+        return _instance._getAll();
     }
 }

@@ -4,7 +4,7 @@
 #include <jni.h>
 
 namespace jwm {
-    extern class App {
+    extern class AppX11 {
     public:
         void init(JNIEnv* jniEnv);
         void start();

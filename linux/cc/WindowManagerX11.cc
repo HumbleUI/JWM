@@ -4,7 +4,7 @@
 #include <limits>
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
-#include "App.hh"
+#include "AppX11.hh"
 #include <X11/extensions/sync.h>
 #include "KeyX11.hh"
 

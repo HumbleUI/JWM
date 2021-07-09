@@ -1,7 +1,7 @@
 #include "WindowX11.hh"
 #include <jni.h>
 #include <memory>
-#include "App.hh"
+#include "AppX11.hh"
 #include "impl/Library.hh"
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>

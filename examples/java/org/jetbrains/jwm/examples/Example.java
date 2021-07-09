@@ -3,6 +3,7 @@ package org.jetbrains.jwm.examples;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.function.Consumer;
 
@@ -258,6 +259,10 @@ public class Example implements Consumer<Event> {
 
     public static void main(String[] args) {
         App.init();
+
+        List<Screen> screens = Screens.getAll();
+        System.out.println("Screen count: " + screens.size());
+
         new Example();
         App.start();
     }

@@ -1,18 +1,18 @@
 #include <jni.h>
-#include "App.hh"
+#include "AppX11.hh"
 
-jwm::App jwm::app;
+jwm::AppX11 jwm::app;
 
 
-void jwm::App::init(JNIEnv* jniEnv) {
+void jwm::AppX11::init(JNIEnv* jniEnv) {
     _jniEnv = jniEnv;
 }
 
-void jwm::App::start() {
+void jwm::AppX11::start() {
     wm.runLoop();
 }
 
-void jwm::App::terminate() {
+void jwm::AppX11::terminate() {
     wm.terminate();
 }
 
