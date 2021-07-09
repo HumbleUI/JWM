@@ -1,8 +1,35 @@
 #include <jni.h>
 #include "AppX11.hh"
+#include <X11/Xresource.h>
+#include <cstdlib>
 
 jwm::AppX11 jwm::app;
 
+
+float jwm::AppX11::getScale() {
+    char *resourceString = XResourceManagerString(wm.display);
+    XrmDatabase db;
+    XrmValue value;
+    char *type = NULL;
+
+    static struct once {
+        once() {
+            XrmInitialize();
+        }
+    } once;
+
+    db = XrmGetStringDatabase(resourceString);
+
+    if (resourceString) {
+        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
+            if (value.addr) {
+                return atof(value.addr) / 96.f;
+            }
+        }
+    }
+
+    return 1.f;
+}
 
 void jwm::AppX11::init(JNIEnv* jniEnv) {
     _jniEnv = jniEnv;

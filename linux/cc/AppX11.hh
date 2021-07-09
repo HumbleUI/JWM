@@ -18,6 +18,8 @@ namespace jwm {
             return _jniEnv;
         }
 
+        float getScale();
+
         JNIEnv* _jniEnv;
         WindowManagerX11 wm;
     } app;

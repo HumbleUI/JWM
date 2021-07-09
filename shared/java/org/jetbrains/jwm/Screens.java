@@ -14,10 +14,10 @@ public abstract class Screens {
 
 
     @ApiStatus.Internal
-    public abstract List<Screen> _getAll();
+    public abstract List<IScreen> _getAll();
 
 
-    public static List<Screen> getAll() {
+    public static List<IScreen> getAll() {
         return _instance._getAll();
     }
 }

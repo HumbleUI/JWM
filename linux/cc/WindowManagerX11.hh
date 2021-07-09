@@ -21,6 +21,7 @@ namespace jwm {
         static int _xerrorhandler(Display* dsp, XErrorEvent* error);
 
         Display* getDisplay() const { return display; }
+        ::Window getRootWindow() const;
         Screen* getScreen() const { return screen; }
         XVisualInfo* getVisualInfo() const { return x11VisualInfo; }
         XSetWindowAttributes& getSWA() { return x11SWA; }

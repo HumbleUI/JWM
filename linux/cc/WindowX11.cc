@@ -3,7 +3,6 @@
 #include <memory>
 #include "AppX11.hh"
 #include "impl/Library.hh"
-#include <X11/Xresource.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/sync.h>
 
@@ -70,28 +69,7 @@ int WindowX11::getHeight() {
 }
 
 float WindowX11::getScale() {
-    char *resourceString = XResourceManagerString(_windowManager.display);
-    XrmDatabase db;
-    XrmValue value;
-    char *type = NULL;
-
-    static struct once {
-        once() {
-            XrmInitialize();
-        }
-    } once;
-
-    db = XrmGetStringDatabase(resourceString);
-
-    if (resourceString) {
-        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
-            if (value.addr) {
-                return atof(value.addr) / 96.f;
-            }
-        }
-    }
-
-    return 1.f;
+    return jwm::app.getScale();
 }
 
 bool WindowX11::init()

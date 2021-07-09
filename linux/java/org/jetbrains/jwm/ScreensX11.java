@@ -7,15 +7,10 @@ public class ScreensX11 extends Screens {
 
 
     @ApiStatus.Internal
-    public static native int _nX11GetScreenCount();
+    public static native IScreen[] _nX11GetAll();
 
     @Override @NotNull
-    public List<Screen> _getAll() {
-        List<Screen> screens = new ArrayList<>();
-        int count = _nX11GetScreenCount();
-        for (int i = 0; i < count; ++i) {
-            screens.add(null);
-        } 
-        return screens;
+    public List<IScreen> _getAll() {
+        return Arrays.asList(_nX11GetAll());
     }
 }

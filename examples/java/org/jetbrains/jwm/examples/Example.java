@@ -260,8 +260,14 @@ public class Example implements Consumer<Event> {
     public static void main(String[] args) {
         App.init();
 
-        List<Screen> screens = Screens.getAll();
+        List<IScreen> screens = Screens.getAll();
         System.out.println("Screen count: " + screens.size());
+        for (int i = 0; i < screens.size(); ++i) {
+            IScreen screen = screens.get(i);
+            System.out.println("Monitor " + (i + 1) + ":");
+            System.out.println("Size: " + screen.getWidth() + "x" + screen.getHeight());
+            System.out.println("Scale: " + screen.getScale());
+        }
 
         new Example();
         App.start();

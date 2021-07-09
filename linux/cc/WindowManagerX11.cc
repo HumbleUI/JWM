@@ -120,6 +120,10 @@ WindowManagerX11::WindowManagerX11():
 
 }
 
+::Window WindowManagerX11::getRootWindow() const {
+    return XDefaultRootWindow(display);
+}
+
 void WindowManagerX11::runLoop() {
     _runLoop = true;
     XEvent ev;
