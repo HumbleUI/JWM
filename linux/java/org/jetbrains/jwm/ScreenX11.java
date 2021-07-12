@@ -17,6 +17,9 @@ public class ScreenX11 implements IScreen {
     public int _height;
 
     @ApiStatus.Internal
+    public boolean _isPrimary;
+
+    @ApiStatus.Internal
     public ScreenX11() {}
 
     @Override
@@ -38,6 +41,12 @@ public class ScreenX11 implements IScreen {
     public int getHeight() {
         return _height;
     }
+
+    @Override
     public native float getScale();
 
+    @Override
+    public boolean isPrimary() {
+        return _isPrimary;
+    }
 }

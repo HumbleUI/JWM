@@ -17,13 +17,6 @@ public class App {
     @ApiStatus.Internal
     public static Screens _screens;
 
-    @ApiStatus.Internal
-    public static native Screens _nMakeScreens();
-
-
-    public static List<IScreen> getAllScreens() {
-        return _screens._getAll();
-    }
 
     /**
      * Call this before you do anything else
@@ -62,4 +55,17 @@ public class App {
     public static native void terminate();
 
     @ApiStatus.Internal public static native void _nInit();
+
+
+    @ApiStatus.Internal
+    public static native Screens _nMakeScreens();
+
+
+    public static List<IScreen> getAllScreens() {
+        return _screens._getAll();
+    }
+
+    public static IScreen getPrimaryScreen() {
+        return _screens._getPrimary();
+    }
 }

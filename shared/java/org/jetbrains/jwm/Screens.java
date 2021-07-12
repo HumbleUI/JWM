@@ -10,4 +10,6 @@ public abstract class Screens {
     @ApiStatus.Internal
     public abstract List<IScreen> _getAll();
 
+    @ApiStatus.Internal
+    public abstract IScreen _getPrimary();
 }

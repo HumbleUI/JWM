@@ -14,6 +14,8 @@ public interface IScreen {
 
     public abstract int getWidth();
     public abstract int getHeight();
+
     public abstract float getScale();
 
+    public abstract boolean isPrimary();
 }
