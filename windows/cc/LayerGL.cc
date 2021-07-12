@@ -2,7 +2,6 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <ContextWGL.hh>
-#include <impl/RefCounted.hh>
 #include <impl/Library.hh>
 #include <jni.h>
 

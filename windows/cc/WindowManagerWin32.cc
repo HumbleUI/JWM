@@ -29,19 +29,20 @@ int jwm::WindowManagerWin32::runMainLoop() {
     while (!_terminateRequested.load()) {
         MSG msg;
 
-        while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
                 // post close event to managed windows?
             } else {
                 TranslateMessage(&msg);
-                DispatchMessageW(&msg);
+                DispatchMessage(&msg);
             }
         }
 
-        // Dispatch frame request event for those windows,
-        // which want to redraw in the next frame
         std::unordered_set<WindowWin32*> toProcess;
         std::swap(toProcess, _frameRequests);
+
+        // Dispatch frame request event for those windows,
+        // which want to redraw in the next frame
 
         for (auto window: toProcess) {
             window->dispatch(classes::EventFrame::kInstance);

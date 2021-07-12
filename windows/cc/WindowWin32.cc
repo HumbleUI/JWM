@@ -178,7 +178,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_PAINT:
             printf("Paint %p\n", this);
             dispatch(classes::EventFrame::kInstance);
-            break;
+            return 0;
 
         case WM_MOUSEMOVE: {
             int xPos = LOWORD(lParam);
