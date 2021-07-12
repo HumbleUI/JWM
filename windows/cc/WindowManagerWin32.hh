@@ -2,18 +2,19 @@
 
 #include <PlatformWin32.hh>
 #include <Key.hh>
+#include <jni.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <mutex>
 #include <atomic>
+#include <vector>
 
 namespace jwm {
 
     class WindowManagerWin32 {
     public:
         bool init();
-        int runMainLoop();
-        void requestTerminate();
+        int iteration();
         void requestFrame(class WindowWin32* window);
 
         HWND getHelperWindow() const { return _hWndHelperWindow; }
@@ -28,7 +29,6 @@ namespace jwm {
         std::unordered_set<class WindowWin32*> _windows;
         std::unordered_set<class WindowWin32*> _frameRequests;
         std::unordered_map<int, Key> _keyTable;
-        std::atomic_bool _terminateRequested{false};
 
         HWND _hWndHelperWindow;
     };

@@ -25,35 +25,29 @@ bool jwm::WindowManagerWin32::init() {
     return true;
 }
 
-int jwm::WindowManagerWin32::runMainLoop() {
-    while (!_terminateRequested.load()) {
-        MSG msg;
+int jwm::WindowManagerWin32::iteration() {
+    MSG msg;
 
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (msg.message == WM_QUIT) {
-                // post close event to managed windows?
-            } else {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-        }
-
-        std::unordered_set<WindowWin32*> toProcess;
-        std::swap(toProcess, _frameRequests);
-
-        // Dispatch frame request event for those windows,
-        // which want to redraw in the next frame
-
-        for (auto window: toProcess) {
-            window->dispatch(classes::EventFrame::kInstance);
+    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_QUIT) {
+            // post close event to managed windows?
+        } else {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
         }
     }
 
-    return 0;
-}
+    std::unordered_set<WindowWin32*> toProcess;
+    std::swap(toProcess, _frameRequests);
 
-void jwm::WindowManagerWin32::requestTerminate() {
-    _terminateRequested.store(true);
+    // Dispatch frame request event for those windows,
+    // which want to redraw in the next frame
+
+    for (auto window: toProcess) {
+        window->dispatch(classes::EventFrame::kInstance);
+    }
+
+    return 0;
 }
 
 void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {

@@ -167,7 +167,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_MOVE: {
-            printf("Move %p\n", this);
             int left = LOWORD(lParam);
             int top = HIWORD(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
@@ -176,7 +175,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_PAINT:
-            printf("Paint %p\n", this);
             dispatch(classes::EventFrame::kInstance);
             return 0;
 
