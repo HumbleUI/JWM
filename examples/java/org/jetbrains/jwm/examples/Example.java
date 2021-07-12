@@ -260,7 +260,7 @@ public class Example implements Consumer<Event> {
     public static void main(String[] args) {
         App.init();
 
-        List<IScreen> screens = Screens.getAll();
+        List<IScreen> screens = App.getAllScreens();
         System.out.println("Screen count: " + screens.size());
         for (int i = 0; i < screens.size(); ++i) {
             IScreen screen = screens.get(i);

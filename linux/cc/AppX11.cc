@@ -31,6 +31,13 @@ float jwm::AppX11::getScale() {
     return 1.f;
 }
 
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_App__1nMakeScreens(JNIEnv* env, jclass cls) {
+    jclass kCls = env->FindClass("org/jetbrains/jwm/ScreensX11");
+    jmethodID kCtor = env->GetMethodID(kCls, "<init>", "()V");
+    jobject res = env->NewObject(kCls, kCtor);
+    return res;
+}
+
 void jwm::AppX11::init(JNIEnv* jniEnv) {
     _jniEnv = jniEnv;
 }
