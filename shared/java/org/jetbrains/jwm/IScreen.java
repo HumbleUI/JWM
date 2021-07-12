@@ -9,6 +9,9 @@ import java.util.function.Consumer;
 
 public interface IScreen {
 
+    public abstract int getX();
+    public abstract int getY();
+
     public abstract int getWidth();
     public abstract int getHeight();
     public abstract float getScale();
