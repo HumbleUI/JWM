@@ -87,7 +87,11 @@ Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.s
 
 Prerequisites:
 
+### Common
 Git, CMake, Ninja, C++ compiler, JDK 11+, $JAVA_HOME, Python 3.
+
+### Ubuntu 20.04
+libxcomposite-dev
 
 Build:
 
