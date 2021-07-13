@@ -1,6 +1,7 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
+#include <LayerGL.hh>
 #include <impl/Library.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -28,12 +29,30 @@ bool jwm::WindowManagerWin32::init() {
 int jwm::WindowManagerWin32::iteration() {
     MSG msg;
 
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+    LayerGL* current = nullptr;
+    _paintedWindows.clear();
+
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+        HWND hWnd = msg.hwnd;
+        auto entry = _windows.find(hWnd);
+        WindowWin32* window = entry == _windows.end()? nullptr: entry->second;
+        LayerGL* layer = window? window->getLayer(): nullptr;
+
+        if (layer && (current != layer)) {
+            current = layer;
+            layer->makeCurrent();
+        }
+
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
-        } else {
+        }
+        else if (msg.message == WM_PAINT &&
+                 _paintedWindows.find(window) != _paintedWindows.end()) {
+            break;
+        }
+        else {
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
 
@@ -44,7 +63,14 @@ int jwm::WindowManagerWin32::iteration() {
     // which want to redraw in the next frame
 
     for (auto window: toProcess) {
-        window->dispatch(classes::EventFrame::kInstance);
+        LayerGL* layer = window->getLayer();
+
+        if (layer && (current != layer)) {
+            current = layer;
+            layer->makeCurrent();
+        }
+
+        UpdateWindow(window->_hWnd);
     }
 
     return 0;
@@ -245,10 +271,10 @@ void jwm::WindowManagerWin32::_initKeyTable() {
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
-    _windows.emplace(&window);
+    _windows.emplace(window._hWnd, &window);
 }
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
-    _windows.erase(&window);
+    _windows.erase(window._hWnd);
     _frameRequests.erase(&window);
 }

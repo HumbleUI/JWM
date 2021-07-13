@@ -13,8 +13,6 @@ public interface Layer extends AutoCloseable {
 
     void swapBuffers();
 
-    void makeCurrent();
-
     @Override
     void close();
 }

@@ -26,8 +26,9 @@ namespace jwm {
         void _registerWindow(class WindowWin32& window);
         void _unregisterWindow(class WindowWin32& window);
 
-        std::unordered_set<class WindowWin32*> _windows;
+        std::unordered_map<HWND, class WindowWin32*> _windows;
         std::unordered_set<class WindowWin32*> _frameRequests;
+        std::unordered_set<class WindowWin32*> _paintedWindows;
         std::unordered_map<int, Key> _keyTable;
 
         HWND _hWndHelperWindow;

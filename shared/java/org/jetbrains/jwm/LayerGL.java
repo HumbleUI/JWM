@@ -46,11 +46,6 @@ public class LayerGL extends RefCounted implements Layer {
     }
 
     @Override
-        public void makeCurrent() {
-            _nMakeCurrent();
-        }
-
-    @Override
     public void close() {
         _nClose();
         _window = null;
@@ -62,6 +57,5 @@ public class LayerGL extends RefCounted implements Layer {
     @ApiStatus.Internal public native void _nReconfigure();
     @ApiStatus.Internal public native void _nResize(int width, int height);
     @ApiStatus.Internal public native void _nSwapBuffers();
-    @ApiStatus.Internal public native void _nMakeCurrent();
     @ApiStatus.Internal public native void _nClose();
 }

@@ -174,8 +174,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
             break;
 
+        case WM_ERASEBKGND:
+            return true;
+
         case WM_PAINT:
             dispatch(classes::EventFrame::kInstance);
+            _windowManager._paintedWindows.emplace(this);
             return 0;
 
         case WM_MOUSEMOVE: {

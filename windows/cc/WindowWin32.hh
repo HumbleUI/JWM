@@ -22,11 +22,14 @@ namespace jwm {
         void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+        void setLayer(class LayerGL* layer) { _layer = layer; }
+        class LayerGL* getLayer() const { return _layer; }
         JNIEnv* getJNIEnv() const { return fEnv; }
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
 
         class WindowManagerWin32& _windowManager;
+        class LayerGL* _layer = nullptr;
 
         HWND _hWnd = NULL;
     };
