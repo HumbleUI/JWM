@@ -37,7 +37,7 @@ public:
         if (_glXSwapIntervalEXT) {
             _glXSwapIntervalEXT(window->_windowManager.getDisplay(),
                                 window->_x11Window,
-                                1);
+                                -1);
         }
     }
 
