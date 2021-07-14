@@ -62,5 +62,11 @@ namespace jwm {
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint width, jint height);
         }
+
+        namespace Screen {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary);
+        }
     }
 }

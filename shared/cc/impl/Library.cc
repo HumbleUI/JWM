@@ -198,6 +198,24 @@ namespace jwm {
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
+
+        namespace Screen {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/Screen");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(JIIIIFZ)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary) {
+                jobject res = env->NewObject(kCls, kCtor, id, x, y, width, height, scale, isPrimary);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
     }
 }
 
@@ -213,4 +231,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventReconfigure::onLoad(env);
     jwm::classes::EventResize::onLoad(env);
+    jwm::classes::Screen::onLoad(env);
 }

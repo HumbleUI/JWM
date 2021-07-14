@@ -14,10 +14,6 @@ public class App {
     @ApiStatus.Internal
     public static List<Window> _windows = Collections.synchronizedList(new ArrayList<Window>());
 
-    @ApiStatus.Internal
-    public static Screens _screens;
-
-
     /**
      * Call this before you do anything else
      * TODO: make idempotent
@@ -25,7 +21,6 @@ public class App {
     public static void init() {
         Library.load();
         _nInit();
-        _screens = _nMakeScreens();
     }
 
     @NotNull @SneakyThrows
@@ -56,16 +51,12 @@ public class App {
 
     @ApiStatus.Internal public static native void _nInit();
 
+    public static native Screen[] getScreens();
 
-    @ApiStatus.Internal
-    public static native Screens _nMakeScreens();
-
-
-    public static List<IScreen> getAllScreens() {
-        return _screens._getAll();
-    }
-
-    public static IScreen getPrimaryScreen() {
-        return _screens._getPrimary();
+    public static Screen getPrimaryScreen() {
+        for (Screen s: getScreens())
+            if (s.isPrimary())
+                return s;
+        throw new IllegalStateException("Can't find primary screen");
     }
 }
