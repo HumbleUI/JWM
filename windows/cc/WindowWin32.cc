@@ -158,37 +158,49 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     JNIEnv* env = getJNIEnv();
 
     switch (uMsg) {
+        case WM_ENTERSIZEMOVE:
+        case WM_EXITSIZEMOVE: {
+            _enterSizeMove = !_enterSizeMove;
+            return 0;
+        }
+
         case WM_SIZE: {
             int width = LOWORD(lParam);
             int height = HIWORD(lParam);
             JNILocal<jobject> eventResize(env, classes::EventResize::make(env, width, height));
             dispatch(eventResize.get());
+            return 0;
         }
-            break;
 
         case WM_MOVE: {
             int left = LOWORD(lParam);
             int top = HIWORD(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
             //window->dispatch(eventMove.get());
+            return 0;
         }
-            break;
 
         case WM_ERASEBKGND:
             return true;
 
-        case WM_PAINT:
-            dispatch(classes::EventFrame::kInstance);
-            _windowManager._paintedWindows.emplace(this);
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+
+            if (BeginPaint(_hWnd, &ps)) {
+                dispatch(classes::EventFrame::kInstance);
+                EndPaint(_hWnd, &ps);
+            }
+
             return 0;
+        }
 
         case WM_MOUSEMOVE: {
             int xPos = LOWORD(lParam);
             int yPos = HIWORD(lParam);
             JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos));
             dispatch(eventMouseMove.get());
+            return 0;
         }
-            break;
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:

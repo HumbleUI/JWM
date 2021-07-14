@@ -28,9 +28,7 @@ bool jwm::WindowManagerWin32::init() {
 
 int jwm::WindowManagerWin32::iteration() {
     MSG msg;
-
     LayerGL* current = nullptr;
-    _paintedWindows.clear();
 
     while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
         HWND hWnd = msg.hwnd;
@@ -45,10 +43,6 @@ int jwm::WindowManagerWin32::iteration() {
 
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
-        }
-        else if (msg.message == WM_PAINT &&
-                 _paintedWindows.find(window) != _paintedWindows.end()) {
-            break;
         }
         else {
             TranslateMessage(&msg);
@@ -70,7 +64,7 @@ int jwm::WindowManagerWin32::iteration() {
             layer->makeCurrent();
         }
 
-        UpdateWindow(window->_hWnd);
+        window->dispatch(classes::EventFrame::kInstance);
     }
 
     return 0;

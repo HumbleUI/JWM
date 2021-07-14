@@ -31,7 +31,19 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
         // Get window device context
         _hDC = GetDC(_windowWin32->_hWnd);
 
+        //  WGL_SWAP_METHOD_EXT
+        //        If the color buffer has a back buffer, then this indicates how
+        //        they are swapped. If it is set to WGL_SWAP_EXCHANGE_EXT then
+        //        swapping exchanges the front and back buffer contents; if it is
+        //        set to WGL_SWAP_COPY_EXT then swapping copies the back buffer
+        //        contents to the front buffer; if it is set to
+        //        WGL_SWAP_UNDEFINED_EXT then the back buffer contents are copied
+        //        to the front buffer but the back buffer contents are undefined
+        //        after the operation. The <iLayerPlane> parameter is ignored if
+        //        this attribute is specified.
+
         const int pixelAttribs[] = {
+            WGL_SWAP_METHOD_EXT, WGL_SWAP_COPY_EXT,
             WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
             WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
             WGL_DOUBLE_BUFFER_ARB, GL_TRUE,

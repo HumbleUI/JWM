@@ -32,5 +32,6 @@ namespace jwm {
         class LayerGL* _layer = nullptr;
 
         HWND _hWnd = NULL;
+        bool _enterSizeMove = false;
     };
 }
