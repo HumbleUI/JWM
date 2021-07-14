@@ -12,11 +12,14 @@ namespace jwm {
         int start();
         void terminate();
         void sendError(const char* what);
+        void enqueueUIThreadCallback(jobject callback);
 
         WindowManagerWin32& getWindowManager() { return _windowManager; }
         ContextWGL& getContextWGL() { return _wglContext; }
         JNIEnv* getJniEnv() const { return _jniEnv; }
 
+        std::atomic_bool _terminateRequested{false};
+        std::vector<jobject> _uiThreadCallbacks;
         WindowManagerWin32 _windowManager;
         ContextWGL _wglContext;
         JNIEnv* _jniEnv;

@@ -31,16 +31,16 @@ bool jwm::WindowWin32::init() {
     LPVOID lpParam = NULL;
 
     _hWnd = CreateWindowExW(
-            exStyle,
-            JWM_WIN32_WINDOW_CLASS_NAME,
-            JWM_WIN32_WINDOW_DEFAULT_NAME,
-            style,
-            x, y,
-            width, height,
-            hWndParent,
-            hMenu,
-            hInstance,
-            lpParam
+        exStyle,
+        JWM_WIN32_WINDOW_CLASS_NAME,
+        JWM_WIN32_WINDOW_DEFAULT_NAME,
+        style,
+        x, y,
+        width, height,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam
     );
 
     if (!_hWnd) {
@@ -158,33 +158,49 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     JNIEnv* env = getJNIEnv();
 
     switch (uMsg) {
+        case WM_ENTERSIZEMOVE:
+        case WM_EXITSIZEMOVE: {
+            _enterSizeMove = !_enterSizeMove;
+            return 0;
+        }
+
         case WM_SIZE: {
             int width = LOWORD(lParam);
             int height = HIWORD(lParam);
             JNILocal<jobject> eventResize(env, classes::EventResize::make(env, width, height));
             dispatch(eventResize.get());
+            return 0;
         }
-            break;
 
         case WM_MOVE: {
             int left = LOWORD(lParam);
             int top = HIWORD(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
             //window->dispatch(eventMove.get());
-        }
-            break;
-
-        case WM_PAINT:
-            dispatch(classes::EventFrame::kInstance);
             return 0;
+        }
+
+        case WM_ERASEBKGND:
+            return true;
+
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+
+            if (BeginPaint(_hWnd, &ps)) {
+                dispatch(classes::EventFrame::kInstance);
+                EndPaint(_hWnd, &ps);
+            }
+
+            return 0;
+        }
 
         case WM_MOUSEMOVE: {
             int xPos = LOWORD(lParam);
             int yPos = HIWORD(lParam);
             JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos));
             dispatch(eventMouseMove.get());
+            return 0;
         }
-            break;
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
@@ -198,7 +214,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
-            printf("WM_KEY win keycode:%i win scancode:%i Key:%i isPressed:%i\n",
+            printf("WM_KEY win keycode: 0x%x win scancode: 0x%x Key: 0x%x isPressed:%i\n",
                    keycode, scancode, (int)key, (int)isPressed);
 
             JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, static_cast<int>(key), isPressed));

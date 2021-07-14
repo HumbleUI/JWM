@@ -1,6 +1,7 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
+#include <LayerGL.hh>
 #include <impl/Library.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -25,34 +26,48 @@ bool jwm::WindowManagerWin32::init() {
     return true;
 }
 
-int jwm::WindowManagerWin32::runMainLoop() {
-    while (!_terminateRequested.load()) {
-        MSG msg;
+int jwm::WindowManagerWin32::iteration() {
+    MSG msg;
+    LayerGL* current = nullptr;
 
-        while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (msg.message == WM_QUIT) {
-                // post close event to managed windows?
-            } else {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
-            }
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+        HWND hWnd = msg.hwnd;
+        auto entry = _windows.find(hWnd);
+        WindowWin32* window = entry == _windows.end()? nullptr: entry->second;
+        LayerGL* layer = window? window->getLayer(): nullptr;
+
+        if (layer && (current != layer)) {
+            current = layer;
+            layer->makeCurrent();
         }
 
-        // Dispatch frame request event for those windows,
-        // which want to redraw in the next frame
-        std::unordered_set<WindowWin32*> toProcess;
-        std::swap(toProcess, _frameRequests);
-
-        for (auto window: toProcess) {
-            window->dispatch(classes::EventFrame::kInstance);
+        if (msg.message == WM_QUIT) {
+            // post close event to managed windows?
+        }
+        else {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
 
-    return 0;
-}
+    std::unordered_set<WindowWin32*> toProcess;
+    std::swap(toProcess, _frameRequests);
 
-void jwm::WindowManagerWin32::requestTerminate() {
-    _terminateRequested.store(true);
+    // Dispatch frame request event for those windows,
+    // which want to redraw in the next frame
+
+    for (auto window: toProcess) {
+        LayerGL* layer = window->getLayer();
+
+        if (layer && (current != layer)) {
+            current = layer;
+            layer->makeCurrent();
+        }
+
+        window->dispatch(classes::EventFrame::kInstance);
+    }
+
+    return 0;
 }
 
 void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {
@@ -64,7 +79,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
 
     ZeroMemory(&wndclassexw, sizeof(wndclassexw));
     wndclassexw.cbSize        = sizeof(wndclassexw);
-    wndclassexw.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
     wndclassexw.hInstance     = GetModuleHandleW(NULL);
     wndclassexw.hCursor       = LoadCursorA(NULL, IDC_ARROW);
@@ -140,7 +155,7 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_OEM_COMMA] = Key::COMMA;
     _keyTable[VK_OEM_MINUS] = Key::MINUS;
     _keyTable[VK_OEM_PERIOD] = Key::PERIOD;
-    _keyTable[VK_DIVIDE] = Key::SLASH;
+    _keyTable[VK_OEM_2] = Key::SLASH;
 
     _keyTable[0x30] = Key::DIGIT0;
     _keyTable[0x31] = Key::DIGIT1;
@@ -250,10 +265,10 @@ void jwm::WindowManagerWin32::_initKeyTable() {
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
-    _windows.emplace(&window);
+    _windows.emplace(window._hWnd, &window);
 }
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
-    _windows.erase(&window);
+    _windows.erase(window._hWnd);
     _frameRequests.erase(&window);
 }

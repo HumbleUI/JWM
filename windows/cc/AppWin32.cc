@@ -1,4 +1,5 @@
 #include <AppWin32.hh>
+#include <impl/Library.hh>
 #include <iostream>
 
 // Globally accessible instance
@@ -16,15 +17,41 @@ void jwm::AppWin32::init(JNIEnv *jniEnv) {
 }
 
 int jwm::AppWin32::start() {
-    return _windowManager.runMainLoop();
+    auto env = getJniEnv();
+
+    while (!_terminateRequested.load()) {
+        int result = _windowManager.iteration();
+
+        if (result)
+            return result;
+
+        // Process UI thread callbacks
+        std::vector<jobject> process;
+        std::swap(process, _uiThreadCallbacks);
+
+        for (auto callback: process) {
+            jwm::classes::Runnable::run(env, callback);
+            env->DeleteGlobalRef(callback);
+        }
+    }
+
+    // Release enqueued but not executed callbacks
+    for (auto callback: _uiThreadCallbacks)
+        env->DeleteGlobalRef(callback);
+
+    return 0;
 }
 
 void jwm::AppWin32::terminate() {
-    _windowManager.requestTerminate();
+    _terminateRequested.store(true);
 }
 
 void jwm::AppWin32::sendError(const char *what) {
     std::cerr << "jwm::Error: " << what << std::endl;
+}
+
+void jwm::AppWin32::enqueueUIThreadCallback(jobject callback) {
+    _uiThreadCallbacks.push_back(callback);
 }
 
 // JNI
@@ -46,5 +73,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_runOnUIThread
         (JNIEnv* env, jclass jclass, jobject callback) {
-    // todo, maybe create queue in the app manager for such kind of runnable objects
+    auto callbackRef = env->NewGlobalRef(callback);
+    jwm::AppWin32::getInstance().enqueueUIThreadCallback(callbackRef);
 }

@@ -5,6 +5,7 @@ import org.jetbrains.skija.*;
 
 import java.util.List;
 import java.util.Timer;
+// import java.util.TimerTask;
 import java.util.function.Consumer;
 
 public class Example implements Consumer<Event> {
@@ -243,12 +244,12 @@ public class Example implements Consumer<Event> {
             paint();
             if (!_paused)
                 _window.requestFrame();
-            // System.out.println((System.currentTimeMillis() - tt) + " PaintEvent");
-            // timer.schedule(new TimerTask() {
-            //     public void run() {
-            //         App.runOnUIThread(() -> { System.out.println((System.currentTimeMillis() - tt) + " Paint"); paint(); });
-            //     }
-            // }, 10);
+//             System.out.println((System.nanoTime() - t0) + " PaintEvent");
+//             timer.schedule(new TimerTask() {
+//                 public void run() {
+//                     App.runOnUIThread(() -> { System.out.println((System.nanoTime() - t0) + " Paint"); paint(); });
+//                 }
+//             }, 10);
         } else if (e instanceof EventClose) {
             _layer.close();
             _window.close();
