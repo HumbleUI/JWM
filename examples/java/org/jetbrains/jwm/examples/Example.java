@@ -238,7 +238,9 @@ public class Example implements Consumer<Event> {
                     changeLayer();
                 }
 
-                System.out.println("Key pressed: " + eventKeyboard.getKeyCode().toString());
+                System.out.println("Keydown " + eventKeyboard.getKeyCode().toString());
+            } else {
+                System.out.println("Keyup " + eventKeyboard.getKeyCode().toString());
             }
         } else if (e instanceof EventFrame) {
             paint();

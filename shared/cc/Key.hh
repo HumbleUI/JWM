@@ -230,6 +230,7 @@ namespace jwm {
         VOLUME_DOWN,
         MUTE,
         COMMAND,
+        FUNCTION,
         SHORTCUT
     };
 }

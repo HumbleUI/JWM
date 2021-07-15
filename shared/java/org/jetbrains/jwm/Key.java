@@ -234,6 +234,7 @@ public enum Key {
     VOLUME_DOWN("Volume Down", KeyType.MEDIA),
     MUTE("Mute", KeyType.MEDIA),
     COMMAND("Command", KeyType.MODIFIER),
+    FUNCTION("Function", KeyType.MODIFIER),
     SHORTCUT("Shortcut");
 
     @ApiStatus.Internal @Getter public final String _name;
