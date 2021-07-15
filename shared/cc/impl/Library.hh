@@ -3,15 +3,6 @@
 #include <cstdint>
 
 namespace jwm {
-    enum class ModifierKey {
-        kNone       = 0,
-        kShift      = 1 << 0,
-        kControl    = 1 << 1,
-        kOption     = 1 << 2,   // same as ALT
-        kCommand    = 1 << 3,
-        kFirstPress = 1 << 4,
-    };
-
     namespace classes {
         namespace Throwable {
             extern jmethodID kPrintStackTrace;

@@ -1,12 +1,13 @@
 package org.jetbrains.jwm;
 
 import lombok.*;
+import org.jetbrains.annotations.*;
 
 @Data 
 public class EventKeyboard implements Event {
-    public final Key _keyCode;
-    public final boolean _isPressed;
-    @Getter(AccessLevel.NONE) public final KeyModifier[] _modifiers = new KeyModifier[0]; // TODO
+    @ApiStatus.Internal public final Key _keyCode;
+    @ApiStatus.Internal public final boolean _isPressed;
+    @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers = 0;
 
     public EventKeyboard(Key keyCode, boolean isPressed) {
         _keyCode = keyCode;
@@ -14,9 +15,6 @@ public class EventKeyboard implements Event {
     }
 
     public boolean isModifierDown(KeyModifier modifier) {
-        for (KeyModifier m: _modifiers)
-            if (m == modifier)
-                return true;
-        return false;
+        return (_modifiers & modifier._mask) != 0;
     }
 }

@@ -8,7 +8,6 @@
 
 namespace jwm {
 Key kKeyTable[128];
-NSEventModifierFlags kLastFlags = 0;
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
@@ -147,7 +146,7 @@ void initKeyTable() {
     NSTrackingArea* fTrackingArea;
     // We keep track of the state of the modifier keys on each event in order to synthesize
     // key-up/down events for each modifier.
-    jwm::ModifierKey fLastModifiers;
+    NSEventModifierFlags fLastFlags;
 }
 
 - (MainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -155,6 +154,7 @@ void initKeyTable() {
 
     fWindow = initWindow;
     fTrackingArea = nil;
+    fLastFlags = 0;
 
     [self updateTrackingAreas];
 
@@ -229,67 +229,67 @@ void initKeyTable() {
 - (void)flagsChanged:(NSEvent *)event {
     NSEventModifierFlags flags = [event modifierFlags];
 
-    if ((jwm::kLastFlags & NSEventModifierFlagShift) == 0 && (flags & NSEventModifierFlagShift) != 0) {
+    if ((fLastFlags & NSEventModifierFlagShift) == 0 && (flags & NSEventModifierFlagShift) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::SHIFT), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagShift) != 0 && (flags & NSEventModifierFlagShift) == 0) {
+    if ((fLastFlags & NSEventModifierFlagShift) != 0 && (flags & NSEventModifierFlagShift) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::SHIFT), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagControl) == 0 && (flags & NSEventModifierFlagControl) != 0) {
+    if ((fLastFlags & NSEventModifierFlagControl) == 0 && (flags & NSEventModifierFlagControl) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::CONTROL), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagControl) != 0 && (flags & NSEventModifierFlagControl) == 0) {
+    if ((fLastFlags & NSEventModifierFlagControl) != 0 && (flags & NSEventModifierFlagControl) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::CONTROL), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagOption) == 0 && (flags & NSEventModifierFlagOption) != 0) {
+    if ((fLastFlags & NSEventModifierFlagOption) == 0 && (flags & NSEventModifierFlagOption) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::ALT), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagOption) != 0 && (flags & NSEventModifierFlagOption) == 0) {
+    if ((fLastFlags & NSEventModifierFlagOption) != 0 && (flags & NSEventModifierFlagOption) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::ALT), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagCommand) == 0 && (flags & NSEventModifierFlagCommand) != 0) {
+    if ((fLastFlags & NSEventModifierFlagCommand) == 0 && (flags & NSEventModifierFlagCommand) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::COMMAND), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagCommand) != 0 && (flags & NSEventModifierFlagCommand) == 0) {
+    if ((fLastFlags & NSEventModifierFlagCommand) != 0 && (flags & NSEventModifierFlagCommand) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::COMMAND), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagFunction) == 0 && (flags & NSEventModifierFlagFunction) != 0) {
+    if ((fLastFlags & NSEventModifierFlagFunction) == 0 && (flags & NSEventModifierFlagFunction) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::FUNCTION), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagFunction) != 0 && (flags & NSEventModifierFlagFunction) == 0) {
+    if ((fLastFlags & NSEventModifierFlagFunction) != 0 && (flags & NSEventModifierFlagFunction) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::FUNCTION), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagCapsLock) == 0 && (flags & NSEventModifierFlagCapsLock) != 0) {
+    if ((fLastFlags & NSEventModifierFlagCapsLock) == 0 && (flags & NSEventModifierFlagCapsLock) != 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::CAPS), (jboolean) true));
         fWindow->dispatch(eventObj.get());
     }
 
-    if ((jwm::kLastFlags & NSEventModifierFlagCapsLock) != 0 && (flags & NSEventModifierFlagCapsLock) == 0) {
+    if ((fLastFlags & NSEventModifierFlagCapsLock) != 0 && (flags & NSEventModifierFlagCapsLock) == 0) {
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, static_cast<int>(jwm::Key::CAPS), (jboolean) false));
         fWindow->dispatch(eventObj.get());
     }
 
-    jwm::kLastFlags = flags;
+    fLastFlags = flags;
 }
 
 @end
