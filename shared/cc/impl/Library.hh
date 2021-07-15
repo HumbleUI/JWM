@@ -47,6 +47,12 @@ namespace jwm {
             jobject make(JNIEnv* env, jint x, jint y);
         }
 
+        namespace EventMouseButton {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint x, jint y);
+        }
+
         namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;

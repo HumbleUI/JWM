@@ -181,6 +181,11 @@ void WindowManagerX11::runLoop() {
                     break;
                 }
 
+                case ButtonPress: { // mouse down
+                    
+                    break;
+                }
+
                 case KeyPress: { // keyboard down
                     KeySym s = XLookupKeysym(&ev.xkey, 0);
                     jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
