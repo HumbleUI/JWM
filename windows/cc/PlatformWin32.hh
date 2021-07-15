@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <winuser.h>
 #include <shellscalingapi.h>
+#include <highlevelmonitorconfigurationapi.h>
 
 #ifndef JWM_WIN32_WINDOW_CLASS_NAME
  #define JWM_WIN32_WINDOW_CLASS_NAME L"JWM_WINDOW"
