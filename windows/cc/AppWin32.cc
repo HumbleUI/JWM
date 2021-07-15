@@ -54,6 +54,57 @@ void jwm::AppWin32::enqueueUIThreadCallback(jobject callback) {
     _uiThreadCallbacks.push_back(callback);
 }
 
+const std::vector<jwm::Screen> &jwm::AppWin32::getScreens() {
+    _screens.clear();
+    EnumDisplayMonitors(NULL, NULL, (MONITORENUMPROC) enumMonitorFunc, 0);
+    return _screens;
+}
+
+BOOL jwm::AppWin32::enumMonitorFunc(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM data) {
+    Screen screen{};
+    screen.hMonitor = monitor;
+
+    MONITORINFO monitorinfo;
+    ZeroMemory(&monitorinfo, sizeof(monitorinfo));
+    monitorinfo.cbSize = sizeof(monitorinfo);
+
+    GetMonitorInfoW(monitor, &monitorinfo);
+
+    auto& area = monitorinfo.rcMonitor;
+
+    // Position
+    {
+        screen.x = area.left;
+        screen.y = area.top;
+    }
+
+    // Size
+    {
+        screen.width = area.right - area.left;
+        screen.height = area.bottom - area.top;
+    }
+
+    // Scale
+    {
+        DEVICE_SCALE_FACTOR scaleFactor;
+        GetScaleFactorForMonitor(monitor, &scaleFactor);
+
+        if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
+            scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
+
+        screen.scale = (float) scaleFactor / (float) SCALE_100_PERCENT;
+    }
+
+    // Is primary
+    {
+        screen.isPrimary = monitorinfo.dwFlags & MONITORINFOF_PRIMARY;
+    }
+
+    AppWin32::getInstance()._screens.push_back(screen);
+
+    return TRUE;
+}
+
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
@@ -75,4 +126,33 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_runOnUIThread
         (JNIEnv* env, jclass jclass, jobject callback) {
     auto callbackRef = env->NewGlobalRef(callback);
     jwm::AppWin32::getInstance().enqueueUIThreadCallback(callbackRef);
+}
+
+extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
+        (JNIEnv* env, jclass jclass) {
+    jobjectArray array = env->NewObjectArray(1, jwm::classes::Screen::kCls, 0);
+
+    if (jwm::classes::Throwable::exceptionThrown(env))
+        return nullptr;
+
+    auto& app = jwm::AppWin32::getInstance();
+    auto& screens = app.getScreens();
+
+    for (size_t i = 0; i < screens.size(); i++) {
+        const jwm::Screen& screenData = screens[i];
+        jlong id = reinterpret_cast<jlong>(screenData.hMonitor);
+
+        jobject screen = jwm::classes::Screen::make(
+            env,
+            id,
+            screenData.x, screenData.y,
+            screenData.width, screenData.height,
+            screenData.scale,
+            screenData.isPrimary
+        );
+
+        env->SetObjectArrayElement(array, i, screen);
+    }
+
+    return array;
 }
