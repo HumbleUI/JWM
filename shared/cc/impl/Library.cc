@@ -3,8 +3,20 @@
 #include <jni.h>
 #include "Library.hh"
 #include <cassert>
+#include "EnumConverter.hh"
+#include "Key.hh"
+#include "MouseButton.hh"
 
 namespace jwm {
+    template<>
+    const char* getJavaClassName<Key>() {
+        return "org/jetbrains/jwm/Key";
+    }
+    template<>
+    const char* getJavaClassName<MouseButton>() {
+        return "org/jetbrains/jwm/MouseButton";
+    }
+
     namespace classes {
         namespace Throwable {
             jmethodID kPrintStackTrace;
@@ -124,13 +136,15 @@ namespace jwm {
                 jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseButton");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(Lorg/jetbrains/jwm/MouseButton;Z)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(Lorg/jetbrains/jwm/MouseButton;ZI)V");
                 assert(kCtor);
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jint x, jint y) {
-                jobject res = env->NewObject(kCls, kCtor, x, y);
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed) {
+                jwm::JNILocal<jobject> kMouseButtonJavaEnum(env, EnumConverter<Key>::convert(env, keyCode));
+                assert(kMouseButtonJavaEnum.get());
+                jobject res = env->NewObject(kCls, kCtor, kMouseButtonJavaEnum.get(), isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -155,33 +169,11 @@ namespace jwm {
                     Throwable::exceptionThrown(env);
                     assert(kCtor);
                 }
-
-                // call Key.values() only once because the value() method of enums is expensive
-                // Key[] kKeys = Key.values()
-                {
-                    // cls = Key
-                    jclass cls = env->FindClass("org/jetbrains/jwm/Key");
-                    Throwable::exceptionThrown(env);
-                    assert(cls);
-
-                    // values = Key::values()
-                    jmethodID values = env->GetStaticMethodID(cls, "values", "()[Lorg/jetbrains/jwm/Key;");
-                    Throwable::exceptionThrown(env);
-                    assert(values);
-
-                    // Key[] kKeys = Key.values()
-                    jobject array = env->CallStaticObjectMethod(cls, values);
-                    Throwable::exceptionThrown(env);
-                    assert(array);
-                    kKeys = static_cast<jobjectArray>(env->NewGlobalRef(array));
-                    assert(kKeys);
-                }
             }
 
-            jobject make(JNIEnv* env, jint keyCode, jboolean isPressed) {
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed) {
                 // map keyCode to enum org.jetbrains.jwm.Key with kKeys
-                jwm::JNILocal<jobject> kKeyCodeJavaEnum(env, env->GetObjectArrayElement(kKeys, keyCode)); 
-                Throwable::exceptionThrown(env);
+                jwm::JNILocal<jobject> kKeyCodeJavaEnum(env, EnumConverter<Key>::convert(env, keyCode)); 
                 assert(kKeyCodeJavaEnum.get());
                 jobject res = env->NewObject(kCls, kCtor, kKeyCodeJavaEnum.get(), isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;

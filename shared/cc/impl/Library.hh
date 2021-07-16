@@ -1,6 +1,7 @@
 #pragma once
 #include <jni.h>
 #include <cstdint>
+#include "Key.hh"
 
 namespace jwm {
     namespace classes {
@@ -47,7 +48,7 @@ namespace jwm {
         namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint keyCode, jboolean isPressed);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed);
         }
 
         namespace EventReconfigure {

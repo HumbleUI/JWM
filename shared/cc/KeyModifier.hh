@@ -8,6 +8,6 @@ namespace jwm {
         ALT     = 1 << 2,
         CMD     = 1 << 3,
         WINDOWS = 1 << 4,
-        META    = 1 << 5;
+        META    = 1 << 5
     };
 }
