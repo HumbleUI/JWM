@@ -7,6 +7,7 @@ import org.jetbrains.annotations.*;
 // adapted from https://github.com/openjdk/jfx/blob/0e7cf623d3cc6dc25b944ef739acaf2de27d125b/modules/javafx.graphics/src/main/java/javafx/scene/input/KeyCode.java
 // must be kept in sync with Key.hh
 public enum Key {
+
     ENTER("Enter", KeyType.WHITESPACE),
     BACK_SPACE("Backspace"),
     TAB("Tab", KeyType.WHITESPACE),
@@ -239,6 +240,12 @@ public enum Key {
 
     @ApiStatus.Internal @Getter public final String _name;
     @ApiStatus.Internal public final int _mask;
+
+    @ApiStatus.Internal public static final Key[] _values = values();
+
+    public static Key makeFromInt(int v) {
+        return _values[v];
+    }
 
     private Key(String name, int mask) {
         _name = name;

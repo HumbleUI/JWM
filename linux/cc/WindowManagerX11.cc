@@ -7,6 +7,7 @@
 #include "AppX11.hh"
 #include <X11/extensions/sync.h>
 #include "KeyX11.hh"
+#include "MouseButtonX11.hh"
 
 using namespace jwm;
 
@@ -187,16 +188,26 @@ void WindowManagerX11::runLoop() {
                 case ButtonPress: { // mouse down
                     jwm::JNILocal<jobject> eventButton(
                         app.getJniEnv(),
-                        EventMouseMove::make(
+                        EventMouseButton::make(
                             app.getJniEnv(),
-                            
+                            MouseButtonX11::fromNative(ev.xbutton.button),
+                            true
                         )
                     );
+                    myWindow->dispatch(eventButton.get());
                     break;
                 }
 
                 case ButtonRelease: { // mouse down
-                    
+                    jwm::JNILocal<jobject> eventButton(
+                        app.getJniEnv(),
+                        EventMouseButton::make(
+                            app.getJniEnv(),
+                            MouseButtonX11::fromNative(ev.xbutton.button),
+                            false
+                        )
+                    );
+                    myWindow->dispatch(eventButton.get());
                     break;
                 }
 

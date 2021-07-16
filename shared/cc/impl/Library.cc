@@ -1,21 +1,12 @@
 #include <iostream>
-#include "impl/JNILocal.hh"
 #include <jni.h>
 #include "Library.hh"
 #include <cassert>
-#include "EnumConverter.hh"
 #include "Key.hh"
 #include "MouseButton.hh"
+#include "JNILocal.hh"
 
 namespace jwm {
-    template<>
-    const char* getJavaClassName<Key>() {
-        return "org/jetbrains/jwm/Key";
-    }
-    template<>
-    const char* getJavaClassName<MouseButton>() {
-        return "org/jetbrains/jwm/MouseButton";
-    }
 
     namespace classes {
         namespace Throwable {
@@ -136,15 +127,13 @@ namespace jwm {
                 jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseButton");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(Lorg/jetbrains/jwm/MouseButton;ZI)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
                 assert(kCtor);
                 Throwable::exceptionThrown(env);
             }
 
             jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed) {
-                jwm::JNILocal<jobject> kMouseButtonJavaEnum(env, EnumConverter<Key>::convert(env, keyCode));
-                assert(kMouseButtonJavaEnum.get());
-                jobject res = env->NewObject(kCls, kCtor, kMouseButtonJavaEnum.get(), isPressed);
+                jobject res = env->NewObject(kCls, kCtor, (int)mouseButton, isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -165,17 +154,14 @@ namespace jwm {
 
                 // kCtor = EventKeyboard::<init>(Key key, boolean isPressed)
                 {
-                    kCtor = env->GetMethodID(kCls, "<init>", "(Lorg/jetbrains/jwm/Key;Z)V");
+                    kCtor = env->GetMethodID(kCls, "<init>", "(IZ)V");
                     Throwable::exceptionThrown(env);
                     assert(kCtor);
                 }
             }
 
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed) {
-                // map keyCode to enum org.jetbrains.jwm.Key with kKeys
-                jwm::JNILocal<jobject> kKeyCodeJavaEnum(env, EnumConverter<Key>::convert(env, keyCode)); 
-                assert(kKeyCodeJavaEnum.get());
-                jobject res = env->NewObject(kCls, kCtor, kKeyCodeJavaEnum.get(), isPressed);
+                jobject res = env->NewObject(kCls, kCtor, (int)keyCode, isPressed);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

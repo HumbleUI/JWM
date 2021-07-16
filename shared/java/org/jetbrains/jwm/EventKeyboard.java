@@ -13,6 +13,10 @@ public class EventKeyboard implements Event {
         _keyCode = keyCode;
         _isPressed = isPressed;
     }
+    public EventKeyboard(int keyCode, boolean isPressed) {
+        _keyCode = Key.makeFromInt(keyCode);
+        _isPressed = isPressed;
+    }
 
     public boolean isModifierDown(KeyModifier modifier) {
         return (_modifiers & modifier._mask) != 0;

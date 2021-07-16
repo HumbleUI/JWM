@@ -2,6 +2,7 @@
 #include <jni.h>
 #include <cstdint>
 #include "Key.hh"
+#include "MouseButton.hh"
 
 namespace jwm {
     namespace classes {
@@ -42,7 +43,7 @@ namespace jwm {
         namespace EventMouseButton {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint x, jint y);
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed);
         }
 
         namespace EventKeyboard {
