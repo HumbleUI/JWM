@@ -2,7 +2,7 @@
 
 #include <WindowManagerWin32.hh>
 #include <ContextWGL.hh>
-#include <Screen.hh>
+#include <ScreenWin32.hh>
 #include <jni.h>
 
 namespace jwm {
@@ -14,7 +14,7 @@ namespace jwm {
         void terminate();
         void sendError(const char* what);
         void enqueueUIThreadCallback(jobject callback);
-        const std::vector<Screen> &getScreens();
+        const std::vector<ScreenWin32> &getScreens();
 
     public:
         WindowManagerWin32& getWindowManager() { return _windowManager; }
@@ -24,7 +24,7 @@ namespace jwm {
     private:
         std::atomic_bool _terminateRequested{false};
         std::vector<jobject> _uiThreadCallbacks;
-        std::vector<Screen> _screens;
+        std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
         ContextWGL _wglContext;
         JNIEnv* _jniEnv;

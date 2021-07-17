@@ -132,8 +132,8 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed) {
-                jobject res = env->NewObject(kCls, kCtor, (int)mouseButton, isPressed);
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, (int)mouseButton, isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -152,16 +152,16 @@ namespace jwm {
                     assert(kCls);
                 }
 
-                // kCtor = EventKeyboard::<init>(Key key, boolean isPressed)
+                // kCtor = EventKeyboard::<init>(Key key, boolean isPressed, int modifiers)
                 {
-                    kCtor = env->GetMethodID(kCls, "<init>", "(IZ)V");
+                    kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
                     Throwable::exceptionThrown(env);
                     assert(kCtor);
                 }
             }
 
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed) {
-                jobject res = env->NewObject(kCls, kCtor, (int)keyCode, isPressed);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, (int)keyCode, isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

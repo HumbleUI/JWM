@@ -251,24 +251,134 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_SNAPSHOT] = Key::PRINTSCREEN;
     _keyTable[VK_INSERT] = Key::INSERT;
     _keyTable[VK_HELP] = Key::HELP;
-    _keyTable[VK_OEM_3] = Key::META;
-    // _keyTable[VK_OEM_3] = Key::BACK_QUOTE;
+    // _keyTable[VK_OEM_3] = Key::META;
+    _keyTable[VK_OEM_3] = Key::BACK_QUOTE;
     _keyTable[VK_OEM_7] = Key::QUOTE;
 
-    // _keyTable[??] = Key::KP_UP;
-    // _keyTable[??] = Key::KP_DOWN;
-    // _keyTable[??] = Key::KP_LEFT;
-    // _keyTable[??] = Key::KP_RIGHT;
+    // KP_UP,
+    // KP_DOWN,
+    // KP_LEFT,
+    // KP_RIGHT,
+    // DEAD_GRAVE,
+    // DEAD_ACUTE,
+    // DEAD_CIRCUMFLEX,
+    // DEAD_TILDE,
+    // DEAD_MACRON,
+    // DEAD_BREVE,
+    // DEAD_ABOVEDOT,
+    // DEAD_DIAERESIS,
+    // DEAD_ABOVERING,
+    // DEAD_DOUBLEACUTE,
+    // DEAD_CARON,
+    // DEAD_CEDILLA,
+    // DEAD_OGONEK,
+    // DEAD_IOTA,
+    // DEAD_VOICED_SOUND,
+    // DEAD_SEMIVOICED_SOUND,
+    // AMPERSAND,
+    // ASTERISK,
+    // QUOTEDBL,
+    // LESS,
+    // GREATER,
+    // BRACELEFT,
+    // BRACERIGHT,
+    //
+    // AT,
+    // COLON,
+    // CIRCUMFLEX,
+    // DOLLAR,
+    // EURO_SIGN,
+    // EXCLAMATION_MARK,
+    // INVERTED_EXCLAMATION_MARK,
+    // LEFT_PARENTHESIS,
+    // NUMBER_SIGN,
+    // PLUS,
+    // RIGHT_PARENTHESIS,
+    // UNDERSCORE,
 
     _keyTable[VK_LWIN] = Key::WINDOWS;
     _keyTable[VK_RWIN] = Key::WINDOWS;
+
+    // CONTEXT_MENU,
+    //
+    // FINAL,
+    // CONVERT,
+    // NONCONVERT,
+    // ACCEPT,
+    // MODECHANGE,
+    // KANA,
+    // KANJI,
+    // ALPHANUMERIC,
+    // KATAKANA,
+    // HIRAGANA,
+    // FULL_WIDTH,
+    // HALF_WIDTH,
+    // ROMAN_CHARACTERS,
+    // ALL_CANDIDATES,
+    // PREVIOUS_CANDIDATE,
+    // CODE_INPUT,
+    // JAPANESE_KATAKANA,
+    // JAPANESE_HIRAGANA,
+    // JAPANESE_ROMAN,
+    // KANA_LOCK,
+    // INPUT_METHOD_ON_OFF,
+    // CUT,
+    // COPY,
+    // PASTE,
+    // UNDO,
+    // AGAIN,
+    // FIND,
+    // PROPS,
+    // STOP,
+    // COMPOSE,
+    // ALT_GRAPH,
+    // BEGIN,
+
+    // Mobile and Embedded Specific Key Codes
+    // SOFTKEY_0,
+    // SOFTKEY_1,
+    // SOFTKEY_2,
+    // SOFTKEY_3,
+    // SOFTKEY_4,
+    // SOFTKEY_5,
+    // SOFTKEY_6,
+    // SOFTKEY_7,
+    // SOFTKEY_8,
+    // SOFTKEY_9,
+    // GAME_A,
+    // GAME_B,
+    // GAME_C,
+    // GAME_D,
+    // STAR,
+    // POUND,
+    // POWER,
+    // INFO,
+    // COLORED_KEY_0,
+    // COLORED_KEY_1,
+    // COLORED_KEY_2,
+    // COLORED_KEY_3,
+    // EJECT_TOGGLE,
+    // PLAY,
+    // RECORD,
+    // FAST_FWD,
+    // REWIND,
+    // TRACK_PREV,
+    // TRACK_NEXT,
+    // CHANNEL_UP,
+    // CHANNEL_DOWN,
+    // VOLUME_UP,
+    // VOLUME_DOWN,
+    // MUTE,
+    // COMMAND,
+    // FUNCTION,
+    // SHORTCUT
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
-    _windows.emplace(window._hWnd, &window);
+    _windows.emplace(window.getHWnd(), &window);
 }
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
-    _windows.erase(window._hWnd);
+    _windows.erase(window.getHWnd());
     _frameRequests.erase(&window);
 }

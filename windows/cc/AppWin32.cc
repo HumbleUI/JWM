@@ -1,5 +1,6 @@
 #include <AppWin32.hh>
 #include <impl/Library.hh>
+#include <impl/JNILocal.hh>
 #include <iostream>
 
 // Globally accessible instance
@@ -54,14 +55,14 @@ void jwm::AppWin32::enqueueUIThreadCallback(jobject callback) {
     _uiThreadCallbacks.push_back(callback);
 }
 
-const std::vector<jwm::Screen> &jwm::AppWin32::getScreens() {
+const std::vector<jwm::ScreenWin32> &jwm::AppWin32::getScreens() {
     _screens.clear();
     EnumDisplayMonitors(NULL, NULL, (MONITORENUMPROC) enumMonitorFunc, 0);
     return _screens;
 }
 
 BOOL jwm::AppWin32::enumMonitorFunc(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM data) {
-    Screen screen{};
+    ScreenWin32 screen{};
     screen.hMonitor = monitor;
 
     MONITORINFO monitorinfo;
@@ -139,19 +140,19 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
     auto& screens = app.getScreens();
 
     for (size_t i = 0; i < screens.size(); i++) {
-        const jwm::Screen& screenData = screens[i];
+        const jwm::ScreenWin32& screenData = screens[i];
         jlong id = reinterpret_cast<jlong>(screenData.hMonitor);
 
-        jobject screen = jwm::classes::Screen::make(
+        jwm::JNILocal<jobject> screen(env, jwm::classes::Screen::make(
             env,
             id,
             screenData.x, screenData.y,
             screenData.width, screenData.height,
             screenData.scale,
             screenData.isPrimary
-        );
+        ));
 
-        env->SetObjectArrayElement(array, i, screen);
+        env->SetObjectArrayElement(array, i, screen.get());
     }
 
     return array;

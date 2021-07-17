@@ -2,7 +2,7 @@
 
 namespace jwm {
 
-    class Screen {
+    class ScreenWin32 {
     public:
         HMONITOR hMonitor;
         int x;

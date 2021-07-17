@@ -3,6 +3,8 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <Key.hh>
+#include <KeyModifier.hh>
+#include <MouseButton.hh>
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
 #include <memory>
@@ -202,6 +204,39 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
         }
 
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_XBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+        case WM_XBUTTONUP: {
+            bool isPressed =
+                uMsg == WM_LBUTTONDOWN ||
+                uMsg == WM_RBUTTONDOWN ||
+                uMsg == WM_MBUTTONDOWN ||
+                uMsg == WM_XBUTTONDOWN;
+
+            int modifiers = _getModifiers();
+            MouseButton button;
+
+            if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
+                button = MouseButton::PRIMARY;
+            else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP)
+                button = MouseButton::SECONDARY;
+            else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
+                button = MouseButton::MIDDLE;
+            else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                button = MouseButton::FORWARD;
+            else
+                button = MouseButton::BACK;
+
+            JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, modifiers));
+            dispatch(eventMouseButton.get());
+            break;
+        }
+
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
@@ -209,18 +244,19 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             bool isPressed = !(HIWORD(lParam) & KF_UP);
             int keycode = (int) wParam;
             int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
+            int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
             auto mapping = table.find(keycode);
 
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
-            printf("WM_KEY win keycode: 0x%x win scancode: 0x%x Key: 0x%x isPressed:%i\n",
-                   keycode, scancode, (int)key, (int)isPressed);
+            // printf("WM_KEY win keycode: 0x%x win scancode: 0x%x Key: 0x%x isPressed:%i modifiers:%x\n",
+            //       keycode, scancode, (int)key, (int)isPressed, modifiers);
 
-            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, static_cast<int>(key), isPressed));
+            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, key, isPressed, modifiers));
             dispatch(eventKeyboard.get());
-        }
             break;
+        }
 
         case WM_CLOSE:
             dispatch(classes::EventClose::kInstance);
@@ -231,6 +267,26 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
 
     return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
+}
+
+int jwm::WindowWin32::_getModifiers() const {
+    static const int BUTTON_DOWN = 0x8000;
+
+    int modifiers = 0;
+
+    if (GetKeyState(VK_SHIFT) & BUTTON_DOWN)
+        modifiers |= static_cast<int>(KeyModifier::SHIFT);
+
+    if (GetKeyState(VK_CONTROL) & BUTTON_DOWN)
+        modifiers |= static_cast<int>(KeyModifier::CTRL);
+
+    if (GetKeyState(VK_MENU) & BUTTON_DOWN)
+        modifiers |= static_cast<int>(KeyModifier::ALT);
+
+    if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & BUTTON_DOWN)
+        modifiers |= static_cast<int>(KeyModifier::WINDOWS);
+
+    return modifiers;
 }
 
 // JNI
