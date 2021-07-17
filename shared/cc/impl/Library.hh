@@ -43,13 +43,13 @@ namespace jwm {
         namespace EventMouseButton {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed);
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers);
         }
 
         namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers);
         }
 
         namespace EventReconfigure {

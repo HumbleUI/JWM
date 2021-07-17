@@ -214,6 +214,13 @@ public class Example implements Consumer<Event> {
             EventResize er = (EventResize) e;
             _layer.resize(er.getWidth(), er.getHeight());
             paint();
+        } else if (e instanceof EventMouseButton) {
+            EventMouseButton eventMouseButton = (EventMouseButton) e;
+            if (((EventMouseButton)e).isPressed()) {
+                System.out.println("Mouse down " + eventMouseButton.getButton());
+            } else {
+                System.out.println("Mouse up " + eventMouseButton.getButton());
+            }
         } else if (e instanceof EventMouseMove) {
             lastX = x;
             lastY = y;
@@ -257,12 +264,6 @@ public class Example implements Consumer<Event> {
             _window.close();
             if (App._windows.size() == 0)
                 App.terminate();
-        } else if (e instanceof EventMouseButton) {
-            if (((EventMouseButton)e).isPressed()) {
-                System.out.println("Mouse down " + ((EventMouseButton)e).getButton());
-            } else {
-                System.out.println("Mouse up " + ((EventMouseButton)e).getButton());
-            }
         }
     }
 

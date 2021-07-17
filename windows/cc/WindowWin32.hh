@@ -4,7 +4,7 @@
 #include <jni.h>
 
 namespace jwm {
-    class WindowWin32: public Window {
+    class WindowWin32 final: public Window {
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
         ~WindowWin32() override;
@@ -22,12 +22,18 @@ namespace jwm {
         void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+    public:
         void setLayer(class LayerGL* layer) { _layer = layer; }
         class LayerGL* getLayer() const { return _layer; }
         JNIEnv* getJNIEnv() const { return fEnv; }
+        HWND getHWnd() const { return _hWnd; }
+
+    private:
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
+        int _getModifiers() const;
 
+    private:
         class WindowManagerWin32& _windowManager;
         class LayerGL* _layer = nullptr;
 

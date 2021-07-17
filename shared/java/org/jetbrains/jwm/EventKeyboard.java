@@ -7,15 +7,12 @@ import org.jetbrains.annotations.*;
 public class EventKeyboard implements Event {
     @ApiStatus.Internal public final Key _keyCode;
     @ApiStatus.Internal public final boolean _isPressed;
-    @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers = 0;
+    @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers;
 
-    public EventKeyboard(Key keyCode, boolean isPressed) {
-        _keyCode = keyCode;
-        _isPressed = isPressed;
-    }
-    public EventKeyboard(int keyCode, boolean isPressed) {
+    public EventKeyboard(int keyCode, boolean isPressed, int modifiers) {
         _keyCode = Key.makeFromInt(keyCode);
         _isPressed = isPressed;
+        _modifiers = modifiers;
     }
 
     public boolean isModifierDown(KeyModifier modifier) {

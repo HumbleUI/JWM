@@ -29,7 +29,7 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
         }
 
         // Get window device context
-        _hDC = GetDC(_windowWin32->_hWnd);
+        _hDC = GetDC(_windowWin32->getHWnd());
 
         const int pixelAttribs[] = {
             WGL_SWAP_METHOD_EXT, WGL_SWAP_COPY_EXT,
@@ -127,7 +127,7 @@ void jwm::LayerGL::_releaseInternal() {
     }
 
     if (_hDC) {
-        ReleaseDC(_windowWin32->_hWnd, _hDC);
+        ReleaseDC(_windowWin32->getHWnd(), _hDC);
         _hDC = nullptr;
     }
 
