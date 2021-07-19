@@ -83,7 +83,10 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
             return;
         }
 
-        _windowWin32->setLayer(this);
+        // Listen for window events
+        _callbackID = _windowWin32->addEventListener([this](){
+            makeCurrent();
+        });
     }
 
     if (!wglMakeCurrent(_hDC, _hRC)) {
@@ -94,7 +97,7 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
 
     if (contextWGL.wglSwapIntervalEXT)
         // Force v-sync for now
-        contextWGL.wglSwapIntervalEXT(1);
+        contextWGL.wglSwapIntervalEXT(-1);
 }
 
 void jwm::LayerGL::resize(int width, int height) {
@@ -107,13 +110,17 @@ void jwm::LayerGL::resize(int width, int height) {
 
 void jwm::LayerGL::swapBuffers() {
     assert(_hDC);
-    SwapBuffers(_hDC);
+    wglSwapLayerBuffers(_hDC, WGL_SWAP_MAIN_PLANE);
 }
 
 void jwm::LayerGL::makeCurrent() {
     assert(_hDC);
     assert(_hRC);
-    wglMakeCurrent(_hDC, _hRC);
+
+    HGLRC currentRC = wglGetCurrentContext();
+
+    if (currentRC != _hRC)
+        wglMakeCurrent(_hDC, _hRC);
 }
 
 void jwm::LayerGL::close() {
@@ -132,7 +139,7 @@ void jwm::LayerGL::_releaseInternal() {
     }
 
     if (_windowWin32) {
-        _windowWin32->setLayer(nullptr);
+        _windowWin32->removeEventListener(_callbackID);
         jwm::unref(&_windowWin32);
     }
 }

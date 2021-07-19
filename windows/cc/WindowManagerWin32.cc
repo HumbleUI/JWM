@@ -1,7 +1,6 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
-#include <LayerGL.hh>
 #include <impl/Library.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -28,18 +27,14 @@ bool jwm::WindowManagerWin32::init() {
 
 int jwm::WindowManagerWin32::iteration() {
     MSG msg;
-    LayerGL* current = nullptr;
 
-    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
         HWND hWnd = msg.hwnd;
-        auto entry = _windows.find(hWnd);
-        WindowWin32* window = entry == _windows.end()? nullptr: entry->second;
-        LayerGL* layer = window? window->getLayer(): nullptr;
+        auto iter = _windows.find(hWnd);
+        WindowWin32* window = iter != _windows.end()? iter->second: nullptr;
 
-        if (layer && (current != layer)) {
-            current = layer;
-            layer->makeCurrent();
-        }
+        if (window)
+            window->notifyEvent();
 
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
@@ -57,13 +52,7 @@ int jwm::WindowManagerWin32::iteration() {
     // which want to redraw in the next frame
 
     for (auto window: toProcess) {
-        LayerGL* layer = window->getLayer();
-
-        if (layer && (current != layer)) {
-            current = layer;
-            layer->makeCurrent();
-        }
-
+        window->notifyEvent();
         window->dispatch(classes::EventFrame::kInstance);
     }
 

@@ -22,6 +22,7 @@ namespace jwm {
         class WindowWin32* _windowWin32 = nullptr;
         HDC _hDC = NULL;
         HGLRC _hRC = NULL;
+        int _callbackID = -1;
     };
 
 }

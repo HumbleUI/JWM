@@ -148,14 +148,6 @@ void jwm::WindowWin32::close() {
     }
 }
 
-DWORD jwm::WindowWin32::_getWindowStyle() const {
-    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-}
-
-DWORD jwm::WindowWin32::_getWindowExStyle() const {
-    return 0;
-}
-
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
     JNIEnv* env = getJNIEnv();
 
@@ -269,6 +261,36 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
 }
 
+int jwm::WindowWin32::addEventListener(jwm::WindowWin32::Callback callback) {
+    int callbackID = _getNextCallbackID();
+    _onEventListeners.emplace_back(callbackID, std::move(callback));
+    return callbackID;
+}
+
+void jwm::WindowWin32::removeEventListener(int callbackID) {
+    auto current = _onEventListeners.begin();
+    while (current != _onEventListeners.end()) {
+        if (current->first == callbackID)
+            current = _onEventListeners.erase(current);
+        else
+            ++current;
+    }
+}
+
+void jwm::WindowWin32::notifyEvent() {
+    for (auto& entry: _onEventListeners)
+        entry.second();
+}
+
+DWORD jwm::WindowWin32::_getWindowStyle() const {
+    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+}
+
+DWORD jwm::WindowWin32::_getWindowExStyle() const {
+    return 0;
+}
+
+
 int jwm::WindowWin32::_getModifiers() const {
     static const int BUTTON_DOWN = 0x8000;
 
@@ -287,6 +309,10 @@ int jwm::WindowWin32::_getModifiers() const {
         modifiers |= static_cast<int>(KeyModifier::WINDOWS);
 
     return modifiers;
+}
+
+int jwm::WindowWin32::_getNextCallbackID() {
+    return _nextCallbackID++;
 }
 
 // JNI

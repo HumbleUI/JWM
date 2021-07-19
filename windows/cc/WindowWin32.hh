@@ -1,10 +1,16 @@
 #pragma once
 #include <Window.hh>
 #include <PlatformWin32.hh>
+#include <functional>
+#include <utility>
+#include <vector>
 #include <jni.h>
 
 namespace jwm {
     class WindowWin32 final: public Window {
+    public:
+        using Callback = std::function<void()>;
+
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
         ~WindowWin32() override;
@@ -23,8 +29,9 @@ namespace jwm {
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     public:
-        void setLayer(class LayerGL* layer) { _layer = layer; }
-        class LayerGL* getLayer() const { return _layer; }
+        int addEventListener(Callback callback);
+        void removeEventListener(int callbackID);
+        void notifyEvent();
         JNIEnv* getJNIEnv() const { return fEnv; }
         HWND getHWnd() const { return _hWnd; }
 
@@ -32,12 +39,15 @@ namespace jwm {
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
         int _getModifiers() const;
+        int _getNextCallbackID();
 
     private:
-        class WindowManagerWin32& _windowManager;
-        class LayerGL* _layer = nullptr;
+        std::vector<std::pair<int, Callback>> _onEventListeners;
 
-        HWND _hWnd = NULL;
+        class WindowManagerWin32& _windowManager;
+
+        HWND _hWnd = nullptr;
         bool _enterSizeMove = false;
+        int _nextCallbackID = 0;
     };
 }
