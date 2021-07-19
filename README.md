@@ -92,6 +92,7 @@ Git, CMake, Ninja, C++ compiler, JDK 11+, $JAVA_HOME, Python 3.
 
 ### Ubuntu 20.04
 libxcomposite-dev
+libxrandr-dev
 
 Build:
 
