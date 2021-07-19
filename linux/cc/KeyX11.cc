@@ -28,7 +28,7 @@ int jwm::KeyX11::getModifiers() {
         */
 
     if (getKeyState(jwm::Key::SHIFT   )) m |= (int)jwm::KeyModifier::SHIFT;
-    if (getKeyState(jwm::Key::CONTROL )) m |= (int)jwm::KeyModifier::CTRL;
+    if (getKeyState(jwm::Key::CONTROL )) m |= (int)jwm::KeyModifier::CONTROL;
     if (getKeyState(jwm::Key::ALT     )) m |= (int)jwm::KeyModifier::ALT;
     if (getKeyState(jwm::Key::META    )) m |= (int)jwm::KeyModifier::META;
 

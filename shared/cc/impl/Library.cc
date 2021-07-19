@@ -161,7 +161,7 @@ namespace jwm {
             }
 
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, (int)keyCode, isPressed, modifiers);
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(keyCode), isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

@@ -278,7 +278,7 @@ int jwm::WindowWin32::_getModifiers() const {
         modifiers |= static_cast<int>(KeyModifier::SHIFT);
 
     if (GetKeyState(VK_CONTROL) & BUTTON_DOWN)
-        modifiers |= static_cast<int>(KeyModifier::CTRL);
+        modifiers |= static_cast<int>(KeyModifier::CONTROL);
 
     if (GetKeyState(VK_MENU) & BUTTON_DOWN)
         modifiers |= static_cast<int>(KeyModifier::ALT);
