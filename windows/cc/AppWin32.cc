@@ -131,17 +131,18 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_runOnUIThread
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
         (JNIEnv* env, jclass jclass) {
-    jobjectArray array = env->NewObjectArray(1, jwm::classes::Screen::kCls, 0);
+    auto& app = jwm::AppWin32::getInstance();
+    auto& screens = app.getScreens();
+    auto screensCount = static_cast<jsize>(screens.size());
+
+    jobjectArray array = env->NewObjectArray(screensCount, jwm::classes::Screen::kCls, nullptr);
 
     if (jwm::classes::Throwable::exceptionThrown(env))
         return nullptr;
 
-    auto& app = jwm::AppWin32::getInstance();
-    auto& screens = app.getScreens();
-
-    for (size_t i = 0; i < screens.size(); i++) {
+    for (jsize i = 0; i < screensCount; i++) {
         const jwm::ScreenWin32& screenData = screens[i];
-        jlong id = reinterpret_cast<jlong>(screenData.hMonitor);
+        auto id = reinterpret_cast<jlong>(screenData.hMonitor);
 
         jwm::JNILocal<jobject> screen(env, jwm::classes::Screen::make(
             env,
