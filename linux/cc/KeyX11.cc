@@ -3,6 +3,37 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
+#include "KeyModifier.hh"
+
+
+bool gKeyStates[(size_t)jwm::Key::KEY_COUNT] = {0};
+
+bool jwm::KeyX11::getKeyState(jwm::Key key) {
+    return gKeyStates[(size_t)key];
+}
+
+void jwm::KeyX11::setKeyState(jwm::Key key, bool isDown) {
+    gKeyStates[(size_t)key] = isDown;
+}
+
+int jwm::KeyX11::getModifiers() {
+    int m = 0;
+    /*
+        SHIFT   = 1 << 0,
+        CTRL    = 1 << 1,
+        ALT     = 1 << 2,
+        CMD     = 1 << 3,
+        WINDOWS = 1 << 4,
+        META    = 1 << 5
+        */
+
+    if (getKeyState(jwm::Key::SHIFT   )) m |= (int)jwm::KeyModifier::SHIFT;
+    if (getKeyState(jwm::Key::CONTROL )) m |= (int)jwm::KeyModifier::CTRL;
+    if (getKeyState(jwm::Key::ALT     )) m |= (int)jwm::KeyModifier::ALT;
+    if (getKeyState(jwm::Key::META    )) m |= (int)jwm::KeyModifier::META;
+
+    return m;
+}
 
 jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
     switch (v) {

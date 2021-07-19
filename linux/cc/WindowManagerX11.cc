@@ -191,7 +191,8 @@ void WindowManagerX11::runLoop() {
                         EventMouseButton::make(
                             app.getJniEnv(),
                             MouseButtonX11::fromNative(ev.xbutton.button),
-                            true
+                            true,
+                            jwm::KeyX11::getModifiers()
                         )
                     );
                     myWindow->dispatch(eventButton.get());
@@ -204,7 +205,8 @@ void WindowManagerX11::runLoop() {
                         EventMouseButton::make(
                             app.getJniEnv(),
                             MouseButtonX11::fromNative(ev.xbutton.button),
-                            false
+                            false,
+                            jwm::KeyX11::getModifiers()
                         )
                     );
                     myWindow->dispatch(eventButton.get());
@@ -213,20 +215,26 @@ void WindowManagerX11::runLoop() {
 
                 case KeyPress: { // keyboard down
                     KeySym s = XLookupKeysym(&ev.xkey, 0);
+                    jwm::Key key = KeyX11::fromNative(s);
+                    jwm::KeyX11::setKeyState(key, true);
                     jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
                                                          EventKeyboard::make(app.getJniEnv(),
-                                                                             KeyX11::fromNative(s),
-                                                                             true));
+                                                                             key,
+                                                                             true,
+                                                                             jwm::KeyX11::getModifiers()));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }
 
                 case KeyRelease: { // keyboard down
                     KeySym s = XLookupKeysym(&ev.xkey, 0);
+                    jwm::Key key = KeyX11::fromNative(s);
+                    jwm::KeyX11::setKeyState(key, false);
                     jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
                                                          EventKeyboard::make(app.getJniEnv(),
-                                                                             KeyX11::fromNative(s),
-                                                                             false));
+                                                                             key,
+                                                                             false,
+                                                                             jwm::KeyX11::getModifiers()));
                     myWindow->dispatch(eventKeyboard.get());
                     break;
                 }

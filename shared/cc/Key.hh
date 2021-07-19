@@ -231,6 +231,8 @@ namespace jwm {
         MUTE,
         COMMAND,
         FUNCTION,
-        SHORTCUT
+        SHORTCUT,
+
+        KEY_COUNT, // must be the last
     };
 }
