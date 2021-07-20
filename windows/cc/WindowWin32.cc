@@ -155,6 +155,18 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_ENTERSIZEMOVE:
         case WM_EXITSIZEMOVE: {
             _enterSizeMove = !_enterSizeMove;
+
+            // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
+            // When user hold mouse button and drag window,
+            // app does not receive messages, animation is stopped.
+            // This hack allows us to get JWM_WM_FRAME_TIMER event with minimum delay
+            // to repaint window and animate it
+
+            if (_enterSizeMove)
+                SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
+            else
+                KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
+
             return 0;
         }
 
@@ -176,6 +188,20 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_ERASEBKGND:
             return true;
+
+        case WM_TIMER: {
+
+            if (wParam == JWM_WM_FRAME_TIMER) {
+                // Repaint window if requested
+
+                if (getFlag(Flag::RequestFrame)) {
+                    removeFlag(Flag::RequestFrame);
+                    dispatch(classes::EventFrame::kInstance);
+                }
+            }
+
+            return 0;
+        }
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
@@ -377,9 +403,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_resize
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::AppWin32& app = jwm::AppWin32::getInstance();
-    jwm::WindowManagerWin32& winMan = app.getWindowManager();
-    winMan.requestFrame(instance);
+    instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

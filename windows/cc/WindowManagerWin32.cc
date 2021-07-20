@@ -45,22 +45,18 @@ int jwm::WindowManagerWin32::iteration() {
         }
     }
 
-    std::unordered_set<WindowWin32*> toProcess;
-    std::swap(toProcess, _frameRequests);
+    // Process frame request
+    for (auto& entry: _windows) {
+        auto& window = entry.second;
 
-    // Dispatch frame request event for those windows,
-    // which want to redraw in the next frame
-
-    for (auto window: toProcess) {
-        window->notifyEvent();
-        window->dispatch(classes::EventFrame::kInstance);
+        if (window->getFlag(WindowWin32::Flag::RequestFrame)) {
+            window->removeFlag(WindowWin32::Flag::RequestFrame);
+            window->notifyEvent();
+            window->dispatch(classes::EventFrame::kInstance);
+        }
     }
 
     return 0;
-}
-
-void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {
-    _frameRequests.emplace(window);
 }
 
 int jwm::WindowManagerWin32::_registerWindowClass() {
@@ -369,5 +365,4 @@ void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
     _windows.erase(window.getHWnd());
-    _frameRequests.erase(&window);
 }

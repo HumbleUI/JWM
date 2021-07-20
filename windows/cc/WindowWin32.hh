@@ -11,6 +11,10 @@ namespace jwm {
     public:
         using Callback = std::function<void()>;
 
+        enum class Flag {
+            RequestFrame
+        };
+
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
         ~WindowWin32() override;
@@ -32,6 +36,9 @@ namespace jwm {
         int addEventListener(Callback callback);
         void removeEventListener(int callbackID);
         void notifyEvent();
+        void setFlag(Flag flag) { _flags.emplace(flag); }
+        void removeFlag(Flag flag) { _flags.erase(flag); }
+        bool getFlag(Flag flag) { return _flags.find(flag) != _flags.end(); }
         JNIEnv* getJNIEnv() const { return fEnv; }
         HWND getHWnd() const { return _hWnd; }
 
@@ -43,6 +50,7 @@ namespace jwm {
 
     private:
         std::vector<std::pair<int, Callback>> _onEventListeners;
+        std::unordered_set<Flag> _flags;
 
         class WindowManagerWin32& _windowManager;
 
