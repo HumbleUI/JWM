@@ -157,15 +157,14 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             _enterSizeMove = !_enterSizeMove;
 
             // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
-            // When user hold mouse button and drag window,
-            // app does not receive messages, animation is stopped.
-            // This hack allows us to get JWM_WM_FRAME_TIMER event with minimum delay
-            // to repaint window and animate it
+            // When user hold mouse button and drag window, app enter modal loop,
+            // animation is stopped. This hack allows us to get JWM_WM_FRAME_TIMER
+            // event with minimum possible delay to repaint window and animate it.
 
             if (_enterSizeMove)
-                SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
+                _setFrameTimer();
             else
-                KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
+                _killFrameTimer();
 
             return 0;
         }
@@ -339,6 +338,14 @@ int jwm::WindowWin32::_getModifiers() const {
 
 int jwm::WindowWin32::_getNextCallbackID() {
     return _nextCallbackID++;
+}
+
+void jwm::WindowWin32::_setFrameTimer() {
+    SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
+}
+
+void jwm::WindowWin32::_killFrameTimer() {
+    KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
 }
 
 // JNI

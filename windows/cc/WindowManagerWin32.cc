@@ -50,8 +50,8 @@ int jwm::WindowManagerWin32::iteration() {
         auto& window = entry.second;
 
         if (window->getFlag(WindowWin32::Flag::RequestFrame)) {
-            window->removeFlag(WindowWin32::Flag::RequestFrame);
             window->notifyEvent();
+            window->removeFlag(WindowWin32::Flag::RequestFrame);
             window->dispatch(classes::EventFrame::kInstance);
         }
     }

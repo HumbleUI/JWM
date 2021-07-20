@@ -3,6 +3,7 @@
 #include <PlatformWin32.hh>
 #include <functional>
 #include <utility>
+#include <bitset>
 #include <vector>
 #include <jni.h>
 
@@ -11,8 +12,9 @@ namespace jwm {
     public:
         using Callback = std::function<void()>;
 
-        enum class Flag {
-            RequestFrame
+        enum class Flag: size_t {
+            RequestFrame = 1,
+            Max = 2
         };
 
     public:
@@ -36,9 +38,9 @@ namespace jwm {
         int addEventListener(Callback callback);
         void removeEventListener(int callbackID);
         void notifyEvent();
-        void setFlag(Flag flag) { _flags.emplace(flag); }
-        void removeFlag(Flag flag) { _flags.erase(flag); }
-        bool getFlag(Flag flag) { return _flags.find(flag) != _flags.end(); }
+        void setFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), true); }
+        void removeFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), false); }
+        bool getFlag(Flag flag) { return _flags.test(static_cast<size_t>(flag)); }
         JNIEnv* getJNIEnv() const { return fEnv; }
         HWND getHWnd() const { return _hWnd; }
 
@@ -47,10 +49,14 @@ namespace jwm {
         DWORD _getWindowExStyle() const;
         int _getModifiers() const;
         int _getNextCallbackID();
+        void _setFrameTimer();
+        void _killFrameTimer();
 
     private:
+        friend class WindowManagerWin32;
+
         std::vector<std::pair<int, Callback>> _onEventListeners;
-        std::unordered_set<Flag> _flags;
+        std::bitset<static_cast<size_t>(Flag::Max)> _flags;
 
         class WindowManagerWin32& _windowManager;
 
