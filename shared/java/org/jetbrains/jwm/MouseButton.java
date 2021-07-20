@@ -18,6 +18,6 @@ public enum MouseButton {
     @ApiStatus.Internal public static final MouseButton[] _values = values();
 
     public static MouseButton makeFromInt(int v) {
-        return _values[v];
+        return _values[Integer.numberOfTrailingZeros(v)];
     }
 }

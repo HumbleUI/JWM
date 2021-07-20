@@ -133,7 +133,7 @@ namespace jwm {
             }
 
             jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, (int)mouseButton, isPressed, modifiers);
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

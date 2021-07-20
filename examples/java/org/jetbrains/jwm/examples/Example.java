@@ -28,6 +28,7 @@ public class Example implements Consumer<Event> {
     public boolean _paused = false;
 
     public Set<Key> keys = Collections.synchronizedSortedSet(new TreeSet<Key>());
+    public Set<MouseButton> buttons = Collections.synchronizedSortedSet(new TreeSet<MouseButton>());
 
     public Example() {
         variants = Platform.CURRENT == Platform.MACOS
@@ -102,10 +103,10 @@ public class Example implements Consumer<Event> {
             // canvas.drawCircle(x, y, radius * 2, paint);
         }
 
-        // Keys
-        if (!keys.isEmpty()) {
+        // Keys and Buttons
+        if (!keys.isEmpty() || !buttons.isEmpty()) {
             try (var paint = new Paint()) {
-                String text = String.join(" + ", keys.stream().map(Key::getName).collect(Collectors.toList()));
+                String text = String.join(" + ", Stream.concat(keys.stream().map(Key::getName), buttons.stream().map(Object::toString)).collect(Collectors.toList()));
                 try (var line = TextLine.make(text, font24);) {
                     var capHeight = font24.getMetrics().getCapHeight();
                     paint.setColor(0x40000000);
@@ -244,12 +245,11 @@ public class Example implements Consumer<Event> {
             _layer.resize(er.getWidth(), er.getHeight());
             paint();
         } else if (e instanceof EventMouseButton) {
-            EventMouseButton eventMouseButton = (EventMouseButton) e;
-            if (((EventMouseButton)e).isPressed()) {
-                System.out.println("Mouse down " + eventMouseButton.getButton());
-            } else {
-                System.out.println("Mouse up " + eventMouseButton.getButton());
-            }
+            EventMouseButton ee = (EventMouseButton) e;
+            if (ee.isPressed())
+                buttons.add(ee.getButton());
+            else
+                buttons.remove(ee.getButton());
         } else if (e instanceof EventMouseMove) {
             lastMouseMove = (EventMouseMove) e;
         } else if (e instanceof EventKeyboard) {
