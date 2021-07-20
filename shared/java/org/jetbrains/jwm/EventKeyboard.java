@@ -5,12 +5,12 @@ import org.jetbrains.annotations.*;
 
 @Data 
 public class EventKeyboard implements Event {
-    @ApiStatus.Internal public final Key _keyCode;
+    @ApiStatus.Internal public final Key _key;
     @ApiStatus.Internal public final boolean _isPressed;
     @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers;
 
     public EventKeyboard(int keyCode, boolean isPressed, int modifiers) {
-        _keyCode = Key.makeFromInt(keyCode);
+        _key = Key.makeFromInt(keyCode);
         _isPressed = isPressed;
         _modifiers = modifiers;
     }

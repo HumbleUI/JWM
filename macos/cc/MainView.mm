@@ -223,12 +223,22 @@ jint modifierMask(NSEventModifierFlags flags) {
     NSView* view = fWindow->fNSWindow.contentView;
     CGFloat scale = fWindow->getScale();
 
-    // skui::ModifierKey modifiers = [self updateModifierKeys:event];
-
     const NSPoint pos = [event locationInWindow];
     const NSRect rect = [view frame];
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseMove::make(fWindow->fEnv, (jint) (pos.x * scale), (jint) ((rect.size.height - pos.y) * scale)));
     fWindow->dispatch(eventObj.get());
+}
+
+- (void)mouseDragged:(NSEvent *)event {
+    [self mouseMoved:event];
+}
+
+- (void)rightMouseDragged:(NSEvent *)event {
+    [self mouseMoved:event];
+}
+
+- (void)otherMouseDragged:(NSEvent *)event {
+    [self mouseMoved:event];
 }
 
 - (void)keyDown:(NSEvent *)event {
