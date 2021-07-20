@@ -223,6 +223,25 @@ void WindowManagerX11::runLoop() {
                                                                              true,
                                                                              jwm::KeyX11::getModifiers()));
                     myWindow->dispatch(eventKeyboard.get());
+                    char textBuffer[0x20];
+                    Status status;
+                    int count = Xutf8LookupString(myWindow->_ic,
+                                                  (XKeyPressedEvent*)&ev,
+                                                  textBuffer,
+                                                  sizeof(textBuffer),
+                                                  &s,
+                                                  &status);
+                    textBuffer[count] = 0;
+                    if (count > 0) {
+                        // ignore delete key
+                        if (textBuffer[0] != 127) {
+                            jwm::JNILocal<jobject> eventTextInput(app.getJniEnv(),
+                                                                  EventTextInput::make(app.getJniEnv(),
+                                                                                       textBuffer));
+                            myWindow->dispatch(eventTextInput.get());
+                        }
+                    }
+
                     break;
                 }
 

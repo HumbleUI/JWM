@@ -214,6 +214,9 @@ public class Example implements Consumer<Event> {
             EventResize er = (EventResize) e;
             _layer.resize(er.getWidth(), er.getHeight());
             paint();
+        } else if (e instanceof EventTextInput) {
+            EventTextInput eti = (EventTextInput) e;
+            System.out.println("Input: " + eti.getText());
         } else if (e instanceof EventMouseButton) {
             EventMouseButton eventMouseButton = (EventMouseButton) e;
             if (((EventMouseButton)e).isPressed()) {

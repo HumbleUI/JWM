@@ -52,6 +52,12 @@ namespace jwm {
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers);
         }
 
+        namespace EventTextInput {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, const char* text);
+        }
+
         namespace EventReconfigure {
             extern jobject kInstance;
         }

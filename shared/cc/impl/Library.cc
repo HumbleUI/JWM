@@ -138,6 +138,34 @@ namespace jwm {
             }
         }
 
+        namespace EventTextInput {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                // kCls = EventTextInput
+                {
+                    jclass cls = env->FindClass("org/jetbrains/jwm/EventTextInput");
+                    Throwable::exceptionThrown(env);
+                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                    assert(kCls);
+                }
+
+                // kCtor = EventTextInput::<init>(String text)
+                {
+                    kCtor = env->GetMethodID(kCls, "<init>", "(Ljava/lang/String;)V");
+                    Throwable::exceptionThrown(env);
+                    assert(kCtor);
+                }
+            }
+
+            jobject make(JNIEnv* env, const char* text) {
+                jstring jtext = env->NewStringUTF(text);
+                jobject res = env->NewObject(kCls, kCtor, jtext);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace EventKeyboard {
             jclass kCls;
             jmethodID kCtor;
@@ -224,6 +252,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Native::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
+    jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventMouseButton::onLoad(env);
