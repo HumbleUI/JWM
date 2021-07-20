@@ -109,12 +109,12 @@ namespace jwm {
                 jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseMove");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jint x, jint y) {
-                jobject res = env->NewObject(kCls, kCtor, x, y);
+            jobject make(JNIEnv* env, jint x, jint y, jint buttons, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, x, y, buttons, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -133,7 +133,7 @@ namespace jwm {
             }
 
             jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, (int)mouseButton, isPressed, modifiers);
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
