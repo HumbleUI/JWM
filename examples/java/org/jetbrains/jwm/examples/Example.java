@@ -17,7 +17,7 @@ public class Example implements Consumer<Event> {
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
-    public int x = 0, y = 0, lastX = 0, lastY = 0;
+    public EventMouseMove lastMouseMove = null;
 
     public String[] variants;
     public int variantIdx = 0;
@@ -80,9 +80,21 @@ public class Example implements Consumer<Event> {
 
             // Cursor
             paint.setColor(0x20FFFFFF);
-            canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
-            canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
-            canvas.drawString(String.format("%d, %d", x, y), x + 5, y - 8, font, paint);
+            if (lastMouseMove != null) {
+                var x = (int) (lastMouseMove.getX() / _window.getScale());
+                var y = (int) (lastMouseMove.getY() / _window.getScale());
+                canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
+                canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
+
+                String text = x + ", " + y;
+                for (var button: MouseButton.values())
+                    if (lastMouseMove.isButtonDown(button))
+                        text += " + " + button;
+                for (var modifier: KeyModifier.values())
+                    if (lastMouseMove.isModifierDown(modifier))
+                        text += " + " + modifier;
+                canvas.drawString(text, x + 3, y - 5, font, paint);
+            }
 
             // paint.setColor(0x80FFFFFF).setMode(PaintMode.STROKE).setStrokeWidth(1);
             // var radius = (float) Math.hypot(x - lastX, y - lastY);
@@ -239,10 +251,7 @@ public class Example implements Consumer<Event> {
                 System.out.println("Mouse up " + eventMouseButton.getButton());
             }
         } else if (e instanceof EventMouseMove) {
-            lastX = x;
-            lastY = y;
-            x = (int) (((EventMouseMove) e).getX() / _window.getScale());
-            y = (int) (((EventMouseMove) e).getY() / _window.getScale());
+            lastMouseMove = (EventMouseMove) e;
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {

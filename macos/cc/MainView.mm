@@ -157,6 +157,21 @@ jint modifierMask(NSEventModifierFlags flags) {
     return mask;
 }
 
+void onMouseMoved(jwm::WindowMac* window, NSEvent* event) {
+    NSView* view = window->fNSWindow.contentView;
+    CGFloat scale = window->getScale();
+
+    const NSPoint pos = [event locationInWindow];
+    const NSRect rect = [view frame];
+    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseMove::make(
+        window->fEnv,
+        (jint) (pos.x * scale),
+        (jint) ((rect.size.height - pos.y) * scale),
+        [NSEvent pressedMouseButtons],
+        jwm::modifierMask([event modifierFlags])));
+    window->dispatch(eventObj.get());
+}
+
 } // namespace jwm
 
 @implementation MainView {
@@ -220,25 +235,19 @@ jint modifierMask(NSEventModifierFlags flags) {
 }
 
 - (void)mouseMoved:(NSEvent *)event {
-    NSView* view = fWindow->fNSWindow.contentView;
-    CGFloat scale = fWindow->getScale();
-
-    const NSPoint pos = [event locationInWindow];
-    const NSRect rect = [view frame];
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseMove::make(fWindow->fEnv, (jint) (pos.x * scale), (jint) ((rect.size.height - pos.y) * scale)));
-    fWindow->dispatch(eventObj.get());
+    onMouseMoved(fWindow, event);
 }
 
 - (void)mouseDragged:(NSEvent *)event {
-    [self mouseMoved:event];
+    onMouseMoved(fWindow, event);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
-    [self mouseMoved:event];
+    onMouseMoved(fWindow, event);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
-    [self mouseMoved:event];
+    onMouseMoved(fWindow, event);
 }
 
 - (void)keyDown:(NSEvent *)event {
