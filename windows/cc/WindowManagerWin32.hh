@@ -33,7 +33,7 @@ namespace jwm {
         std::unordered_map<HWND, class WindowWin32*> _windows;
         std::unordered_map<int, Key> _keyTable;
 
-        HWND _hWndHelperWindow;
+        HWND _hWndHelperWindow = nullptr;
     };
 
 }

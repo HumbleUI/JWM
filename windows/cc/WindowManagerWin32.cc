@@ -34,7 +34,7 @@ int jwm::WindowManagerWin32::iteration() {
         WindowWin32* window = iter != _windows.end()? iter->second: nullptr;
 
         if (window)
-            window->notifyEvent();
+            window->notifyEvent(WindowWin32::Event::SwitchContext);
 
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
@@ -45,14 +45,35 @@ int jwm::WindowManagerWin32::iteration() {
         }
     }
 
-    // Process frame request
+    std::vector<WindowWin32*> toProcess;
+
+    // Check windows, which required frame event
     for (auto& entry: _windows) {
-        auto& window = entry.second;
+        auto window = entry.second;
 
         if (window->getFlag(WindowWin32::Flag::RequestFrame)) {
-            window->notifyEvent();
             window->removeFlag(WindowWin32::Flag::RequestFrame);
+            toProcess.push_back(window);
+        }
+    }
+
+    // Send frame event, for last window enable vsync
+    if (!toProcess.empty()) {
+        size_t last = toProcess.size() - 1;
+
+        for (size_t i = 0; i < toProcess.size(); i++) {
+            auto window = toProcess[i];
+
+            window->notifyEvent(WindowWin32::Event::SwitchContext);
             window->dispatch(classes::EventFrame::kInstance);
+
+            if (i == last)
+                window->notifyEvent(WindowWin32::Event::EnableVsync);
+
+            window->notifyEvent(WindowWin32::Event::SwapBuffers);
+
+            if (i == last)
+                window->notifyEvent(WindowWin32::Event::DisableVsync);
         }
     }
 
@@ -66,17 +87,17 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     wndclassexw.cbSize        = sizeof(wndclassexw);
     wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
-    wndclassexw.hInstance     = GetModuleHandleW(NULL);
-    wndclassexw.hCursor       = LoadCursorA(NULL, IDC_ARROW);
+    wndclassexw.hInstance     = GetModuleHandleW(nullptr);
+    wndclassexw.hCursor       = LoadCursorA(nullptr, IDC_ARROW);
     wndclassexw.lpszClassName = JWM_WIN32_WINDOW_CLASS_NAME;
 
     // Icon provided by user
-    wndclassexw.hIcon = static_cast<HICON>(LoadImageW(GetModuleHandleW(NULL),
+    wndclassexw.hIcon = static_cast<HICON>(LoadImageW(GetModuleHandleW(nullptr),
                                                       L"JWM_ICON", IMAGE_ICON,
                                                       0, 0, LR_DEFAULTSIZE | LR_SHARED));
     if (!wndclassexw.hIcon) {
         // Default icon
-        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(NULL,
+        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(nullptr,
                                                           IDI_APPLICATION, IMAGE_ICON,
                                                           0, 0, LR_DEFAULTSIZE | LR_SHARED));
     }
@@ -95,9 +116,9 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
                                         JWM_WIN32_WINDOW_DEFAULT_NAME,
                                         WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                         0, 0, 1, 1,
-                                        NULL, NULL,
-                                        GetModuleHandleW(NULL),
-                                        NULL);
+                                        nullptr, nullptr,
+                                        GetModuleHandleW(nullptr),
+                                        nullptr);
 
     if (!_hWndHelperWindow) {
         AppWin32::getInstance().sendError("Failed to create helper window");

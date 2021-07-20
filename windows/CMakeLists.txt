@@ -32,8 +32,8 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/AppWin32.hh
     cc/ContextWGL.cc
     cc/ContextWGL.hh
-    cc/LayerGL.cc
-    cc/LayerGL.hh
+    cc/LayerWGL.cc
+    cc/LayerWGL.hh
     cc/PlatformWin32.hh
     cc/ScreenWin32.hh
     cc/WindowManagerWin32.cc

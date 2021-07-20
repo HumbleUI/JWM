@@ -152,22 +152,20 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     JNIEnv* env = getJNIEnv();
 
     switch (uMsg) {
+        // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
+        // When user hold mouse button and drag window, app enter modal loop,
+        // animation is stopped. This hack allows us to get JWM_WM_FRAME_TIMER
+        // event with minimum possible delay to repaint window and animate it.
+
         case WM_ENTERSIZEMOVE:
-        case WM_EXITSIZEMOVE: {
-            _enterSizeMove = !_enterSizeMove;
-
-            // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
-            // When user hold mouse button and drag window, app enter modal loop,
-            // animation is stopped. This hack allows us to get JWM_WM_FRAME_TIMER
-            // event with minimum possible delay to repaint window and animate it.
-
-            if (_enterSizeMove)
-                _setFrameTimer();
-            else
-                _killFrameTimer();
-
+            setFlag(Flag::EnterSizeMove);
+            _setFrameTimer();
             return 0;
-        }
+
+        case WM_EXITSIZEMOVE:
+            removeFlag(Flag::EnterSizeMove);
+            _killFrameTimer();
+            return 0;
 
         case WM_SIZE: {
             int width = LOWORD(lParam);
@@ -196,6 +194,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 if (getFlag(Flag::RequestFrame)) {
                     removeFlag(Flag::RequestFrame);
                     dispatch(classes::EventFrame::kInstance);
+                    notifyEvent(Event::SwapBuffers);
                 }
             }
 
@@ -207,6 +206,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             if (BeginPaint(_hWnd, &ps)) {
                 dispatch(classes::EventFrame::kInstance);
+                notifyEvent(Event::SwapBuffers);
                 EndPaint(_hWnd, &ps);
             }
 
@@ -302,9 +302,9 @@ void jwm::WindowWin32::removeEventListener(int callbackID) {
     }
 }
 
-void jwm::WindowWin32::notifyEvent() {
+void jwm::WindowWin32::notifyEvent(Event event) {
     for (auto& entry: _onEventListeners)
-        entry.second();
+        entry.second(event);
 }
 
 DWORD jwm::WindowWin32::_getWindowStyle() const {

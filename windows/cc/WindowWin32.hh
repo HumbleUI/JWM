@@ -10,12 +10,20 @@
 namespace jwm {
     class WindowWin32 final: public Window {
     public:
-        using Callback = std::function<void()>;
+        enum class Event {
+            SwitchContext,
+            SwapBuffers,
+            EnableVsync,
+            DisableVsync
+        };
 
         enum class Flag: size_t {
-            RequestFrame = 1,
-            Max = 2
+            EnterSizeMove = 1,
+            RequestFrame = 2,
+            Max = 3
         };
+
+        using Callback = std::function<void(Event)>;
 
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
@@ -37,7 +45,7 @@ namespace jwm {
     public:
         int addEventListener(Callback callback);
         void removeEventListener(int callbackID);
-        void notifyEvent();
+        void notifyEvent(Event event);
         void setFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), true); }
         void removeFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), false); }
         bool getFlag(Flag flag) { return _flags.test(static_cast<size_t>(flag)); }
@@ -61,7 +69,6 @@ namespace jwm {
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = nullptr;
-        bool _enterSizeMove = false;
         int _nextCallbackID = 0;
     };
 }
