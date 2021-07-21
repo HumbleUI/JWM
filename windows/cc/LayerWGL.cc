@@ -1,4 +1,4 @@
-#include <LayerGL.hh>
+#include <LayerWGL.hh>
 #include <AppWin32.hh>
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
@@ -6,12 +6,10 @@
 #include <impl/Library.hh>
 #include <jni.h>
 
-void jwm::LayerGL::attach(jwm::WindowWin32* window) {
+void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
     assert(!_windowWin32);
 
     AppWin32& app = AppWin32::getInstance();
-    WindowManagerWin32& winMan = app.getWindowManager();
-    ContextWGL& contextWGL = app.getContextWGL();
 
     if (!window) {
         app.sendError("Passed null WindowWin32 object to attach");
@@ -22,8 +20,11 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
 
     // If have no rendering context for window, then create it here
     if (_hRC == nullptr) {
+        WindowManagerWin32& winMan = app.getWindowManager();
+        ContextWGL& contextWgl = app.getContextWGL();
+
         // Init context, if it is not initialized yet
-        if (!contextWGL.init()) {
+        if (!contextWgl.init()) {
             app.sendError("Failed to initialize WGL globals");
             return;
         }
@@ -50,7 +51,7 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
         int pixelFormatID;
         UINT numFormats;
 
-        bool status = contextWGL.wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
+        bool status = contextWgl.wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
 
         if (!status || numFormats == 0) {
             app.sendError("Failed to chose pixel format");
@@ -75,7 +76,7 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
         };
 
         // Shared context? Maybe use this feature future
-        _hRC = contextWGL.wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
+        _hRC = contextWgl.wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
 
         if (!_hRC) {
             app.sendError("Failed to create rendering context");
@@ -83,7 +84,25 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
             return;
         }
 
-        _windowWin32->setLayer(this);
+        // Listen for window events
+        _callbackID = _windowWin32->addEventListener([this](WindowWin32::Event event){
+            switch (event) {
+                case WindowWin32::Event::SwitchContext:
+                    makeCurrent();
+                    break;
+                case WindowWin32::Event::SwapBuffers:
+                    swapBuffers();
+                    break;
+                case WindowWin32::Event::EnableVsync:
+                    vsync(true);
+                    break;
+                case WindowWin32::Event::DisableVsync:
+                    vsync(false);
+                    break;
+                default:
+                    return;
+            }
+        });
     }
 
     if (!wglMakeCurrent(_hDC, _hRC)) {
@@ -91,13 +110,9 @@ void jwm::LayerGL::attach(jwm::WindowWin32* window) {
         _releaseInternal();
         return;
     }
-
-    if (contextWGL.wglSwapIntervalEXT)
-        // Force v-sync for now
-        contextWGL.wglSwapIntervalEXT(1);
 }
 
-void jwm::LayerGL::resize(int width, int height) {
+void jwm::LayerWGL::resize(int width, int height) {
     glClearStencil(0);
     glClearColor(0, 0, 0, 255);
     glStencilMask(0xffffffff);
@@ -105,22 +120,37 @@ void jwm::LayerGL::resize(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void jwm::LayerGL::swapBuffers() {
+void jwm::LayerWGL::swapBuffers() {
     assert(_hDC);
-    SwapBuffers(_hDC);
+    wglSwapLayerBuffers(_hDC, WGL_SWAP_MAIN_PLANE);
 }
 
-void jwm::LayerGL::makeCurrent() {
+void jwm::LayerWGL::makeCurrent() {
     assert(_hDC);
     assert(_hRC);
-    wglMakeCurrent(_hDC, _hRC);
+
+    HGLRC currentRC = wglGetCurrentContext();
+
+    if (currentRC != _hRC)
+        wglMakeCurrent(_hDC, _hRC);
 }
 
-void jwm::LayerGL::close() {
+void jwm::LayerWGL::close() {
     _releaseInternal();
 }
 
-void jwm::LayerGL::_releaseInternal() {
+void jwm::LayerWGL::vsync(bool enable) {
+    AppWin32& app = AppWin32::getInstance();
+    ContextWGL& contextWgl = app.getContextWGL();
+
+    int interval = enable? -1: 0;
+
+    if (contextWgl.wglSwapIntervalEXT)
+        contextWgl.wglSwapIntervalEXT(interval);
+}
+
+
+void jwm::LayerWGL::_releaseInternal() {
     if (_hRC) {
         wglDeleteContext(_hRC);
         _hRC = nullptr;
@@ -132,7 +162,7 @@ void jwm::LayerGL::_releaseInternal() {
     }
 
     if (_windowWin32) {
-        _windowWin32->setLayer(nullptr);
+        _windowWin32->removeEventListener(_callbackID);
         jwm::unref(&_windowWin32);
     }
 }
@@ -141,13 +171,13 @@ void jwm::LayerGL::_releaseInternal() {
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerGL__1nMake
         (JNIEnv* env, jclass jclass) {
-    jwm::LayerGL* instance = new jwm::LayerGL();
+    jwm::LayerWGL* instance = new jwm::LayerWGL();
     return reinterpret_cast<jlong>(instance);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
         (JNIEnv* env, jobject obj, jobject windowObj) {
-    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(window);
 }
@@ -159,18 +189,18 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
         (JNIEnv* env, jobject obj, jint width, jint height) {
-    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
-    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
-    instance->swapBuffers();
+    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
+    //instance->swapBuffers();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nClose
         (JNIEnv* env, jobject obj) {
-    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }

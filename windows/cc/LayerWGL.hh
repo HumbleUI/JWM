@@ -3,7 +3,7 @@
 
 namespace jwm {
 
-    class LayerGL: public RefCounted {
+    class LayerWGL: public RefCounted {
     public:
         static const int GL_MAJOR_MIN = 4;
         static const int GL_MINOR_MIN = 5;
@@ -14,14 +14,16 @@ namespace jwm {
         void swapBuffers();
         void makeCurrent();
         void close();
+        void vsync(bool enable);
 
     private:
         void _releaseInternal();
 
     private:
         class WindowWin32* _windowWin32 = nullptr;
-        HDC _hDC = NULL;
-        HGLRC _hRC = NULL;
+        HDC _hDC = nullptr;
+        HGLRC _hRC = nullptr;
+        int _callbackID = -1;
     };
 
 }

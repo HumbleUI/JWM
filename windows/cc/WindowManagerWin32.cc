@@ -1,7 +1,6 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
-#include <LayerGL.hh>
 #include <impl/Library.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -28,18 +27,14 @@ bool jwm::WindowManagerWin32::init() {
 
 int jwm::WindowManagerWin32::iteration() {
     MSG msg;
-    LayerGL* current = nullptr;
 
-    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
         HWND hWnd = msg.hwnd;
-        auto entry = _windows.find(hWnd);
-        WindowWin32* window = entry == _windows.end()? nullptr: entry->second;
-        LayerGL* layer = window? window->getLayer(): nullptr;
+        auto iter = _windows.find(hWnd);
+        WindowWin32* window = iter != _windows.end()? iter->second: nullptr;
 
-        if (layer && (current != layer)) {
-            current = layer;
-            layer->makeCurrent();
-        }
+        if (window)
+            window->notifyEvent(WindowWin32::Event::SwitchContext);
 
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
@@ -50,28 +45,39 @@ int jwm::WindowManagerWin32::iteration() {
         }
     }
 
-    std::unordered_set<WindowWin32*> toProcess;
-    std::swap(toProcess, _frameRequests);
+    std::vector<WindowWin32*> toProcess;
 
-    // Dispatch frame request event for those windows,
-    // which want to redraw in the next frame
+    // Check windows, which required frame event
+    for (auto& entry: _windows) {
+        auto window = entry.second;
 
-    for (auto window: toProcess) {
-        LayerGL* layer = window->getLayer();
-
-        if (layer && (current != layer)) {
-            current = layer;
-            layer->makeCurrent();
+        if (window->getFlag(WindowWin32::Flag::RequestFrame)) {
+            window->removeFlag(WindowWin32::Flag::RequestFrame);
+            toProcess.push_back(window);
         }
+    }
 
-        window->dispatch(classes::EventFrame::kInstance);
+    // Send frame event, for last window enable vsync
+    if (!toProcess.empty()) {
+        size_t last = toProcess.size() - 1;
+
+        for (size_t i = 0; i < toProcess.size(); i++) {
+            auto window = toProcess[i];
+
+            window->notifyEvent(WindowWin32::Event::SwitchContext);
+            window->dispatch(classes::EventFrame::kInstance);
+
+            if (i == last)
+                window->notifyEvent(WindowWin32::Event::EnableVsync);
+
+            window->notifyEvent(WindowWin32::Event::SwapBuffers);
+
+            if (i == last)
+                window->notifyEvent(WindowWin32::Event::DisableVsync);
+        }
     }
 
     return 0;
-}
-
-void jwm::WindowManagerWin32::requestFrame(WindowWin32* window) {
-    _frameRequests.emplace(window);
 }
 
 int jwm::WindowManagerWin32::_registerWindowClass() {
@@ -81,17 +87,17 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     wndclassexw.cbSize        = sizeof(wndclassexw);
     wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
-    wndclassexw.hInstance     = GetModuleHandleW(NULL);
-    wndclassexw.hCursor       = LoadCursorA(NULL, IDC_ARROW);
+    wndclassexw.hInstance     = GetModuleHandleW(nullptr);
+    wndclassexw.hCursor       = LoadCursorA(nullptr, IDC_ARROW);
     wndclassexw.lpszClassName = JWM_WIN32_WINDOW_CLASS_NAME;
 
     // Icon provided by user
-    wndclassexw.hIcon = static_cast<HICON>(LoadImageW(GetModuleHandleW(NULL),
+    wndclassexw.hIcon = static_cast<HICON>(LoadImageW(GetModuleHandleW(nullptr),
                                                       L"JWM_ICON", IMAGE_ICON,
                                                       0, 0, LR_DEFAULTSIZE | LR_SHARED));
     if (!wndclassexw.hIcon) {
         // Default icon
-        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(NULL,
+        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(nullptr,
                                                           IDI_APPLICATION, IMAGE_ICON,
                                                           0, 0, LR_DEFAULTSIZE | LR_SHARED));
     }
@@ -110,9 +116,9 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
                                         JWM_WIN32_WINDOW_DEFAULT_NAME,
                                         WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                         0, 0, 1, 1,
-                                        NULL, NULL,
-                                        GetModuleHandleW(NULL),
-                                        NULL);
+                                        nullptr, nullptr,
+                                        GetModuleHandleW(nullptr),
+                                        nullptr);
 
     if (!_hWndHelperWindow) {
         AppWin32::getInstance().sendError("Failed to create helper window");
@@ -380,5 +386,4 @@ void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
     _windows.erase(window.getHWnd());
-    _frameRequests.erase(&window);
 }
