@@ -157,19 +157,44 @@ void WindowManagerX11::runLoop() {
                     }
                     break;
                 }
-                case ConfigureNotify: { // resize
-                    jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
-                    myWindow->dispatch(eventResize.get());
+                case ConfigureNotify: { // resize and move
+                    WindowX11* except = nullptr;
+                    if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
+                    {
+                        except = myWindow;
+                        myWindow->_width = ev.xconfigure.width;
+                        myWindow->_height = ev.xconfigure.height;
+                        jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
+                        myWindow->dispatch(eventResize.get());
 
-                    // force redraw
-                    myWindow->unsetRedrawRequest();
-                    myWindow->dispatch(EventFrame::kInstance);
+                        // force redraw
+                        if (myWindow->_layer) {
+                            myWindow->_layer->makeCurrent();
+                            myWindow->_layer->setVsyncMode(ILayer::VSYNC_DISABLED);
+                        }
+                        myWindow->dispatch(EventFrame::kInstance);
 
-                    XSyncValue syncValue;
-                    XSyncIntsToValue(&syncValue,
-                                     myWindow->_xsyncRequestCounter.lo,
-                                     myWindow->_xsyncRequestCounter.hi);
-                    XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
+                        if (myWindow->_layer) {
+                            myWindow->_layer->setVsyncMode(ILayer::VSYNC_ADAPTIVE);
+                        }
+
+                        XSyncValue syncValue;
+                        XSyncIntsToValue(&syncValue,
+                                        myWindow->_xsyncRequestCounter.lo,
+                                        myWindow->_xsyncRequestCounter.hi);
+                        XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
+                    }
+
+                    // force repaint all windows otherwise they will freeze on GTK-based WMs
+                    for (auto& p : _nativeWindowToMy) {
+                        if (except != p.second && p.second->isRedrawRequested()) {
+                            p.second->unsetRedrawRequest();
+                            if (p.second->_layer) {
+                                p.second->_layer->makeCurrent();
+                            }
+                            p.second->dispatch(EventFrame::kInstance);
+                        }
+                    }
                     break;
                 }
 

@@ -12,6 +12,8 @@ class LayerGL: public RefCounted, public ILayer {
 public:
     WindowX11* fWindow;
     GLXContext _context = nullptr;
+    using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
+    glXSwapIntervalEXT_t _glXSwapIntervalEXT;
 
     LayerGL() = default;
     ~LayerGL() = default;
@@ -30,14 +32,16 @@ public:
         
         makeCurrentForced();
 
-        // this forces vsync      
-        using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
-        glXSwapIntervalEXT_t _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
+        _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
+        setVsyncMode(VSYNC_ADAPTIVE);
+    }
+
+    void setVsyncMode(VSync v) override {
 
         if (_glXSwapIntervalEXT) {
-            _glXSwapIntervalEXT(window->_windowManager.getDisplay(),
-                                window->_x11Window,
-                                -1);
+            _glXSwapIntervalEXT(fWindow->_windowManager.getDisplay(),
+                                fWindow->_x11Window,
+                                v);
         }
     }
 

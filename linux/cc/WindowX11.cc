@@ -57,15 +57,11 @@ int WindowX11::getTop() {
 }
 
 int WindowX11::getWidth() {
-    XWindowAttributes xwa;
-    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
-    return xwa.width;
+    return _width;
 }
 
 int WindowX11::getHeight() {
-    XWindowAttributes xwa;
-    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
-    return xwa.height;
+    return _height;
 }
 
 float WindowX11::getScale() {
@@ -127,6 +123,8 @@ void WindowX11::move(int left, int top) {
 }
 
 void WindowX11::resize(int width, int height) {
+    _width = width;
+    _height = height;
     XResizeWindow(_windowManager.display, _x11Window, width, height);
 }
 

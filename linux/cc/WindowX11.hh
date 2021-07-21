@@ -47,6 +47,9 @@ namespace jwm {
             XID counter;
         } _xsyncRequestCounter;
 
+        int _width = 0;
+        int _height = 0;
+
         bool _isRedrawRequested = false;
 
         WindowManagerX11& _windowManager;
