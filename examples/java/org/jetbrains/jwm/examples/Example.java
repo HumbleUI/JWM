@@ -13,6 +13,8 @@ public class Example implements Consumer<Event> {
     public Timer timer = new Timer(true);
 
     public long paintCount = 0;
+    public float barProp = 0.2f;
+    public int barSize = 2;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
@@ -58,6 +60,8 @@ public class Example implements Consumer<Event> {
         float scale = _window.getScale();
         int width = (int) (_window.getWidth() / scale);
         int height = (int) (_window.getHeight() / scale);
+        int halfWidth = width / 2;
+        int halfHeight = height / 2;
         canvas.scale(scale, scale);
 
         try (var paint = new Paint()) {
@@ -101,6 +105,16 @@ public class Example implements Consumer<Event> {
             // var radius = (float) Math.hypot(x - lastX, y - lastY);
             // canvas.drawCircle(x, y, radius, paint);
             // canvas.drawCircle(x, y, radius * 2, paint);
+
+            // Colored bars
+            paint.setColor(0xFFFF0000);
+            canvas.drawRect(Rect.makeXYWH(0, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            paint.setColor(0xFF00FF00);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, 0, width * barProp, barSize), paint);
+            paint.setColor(0xFF0000FF);
+            canvas.drawRect(Rect.makeXYWH(width - barSize, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, height - barSize, width * barProp, barSize), paint);
         }
 
         // Keys and Buttons
