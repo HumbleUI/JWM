@@ -148,23 +148,24 @@ void jwm::WindowWin32::close() {
     }
 }
 
-DWORD jwm::WindowWin32::_getWindowStyle() const {
-    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-}
-
-DWORD jwm::WindowWin32::_getWindowExStyle() const {
-    return 0;
-}
-
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
     JNIEnv* env = getJNIEnv();
 
     switch (uMsg) {
+        // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
+        // When user hold mouse button and drag window, app enter modal loop,
+        // animation is stopped. This hack allows us to get JWM_WM_FRAME_TIMER
+        // event with minimum possible delay to repaint window and animate it.
+
         case WM_ENTERSIZEMOVE:
-        case WM_EXITSIZEMOVE: {
-            _enterSizeMove = !_enterSizeMove;
+            setFlag(Flag::EnterSizeMove);
+            _setFrameTimer();
             return 0;
-        }
+
+        case WM_EXITSIZEMOVE:
+            removeFlag(Flag::EnterSizeMove);
+            _killFrameTimer();
+            return 0;
 
         case WM_SIZE: {
             int width = LOWORD(lParam);
@@ -175,8 +176,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOVE: {
-            int left = LOWORD(lParam);
-            int top = HIWORD(lParam);
+            int left = GET_X_LPARAM(lParam);
+            int top = GET_Y_LPARAM(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
             //window->dispatch(eventMove.get());
             return 0;
@@ -185,11 +186,26 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_ERASEBKGND:
             return true;
 
+        case WM_TIMER: {
+            if (wParam == JWM_WM_FRAME_TIMER) {
+                // Repaint window if requested
+
+                if (getFlag(Flag::RequestFrame)) {
+                    removeFlag(Flag::RequestFrame);
+                    dispatch(classes::EventFrame::kInstance);
+                    notifyEvent(Event::SwapBuffers);
+                }
+            }
+
+            return 0;
+        }
+
         case WM_PAINT: {
             PAINTSTRUCT ps;
 
             if (BeginPaint(_hWnd, &ps)) {
                 dispatch(classes::EventFrame::kInstance);
+                notifyEvent(Event::SwapBuffers);
                 EndPaint(_hWnd, &ps);
             }
 
@@ -197,9 +213,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOUSEMOVE: {
-            int xPos = LOWORD(lParam);
-            int yPos = HIWORD(lParam);
-            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos));
+            int xPos = GET_X_LPARAM(lParam);
+            int yPos = GET_Y_LPARAM(lParam);
+            int buttons = _getMouseButtons();
+            int modifiers = _getModifiers();
+
+            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos, buttons, modifiers));
             dispatch(eventMouseMove.get());
             return 0;
         }
@@ -228,9 +247,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
                 button = MouseButton::MIDDLE;
             else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                button = MouseButton::FORWARD;
-            else
                 button = MouseButton::BACK;
+            else
+                button = MouseButton::FORWARD;
 
             JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, modifiers));
             dispatch(eventMouseButton.get());
@@ -269,9 +288,37 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
 }
 
-int jwm::WindowWin32::_getModifiers() const {
-    static const int BUTTON_DOWN = 0x8000;
+int jwm::WindowWin32::addEventListener(jwm::WindowWin32::Callback callback) {
+    int callbackID = _getNextCallbackID();
+    _onEventListeners.emplace_back(callbackID, std::move(callback));
+    return callbackID;
+}
 
+void jwm::WindowWin32::removeEventListener(int callbackID) {
+    auto current = _onEventListeners.begin();
+    while (current != _onEventListeners.end()) {
+        if (current->first == callbackID)
+            current = _onEventListeners.erase(current);
+        else
+            ++current;
+    }
+}
+
+void jwm::WindowWin32::notifyEvent(Event event) {
+    for (auto& entry: _onEventListeners)
+        entry.second(event);
+}
+
+DWORD jwm::WindowWin32::_getWindowStyle() const {
+    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+}
+
+DWORD jwm::WindowWin32::_getWindowExStyle() const {
+    return 0;
+}
+
+
+int jwm::WindowWin32::_getModifiers() const {
     int modifiers = 0;
 
     if (GetKeyState(VK_SHIFT) & BUTTON_DOWN)
@@ -287,6 +334,39 @@ int jwm::WindowWin32::_getModifiers() const {
         modifiers |= static_cast<int>(KeyModifier::WINDOWS);
 
     return modifiers;
+}
+
+int jwm::WindowWin32::_getMouseButtons() const {
+    int buttons = 0;
+
+    if (GetKeyState(VK_LBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::PRIMARY);
+
+    if (GetKeyState(VK_RBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::SECONDARY);
+
+    if (GetKeyState(VK_MBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::MIDDLE);
+
+    if (GetKeyState(VK_XBUTTON1) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::BACK);
+
+    if (GetKeyState(VK_XBUTTON2) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::FORWARD);
+
+    return buttons;
+}
+
+int jwm::WindowWin32::_getNextCallbackID() {
+    return _nextCallbackID++;
+}
+
+void jwm::WindowWin32::_setFrameTimer() {
+    SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
+}
+
+void jwm::WindowWin32::_killFrameTimer() {
+    KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
 }
 
 // JNI
@@ -351,9 +431,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_resize
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::AppWin32& app = jwm::AppWin32::getInstance();
-    jwm::WindowManagerWin32& winMan = app.getWindowManager();
-    winMan.requestFrame(instance);
+    instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

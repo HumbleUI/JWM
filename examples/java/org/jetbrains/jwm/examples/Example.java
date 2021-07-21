@@ -3,10 +3,9 @@ package org.jetbrains.jwm.examples;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
-import java.util.List;
-import java.util.Timer;
-// import java.util.TimerTask;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
 public class Example implements Consumer<Event> {
     public Window _window;
@@ -14,10 +13,13 @@ public class Example implements Consumer<Event> {
     public Timer timer = new Timer(true);
 
     public long paintCount = 0;
+    public float barProp = 0.2f;
+    public int barSize = 2;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
+    public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
-    public int x = 0, y = 0, lastX = 0, lastY = 0;
+    public EventMouseMove lastMouseMove = null;
 
     public String[] variants;
     public int variantIdx = 0;
@@ -26,6 +28,9 @@ public class Example implements Consumer<Event> {
     public double[] times = new double[180];
     public int timesIdx = 0;
     public boolean _paused = false;
+
+    public Set<Key> keys = Collections.synchronizedSortedSet(new TreeSet<Key>());
+    public Set<MouseButton> buttons = Collections.synchronizedSortedSet(new TreeSet<MouseButton>());
 
     public Example() {
         variants = Platform.CURRENT == Platform.MACOS
@@ -55,6 +60,8 @@ public class Example implements Consumer<Event> {
         float scale = _window.getScale();
         int width = (int) (_window.getWidth() / scale);
         int height = (int) (_window.getHeight() / scale);
+        int halfWidth = width / 2;
+        int halfHeight = height / 2;
         canvas.scale(scale, scale);
 
         try (var paint = new Paint()) {
@@ -78,24 +85,61 @@ public class Example implements Consumer<Event> {
 
             // Cursor
             paint.setColor(0x20FFFFFF);
-            canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
-            canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
+            if (lastMouseMove != null) {
+                var x = (int) (lastMouseMove.getX() / _window.getScale());
+                var y = (int) (lastMouseMove.getY() / _window.getScale());
+                canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
+                canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
+
+                String text = x + ", " + y;
+                for (var button: MouseButton.values())
+                    if (lastMouseMove.isButtonDown(button))
+                        text += " + " + button;
+                for (var modifier: KeyModifier.values())
+                    if (lastMouseMove.isModifierDown(modifier))
+                        text += " + " + modifier;
+                canvas.drawString(text, x + 3, y - 5, font, paint);
+            }
 
             // paint.setColor(0x80FFFFFF).setMode(PaintMode.STROKE).setStrokeWidth(1);
             // var radius = (float) Math.hypot(x - lastX, y - lastY);
             // canvas.drawCircle(x, y, radius, paint);
             // canvas.drawCircle(x, y, radius * 2, paint);
+
+            // Colored bars
+            paint.setColor(0xFFFF0000);
+            canvas.drawRect(Rect.makeXYWH(0, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            paint.setColor(0xFF00FF00);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, 0, width * barProp, barSize), paint);
+            paint.setColor(0xFF0000FF);
+            canvas.drawRect(Rect.makeXYWH(width - barSize, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, height - barSize, width * barProp, barSize), paint);
+        }
+
+        // Keys and Buttons
+        if (!keys.isEmpty() || !buttons.isEmpty()) {
+            try (var paint = new Paint()) {
+                String text = String.join(" + ", Stream.concat(keys.stream().map(Key::getName), buttons.stream().map(Object::toString)).collect(Collectors.toList()));
+                try (var line = TextLine.make(text, font24);) {
+                    var capHeight = font24.getMetrics().getCapHeight();
+                    paint.setColor(0x40000000);
+                    canvas.drawRRect(RRect.makeXYWH((width - line.getWidth()) / 2 - 8, height - capHeight - 16 - 20, line.getWidth() + 16, capHeight + 16, 4), paint);
+                    paint.setColor(0xFFFFFFFF);
+                    canvas.drawTextLine(line, (width - line.getWidth()) / 2, height - 20 - 8, paint);
+                }
+            }
         }
 
         // VSync
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width / 2 - 100, height - 120);
+            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8) - 68);
             paint.setColor(0xFFE0E0E0);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 200, 80, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 196, 60, 4), paint);
             paint.setColor(angle % 2 == 0 ? 0xFFEF8784 : 0xFFA1FCFE);
             var bounds = font48.measureText("VSYNC");
-            canvas.drawString("VSYNC", (200 - bounds.getWidth()) / 2, (80 + font48.getMetrics().getCapHeight()) / 2, font48, paint);
+            canvas.drawString("VSYNC", (196 - bounds.getWidth()) / 2, (60 + font48.getMetrics().getCapHeight()) / 2, font48, paint);
             canvas.restore();
         }
 
@@ -214,40 +258,39 @@ public class Example implements Consumer<Event> {
             EventResize er = (EventResize) e;
             _layer.resize(er.getWidth(), er.getHeight());
             paint();
+        } else if (e instanceof EventTextInput) {
+            EventTextInput eti = (EventTextInput) e;
+            System.out.println("Input: " + eti.getText());
         } else if (e instanceof EventMouseButton) {
-            EventMouseButton eventMouseButton = (EventMouseButton) e;
-            if (((EventMouseButton)e).isPressed()) {
-                System.out.println("Mouse down " + eventMouseButton.getButton());
-            } else {
-                System.out.println("Mouse up " + eventMouseButton.getButton());
-            }
+            EventMouseButton ee = (EventMouseButton) e;
+            if (ee.isPressed())
+                buttons.add(ee.getButton());
+            else
+                buttons.remove(ee.getButton());
         } else if (e instanceof EventMouseMove) {
-            lastX = x;
-            lastY = y;
-            x = (int) (((EventMouseMove) e).getX() / _window.getScale());
-            y = (int) (((EventMouseMove) e).getY() / _window.getScale());
+            lastMouseMove = (EventMouseMove) e;
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             if (eventKeyboard.isPressed() == true) {
-                if (eventKeyboard.getKeyCode() == Key.P) {
+                if (eventKeyboard.getKey() == Key.P) {
                     _paused = !_paused;
                     if (!_paused)
                         _window.requestFrame();
-                } else if (eventKeyboard.getKeyCode() == Key.N) {
+                } else if (eventKeyboard.getKey() == Key.N) {
                     new Example();
-                } else if (eventKeyboard.getKeyCode() == Key.W || eventKeyboard.getKeyCode() == Key.ESCAPE) {
+                } else if (eventKeyboard.getKey() == Key.W || eventKeyboard.getKey() == Key.ESCAPE) {
                     accept(EventClose.INSTANCE);
-                } else if (eventKeyboard.getKeyCode() == Key.DOWN) { // ↓
+                } else if (eventKeyboard.getKey() == Key.DOWN) { // ↓
                     variantIdx = (variantIdx + 1) % variants.length;
                     changeLayer();
-                } else if (eventKeyboard.getKeyCode() == Key.UP) { // ↑
+                } else if (eventKeyboard.getKey() == Key.UP) { // ↑
                     variantIdx = (variantIdx + variants.length - 1) % variants.length;
                     changeLayer();
                 }
 
-                System.out.println("Keydown " + eventKeyboard.getKeyCode().toString());
+                keys.add(eventKeyboard.getKey());
             } else {
-                System.out.println("Keyup " + eventKeyboard.getKeyCode().toString());
+                keys.remove(eventKeyboard.getKey());
             }
         } else if (e instanceof EventFrame) {
             paint();

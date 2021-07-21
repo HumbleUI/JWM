@@ -3,6 +3,7 @@
 #include <cwctype>
 #include <windows.h>
 #include <winuser.h>
+#include <windowsx.h>
 #include <shellscalingapi.h>
 #include <highlevelmonitorconfigurationapi.h>
 
@@ -21,3 +22,7 @@
 #ifndef JWM_DEFAULT_DEVICE_SCALE
  #define JWM_DEFAULT_DEVICE_SCALE SCALE_100_PERCENT
 #endif //JWM_DEFAULT_DEVICE_SCALE
+
+#ifndef JWM_WM_FRAME_TIMER
+ #define JWM_WM_FRAME_TIMER 0x1
+#endif //JWM_WM_FRAME_TIMER

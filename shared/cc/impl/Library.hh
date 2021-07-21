@@ -37,7 +37,7 @@ namespace jwm {
         namespace EventMouseMove {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint x, jint y);
+            jobject make(JNIEnv* env, jint x, jint y, jint buttons = 0, jint modifiers = 0);
         }
 
         namespace EventMouseButton {
@@ -50,6 +50,12 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers);
+        }
+
+        namespace EventTextInput {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, const char* text);
         }
 
         namespace EventReconfigure {

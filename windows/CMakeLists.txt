@@ -19,11 +19,34 @@ else()
     message(FATAL_ERROR "Java home not found! Set JAVA_HOME env variable to provide correct path")
 endif()
 
-file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc)
-file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
-add_library(jwm SHARED ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
+# Shared folder path
+set(JWM_SHARED ${CMAKE_CURRENT_LIST_DIR}/../shared)
 
-target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc)
+# Shared sources
+file(GLOB JWM_SHARED_SOURCES_CXX ${JWM_SHARED}/cc/*.cc)
+file(GLOB JWM_SHARED_SOURCES_CXX_IMPL ${JWM_SHARED}/cc/impl/*.cc)
+
+# Windows related stuff
+set(JWM_WINDOWS_SOURCES_CXX
+    cc/AppWin32.cc
+    cc/AppWin32.hh
+    cc/ContextWGL.cc
+    cc/ContextWGL.hh
+    cc/LayerWGL.cc
+    cc/LayerWGL.hh
+    cc/PlatformWin32.hh
+    cc/ScreenWin32.hh
+    cc/WindowManagerWin32.cc
+    cc/WindowManagerWin32.hh
+    cc/WindowWin32.cc
+    cc/WindowWin32.hh)
+
+add_library(jwm SHARED
+    ${JWM_SHARED_SOURCES_CXX}
+    ${JWM_SHARED_SOURCES_CXX_IMPL}
+    ${JWM_WINDOWS_SOURCES_CXX})
+
+target_include_directories(jwm PRIVATE ${JWM_SHARED}/cc)
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cc)
 target_include_directories(jwm PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
 
