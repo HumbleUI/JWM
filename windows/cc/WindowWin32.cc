@@ -176,8 +176,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOVE: {
-            int left = LOWORD(lParam);
-            int top = HIWORD(lParam);
+            int left = GET_X_LPARAM(lParam);
+            int top = GET_Y_LPARAM(lParam);
             //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
             //window->dispatch(eventMove.get());
             return 0;
@@ -187,7 +187,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return true;
 
         case WM_TIMER: {
-
             if (wParam == JWM_WM_FRAME_TIMER) {
                 // Repaint window if requested
 
@@ -214,9 +213,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOUSEMOVE: {
-            int xPos = LOWORD(lParam);
-            int yPos = HIWORD(lParam);
-            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos));
+            int xPos = GET_X_LPARAM(lParam);
+            int yPos = GET_Y_LPARAM(lParam);
+            int buttons = _getMouseButtons();
+            int modifiers = _getModifiers();
+
+            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos, buttons, modifiers));
             dispatch(eventMouseMove.get());
             return 0;
         }
@@ -245,9 +247,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
                 button = MouseButton::MIDDLE;
             else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                button = MouseButton::FORWARD;
-            else
                 button = MouseButton::BACK;
+            else
+                button = MouseButton::FORWARD;
 
             JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, modifiers));
             dispatch(eventMouseButton.get());
@@ -317,8 +319,6 @@ DWORD jwm::WindowWin32::_getWindowExStyle() const {
 
 
 int jwm::WindowWin32::_getModifiers() const {
-    static const int BUTTON_DOWN = 0x8000;
-
     int modifiers = 0;
 
     if (GetKeyState(VK_SHIFT) & BUTTON_DOWN)
@@ -334,6 +334,27 @@ int jwm::WindowWin32::_getModifiers() const {
         modifiers |= static_cast<int>(KeyModifier::WINDOWS);
 
     return modifiers;
+}
+
+int jwm::WindowWin32::_getMouseButtons() const {
+    int buttons = 0;
+
+    if (GetKeyState(VK_LBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::PRIMARY);
+
+    if (GetKeyState(VK_RBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::SECONDARY);
+
+    if (GetKeyState(VK_MBUTTON) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::MIDDLE);
+
+    if (GetKeyState(VK_XBUTTON1) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::BACK);
+
+    if (GetKeyState(VK_XBUTTON2) & BUTTON_DOWN)
+        buttons |= static_cast<int>(MouseButton::FORWARD);
+
+    return buttons;
 }
 
 int jwm::WindowWin32::_getNextCallbackID() {

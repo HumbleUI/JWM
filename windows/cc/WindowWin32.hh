@@ -24,6 +24,7 @@ namespace jwm {
         };
 
         using Callback = std::function<void(Event)>;
+        static const int BUTTON_DOWN = 0x8000;
 
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
@@ -56,6 +57,7 @@ namespace jwm {
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
         int _getModifiers() const;
+        int _getMouseButtons() const;
         int _getNextCallbackID();
         void _setFrameTimer();
         void _killFrameTimer();
