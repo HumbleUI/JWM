@@ -69,7 +69,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: seanmiddleditch/gha-setup-ninja@master
-      - run: sudo apt-get install libxcomposite-dev libxrandr-dev
+      - run: sudo apt-get install libxcomposite-dev libxrandr-dev libgl1-mesa-dev
       - run: python3 script/deploy_native.py --arch=x64
         env:
           SPACE_TOKEN: ${{ secrets.SPACE_TOKEN }}

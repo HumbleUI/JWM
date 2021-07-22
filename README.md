@@ -97,6 +97,7 @@ x64 Native Tools Command Prompt for VS
 ### Ubuntu 20.04
 libxcomposite-dev
 libxrandr-dev
+libgl1-mesa-dev
 
 Build:
 
