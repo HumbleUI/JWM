@@ -1,11 +1,27 @@
 package org.jetbrains.jwm;
 
-import org.jetbrains.annotations.ApiStatus;
+import java.util.concurrent.*;
+import java.util.function.*;
+import org.jetbrains.annotations.*;
 
 public class WindowMac extends Window {
     @ApiStatus.Internal
+    public static void makeOnWindowThread(Consumer<Window> onCreate) {
+        _nRunOnUIThread(() -> {
+            Window w = new WindowMac();
+            onCreate.accept(w);
+        });
+    }
+
+    @ApiStatus.Internal
     public WindowMac() {
         super(_nMake());
+        App._windows.add(this);
+    }
+
+    @Override
+    public void runOnWindowThread(Runnable runnable) {
+        _nRunOnUIThread(runnable);
     }
 
     @Override
@@ -42,5 +58,6 @@ public class WindowMac extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
+    @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable runnable);
     @ApiStatus.Internal public native void _nClose();
 }

@@ -1,12 +1,9 @@
 package org.jetbrains.jwm;
 
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jwm.impl.RefCounted;
-
-import java.util.function.Consumer;
+import java.util.concurrent.*;
+import java.util.function.*;
+import org.jetbrains.annotations.*;
+import org.jetbrains.jwm.impl.*;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal
@@ -38,6 +35,8 @@ public abstract class Window extends RefCounted {
 
     public abstract void requestFrame();
 
+    public abstract void runOnWindowThread(Runnable runnable);
+    
     @Override
     public void close() {
         setEventListener(null);

@@ -1,14 +1,12 @@
 package org.jetbrains.jwm;
 
-import lombok.SneakyThrows;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jwm.impl.Library;
-
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import lombok.*;
+import org.jetbrains.annotations.*;
+import org.jetbrains.jwm.impl.*;
 
 public class App {
     @ApiStatus.Internal
@@ -24,28 +22,24 @@ public class App {
     }
 
     @NotNull @SneakyThrows
-    public static Window makeWindow() {
+    public static void makeWindow(Consumer<Window> onCreate) {
         Class cls;
-        if (Platform.CURRENT == Platform.WINDOWS)
+        if (Platform.CURRENT == Platform.WINDOWS) {
             cls = App.class.forName("org.jetbrains.jwm.WindowWin32");
-        else if (Platform.CURRENT == Platform.MACOS)
+        } else if (Platform.CURRENT == Platform.MACOS) {
             cls = App.class.forName("org.jetbrains.jwm.WindowMac");
-        else if (Platform.CURRENT == Platform.X11)
+        } else if (Platform.CURRENT == Platform.X11) {
             cls = App.class.forName("org.jetbrains.jwm.WindowX11");
-        else
+        } else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
-        Constructor<Window> ctor = cls.getDeclaredConstructor();
-        Window window = ctor.newInstance();
-        _windows.add(window);
-        return window;
+        Method factory = cls.getDeclaredMethod("makeOnWindowThread", Consumer.class);
+        factory.invoke(null, onCreate);
     }
 
     /**
      * Will block until you call {@link #terminate()}
      */
     public static native int start();
-
-    public static native void runOnUIThread(Runnable callback);
 
     public static native void terminate();
 

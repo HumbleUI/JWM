@@ -123,12 +123,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
     jwm::AppWin32::getInstance().terminate();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_runOnUIThread
-        (JNIEnv* env, jclass jclass, jobject callback) {
-    auto callbackRef = env->NewGlobalRef(callback);
-    jwm::AppWin32::getInstance().enqueueUIThreadCallback(callbackRef);
-}
-
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
         (JNIEnv* env, jclass jclass) {
     auto& app = jwm::AppWin32::getInstance();

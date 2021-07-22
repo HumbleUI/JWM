@@ -37,14 +37,16 @@ public class Example implements Consumer<Event> {
             ? new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" }
             : new String[] { "SkijaLayerGL" };
 
-        _window = App.makeWindow();
-        _window.setEventListener(this);
-        changeLayer();
-        var scale = _window.getScale();
-        _window.move((int) (100 * scale), (int) (100 * scale));
-        _window.resize((int) (800 * scale), (int) (600 * scale));
-        _window.show();
-        _window.requestFrame();
+        App.makeWindow((window) -> {
+            _window = window;
+            _window.setEventListener(this);
+            changeLayer();
+            var scale = _window.getScale();
+            _window.move((int) (100 * scale), (int) (100 * scale));
+            _window.resize((int) (800 * scale), (int) (600 * scale));
+            _window.show();
+            _window.requestFrame();
+        });
     }
 
     public void paint() {
