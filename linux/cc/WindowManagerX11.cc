@@ -199,11 +199,17 @@ void WindowManagerX11::runLoop() {
                 }
 
                 case MotionNotify: { // mouse move
+                    unsigned mask;
+                    ::Window unused1;
+                    int unused2;
+                    XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
                     jwm::JNILocal<jobject> eventMove(
                         app.getJniEnv(),
                         EventMouseMove::make(app.getJniEnv(),
                             ev.xmotion.x,
-                            ev.xmotion.y
+                            ev.xmotion.y,
+                            jwm::MouseButtonX11::fromNativeMask(mask),
+                            jwm::KeyX11::getModifiers()
                         )
                     );
                     myWindow->dispatch(eventMove.get());

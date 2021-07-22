@@ -6,5 +6,6 @@
 namespace jwm {
     namespace MouseButtonX11 {
         MouseButton fromNative(uint32_t v);
+        int fromNativeMask(unsigned v);
     }
 }
