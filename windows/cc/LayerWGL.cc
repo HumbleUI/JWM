@@ -105,11 +105,15 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         });
     }
 
+    // Make context current (since we running in separate thread it won't be changed)
     if (!wglMakeCurrent(_hDC, _hRC)) {
         app.sendError("Failed to make rendering context current");
         _releaseInternal();
         return;
     }
+
+    // Force v-sync (maybe in the future we will add some options)
+    vsync(true);
 }
 
 void jwm::LayerWGL::resize(int width, int height) {
@@ -143,7 +147,9 @@ void jwm::LayerWGL::vsync(bool enable) {
     AppWin32& app = AppWin32::getInstance();
     ContextWGL& contextWgl = app.getContextWGL();
 
-    int interval = enable? -1: 0;
+    int interval = enable?
+        static_cast<int>(Vsync::Enable):
+        static_cast<int>(Vsync::Disable);
 
     if (contextWgl.wglSwapIntervalEXT)
         contextWgl.wglSwapIntervalEXT(interval);

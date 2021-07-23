@@ -3,8 +3,10 @@
 #include <PlatformWin32.hh>
 #include <functional>
 #include <utility>
+#include <atomic>
 #include <bitset>
 #include <vector>
+#include <mutex>
 #include <jni.h>
 
 namespace jwm {
@@ -14,7 +16,8 @@ namespace jwm {
             SwitchContext,
             SwapBuffers,
             EnableVsync,
-            DisableVsync
+            DisableVsync,
+            Destroyed
         };
 
         enum class Flag: size_t {
@@ -30,6 +33,7 @@ namespace jwm {
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
         ~WindowWin32() override;
         bool init();
+        void start();
         void show();
         void getPosition(int& left, int& top) const;
         void getSize(int& width, int& height) const;
@@ -40,7 +44,8 @@ namespace jwm {
         float getScale() const;
         void move(int left, int top);
         void resize(int width, int height);
-        void close();
+        void enqueueCallback(jobject callback);
+        void requestClose();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     public:
@@ -49,7 +54,7 @@ namespace jwm {
         void notifyEvent(Event event);
         void setFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), true); }
         void removeFlag(Flag flag) { _flags.set(static_cast<size_t>(flag), false); }
-        bool getFlag(Flag flag) { return _flags.test(static_cast<size_t>(flag)); }
+        bool testFlag(Flag flag) { return _flags.test(static_cast<size_t>(flag)); }
         JNIEnv* getJNIEnv() const { return fEnv; }
         HWND getHWnd() const { return _hWnd; }
 
@@ -61,16 +66,21 @@ namespace jwm {
         int _getNextCallbackID();
         void _setFrameTimer();
         void _killFrameTimer();
+        void _close();
 
     private:
         friend class WindowManagerWin32;
 
-        std::vector<std::pair<int, Callback>> _onEventListeners;
+        std::vector<std::pair<int, Callback>> _eventListeners;
+        std::vector<jobject> _callbacks;
         std::bitset<static_cast<size_t>(Flag::Max)> _flags;
+        std::atomic_bool _shouldClose{false};
 
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = nullptr;
         int _nextCallbackID = 0;
+
+        mutable std::mutex _accessMutex;
     };
 }
