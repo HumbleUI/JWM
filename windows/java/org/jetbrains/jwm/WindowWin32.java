@@ -15,9 +15,12 @@ public class WindowWin32 extends Window {
         //     Window w = new WindowWin32(_executor);
         //     onCreate.accept(w);
         // });
+
+        // For now, window thread and ui thread are the same things
         _nRunOnUIThread(() -> {
-            Window w = new WindowWin32(WindowWin32::_nRunOnUIThread);
+            WindowWin32 w = new WindowWin32(WindowWin32::_nRunOnUIThread);
             onCreate.accept(w);
+            w._nStart();
         });
     }
 
@@ -33,6 +36,9 @@ public class WindowWin32 extends Window {
     @Override
     public void runOnWindowThread(Runnable runnable) {
         _executor.execute(runnable);
+
+        // TODO: remove  _executor.execute(runnable);
+        // we need to call _nRunOnWindowThread(runnable)
     }
 
     @Override
@@ -70,5 +76,7 @@ public class WindowWin32 extends Window {
 
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable runnable); // TODO remove
+    @ApiStatus.Internal public native void _nRunOnWindowThread(Runnable runnable);
+    @ApiStatus.Internal public native void _nStart();
     @ApiStatus.Internal public native void _nClose();
 }

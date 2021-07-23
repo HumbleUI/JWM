@@ -434,11 +434,23 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFram
     instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
 }
 
-// TODO remove
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRunOnUIThread
         (JNIEnv* env, jclass jclass, jobject callback) {
     auto callbackRef = env->NewGlobalRef(callback);
+    // TODO remove
     jwm::AppWin32::getInstance().enqueueUIThreadCallback(callbackRef);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRunOnWindowThread
+        (JNIEnv* env, jobject obj, jobject callback) {
+    auto callbackRef = env->NewGlobalRef(callback);
+    // TODO replace
+    jwm::AppWin32::getInstance().enqueueUIThreadCallback(callbackRef);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nStart
+        (JNIEnv* env, jobject obj) {
+    // TODO enter main window loop
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
