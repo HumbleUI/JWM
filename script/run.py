@@ -32,7 +32,8 @@ def main():
     ]
   if args.skija_dir:
     compile_classpath += [
-      skija_dir + '/native/build',
+      skija_dir + '/platform/build',
+      skija_dir + '/platform/target/classes',
       skija_dir + '/shared/target/classes',
     ]
   else:
