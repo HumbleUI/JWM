@@ -148,7 +148,7 @@ void jwm::LayerWGL::vsync(bool enable) {
     ContextWGL& contextWgl = app.getContextWGL();
 
     int interval = enable?
-        static_cast<int>(Vsync::Enable):
+        static_cast<int>(Vsync::EnableAdaptive):
         static_cast<int>(Vsync::Disable);
 
     if (contextWgl.wglSwapIntervalEXT)
@@ -201,7 +201,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
-    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
+    //jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     //instance->swapBuffers();
 }
 

@@ -106,8 +106,6 @@ void jwm::WindowWin32::start() {
             env->DeleteGlobalRef(callback);
         }
     }
-
-    printf("jwm::WindowWin32::start()\n");
 }
 
 void jwm::WindowWin32::show() {

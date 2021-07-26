@@ -16,7 +16,7 @@ public class WindowWin32 extends Window {
             WindowWin32 w = new WindowWin32(_executor);
             // User provided lambda to setup window
             onCreate.accept(w);
-            // Enter window event loop (blocks until window or add are closed)
+            // Enter window event loop (blocks until window or app closed)
             w._nStart();
             // Force executor to shutdown (terminate its thread)
             _executor.shutdown();
