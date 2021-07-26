@@ -37,13 +37,13 @@ namespace jwm {
         namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int jmodifiers);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint jmodifiers);
         }
 
         namespace EventMouseButton {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, jint modifiers);
+            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint modifiers);
         }
 
         namespace EventMouseMove {
@@ -72,6 +72,12 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, const char* text);
+        }
+
+        namespace EventWindowMove {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint left, jint top);
         }
         
         namespace Screen {

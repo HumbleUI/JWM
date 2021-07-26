@@ -13,13 +13,13 @@ public class Example implements Consumer<Event> {
     public Timer timer = new Timer(true);
 
     public long paintCount = 0;
-    public float barProp = 0.2f;
-    public int barSize = 2;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
     public EventMouseMove lastMouseMove = null;
+    public EventResize lastResize = new EventResize(0, 0);
+    public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Point scroll = new Point(0, 0);
 
     public String[] variants;
@@ -110,14 +110,16 @@ public class Example implements Consumer<Event> {
             // canvas.drawCircle(x, y, radius * 2, paint);
 
             // Colored bars
+            var barProp = 0.2f;
+            var barSize = 2;
             paint.setColor(0xFFe76f51);
-            canvas.drawRect(Rect.makeXYWH(0, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            canvas.drawRect(Rect.makeXYWH(0, halfHeight - halfHeight * 0.2f, barSize, height * 0.2f), paint);
             paint.setColor(0xFF2a9d8f);
-            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, 0, width * barProp, barSize), paint);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * 0.2f, 0, width * 0.2f, barSize), paint);
             paint.setColor(0xFFe9c46a);
-            canvas.drawRect(Rect.makeXYWH(width - barSize, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
+            canvas.drawRect(Rect.makeXYWH(width - barSize, halfHeight - halfHeight * 0.2f, barSize, height * 0.2f), paint);
             paint.setColor(0xFFFFFFFF);
-            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, height - barSize, width * barProp, barSize), paint);
+            canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * 0.2f, height - barSize, width * 0.2f, barSize), paint);
         }
 
         // Scroll
@@ -171,9 +173,9 @@ public class Example implements Consumer<Event> {
 
             // Dimensions
             paint.setColor(0xFFFFFFFF);
-            canvas.drawString("Position: " + _window.getLeft() + "×" + _window.getTop(), 0, 12, font, paint);
+            canvas.drawString("Pos: " + _window.getLeft() + "×" + _window.getTop() + " (" + lastMove.getLeft() + "×" + lastMove.getTop() + ")", 0, 12, font, paint);
             canvas.translate(0, 24);
-            canvas.drawString("Size: " + _window.getWidth() + "×" + _window.getHeight(), 0, 12, font, paint);
+            canvas.drawString("Size: " + _window.getWidth() + "×" + _window.getHeight() + " (" + lastResize.getWidth() + "×" + lastResize.getHeight() + ")", 0, 12, font, paint);
             canvas.translate(0, 24);
             canvas.drawString("Scale: " + _window.getScale(), 0, 12, font, paint);
             canvas.translate(0, 24);
@@ -271,8 +273,8 @@ public class Example implements Consumer<Event> {
             _layer.reconfigure();
             accept(new EventResize(_window.getWidth(), _window.getHeight()));
         } else if (e instanceof EventResize) {
-            EventResize er = (EventResize) e;
-            _layer.resize(er.getWidth(), er.getHeight());
+            lastResize = (EventResize) e;
+            _layer.resize(lastResize.getWidth(), lastResize.getHeight());
             paint();
         } else if (e instanceof EventTextInput) {
             EventTextInput eti = (EventTextInput) e;
@@ -311,6 +313,8 @@ public class Example implements Consumer<Event> {
         } else if (e instanceof EventScroll) {
             var ee = (EventScroll) e;
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
+        } else if (e instanceof EventWindowMove) {
+            lastMove = (EventWindowMove) e;
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)

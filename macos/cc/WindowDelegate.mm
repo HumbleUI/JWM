@@ -14,6 +14,17 @@
     return self;
 }
 
+- (void)windowDidMove:(NSNotification *)notification {
+    NSWindow* window = fWindow->fNSWindow;
+    auto screen = window.screen ?: [NSScreen mainScreen];
+    auto left = window.frame.origin.x;
+    auto top = screen.frame.size.height - window.frame.origin.y - window.frame.size.height;
+
+    CGFloat scale = fWindow->getScale();
+    jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, left * scale, top * scale));
+    fWindow->dispatch(event.get());
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
     NSView* view = fWindow->fNSWindow.contentView;
     CGFloat scale = fWindow->getScale();

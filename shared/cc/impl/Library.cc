@@ -123,7 +123,7 @@ namespace jwm {
                 }
             }
 
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers) {
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint modifiers) {
                 jobject res = env->NewObject(kCls, kCtor, static_cast<int>(keyCode), isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
@@ -142,7 +142,7 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
+            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint modifiers) {
                 jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
@@ -242,6 +242,24 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowMove {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowMove");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint left, jint top) {
+                jobject res = env->NewObject(kCls, kCtor, left, top);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace Screen {
             jclass kCls;
             jmethodID kCtor;
@@ -276,6 +294,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventReconfigure::onLoad(env);
     jwm::classes::EventResize::onLoad(env);
     jwm::classes::EventScroll::onLoad(env);
+    jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::Screen::onLoad(env);
 }
