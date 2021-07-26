@@ -310,7 +310,7 @@ public class Example implements Consumer<Event> {
             }
         } else if (e instanceof EventScroll) {
             var ee = (EventScroll) e;
-            scroll = scroll.offset(ee.getDx(), ee.getDy());
+            scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)
