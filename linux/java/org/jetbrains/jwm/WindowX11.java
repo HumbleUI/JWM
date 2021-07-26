@@ -10,27 +10,24 @@ import org.jetbrains.jwm.impl.*;
 public class WindowX11 extends Window {
     @ApiStatus.Internal
     public static void makeOnWindowThread(Consumer<Window> onCreate) {
-        // ExecutorService _executor = Executors.newSingleThreadExecutor();
-        // _executor.submit(() -> {
-        // Window w = new WindowX11(_executor);
-        // onCreate.accept(w);
-        // });
-        Window w = new WindowX11((runnable) -> runnable.run()); // FIXME
-        onCreate.accept(w);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            WindowX11 w = new WindowX11(executor);
+            onCreate.accept(w);
+            w._nStart();
+            executor.shutdown();
+        });
     }
-
-    @ApiStatus.Internal public final Executor _executor;
 
     @ApiStatus.Internal
     public WindowX11(Executor executor) {
         super(_nMake());
-        _executor = executor;
         App._windows.add(this);
     }
 
     @Override
     public void runOnWindowThread(Runnable runnable) {
-        _executor.execute(runnable);
+        _nRunOnWindowThread(runnable);
     }
 
     @Override
@@ -68,4 +65,6 @@ public class WindowX11 extends Window {
 
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nClose();
+    @ApiStatus.Internal public native void _nStart();
+    @ApiStatus.Internal public static native void _nRunOnWindowThread(Runnable runnable);
 }

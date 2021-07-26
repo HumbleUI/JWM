@@ -5,6 +5,8 @@
 #include "impl/RefCounted.hh"
 #include "WindowX11.hh"
 #include <GL/gl.h>
+#include <limits>
+#include "AppX11.hh"
 
 namespace jwm {
 
@@ -23,8 +25,8 @@ public:
         assert(fWindow->_layer == nullptr);
         fWindow->_layer = this;
         if (_context == nullptr) {
-            _context = glXCreateContext(window->_windowManager.getDisplay(),
-                                        window->_windowManager.getVisualInfo(),
+            _context = glXCreateContext(jwm::app.getDisplay(),
+                                        window->x11VisualInfo,
                                         nullptr,
                                         true);
                                 
@@ -33,13 +35,13 @@ public:
         makeCurrentForced();
 
         _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
-        setVsyncMode(VSYNC_ADAPTIVE);
+        setVsyncMode(VSYNC_ENABLED);
     }
 
     void setVsyncMode(VSync v) override {
 
         if (_glXSwapIntervalEXT) {
-            _glXSwapIntervalEXT(fWindow->_windowManager.getDisplay(),
+            _glXSwapIntervalEXT(jwm::app.getDisplay(),
                                 fWindow->_x11Window,
                                 v);
         }
@@ -55,17 +57,17 @@ public:
     }
 
     void swapBuffers() {
-        glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
+        glXSwapBuffers(jwm::app.getDisplay(), fWindow->_x11Window);
     }
 
     void close() {
-        glXDestroyContext(fWindow->_windowManager.getDisplay(), _context);
+        glXDestroyContext(jwm::app.getDisplay(), _context);
         jwm::unref(&fWindow);
     }
 
     void makeCurrentForced() override {
         ILayer::makeCurrentForced();
-        glXMakeCurrent(fWindow->_windowManager.getDisplay(),
+        glXMakeCurrent(jwm::app.getDisplay(),
                        fWindow->_x11Window,
                        _context);
     }

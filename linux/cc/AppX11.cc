@@ -10,8 +10,13 @@
 jwm::AppX11 jwm::app;
 
 
+Display* jwm::AppX11::getDisplay() {
+    thread_local Display* display = XOpenDisplay(nullptr);
+    return display;
+}
+
 float jwm::AppX11::getScale() {
-    char *resourceString = XResourceManagerString(wm.display);
+    char *resourceString = XResourceManagerString(getDisplay());
     XrmDatabase db;
     XrmValue value;
     char *type = NULL;
@@ -36,15 +41,16 @@ float jwm::AppX11::getScale() {
 }
 
 void jwm::AppX11::init(JNIEnv* jniEnv) {
-    _jniEnv = jniEnv;
 }
 
 void jwm::AppX11::start() {
-    wm.runLoop();
+    while (_running) {
+        // TODO
+    }
 }
 
 void jwm::AppX11::terminate() {
-    wm.terminate();
+    _running = false;
 }
 
 // JNI
@@ -67,9 +73,9 @@ extern"C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
 
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens(JNIEnv* env, jobject cls) noexcept {
-    Display* display = jwm::app.getWindowManager().getDisplay();
-    XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());
-    RROutput primaryOutput = XRRGetOutputPrimary(display, jwm::app.getWindowManager().getRootWindow());
+    Display* display = jwm::app.getDisplay();
+    XRRScreenResources* resources = XRRGetScreenResources(display, XDefaultRootWindow(display));
+    RROutput primaryOutput = XRRGetOutputPrimary(display, XDefaultRootWindow(display));
     int count = resources->ncrtc;
 
 

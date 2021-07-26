@@ -3,14 +3,14 @@
 #include <jni.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <GL/glx.h>
 #include "Window.hh"
-#include "WindowManagerX11.hh"
 #include "ILayer.hh"
 
 namespace jwm {
     class WindowX11: public jwm::Window {
     public:
-        WindowX11(JNIEnv* env, WindowManagerX11& windowManager);
+        WindowX11(JNIEnv* env);
         ~WindowX11() override;
 
         void getPosition(int& posX, int& posY);
@@ -38,6 +38,39 @@ namespace jwm {
             return _ic;
         }
 
+        void runLoop();
+
+        bool _runLoop = false;
+
+        XVisualInfo* pickVisual();
+
+        /**
+         * Input Manager
+         */
+        XIM _im;
+
+        struct Atoms {
+            Atoms(Display* display): _display(display) {}
+
+            // display definition here allows to reference Display* in DEFINE_ATOM
+            Display* _display;
+
+            #define DEFINE_ATOM(name) Atom name = XInternAtom(_display, #name, 0)
+            
+            // protocols
+            // NOTE: WM_DELETE_WINDOW should be the first protocol because WindowX11 references to this variable
+            const static int PROTOCOL_COUNT = 2;
+            DEFINE_ATOM(WM_DELETE_WINDOW);
+            DEFINE_ATOM(_NET_WM_SYNC_REQUEST);
+            
+            // other atoms
+            DEFINE_ATOM(_NET_WM_SYNC_REQUEST_COUNTER);
+            DEFINE_ATOM(WM_PROTOCOLS);
+
+            #undef DEFINE_ATOM
+        } _atoms;
+        Atoms& getAtoms() { return _atoms; }
+
         /**
          * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter
          */
@@ -45,6 +78,7 @@ namespace jwm {
             uint32_t lo = 0;
             uint32_t hi = 0;
             XID counter;
+            XID extended_counter;
         } _xsyncRequestCounter;
 
         int _width = 0;
@@ -52,7 +86,9 @@ namespace jwm {
 
         bool _isRedrawRequested = false;
 
-        WindowManagerX11& _windowManager;
+        Screen* screen;
+        XVisualInfo* x11VisualInfo;
+        XSetWindowAttributes x11SWA;
         ILayer* _layer = nullptr;
         ::Window _x11Window = 0;
         XIC _ic;

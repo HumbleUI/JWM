@@ -1,7 +1,8 @@
 #pragma once
 
-#include "WindowManagerX11.hh"
 #include <jni.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
 namespace jwm {
     extern class AppX11 {
@@ -10,17 +11,10 @@ namespace jwm {
         void start();
         void terminate();
 
-        WindowManagerX11& getWindowManager() {
-            return wm;
-        }
-
-        JNIEnv* getJniEnv() {
-            return _jniEnv;
-        }
+        Display* getDisplay();
 
         float getScale();
 
-        JNIEnv* _jniEnv;
-        WindowManagerX11 wm;
+        bool _running = true;
     } app;
 }
