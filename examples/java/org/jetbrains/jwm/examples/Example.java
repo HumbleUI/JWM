@@ -20,6 +20,7 @@ public class Example implements Consumer<Event> {
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
     public EventMouseMove lastMouseMove = null;
+    public Point scroll = new Point(0, 0);
 
     public String[] variants;
     public int variantIdx = 0;
@@ -109,14 +110,27 @@ public class Example implements Consumer<Event> {
             // canvas.drawCircle(x, y, radius * 2, paint);
 
             // Colored bars
-            paint.setColor(0xFFFF0000);
+            paint.setColor(0xFFe76f51);
             canvas.drawRect(Rect.makeXYWH(0, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
-            paint.setColor(0xFF00FF00);
+            paint.setColor(0xFF2a9d8f);
             canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, 0, width * barProp, barSize), paint);
-            paint.setColor(0xFF0000FF);
+            paint.setColor(0xFFe9c46a);
             canvas.drawRect(Rect.makeXYWH(width - barSize, halfHeight - halfHeight * barProp, barSize, height * barProp), paint);
             paint.setColor(0xFFFFFFFF);
             canvas.drawRect(Rect.makeXYWH(halfWidth - halfWidth * barProp, height - barSize, width * barProp, barSize), paint);
+        }
+
+        // Scroll
+        try (var paint = new Paint().setMode(PaintMode.STROKE).setStrokeWidth(2).setColor(0x80FFFFFF)) {
+            for (int x = (int) Math.ceil(-scroll.getX() / 50f - 1) * 50; x + scroll.getX() < width; x += 50) {
+                canvas.drawLine(scroll.getX() + x, halfHeight - 2, scroll.getX() + x, halfHeight + 2, paint);
+                canvas.drawLine(scroll.getX() + x + 25, halfHeight - 4, scroll.getX() + x + 25, halfHeight + 4, paint);
+            }
+
+            for (int y = (int) Math.ceil(-scroll.getY() / 50f - 1) * 50; y + scroll.getY() < height; y += 50) {
+                canvas.drawLine(halfWidth - 2, scroll.getY() + y, halfWidth + 2, scroll.getY() + y, paint);
+                canvas.drawLine(halfWidth - 4, scroll.getY() + y + 25, halfWidth + 4, scroll.getY() + y + 25, paint);
+            }
         }
 
         // Keys and Buttons
@@ -294,6 +308,9 @@ public class Example implements Consumer<Event> {
             } else {
                 keys.remove(eventKeyboard.getKey());
             }
+        } else if (e instanceof EventScroll) {
+            var ee = (EventScroll) e;
+            scroll = scroll.offset(ee.getDx(), ee.getDy());
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)

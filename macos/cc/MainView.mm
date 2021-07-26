@@ -292,6 +292,15 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     onMouseButton(fWindow, event, &fLastPressedButtons);
 }
 
+- (void)scrollWheel:(NSEvent *)event {
+    jint modifierMask = jwm::modifierMask([event modifierFlags]);
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventScroll::make(fWindow->fEnv,
+                                                                                   [event scrollingDeltaX],
+                                                                                   [event scrollingDeltaY],
+                                                                                   modifierMask));
+    fWindow->dispatch(eventObj.get());
+}
+
 - (void)keyDown:(NSEvent *)event {
     unsigned short keyCode = [event keyCode];
     jwm::Key key = keyCode < 128 ? jwm::kKeyTable[keyCode] : jwm::Key::UNDEFINED;

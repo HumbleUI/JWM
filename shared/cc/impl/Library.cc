@@ -101,71 +101,6 @@ namespace jwm {
             }
         }
 
-        namespace EventMouseMove {
-            jclass kCls;
-            jmethodID kCtor;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseMove");
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
-                Throwable::exceptionThrown(env);
-            }
-
-            jobject make(JNIEnv* env, jint x, jint y, jint buttons, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, x, y, buttons, modifiers);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
-            }
-        }
-
-        namespace EventMouseButton {
-            jclass kCls;
-            jmethodID kCtor;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseButton");
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
-                assert(kCtor);
-                Throwable::exceptionThrown(env);
-            }
-
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
-            }
-        }
-
-        namespace EventTextInput {
-            jclass kCls;
-            jmethodID kCtor;
-
-            void onLoad(JNIEnv* env) {
-                // kCls = EventTextInput
-                {
-                    jclass cls = env->FindClass("org/jetbrains/jwm/EventTextInput");
-                    Throwable::exceptionThrown(env);
-                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                    assert(kCls);
-                }
-
-                // kCtor = EventTextInput::<init>(String text)
-                {
-                    kCtor = env->GetMethodID(kCls, "<init>", "(Ljava/lang/String;)V");
-                    Throwable::exceptionThrown(env);
-                    assert(kCtor);
-                }
-            }
-
-            jobject make(JNIEnv* env, const char* text) {
-                jstring jtext = env->NewStringUTF(text);
-                jobject res = env->NewObject(kCls, kCtor, jtext);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
-            }
-        }
-
         namespace EventKeyboard {
             jclass kCls;
             jmethodID kCtor;
@@ -190,6 +125,43 @@ namespace jwm {
 
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers) {
                 jobject res = env->NewObject(kCls, kCtor, static_cast<int>(keyCode), isPressed, modifiers);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventMouseButton {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseButton");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
+                assert(kCtor);
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventMouseMove {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseMove");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint x, jint y, jint buttons, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, x, y, buttons, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -223,6 +195,52 @@ namespace jwm {
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
+    
+        namespace EventScroll {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventScroll");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(FFI)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jfloat dx, jfloat dy, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, dx, dy, modifiers);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTextInput {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                // kCls = EventTextInput
+                {
+                    jclass cls = env->FindClass("org/jetbrains/jwm/EventTextInput");
+                    Throwable::exceptionThrown(env);
+                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                    assert(kCls);
+                }
+
+                // kCtor = EventTextInput::<init>(String text)
+                {
+                    kCtor = env->GetMethodID(kCls, "<init>", "(Ljava/lang/String;)V");
+                    Throwable::exceptionThrown(env);
+                    assert(kCtor);
+                }
+            }
+
+            jobject make(JNIEnv* env, const char* text) {
+                jstring jtext = env->NewStringUTF(text);
+                jobject res = env->NewObject(kCls, kCtor, jtext);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
 
         namespace Screen {
             jclass kCls;
@@ -252,11 +270,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Native::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
-    jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);
-    jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventMouseButton::onLoad(env);
+    jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventReconfigure::onLoad(env);
     jwm::classes::EventResize::onLoad(env);
+    jwm::classes::EventScroll::onLoad(env);
+    jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::Screen::onLoad(env);
 }

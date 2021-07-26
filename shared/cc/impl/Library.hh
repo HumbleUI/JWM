@@ -34,28 +34,22 @@ namespace jwm {
             extern jobject kInstance;
         }
 
-        namespace EventMouseMove {
+        namespace EventKeyboard {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint x, jint y, jint buttons = 0, jint modifiers = 0);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int jmodifiers);
         }
 
         namespace EventMouseButton {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, int modifiers);
+            jobject make(JNIEnv* env, MouseButton mouseButton, bool isPressed, jint modifiers);
         }
 
-        namespace EventKeyboard {
+        namespace EventMouseMove {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, int modifiers);
-        }
-
-        namespace EventTextInput {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env, const char* text);
+            jobject make(JNIEnv* env, jint x, jint y, jint buttons = 0, jint modifiers = 0);
         }
 
         namespace EventReconfigure {
@@ -68,6 +62,18 @@ namespace jwm {
             jobject make(JNIEnv* env, jint width, jint height);
         }
 
+        namespace EventScroll {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jfloat dx, jfloat dy, jint modifiers = 0);
+        }
+
+        namespace EventTextInput {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, const char* text);
+        }
+        
         namespace Screen {
             extern jclass kCls;
             extern jmethodID kCtor;
