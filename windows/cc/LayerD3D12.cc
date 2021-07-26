@@ -74,7 +74,12 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
 }
 
 void jwm::LayerD3D12::resize(int width, int height) {
+    _dx12commandQueue->WaitIdle(*_dx12fence, _fenceValue);
+    _dx12swapChain->resize(width, height);
 
+    UINT64 currentFrameFenceValue = _frameFenceValues[_backBufferIndex];
+    _frameFenceValues.clear();
+    _frameFenceValues.resize(_dx12swapChain->getBuffersCount(), currentFrameFenceValue);
 }
 
 void jwm::LayerD3D12::swapBuffers() {

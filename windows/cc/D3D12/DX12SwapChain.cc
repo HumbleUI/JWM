@@ -74,9 +74,9 @@ void jwm::DX12SwapChain::transitionLayout(const jwm::DX12SwapChain::ComPtr<ID3D1
     ComPtr<ID3D12Resource> backBuffer = _backBuffers[backBufferIndex];
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            backBuffer.Get(),
-            before,
-            after
+        backBuffer.Get(),
+        before,
+        after
     );
 
     cmdList->ResourceBarrier(1, &barrier);
@@ -98,6 +98,26 @@ void jwm::DX12SwapChain::clearTarget(const jwm::DX12SwapChain::ComPtr<ID3D12Grap
 
 void jwm::DX12SwapChain::present(UINT syncInterval, UINT presentationFlags) {
     THROW_IF_FAILED(_dxgiSwapChain->Present(syncInterval, presentationFlags));
+}
+
+void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
+    if (_currentWidth != newWidth || _currentHeight != newHeight) {
+        _currentWidth = std::max(1, newWidth);
+        _currentHeight = std::max(1, newHeight);
+
+        _backBuffers.clear();
+
+        DXGI_SWAP_CHAIN_DESC swapChainDesc{};
+        THROW_IF_FAILED(_dxgiSwapChain->GetDesc(&swapChainDesc));
+        THROW_IF_FAILED(_dxgiSwapChain->ResizeBuffers(
+            _buffersCount,
+            _currentWidth, _currentHeight,
+            swapChainDesc.BufferDesc.Format,
+            swapChainDesc.Flags
+        ));
+
+        _updateRenderTargetViews();
+    }
 }
 
 UINT jwm::DX12SwapChain::getCurrentBackBufferIndex() const {

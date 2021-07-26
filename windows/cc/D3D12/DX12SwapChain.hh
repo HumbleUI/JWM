@@ -31,6 +31,7 @@ namespace jwm {
         void transitionLayout(const ComPtr<ID3D12GraphicsCommandList> &cmdList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
         void clearTarget(const ComPtr<ID3D12GraphicsCommandList> &cmdList, float r, float g, float b, float a);
         void present(UINT syncInterval, UINT presentationFlags);
+        void resize(int newWidth, int newHeight);
         UINT getCurrentBackBufferIndex() const;
         UINT getBuffersCount() const { return _buffersCount; }
 
