@@ -25,14 +25,14 @@ void jwm::DX12SwapChain::create() {
     ComPtr<IDXGIFactory4> dxgiFactory4 = dx12Common.getFactory();
     ComPtr<IDXGISwapChain1> swapChain1;
 
-    _window->getSize(_currentWidth, _currentHeight);
+    _window->getClientAreaSize(_currentWidth, _currentHeight);
 
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
     swapChainDesc.Width = _currentWidth;
     swapChainDesc.Height = _currentHeight;
     swapChainDesc.Format = _format;
     swapChainDesc.Stereo = FALSE;
-    swapChainDesc.SampleDesc = { 1, 0 };
+    swapChainDesc.SampleDesc = { SAMPLE_COUNT, LEVEL_COUNT };
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.BufferCount = _buffersCount;
     swapChainDesc.Scaling = _scaling;
@@ -62,10 +62,6 @@ void jwm::DX12SwapChain::create() {
     _rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     _rtvDescriptorHeap = _dx12device.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, _buffersCount);
     _updateRenderTargetViews();
-}
-
-void jwm::DX12SwapChain::recreate() {
-
 }
 
 void jwm::DX12SwapChain::transitionLayout(const jwm::DX12SwapChain::ComPtr<ID3D12GraphicsCommandList> &cmdList,
@@ -118,6 +114,10 @@ void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
 
         _updateRenderTargetViews();
     }
+}
+
+jwm::DX12SwapChain::ComPtr<ID3D12Resource> jwm::DX12SwapChain::getCurrentBackBuffer() const {
+    return _backBuffers[getCurrentBackBufferIndex()];
 }
 
 UINT jwm::DX12SwapChain::getCurrentBackBufferIndex() const {

@@ -21,17 +21,19 @@ namespace jwm {
         void close();
         void vsync(bool enable);
 
+    public:
+        IDXGIAdapter1* getAdapterPtr() const;
+        ID3D12Device* getDevicePtr() const;
+        ID3D12CommandQueue* getQueuePtr() const;
+        class DX12SwapChain& getSwapChain() const;
+
     private:
         std::unique_ptr<class DX12Device> _dx12device;
         std::unique_ptr<class DX12CommandQueue> _dx12commandQueue;
         std::unique_ptr<class DX12SwapChain> _dx12swapChain;
         std::unique_ptr<class DX12Fence> _dx12fence;
 
-        std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> _frameCmdAllocs; // todo: remove
-        std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>> _frameCmdLists; // todo: remove
-        std::vector<UINT64> _frameFenceValues;
         UINT64 _fenceValue;
-        UINT _backBufferIndex;
 
         class WindowWin32* _window = nullptr;
         int _callbackID = -1;

@@ -129,6 +129,18 @@ void jwm::WindowWin32::getSize(int &width, int &height) const {
     height = area.bottom > 0? area.bottom: 0;
 }
 
+void jwm::WindowWin32::getClientAreaSize(int &width, int &height) const {
+    RECT area;
+    GetClientRect(_hWnd, &area);
+
+    width = area.right - area.left;
+    height = area.bottom - area.top;
+
+    // Explicitly clamp size, since w or h cannot be less than 0
+    width = area.right > 0? area.right: 0;
+    height = area.bottom > 0? area.bottom: 0;
+}
+
 int jwm::WindowWin32::getLeft() const {
     int left, top;
     getPosition(left, top);
@@ -143,13 +155,13 @@ int jwm::WindowWin32::getTop() const {
 
 int jwm::WindowWin32::getWidth() const {
     int width, height;
-    getSize(width, height);
+    getClientAreaSize(width, height);
     return width;
 }
 
 int jwm::WindowWin32::getHeight() const {
     int width, height;
-    getSize(width, height);
+    getClientAreaSize(width, height);
     return height;
 }
 
@@ -200,6 +212,8 @@ void jwm::WindowWin32::requestClose() {
 
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
     JNIEnv* env = getJNIEnv();
+
+    notifyEvent(Event::SwitchContext);
 
     switch (uMsg) {
         // HACK: Set timer to get JWM_WM_FRAME_TIMER event.

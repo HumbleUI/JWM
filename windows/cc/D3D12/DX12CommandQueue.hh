@@ -12,9 +12,11 @@ namespace jwm {
     public:
         DX12CommandQueue(D3D12_COMMAND_LIST_TYPE type, D3D12_COMMAND_QUEUE_PRIORITY priority,
                          class DX12Device &dx12device);
+        DX12CommandQueue(const DX12CommandQueue&) = delete;
+        DX12CommandQueue(DX12CommandQueue&&) = delete;
 
         UINT64 Signal(class DX12Fence& fence, UINT64 &value);
-        void WaitIdle(class DX12Fence& fence, UINT64 &value);
+        void waitIdle(class DX12Fence& fence, UINT64 &value);
         void Submit(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList);
 
         Microsoft::WRL::ComPtr<ID3D12CommandAllocator> createCommandAllocator();

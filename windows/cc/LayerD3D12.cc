@@ -46,8 +46,6 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     // Register callback to track window events
     _callbackID = _window->addEventListener([this](WindowWin32::Event event){
         switch (event) {
-            case WindowWin32::Event::SwitchContext:
-                break;
             case WindowWin32::Event::SwapBuffers:
                 swapBuffers();
                 break;
@@ -62,75 +60,26 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
         }
     });
 
-    for (UINT i =  0; i < _dx12swapChain->getBuffersCount(); i++) {
-        _frameCmdAllocs.push_back(_dx12commandQueue->createCommandAllocator());
-        _frameCmdLists.push_back(_dx12commandQueue->createCommandList(_frameCmdAllocs.back()));
-        _frameFenceValues.push_back(DX12Fence::INITIAL_VALUE);
-    }
-
     _fenceValue = DX12Fence::INITIAL_VALUE;
-    _backBufferIndex = _dx12swapChain->getCurrentBackBufferIndex();
     _tearingFeature = dx12Common.checkTearingFeature();
 }
 
 void jwm::LayerD3D12::resize(int width, int height) {
-    _dx12commandQueue->WaitIdle(*_dx12fence, _fenceValue);
+    _dx12commandQueue->waitIdle(*_dx12fence, _fenceValue);
     _dx12swapChain->resize(width, height);
-
-    UINT64 currentFrameFenceValue = _frameFenceValues[_backBufferIndex];
-    _frameFenceValues.clear();
-    _frameFenceValues.resize(_dx12swapChain->getBuffersCount(), currentFrameFenceValue);
 }
 
 void jwm::LayerD3D12::swapBuffers() {
-    static float t = 0.0f;
-    static float dt = 0.01f;
-
-    t += dt;
-
-    auto& frameAlloc = _frameCmdAllocs[_backBufferIndex];
-    auto& frameCmdList = _frameCmdLists[_backBufferIndex];
-
-    frameAlloc->Reset();
-    frameCmdList->Reset(frameAlloc.Get(), nullptr);
-
-    _dx12swapChain->transitionLayout(
-        frameCmdList,
-        D3D12_RESOURCE_STATE_PRESENT,
-        D3D12_RESOURCE_STATE_RENDER_TARGET
-    );
-
-    _dx12swapChain->clearTarget(
-        frameCmdList,
-        std::sin(t) * 0.5f + 0.5f, 0.0f, std::cos(2.0f * t) * 0.5f + 0.5f, 1.0f
-    );
-
-    _dx12swapChain->transitionLayout(
-        frameCmdList,
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PRESENT
-    );
-
-    THROW_IF_FAILED(frameCmdList->Close());
-
-    _dx12commandQueue->Submit(frameCmdList);
-    _frameFenceValues[_backBufferIndex] = _dx12commandQueue->Signal(*_dx12fence, _fenceValue);
-
     UINT syncInterval = _vsync == Vsync::Enable ? 1: 0;
-    UINT presentationFlags = _tearingFeature && _vsync != Vsync::Enable ? DXGI_PRESENT_ALLOW_TEARING : 0;
+    UINT presentationFlags = _tearingFeature && _vsync == Vsync::Disable ? DXGI_PRESENT_ALLOW_TEARING : 0;
     _dx12swapChain->present(syncInterval, presentationFlags);
-
-    _backBufferIndex = _dx12swapChain->getCurrentBackBufferIndex();
-    _dx12fence->waitFor(_frameFenceValues[_backBufferIndex]);
 }
 
 void jwm::LayerD3D12::close() {
-    // Wait until full queue exec completion to safely release resources
-    _dx12commandQueue->WaitIdle(*_dx12fence, _fenceValue);
+    // Wait until queue idle to safely release resources
+    _dx12commandQueue->waitIdle(*_dx12fence, _fenceValue);
 
     // Release in reverse order
-    _frameCmdLists.clear();
-    _frameCmdAllocs.clear();
     _dx12fence.reset();
     _dx12swapChain.reset();
     _dx12commandQueue.reset();
@@ -144,6 +93,30 @@ void jwm::LayerD3D12::close() {
 
 void jwm::LayerD3D12::vsync(bool enable) {
     _vsync = enable? Vsync::Enable: Vsync::Disable;
+}
+
+IDXGIAdapter1 *jwm::LayerD3D12::getAdapterPtr() const {
+    using namespace Microsoft::WRL;
+    ComPtr<IDXGIAdapter1> adapter1;
+    ComPtr<IDXGIAdapter4> adapter4 = _dx12device->getAdapterPtr();
+    THROW_IF_FAILED(adapter4.As(&adapter1));
+    return adapter1.Get();
+}
+
+ID3D12Device *jwm::LayerD3D12::getDevicePtr() const {
+    using namespace Microsoft::WRL;
+    ComPtr<ID3D12Device> device;
+    ComPtr<ID3D12Device2> device2 = _dx12device->getDevicePtr();
+    THROW_IF_FAILED(device2.As(&device));
+    return device.Get();
+}
+
+ID3D12CommandQueue *jwm::LayerD3D12::getQueuePtr() const {
+    return _dx12commandQueue->getQueuePtr().Get();
+}
+
+jwm::DX12SwapChain &jwm::LayerD3D12::getSwapChain() const {
+    return *_dx12swapChain;
 }
 
 // JNI
@@ -182,4 +155,51 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_getAdapterPtr
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->getAdapterPtr());
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_getDevicePtr
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->getDevicePtr());
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_getQueuePtr
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->getQueuePtr());
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12_getFormat
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::DX12SwapChain& swapChain = instance->getSwapChain();
+    return static_cast<jint>(swapChain.getFormat());
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12_getSampleCount
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::DX12SwapChain& swapChain = instance->getSwapChain();
+    return static_cast<jint>(swapChain.getSamplesCount());
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12_getLevelCount
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::DX12SwapChain& swapChain = instance->getSwapChain();
+    return static_cast<jint>(swapChain.getLevelsCount());
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_nextDrawableTexturePtr
+        (JNIEnv* env, jobject obj) {
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::DX12SwapChain& swapChain = instance->getSwapChain();
+    jwm::DX12SwapChain::ComPtr<ID3D12Resource> backBuffer = swapChain.getCurrentBackBuffer();
+    return reinterpret_cast<jlong>(backBuffer.Get());
 }

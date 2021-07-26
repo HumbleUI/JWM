@@ -12,6 +12,8 @@ namespace jwm {
         
     public:
         explicit DX12Fence(class DX12Device& device);
+        DX12Fence(const DX12Fence&) = delete;
+        DX12Fence(DX12Fence&&) = delete;
         ~DX12Fence();
 
         void waitFor(UINT64 value, milliseconds duration = milliseconds::max());

@@ -6,7 +6,8 @@ bool jwm::DX12Common::init() {
     if (_initialized)
         return true;
 
-    enableDebugLayer();
+    // Disable for now (somehow does not work with skia/skija)
+    // enableDebugLayer();
 
     return _initialized = true;
 }

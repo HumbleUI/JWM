@@ -22,7 +22,7 @@ UINT64 jwm::DX12CommandQueue::Signal(DX12Fence &fence, UINT64 &value) {
     return valueToSignal;
 }
 
-void jwm::DX12CommandQueue::WaitIdle(DX12Fence &fence, UINT64 &value) {
+void jwm::DX12CommandQueue::waitIdle(DX12Fence &fence, UINT64 &value) {
     UINT64 valueToSignal = Signal(fence, value);
     fence.waitFor(valueToSignal);
 }

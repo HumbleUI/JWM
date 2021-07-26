@@ -52,6 +52,20 @@ public class LayerD3D12 extends RefCounted implements Layer {
         super.close();
     }
 
+    public native long getAdapterPtr();
+
+    public native long getDevicePtr();
+
+    public native long getQueuePtr();
+
+    public native int getFormat();
+
+    public native int getSampleCount();
+
+    public native int getLevelCount();
+
+    public native long nextDrawableTexturePtr();
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nAttach(Window window);
     @ApiStatus.Internal public native void _nReconfigure();

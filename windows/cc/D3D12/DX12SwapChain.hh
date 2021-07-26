@@ -11,12 +11,16 @@ namespace jwm {
         static const DXGI_SWAP_EFFECT DEFAULT_SWAP_EFFECT = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
         static const DXGI_ALPHA_MODE DEFAULT_ALPHA_MODE = DXGI_ALPHA_MODE_IGNORE;
         static const UINT DEFAULT_BUFFERS_COUNT = 2;
+        static const UINT SAMPLE_COUNT = 1;
+        static const UINT LEVEL_COUNT = 0;
 
         template<typename T>
         using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     public:
         DX12SwapChain(class WindowWin32* window, class DX12CommandQueue& queue);
+        DX12SwapChain(const DX12SwapChain&) = delete;
+        DX12SwapChain(DX12SwapChain&&) = delete;
         ~DX12SwapChain();
 
         void setFormat(DXGI_FORMAT format) { _format = format; }
@@ -26,14 +30,18 @@ namespace jwm {
         void setBuffersCount(unsigned int buffersCount);
 
         void create();
-        void recreate();
 
         void transitionLayout(const ComPtr<ID3D12GraphicsCommandList> &cmdList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
         void clearTarget(const ComPtr<ID3D12GraphicsCommandList> &cmdList, float r, float g, float b, float a);
         void present(UINT syncInterval, UINT presentationFlags);
         void resize(int newWidth, int newHeight);
+
+        ComPtr<ID3D12Resource> getCurrentBackBuffer() const;
         UINT getCurrentBackBufferIndex() const;
         UINT getBuffersCount() const { return _buffersCount; }
+        DXGI_FORMAT getFormat() const { return _format; }
+        UINT getSamplesCount() const { return SAMPLE_COUNT; }
+        UINT getLevelsCount() const { return LEVEL_COUNT; }
 
     private:
         void _updateRenderTargetViews();

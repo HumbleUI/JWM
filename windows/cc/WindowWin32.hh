@@ -37,6 +37,7 @@ namespace jwm {
         void show();
         void getPosition(int& left, int& top) const;
         void getSize(int& width, int& height) const;
+        void getClientAreaSize(int& width, int& height) const;
         int getLeft() const;
         int getTop() const;
         int getWidth() const;
