@@ -38,7 +38,11 @@ public class SkijaLayerD3D12 extends LayerD3D12 implements SkijaLayer {
 
     @Override
     public void afterPaint() {
-        _surface.flushAndSubmit();
+        // todo: call flush for present (instead of default flush)
+        // since we want to have BackendSurfaceAccess::kPresent final render target layout
+        _surface.flush();
+        _directContext.submit(false);
+
         swapBuffers();
 
         _surface.close();
@@ -47,19 +51,12 @@ public class SkijaLayerD3D12 extends LayerD3D12 implements SkijaLayer {
 
     @Override
     public void resize(int width, int height) {
-        // HACK: if direct context is not null, we must release it here
-        // because somehow skia keeps references to swap chain buffers,
-        // so it is impossible to correctly resize swap chain
-        if (_directContext != null) {
-            _directContext.abandon();
-            _directContext.close();
-        }
+        // HACK: if direct context is not null, we must call submit here
+        // to clean up all outstanding resources in the command queue
+        _directContext.submit(true);
 
         // Resize layer (native call to resize swap chain images)
         super.resize(width, height);
-
-        // Recreate context after swap chain resize
-        _directContext = DirectContext.makeDirect3D(getAdapterPtr(), getDevicePtr(), getQueuePtr());
     }
 
     @Override
@@ -68,6 +65,7 @@ public class SkijaLayerD3D12 extends LayerD3D12 implements SkijaLayer {
             _directContext.abandon();
             _directContext.close();
         }
+
         super.close();
     }
 }

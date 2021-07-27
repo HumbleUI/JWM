@@ -66,6 +66,7 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
         }
     });
 
+    _fenceFrameValues.resize(_dx12swapChain->getBuffersCount(), DX12Fence::INITIAL_VALUE);
     _fenceValue = DX12Fence::INITIAL_VALUE;
     _tearingFeature = dx12Common.checkTearingFeature();
 }
@@ -76,9 +77,11 @@ void jwm::LayerD3D12::resize(int width, int height) {
 }
 
 void jwm::LayerD3D12::swapBuffers() {
+    UINT bufferIndex = _dx12swapChain->getCurrentBackBufferIndex();
     UINT syncInterval = _vsync == Vsync::Enable ? 1: 0;
     UINT presentationFlags = _tearingFeature && _vsync == Vsync::Disable ? DXGI_PRESENT_ALLOW_TEARING : 0;
     _dx12swapChain->present(syncInterval, presentationFlags);
+    _fenceFrameValues[bufferIndex] = _dx12commandQueue->Signal(*_dx12fence, _fenceValue);
 }
 
 void jwm::LayerD3D12::close() {
@@ -121,6 +124,14 @@ ID3D12Device *jwm::LayerD3D12::getDevicePtr() const {
 
 ID3D12CommandQueue *jwm::LayerD3D12::getQueuePtr() const {
     return _dx12commandQueue->getQueuePtr().Get();
+}
+
+ID3D12Resource *jwm::LayerD3D12::getNextRenderTexture() const {
+    using namespace Microsoft::WRL;
+    UINT bufferIndex = _dx12swapChain->getCurrentBackBufferIndex();
+    ComPtr<ID3D12Resource> texture = _dx12swapChain->getCurrentBackBuffer();
+    _dx12fence->waitFor(_fenceFrameValues[bufferIndex]);
+    return texture.Get();
 }
 
 jwm::DX12SwapChain &jwm::LayerD3D12::getSwapChain() const {
@@ -208,7 +219,5 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_nextDrawabl
         (JNIEnv* env, jobject obj) {
     using namespace Microsoft::WRL;
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::DX12SwapChain& swapChain = instance->getSwapChain();
-    ComPtr<ID3D12Resource> backBuffer = swapChain.getCurrentBackBuffer();
-    return reinterpret_cast<jlong>(backBuffer.Get());
+    return reinterpret_cast<jlong>(instance->getNextRenderTexture());
 }

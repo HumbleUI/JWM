@@ -13,7 +13,6 @@ jwm::DX12SwapChain::DX12SwapChain(WindowWin32 *window, DX12CommandQueue &queue)
 jwm::DX12SwapChain::~DX12SwapChain() {
     _verifyBufferCounters();
     _backBuffers.clear();
-    _rtvDescriptorHeap.Reset();
     _dxgiSwapChain.Reset();
 
     unref(&_window);
@@ -66,39 +65,7 @@ void jwm::DX12SwapChain::create() {
 
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
 
-    _rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    _rtvDescriptorHeap = _dx12device.createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, _buffersCount);
     _updateRenderTargetViews();
-}
-
-void jwm::DX12SwapChain::transitionLayout(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList,
-                                          D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
-    using namespace Microsoft::WRL;
-
-    UINT backBufferIndex = getCurrentBackBufferIndex();
-    ComPtr<ID3D12Resource> backBuffer = _backBuffers[backBufferIndex];
-
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        backBuffer.Get(),
-        before,
-        after
-    );
-
-    cmdList->ResourceBarrier(1, &barrier);
-}
-
-void jwm::DX12SwapChain::clearTarget(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList,
-                                     float r, float g, float b, float a) {
-    UINT backBufferIndex = getCurrentBackBufferIndex();
-    FLOAT clearColor[] = { r, g, b, a };
-
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
-        _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-        static_cast<INT>(backBufferIndex),
-        _rtvDescriptorSize
-    );
-
-    cmdList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
 void jwm::DX12SwapChain::present(UINT syncInterval, UINT presentationFlags) {
@@ -139,17 +106,12 @@ void jwm::DX12SwapChain::_updateRenderTargetViews() {
 
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
     for (unsigned int i = 0; i < _buffersCount; i++) {
         ComPtr<ID3D12Resource> backBuffer;
 
         THROW_IF_FAILED(_dxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
 
-        device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
         _backBuffers.push_back(std::move(backBuffer));
-
-        rtvHandle.Offset(static_cast<int>(_rtvDescriptorSize));
     }
 }
 

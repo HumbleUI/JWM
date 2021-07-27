@@ -25,13 +25,15 @@ namespace jwm {
         IDXGIAdapter1* getAdapterPtr() const;
         ID3D12Device* getDevicePtr() const;
         ID3D12CommandQueue* getQueuePtr() const;
-        class DX12SwapChain& getSwapChain() const;
+        ID3D12Resource* getNextRenderTexture() const;
+        class DX12SwapChain &getSwapChain() const;
 
     private:
         std::unique_ptr<class DX12Device> _dx12device;
         std::unique_ptr<class DX12CommandQueue> _dx12commandQueue;
         std::unique_ptr<class DX12SwapChain> _dx12swapChain;
         std::unique_ptr<class DX12Fence> _dx12fence;
+        std::vector<UINT64> _fenceFrameValues;
 
         UINT64 _fenceValue;
 

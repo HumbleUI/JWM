@@ -28,8 +28,6 @@ namespace jwm {
 
         void create();
 
-        void transitionLayout(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
-        void clearTarget(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList, float r, float g, float b, float a);
         void present(UINT syncInterval, UINT presentationFlags);
         void resize(int newWidth, int newHeight);
 
@@ -46,7 +44,6 @@ namespace jwm {
 
     private:
         Microsoft::WRL::ComPtr<IDXGISwapChain4> _dxgiSwapChain;
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap;
 
         std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> _backBuffers;
 
@@ -56,7 +53,6 @@ namespace jwm {
         DXGI_ALPHA_MODE _alphaMode = DEFAULT_ALPHA_MODE;
 
         UINT _buffersCount = DEFAULT_BUFFERS_COUNT;
-        UINT _rtvDescriptorSize = 0;
 
         int _currentWidth = 0;
         int _currentHeight = 0;
