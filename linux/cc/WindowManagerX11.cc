@@ -159,6 +159,20 @@ void WindowManagerX11::runLoop() {
                 }
                 case ConfigureNotify: { // resize and move
                     WindowX11* except = nullptr;
+                    if (ev.xconfigure.x != myWindow->_posX || ev.xconfigure.y != myWindow->_posY) {
+                        myWindow->_posX = ev.xconfigure.x;
+                        myWindow->_posY = ev.xconfigure.y;
+
+                        jwm::JNILocal<jobject> eventMove(
+                            app.getJniEnv(),
+                            EventWindowMove::make(
+                                app.getJniEnv(),
+                                ev.xconfigure.x,
+                                ev.xconfigure.y
+                            )
+                        );
+                        myWindow->dispatch(eventMove.get()); 
+                    }
                     if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
                     {
                         except = myWindow;
@@ -183,18 +197,20 @@ void WindowManagerX11::runLoop() {
                                         myWindow->_xsyncRequestCounter.lo,
                                         myWindow->_xsyncRequestCounter.hi);
                         XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
-                    }
 
-                    // force repaint all windows otherwise they will freeze on GTK-based WMs
-                    for (auto& p : _nativeWindowToMy) {
-                        if (except != p.second && p.second->isRedrawRequested()) {
-                            p.second->unsetRedrawRequest();
-                            if (p.second->_layer) {
-                                p.second->_layer->makeCurrent();
+
+                        // force repaint all windows otherwise they will freeze on GTK-based WMs
+                        for (auto& p : _nativeWindowToMy) {
+                            if (except != p.second && p.second->isRedrawRequested()) {
+                                p.second->unsetRedrawRequest();
+                                if (p.second->_layer) {
+                                    p.second->_layer->makeCurrent();
+                                }
+                                p.second->dispatch(EventFrame::kInstance);
                             }
-                            p.second->dispatch(EventFrame::kInstance);
                         }
                     }
+
                     break;
                 }
 
