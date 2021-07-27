@@ -27,6 +27,7 @@ void jwm::DX12Common::enableDebugLayer() {
 
     ComPtr<ID3D12Debug> debugInterface;
     THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+
     debugInterface->EnableDebugLayer();
 #endif
 }

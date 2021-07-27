@@ -19,7 +19,7 @@ namespace jwm {
 
     class DX12Common {
     public:
-        static const D3D_FEATURE_LEVEL FEATURE_LEVEL = D3D_FEATURE_LEVEL_11_0;
+        static const D3D_FEATURE_LEVEL FEATURE_LEVEL = D3D_FEATURE_LEVEL_12_0;
         static const UINT DEFAULT_FACTORY_FLAGS = 0;
         static const bool USE_WIN_ADVANCED_RASTER_PLATFORM = false;
 

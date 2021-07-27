@@ -47,13 +47,19 @@ public class SkijaLayerD3D12 extends LayerD3D12 implements SkijaLayer {
 
     @Override
     public void resize(int width, int height) {
+        // HACK: if direct context is not null, we must release it here
+        // because somehow skia keeps references to swap chain buffers,
+        // so it is impossible to correctly resize swap chain
         if (_directContext != null) {
             _directContext.abandon();
             _directContext.close();
-            _directContext = DirectContext.makeDirect3D(getAdapterPtr(), getDevicePtr(), getQueuePtr());
         }
 
+        // Resize layer (native call to resize swap chain images)
         super.resize(width, height);
+
+        // Recreate context after swap chain resize
+        _directContext = DirectContext.makeDirect3D(getAdapterPtr(), getDevicePtr(), getQueuePtr());
     }
 
     @Override

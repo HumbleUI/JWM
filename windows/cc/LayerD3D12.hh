@@ -35,7 +35,7 @@ namespace jwm {
 
         UINT64 _fenceValue;
 
-        class WindowWin32* _window = nullptr;
+        class WindowWin32* _windowWin32 = nullptr;
         int _callbackID = -1;
         bool _tearingFeature = false;
 

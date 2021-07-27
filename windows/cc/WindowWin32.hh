@@ -23,7 +23,10 @@ namespace jwm {
         enum class Flag: size_t {
             EnterSizeMove = 1,
             RequestFrame = 2,
-            Max = 3
+            HasAttachedLayer = 3,
+            RecreateForNextLayer = 4,
+            IgnoreMessages = 5,
+            Max = 6
         };
 
         using Callback = std::function<void(Event)>;
@@ -33,6 +36,7 @@ namespace jwm {
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
         ~WindowWin32() override;
         bool init();
+        void recreate();
         void start();
         void show();
         void getPosition(int& left, int& top) const;
@@ -67,6 +71,8 @@ namespace jwm {
         int _getNextCallbackID();
         void _setFrameTimer();
         void _killFrameTimer();
+        bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
+        void _destroyInternal();
         void _close();
 
     private:

@@ -11,6 +11,11 @@ jwm::DX12SwapChain::DX12SwapChain(WindowWin32 *window, DX12CommandQueue &queue)
 }
 
 jwm::DX12SwapChain::~DX12SwapChain() {
+    _verifyBufferCounters();
+    _backBuffers.clear();
+    _rtvDescriptorHeap.Reset();
+    _dxgiSwapChain.Reset();
+
     unref(&_window);
 }
 
@@ -21,6 +26,8 @@ void jwm::DX12SwapChain::setBuffersCount(unsigned int buffersCount) {
 }
 
 void jwm::DX12SwapChain::create() {
+    using namespace Microsoft::WRL;
+
     DX12Common& dx12Common = _dx12device.getDx12Common();
     ComPtr<IDXGIFactory4> dxgiFactory4 = dx12Common.getFactory();
     ComPtr<IDXGISwapChain1> swapChain1;
@@ -64,8 +71,10 @@ void jwm::DX12SwapChain::create() {
     _updateRenderTargetViews();
 }
 
-void jwm::DX12SwapChain::transitionLayout(const jwm::DX12SwapChain::ComPtr<ID3D12GraphicsCommandList> &cmdList,
+void jwm::DX12SwapChain::transitionLayout(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList,
                                           D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+    using namespace Microsoft::WRL;
+
     UINT backBufferIndex = getCurrentBackBufferIndex();
     ComPtr<ID3D12Resource> backBuffer = _backBuffers[backBufferIndex];
 
@@ -78,7 +87,7 @@ void jwm::DX12SwapChain::transitionLayout(const jwm::DX12SwapChain::ComPtr<ID3D1
     cmdList->ResourceBarrier(1, &barrier);
 }
 
-void jwm::DX12SwapChain::clearTarget(const jwm::DX12SwapChain::ComPtr<ID3D12GraphicsCommandList> &cmdList,
+void jwm::DX12SwapChain::clearTarget(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList,
                                      float r, float g, float b, float a) {
     UINT backBufferIndex = getCurrentBackBufferIndex();
     FLOAT clearColor[] = { r, g, b, a };
@@ -101,6 +110,7 @@ void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
         _currentWidth = std::max(1, newWidth);
         _currentHeight = std::max(1, newHeight);
 
+        _verifyBufferCounters();
         _backBuffers.clear();
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc{};
@@ -116,7 +126,7 @@ void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
     }
 }
 
-jwm::DX12SwapChain::ComPtr<ID3D12Resource> jwm::DX12SwapChain::getCurrentBackBuffer() const {
+Microsoft::WRL::ComPtr<ID3D12Resource> jwm::DX12SwapChain::getCurrentBackBuffer() const {
     return _backBuffers[getCurrentBackBufferIndex()];
 }
 
@@ -125,6 +135,8 @@ UINT jwm::DX12SwapChain::getCurrentBackBufferIndex() const {
 }
 
 void jwm::DX12SwapChain::_updateRenderTargetViews() {
+    using namespace Microsoft::WRL;
+
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -139,4 +151,17 @@ void jwm::DX12SwapChain::_updateRenderTargetViews() {
 
         rtvHandle.Offset(static_cast<int>(_rtvDescriptorSize));
     }
+}
+
+void jwm::DX12SwapChain::_verifyBufferCounters() {
+#if defined(_DEBUG)
+    for (auto& buffer: _backBuffers) {
+        ID3D12Resource* resource = buffer.Get();
+
+        resource->AddRef();
+        auto refCount = resource->Release();
+
+        assert(refCount == 2);
+    }
+#endif
 }

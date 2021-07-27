@@ -8,14 +8,11 @@ namespace jwm {
     public:
         static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
         static const DXGI_SCALING DEFAULT_SCALING = DXGI_SCALING_NONE;
-        static const DXGI_SWAP_EFFECT DEFAULT_SWAP_EFFECT = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+        static const DXGI_SWAP_EFFECT DEFAULT_SWAP_EFFECT = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         static const DXGI_ALPHA_MODE DEFAULT_ALPHA_MODE = DXGI_ALPHA_MODE_IGNORE;
         static const UINT DEFAULT_BUFFERS_COUNT = 2;
         static const UINT SAMPLE_COUNT = 1;
         static const UINT LEVEL_COUNT = 0;
-
-        template<typename T>
-        using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     public:
         DX12SwapChain(class WindowWin32* window, class DX12CommandQueue& queue);
@@ -31,12 +28,12 @@ namespace jwm {
 
         void create();
 
-        void transitionLayout(const ComPtr<ID3D12GraphicsCommandList> &cmdList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
-        void clearTarget(const ComPtr<ID3D12GraphicsCommandList> &cmdList, float r, float g, float b, float a);
+        void transitionLayout(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
+        void clearTarget(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> &cmdList, float r, float g, float b, float a);
         void present(UINT syncInterval, UINT presentationFlags);
         void resize(int newWidth, int newHeight);
 
-        ComPtr<ID3D12Resource> getCurrentBackBuffer() const;
+        Microsoft::WRL::ComPtr<ID3D12Resource> getCurrentBackBuffer() const;
         UINT getCurrentBackBufferIndex() const;
         UINT getBuffersCount() const { return _buffersCount; }
         DXGI_FORMAT getFormat() const { return _format; }
@@ -45,12 +42,13 @@ namespace jwm {
 
     private:
         void _updateRenderTargetViews();
+        void _verifyBufferCounters();
 
     private:
-        ComPtr<IDXGISwapChain4> _dxgiSwapChain;
-        ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap;
+        Microsoft::WRL::ComPtr<IDXGISwapChain4> _dxgiSwapChain;
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap;
 
-        std::vector<ComPtr<ID3D12Resource>> _backBuffers;
+        std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> _backBuffers;
 
         DXGI_FORMAT _format = DEFAULT_FORMAT;
         DXGI_SCALING _scaling = DEFAULT_SCALING;

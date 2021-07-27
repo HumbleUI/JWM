@@ -16,7 +16,22 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         return;
     }
 
+    if (window->testFlag(WindowWin32::Flag::HasAttachedLayer)) {
+        app.sendError("Window already has attached layer. Cannot re-attach.");
+        return;
+    }
+
+    if (window->testFlag(WindowWin32::Flag::RecreateForNextLayer)) {
+        // HACK: if user creates dx12 layer, after that gl context
+        // cannot be normally setup (don't know why, am I stupid?).
+        // This hack allows to know about previous dx12 layer,
+        // therefore we can recreate entire window (and its DC) under the hood.
+        window->removeFlag(WindowWin32::Flag::RecreateForNextLayer);
+        window->recreate();
+    }
+
     _windowWin32 = jwm::ref(window);
+    _windowWin32->setFlag(WindowWin32::Flag::HasAttachedLayer);
 
     // If have no rendering context for window, then create it here
     if (_hRC == nullptr) {
@@ -33,7 +48,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         _hDC = GetDC(_windowWin32->getHWnd());
 
         const int pixelAttribs[] = {
-            WGL_SWAP_METHOD_EXT, WGL_SWAP_COPY_EXT,
+            WGL_SWAP_METHOD_EXT, WGL_SWAP_EXCHANGE_EXT,
             WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
             WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
             WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
@@ -51,7 +66,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         int pixelFormatID;
         UINT numFormats;
 
-        bool status = contextWgl.wglChoosePixelFormatARB(_hDC, pixelAttribs, NULL, 1, &pixelFormatID, &numFormats);
+        bool status = contextWgl.wglChoosePixelFormatARB(_hDC, pixelAttribs, nullptr, 1, &pixelFormatID, &numFormats);
 
         if (!status || numFormats == 0) {
             app.sendError("Failed to chose pixel format");
@@ -158,6 +173,7 @@ void jwm::LayerWGL::vsync(bool enable) {
 
 void jwm::LayerWGL::_releaseInternal() {
     if (_hRC) {
+        wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(_hRC);
         _hRC = nullptr;
     }
@@ -168,6 +184,7 @@ void jwm::LayerWGL::_releaseInternal() {
     }
 
     if (_windowWin32) {
+        _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
         _windowWin32->removeEventListener(_callbackID);
         jwm::unref(&_windowWin32);
     }

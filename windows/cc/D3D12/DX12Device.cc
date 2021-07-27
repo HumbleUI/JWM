@@ -9,7 +9,7 @@ jwm::DX12Device::DX12Device(jwm::DX12Common &dx12Common) : _dx12Common(dx12Commo
 
     THROW_IF_FAILED(D3D12CreateDevice(_dxgiAdapter.Get(), dx12Common.getFeatureLevel(), IID_PPV_ARGS(&_d3d12Device)));
 
-#if defined(min)
+#if defined(_DEBUG)
     ComPtr<ID3D12InfoQueue> pInfoQueue;
 
     if (SUCCEEDED(_d3d12Device.As(&pInfoQueue))) {

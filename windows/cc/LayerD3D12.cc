@@ -8,7 +8,7 @@
 #include <impl/Library.hh>
 
 void jwm::LayerD3D12::attach(WindowWin32 *window) {
-    assert(!_window);
+    assert(!_windowWin32);
 
     AppWin32& app = AppWin32::getInstance();
 
@@ -17,7 +17,13 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
         return;
     }
 
-    _window = jwm::ref(window);
+    if (window->testFlag(WindowWin32::Flag::HasAttachedLayer)) {
+        app.sendError("Window already has attached layer. Cannot re-attach.");
+        return;
+    }
+
+    _windowWin32 = jwm::ref(window);
+    _windowWin32->setFlag(WindowWin32::Flag::HasAttachedLayer);
 
     DX12Common& dx12Common = app.getDx12Common();
 
@@ -37,14 +43,14 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     );
 
     // Window swap chain (encapsulates all presentation/resize logic)
-    _dx12swapChain = std::make_unique<DX12SwapChain>(_window, *_dx12commandQueue);
+    _dx12swapChain = std::make_unique<DX12SwapChain>(_windowWin32, *_dx12commandQueue);
     _dx12swapChain->create();
 
     // Fence used to synchronize commands submission and back buffers presentation
     _dx12fence = std::make_unique<DX12Fence>(*_dx12device);
 
     // Register callback to track window events
-    _callbackID = _window->addEventListener([this](WindowWin32::Event event){
+    _callbackID = _windowWin32->addEventListener([this](WindowWin32::Event event){
         switch (event) {
             case WindowWin32::Event::SwapBuffers:
                 swapBuffers();
@@ -85,9 +91,11 @@ void jwm::LayerD3D12::close() {
     _dx12commandQueue.reset();
     _dx12device.reset();
 
-    if (_window) {
-        _window->removeEventListener(_callbackID);
-        jwm::unref(&_window);
+    if (_windowWin32) {
+        _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
+        _windowWin32->setFlag(WindowWin32::Flag::RecreateForNextLayer);
+        _windowWin32->removeEventListener(_callbackID);
+        jwm::unref(&_windowWin32);
     }
 }
 
@@ -198,8 +206,9 @@ extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12_getLevelCoun
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12_nextDrawableTexturePtr
         (JNIEnv* env, jobject obj) {
+    using namespace Microsoft::WRL;
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     jwm::DX12SwapChain& swapChain = instance->getSwapChain();
-    jwm::DX12SwapChain::ComPtr<ID3D12Resource> backBuffer = swapChain.getCurrentBackBuffer();
+    ComPtr<ID3D12Resource> backBuffer = swapChain.getCurrentBackBuffer();
     return reinterpret_cast<jlong>(backBuffer.Get());
 }
