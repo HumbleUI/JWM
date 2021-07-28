@@ -11,6 +11,9 @@ jwm::DX12SwapChain::DX12SwapChain(WindowWin32 *window, DX12CommandQueue &queue)
 }
 
 jwm::DX12SwapChain::~DX12SwapChain() {
+    resize(0, 0);
+    present(0, 0);
+
     _verifyBufferCounters();
     _backBuffers.clear();
     _dxgiSwapChain.Reset();
@@ -62,6 +65,10 @@ void jwm::DX12SwapChain::create() {
     // Disable the Alt+Enter fullscreen toggle feature
     THROW_IF_FAILED(dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
     THROW_IF_FAILED(swapChain1.As(&_dxgiSwapChain));
+
+    // Set transparent background color
+    DXGI_RGBA color = { 0.0f, 0.0f, 0.0f, 0.0f };
+    _dxgiSwapChain->SetBackgroundColor(&color);
 
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
 
