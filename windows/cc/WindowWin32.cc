@@ -230,8 +230,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_MOVE: {
             int left = GET_X_LPARAM(lParam);
             int top = GET_Y_LPARAM(lParam);
-            //JNILocal<jobject> eventMove(env, classes::EventMove::make(env, width, height));
-            //window->dispatch(eventMove.get());
+            JNILocal<jobject> eventMove(env, classes::EventWindowMove::make(env, left, top));
+            dispatch(eventMove.get());
             return 0;
         }
 
