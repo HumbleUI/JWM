@@ -3,6 +3,8 @@
 #include <WindowManagerWin32.hh>
 
 bool jwm::ContextWGL::init() {
+    std::lock_guard<std::mutex> lock(_accessMutex);
+
     if (_initialized)
         return true;
 
@@ -77,6 +79,8 @@ bool jwm::ContextWGL::init() {
 }
 
 bool jwm::ContextWGL::finalize() {
+    std::lock_guard<std::mutex> lock(_accessMutex);
+
     if (_initialized)
         _initialized = false;
 

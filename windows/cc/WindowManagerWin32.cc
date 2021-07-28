@@ -29,51 +29,12 @@ int jwm::WindowManagerWin32::iteration() {
     MSG msg;
 
     while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-        HWND hWnd = msg.hwnd;
-        auto iter = _windows.find(hWnd);
-        WindowWin32* window = iter != _windows.end()? iter->second: nullptr;
-
-        if (window)
-            window->notifyEvent(WindowWin32::Event::SwitchContext);
-
         if (msg.message == WM_QUIT) {
             // post close event to managed windows?
         }
         else {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
-        }
-    }
-
-    std::vector<WindowWin32*> toProcess;
-
-    // Check windows, which required frame event
-    for (auto& entry: _windows) {
-        auto window = entry.second;
-
-        if (window->getFlag(WindowWin32::Flag::RequestFrame)) {
-            window->removeFlag(WindowWin32::Flag::RequestFrame);
-            toProcess.push_back(window);
-        }
-    }
-
-    // Send frame event, for last window enable vsync
-    if (!toProcess.empty()) {
-        size_t last = toProcess.size() - 1;
-
-        for (size_t i = 0; i < toProcess.size(); i++) {
-            auto window = toProcess[i];
-
-            window->notifyEvent(WindowWin32::Event::SwitchContext);
-            window->dispatch(classes::EventFrame::kInstance);
-
-            if (i == last)
-                window->notifyEvent(WindowWin32::Event::EnableVsync);
-
-            window->notifyEvent(WindowWin32::Event::SwapBuffers);
-
-            if (i == last)
-                window->notifyEvent(WindowWin32::Event::DisableVsync);
         }
     }
 
@@ -381,9 +342,11 @@ void jwm::WindowManagerWin32::_initKeyTable() {
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
+    std::lock_guard<std::mutex> lock(_accessMutex);
     _windows.emplace(window.getHWnd(), &window);
 }
 
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
+    std::lock_guard<std::mutex> lock(_accessMutex);
     _windows.erase(window.getHWnd());
 }

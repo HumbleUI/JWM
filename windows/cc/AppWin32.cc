@@ -5,7 +5,6 @@
 
 // Globally accessible instance
 // Will be created as soon as java runtime load this library
-
 jwm::AppWin32 jwm::AppWin32::gInstance;
 
 void jwm::AppWin32::init(JNIEnv *jniEnv) {
@@ -18,41 +17,25 @@ void jwm::AppWin32::init(JNIEnv *jniEnv) {
 }
 
 int jwm::AppWin32::start() {
-    auto env = getJniEnv();
+    int result = 0;
 
-    while (!_terminateRequested.load()) {
-        int result = _windowManager.iteration();
-
-        if (result)
-            return result;
-
-        // Process UI thread callbacks
-        std::vector<jobject> process;
-        std::swap(process, _uiThreadCallbacks);
-
-        for (auto callback: process) {
-            jwm::classes::Runnable::run(env, callback);
-            env->DeleteGlobalRef(callback);
-        }
+    while (!isTerminateRequested() && !result) {
+        result = _windowManager.iteration();
     }
 
-    // Release enqueued but not executed callbacks
-    for (auto callback: _uiThreadCallbacks)
-        env->DeleteGlobalRef(callback);
-
-    return 0;
+    return result;
 }
 
 void jwm::AppWin32::terminate() {
     _terminateRequested.store(true);
 }
 
-void jwm::AppWin32::sendError(const char *what) {
-    std::cerr << "jwm::Error: " << what << std::endl;
+bool jwm::AppWin32::isTerminateRequested() const {
+    return _terminateRequested.load();
 }
 
-void jwm::AppWin32::enqueueUIThreadCallback(jobject callback) {
-    _uiThreadCallbacks.push_back(callback);
+void jwm::AppWin32::sendError(const char *what) {
+    std::cerr << "jwm::Error: " << what << std::endl;
 }
 
 const std::vector<jwm::ScreenWin32> &jwm::AppWin32::getScreens() {

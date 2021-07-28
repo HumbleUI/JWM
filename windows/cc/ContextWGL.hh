@@ -3,6 +3,7 @@
 #include <PlatformWin32.hh>
 #include <GL/gl.h>
 #include <GL/wglext.h>
+#include <mutex>
 
 namespace jwm {
 
@@ -11,13 +12,17 @@ namespace jwm {
         bool init();
         bool finalize();
 
-        bool _initialized = false;
-
+    public:
         PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB = nullptr;
         PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
         PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = nullptr;
         PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT = nullptr;
         PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
+
+    private:
+        bool _initialized = false;
+
+        mutable std::mutex _accessMutex;
     };
 
 }

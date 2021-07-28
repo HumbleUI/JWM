@@ -12,8 +12,8 @@ namespace jwm {
         void init(JNIEnv* jniEnv);
         int start();
         void terminate();
+        bool isTerminateRequested() const;
         void sendError(const char* what);
-        void enqueueUIThreadCallback(jobject callback);
         const std::vector<ScreenWin32> &getScreens();
 
     public:
@@ -23,7 +23,6 @@ namespace jwm {
 
     private:
         std::atomic_bool _terminateRequested{false};
-        std::vector<jobject> _uiThreadCallbacks;
         std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
         ContextWGL _wglContext;

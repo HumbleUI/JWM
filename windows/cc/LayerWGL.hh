@@ -5,6 +5,12 @@ namespace jwm {
 
     class LayerWGL: public RefCounted {
     public:
+        enum class Vsync {
+            Disable = 0,
+            Enable = 1,
+            EnableAdaptive = -1
+        };
+
         static const int GL_MAJOR_MIN = 4;
         static const int GL_MINOR_MIN = 5;
 

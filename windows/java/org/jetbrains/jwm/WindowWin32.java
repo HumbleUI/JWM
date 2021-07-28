@@ -10,17 +10,16 @@ import org.jetbrains.jwm.impl.*;
 public class WindowWin32 extends Window {
     @ApiStatus.Internal
     public static void makeOnWindowThread(Consumer<Window> onCreate) {
-        // ExecutorService _executor = Executors.newSingleThreadExecutor();
-        // _executor.submit(() -> {
-        //     Window w = new WindowWin32(_executor);
-        //     onCreate.accept(w);
-        // });
-
-        // For now, window thread and ui thread are the same things
-        _nRunOnUIThread(() -> {
-            WindowWin32 w = new WindowWin32(WindowWin32::_nRunOnUIThread);
+        ExecutorService _executor = Executors.newSingleThreadExecutor();
+        _executor.submit(() -> {
+            // Create window on window thread (where it is going to be)
+            WindowWin32 w = new WindowWin32(_executor);
+            // User provided lambda to setup window
             onCreate.accept(w);
+            // Enter window event loop (blocks until window or add are closed)
             w._nStart();
+            // Force executor to shutdown (terminate its thread)
+            _executor.shutdown();
         });
     }
 
@@ -35,10 +34,7 @@ public class WindowWin32 extends Window {
 
     @Override
     public void runOnWindowThread(Runnable runnable) {
-        _executor.execute(runnable);
-
-        // TODO: remove  _executor.execute(runnable);
-        // we need to call _nRunOnWindowThread(runnable)
+        _nRunOnWindowThread(runnable);
     }
 
     @Override
@@ -75,8 +71,7 @@ public class WindowWin32 extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable runnable); // TODO remove
-    @ApiStatus.Internal public native void _nRunOnWindowThread(Runnable runnable);
     @ApiStatus.Internal public native void _nStart();
+    @ApiStatus.Internal public native void _nRunOnWindowThread(Runnable runnable);
     @ApiStatus.Internal public native void _nClose();
 }

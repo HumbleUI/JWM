@@ -5,9 +5,9 @@
 #include <jni.h>
 #include <unordered_set>
 #include <unordered_map>
-#include <mutex>
 #include <atomic>
 #include <vector>
+#include <mutex>
 
 namespace jwm {
 
@@ -34,6 +34,8 @@ namespace jwm {
         std::unordered_map<int, Key> _keyTable;
 
         HWND _hWndHelperWindow = nullptr;
+
+        mutable std::mutex _accessMutex;
     };
 
 }
