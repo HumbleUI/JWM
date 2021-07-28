@@ -275,6 +275,28 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
         }
 
+        case WM_MOUSEWHEEL: {
+            auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
+            auto scrollValue = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            int modifiers = _getModifiers();
+
+            // NOTE: scroll direction may differ from macOS or Linux
+            JNILocal<jobject> eventScroll(env, classes::EventScroll::make(env, 0.0f, scrollValue, modifiers));
+            dispatch(eventScroll.get());
+            return 0;
+        }
+
+        case WM_MOUSEHWHEEL: {
+            auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
+            auto scrollValue = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            int modifiers = _getModifiers();
+
+            // NOTE: scroll direction may differ from macOS or Linux
+            JNILocal<jobject> eventScroll(env, classes::EventScroll::make(env, -scrollValue, 0.0f, modifiers));
+            dispatch(eventScroll.get());
+            return 0;
+        }
+
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
