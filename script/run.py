@@ -5,7 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('example', nargs='?', default='Example')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.91.4')
+  parser.add_argument('--skija-version', default='0.92.22')
   parser.add_argument('--skija-dir', default=None)
   args = parser.parse_args()
 
@@ -32,7 +32,8 @@ def main():
     ]
   if args.skija_dir:
     compile_classpath += [
-      skija_dir + '/native/build',
+      skija_dir + '/platform/build',
+      skija_dir + '/platform/target/classes',
       skija_dir + '/shared/target/classes',
     ]
   else:

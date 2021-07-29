@@ -1,3 +1,4 @@
+#pragma once
 #include <PlatformWin32.hh>
 #include <impl/RefCounted.hh>
 

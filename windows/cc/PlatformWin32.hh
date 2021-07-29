@@ -7,6 +7,10 @@
 #include <shellscalingapi.h>
 #include <highlevelmonitorconfigurationapi.h>
 
+#ifdef max
+ #undef max
+#endif
+
 #ifndef JWM_WIN32_WINDOW_CLASS_NAME
  #define JWM_WIN32_WINDOW_CLASS_NAME L"JWM_WINDOW"
 #endif //JWM_WIN32_WINDOW_CLASS_NAME
