@@ -19,44 +19,33 @@ jwm::WindowWin32::~WindowWin32() {
 }
 
 bool jwm::WindowWin32::init() {
-    DWORD style = _getWindowStyle();
-    DWORD exStyle = _getWindowExStyle();
-
     int x = CW_USEDEFAULT;
     int y = CW_USEDEFAULT;
     int width = CW_USEDEFAULT;
     int height = CW_USEDEFAULT;
+    const wchar_t* caption = JWM_WIN32_WINDOW_DEFAULT_NAME;
 
-    HWND hWndParent = NULL;
-    HMENU hMenu = NULL;
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    LPVOID lpParam = NULL;
+    return _createInternal(x, y, width, height, caption);
+}
 
-    _hWnd = CreateWindowExW(
-        exStyle,
-        JWM_WIN32_WINDOW_CLASS_NAME,
-        JWM_WIN32_WINDOW_DEFAULT_NAME,
-        style,
-        x, y,
-        width, height,
-        hWndParent,
-        hMenu,
-        hInstance,
-        lpParam
-    );
+void jwm::WindowWin32::recreate() {
+    int x;
+    int y;
+    int width;
+    int height;
+    const wchar_t* caption = JWM_WIN32_WINDOW_DEFAULT_NAME;
 
-    if (!_hWnd) {
-        AppWin32::getInstance().sendError("Failed to init WindowWin32");
-        return false;
-    }
+    getPosition(x, y);
+    getSize(width, height);
 
-    // Set this as property to reference from message callbacks
-    SetPropW(_hWnd, L"JWM", this);
+    setFlag(Flag::IgnoreMessages);
 
-    // Register window, so manager can process its update
-    _windowManager._registerWindow(*this);
+    _destroyInternal();
+    _createInternal(x, y, width, height, caption);
 
-    return true;
+    show();
+
+    removeFlag(Flag::IgnoreMessages);
 }
 
 void jwm::WindowWin32::start() {
@@ -106,8 +95,6 @@ void jwm::WindowWin32::start() {
             env->DeleteGlobalRef(callback);
         }
     }
-
-    printf("jwm::WindowWin32::start()\n");
 }
 
 void jwm::WindowWin32::show() {
@@ -115,20 +102,35 @@ void jwm::WindowWin32::show() {
 }
 
 void jwm::WindowWin32::getPosition(int &left, int &top) const {
-    POINT pos = { 0, 0 };
-    ClientToScreen(_hWnd, &pos);
+    RECT area;
+    GetWindowRect(_hWnd, &area);
 
-    left = pos.x;
-    top = pos.y;
+    left = area.left;
+    top = area.top;
 }
 
 void jwm::WindowWin32::getSize(int &width, int &height) const {
     RECT area;
-    GetClientRect(_hWnd, &area);
+    GetWindowRect(_hWnd, &area);
+
+    width = area.right - area.left;
+    height = area.bottom - area.top;
 
     // Explicitly clamp size, since w or h cannot be less than 0
-    width = area.right > 0? area.right: 0;
-    height = area.bottom > 0? area.bottom: 0;
+    width = width > 0? width: 0;
+    height = height > 0? height: 0;
+}
+
+void jwm::WindowWin32::getClientAreaSize(int &width, int &height) const {
+    RECT area;
+    GetClientRect(_hWnd, &area);
+
+    width = area.right - area.left;
+    height = area.bottom - area.top;
+
+    // Explicitly clamp size, since w or h cannot be less than 0
+    width = width > 0? width: 0;
+    height = height > 0? height: 0;
 }
 
 int jwm::WindowWin32::getLeft() const {
@@ -145,13 +147,13 @@ int jwm::WindowWin32::getTop() const {
 
 int jwm::WindowWin32::getWidth() const {
     int width, height;
-    getSize(width, height);
+    getClientAreaSize(width, height);
     return width;
 }
 
 int jwm::WindowWin32::getHeight() const {
     int width, height;
-    getSize(width, height);
+    getClientAreaSize(width, height);
     return height;
 }
 
@@ -201,7 +203,12 @@ void jwm::WindowWin32::requestClose() {
 }
 
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (testFlag(Flag::IgnoreMessages))
+        return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
+
     JNIEnv* env = getJNIEnv();
+
+    notifyEvent(Event::SwitchContext);
 
     switch (uMsg) {
         // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
@@ -351,6 +358,39 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
 
+        case WM_CHAR:
+        case WM_SYSCHAR: {
+            if (HIGH_SURROGATE_L <= wParam && wParam <= HIGH_SURROGATE_U) {
+                _highSurrogate = static_cast<wchar_t>(wParam);
+            }
+            else {
+                unsigned int codepoint = 0;
+
+                if (LOW_SURROGATE_L <= wParam && wParam <= LOW_SURROGATE_U) {
+                    if (_highSurrogate) {
+                        codepoint += (_highSurrogate - HIGH_SURROGATE_L) << 10u;
+                        codepoint += static_cast<wchar_t>(wParam) - LOW_SURROGATE_L;
+                        codepoint += 0x10000u;
+                    }
+                }
+                else
+                    codepoint = static_cast<wchar_t>(wParam);
+
+                _highSurrogate = 0;
+
+                char text[6];
+                _toUtf8(codepoint, text);
+
+                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text));
+                dispatch(eventTextInput.get());
+            }
+
+            if (uMsg == WM_SYSCHAR)
+                break;
+
+            return 0;
+        }
+
         case WM_CLOSE:
             dispatch(classes::EventClose::kInstance);
             return 0;
@@ -434,12 +474,82 @@ int jwm::WindowWin32::_getNextCallbackID() {
     return _nextCallbackID++;
 }
 
+void jwm::WindowWin32::_toUtf8(unsigned int cp, char *text) {
+    text[0] = '\0';
+
+    if (cp < 0x80) {
+        text[1] = '\0';
+        text[0] = static_cast<char>(0b00000000u | (cp & 0b01111111u));
+    }
+    else if (cp < 0x800) {
+        text[2] = '\0';
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11000000u | (cp & 0b00011111u));
+    }
+    else if (cp < 0x10000) {
+        text[3] = '\0';
+        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11100000u | (cp & 0b00001111u));
+    }
+    else if (cp <= 0x10FFFF) {
+        text[4] = '\0';
+        text[3] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11110000u | (cp & 0b00000111u));
+    }
+}
+
 void jwm::WindowWin32::_setFrameTimer() {
     SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
 }
 
 void jwm::WindowWin32::_killFrameTimer() {
     KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
+}
+
+bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t *caption) {
+    DWORD style = _getWindowStyle();
+    DWORD exStyle = _getWindowExStyle();
+
+    HWND hWndParent = NULL;
+    HMENU hMenu = NULL;
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    LPVOID lpParam = NULL;
+
+    _hWnd = CreateWindowExW(
+        exStyle,
+        JWM_WIN32_WINDOW_CLASS_NAME,
+        caption,
+        style,
+        x, y,
+        w, h,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam
+    );
+
+    if (!_hWnd) {
+        AppWin32::getInstance().sendError("Failed to init WindowWin32");
+        return false;
+    }
+
+    // Set this as property to reference from message callbacks
+    SetPropW(_hWnd, L"JWM", this);
+
+    // Register window, so manager can process its update
+    _windowManager._registerWindow(*this);
+
+    return true;
+}
+
+void jwm::WindowWin32::_destroyInternal() {
+    // Remove window from manager and destroy OS object
+    _windowManager._unregisterWindow(*this);
+    DestroyWindow(_hWnd);
+    _hWnd = nullptr;
 }
 
 void jwm::WindowWin32::_close() {
@@ -455,10 +565,8 @@ void jwm::WindowWin32::_close() {
             env->DeleteGlobalRef(callback);
         _callbacks.clear();
 
-        // Remove window from manager and destroy OS obejct
-        _windowManager._unregisterWindow(*this);
-        DestroyWindow(_hWnd);
-        _hWnd = nullptr;
+        // Native clean-up
+        _destroyInternal();
     }
 }
 

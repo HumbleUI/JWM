@@ -34,9 +34,12 @@ public class Example implements Consumer<Event> {
     public Set<MouseButton> buttons = Collections.synchronizedSortedSet(new TreeSet<MouseButton>());
 
     public Example() {
-        variants = Platform.CURRENT == Platform.MACOS
-            ? new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" }
-            : new String[] { "SkijaLayerGL" };
+        if (Platform.CURRENT == Platform.MACOS)
+            variants = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };
+        else if (Platform.CURRENT == Platform.WINDOWS)
+            variants = new String[] { "SkijaLayerGL", "windows.SkijaLayerD3D12" };
+        else
+            variants = new String[] { "SkijaLayerGL" };
 
         App.makeWindow((window) -> {
             _window = window;

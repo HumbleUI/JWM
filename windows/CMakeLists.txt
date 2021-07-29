@@ -32,6 +32,8 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/AppWin32.hh
     cc/ContextWGL.cc
     cc/ContextWGL.hh
+    cc/LayerD3D12.cc
+    cc/LayerD3D12.hh
     cc/LayerWGL.cc
     cc/LayerWGL.hh
     cc/PlatformWin32.hh
@@ -41,10 +43,24 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/WindowWin32.cc
     cc/WindowWin32.hh)
 
+# D3D12 Related stuff
+set(JWM_DX12_SOURCES_CXX
+    cc/D3D12/DX12CommandQueue.cc
+    cc/D3D12/DX12CommandQueue.hh
+    cc/D3D12/DX12Common.cc
+    cc/D3D12/DX12Common.hh
+    cc/D3D12/DX12Device.cc
+    cc/D3D12/DX12Device.hh
+    cc/D3D12/DX12Fence.cc
+    cc/D3D12/DX12Fence.hh
+    cc/D3D12/DX12SwapChain.cc
+    cc/D3D12/DX12SwapChain.hh)
+
 add_library(jwm SHARED
     ${JWM_SHARED_SOURCES_CXX}
     ${JWM_SHARED_SOURCES_CXX_IMPL}
-    ${JWM_WINDOWS_SOURCES_CXX})
+    ${JWM_WINDOWS_SOURCES_CXX}
+    ${JWM_DX12_SOURCES_CXX})
 
 target_include_directories(jwm PRIVATE ${JWM_SHARED}/cc)
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cc)
@@ -55,4 +71,8 @@ target_link_libraries(jwm PRIVATE "gdi32")
 target_link_libraries(jwm PRIVATE "opengl32")
 target_link_libraries(jwm PRIVATE "user32")
 target_link_libraries(jwm PRIVATE "Dxva2")
+target_link_libraries(jwm PRIVATE "d3d12")
+target_link_libraries(jwm PRIVATE "dxgi")
+target_link_libraries(jwm PRIVATE "dxguid")
+
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
