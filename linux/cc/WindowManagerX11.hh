@@ -4,6 +4,8 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 #include <map>
+#include <memory>
+#include <vector>
 
 namespace jwm {
     class WindowX11;
@@ -19,6 +21,7 @@ namespace jwm {
         
         XVisualInfo* pickVisual();
         static int _xerrorhandler(Display* dsp, XErrorEvent* error);
+        void _xi2IterateDevices();
 
         Display* getDisplay() const { return display; }
         ::Window getRootWindow() const;
@@ -39,6 +42,23 @@ namespace jwm {
          * Input Manager
          */
         XIM _im;
+
+        struct XInput2 {
+            int opcode;
+
+            struct Device {
+                struct ScrollValuator {
+                    bool isHorizontal;
+                    int number;
+                    double increment;
+                    double previousValue = 0;
+                };
+                std::vector<ScrollValuator> scroll;
+            };
+            std::map<int, Device> deviceById;
+        };
+
+        std::unique_ptr<XInput2> _xi2;
 
         struct Atoms {
             Atoms(Display* display): _display(display) {}

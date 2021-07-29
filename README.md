@@ -98,6 +98,7 @@ x64 Native Tools Command Prompt for VS
 libxcomposite-dev
 libxrandr-dev
 libgl1-mesa-dev
+libxi-dev
 
 Build:
 

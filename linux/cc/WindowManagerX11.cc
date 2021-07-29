@@ -6,6 +6,7 @@
 #include <impl/JNILocal.hh>
 #include "AppX11.hh"
 #include <X11/extensions/sync.h>
+#include <X11/extensions/XInput2.h>
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
 
@@ -119,6 +120,46 @@ WindowManagerX11::WindowManagerX11():
         x11SWA.override_redirect = true;
     }
 
+    // XInput2
+    {
+        int opcode, firstevent, firsterror;
+        if (XQueryExtension(display, "XInputExtension", &opcode, &firstevent, &firsterror)) {
+            int major = 2, minor = 3;
+            if (XIQueryVersion(display, &major, &minor) != BadRequest) {
+                _xi2 = std::make_unique<XInput2>(XInput2{ opcode });
+                _xi2IterateDevices();
+            }
+        }
+    }
+}
+
+void WindowManagerX11::_xi2IterateDevices() {
+    int deviceCount;
+    XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &deviceCount);
+    for (int deviceId = 0; deviceId < deviceCount; ++deviceId) {
+        XIDeviceInfo& device = devices[deviceId];
+        if (device.use != XIMasterPointer) {
+            continue;
+        }
+        XInput2::Device& myDevice = _xi2->deviceById[device.deviceid];
+        for (int classId = 0; classId < device.num_classes; ++classId) {
+            XIAnyClassInfo* classInfo = device.classes[classId];
+
+            switch (classInfo->type)
+            {
+                case XIScrollClass: {
+                    XIScrollClassInfo* scroll = reinterpret_cast<XIScrollClassInfo*>(classInfo);
+                    myDevice.scroll.push_back(XInput2::Device::ScrollValuator{
+                        scroll->scroll_type == XIScrollTypeHorizontal,
+                        scroll->number,
+                        scroll->increment
+                    });
+                    break;
+                }
+            }
+        }
+    }
+    XIFreeDeviceInfo(devices);
 }
 
 ::Window WindowManagerX11::getRootWindow() const {
@@ -138,11 +179,90 @@ void WindowManagerX11::runLoop() {
                 myWindow = it->second;
             }
             if (myWindow == nullptr) {
+                // probably an XI2 event
+                if (ev.type == GenericEvent && _xi2 && _xi2->opcode == ev.xcookie.extension) {
+                    if (XGetEventData(display, &ev.xcookie)) {
+                        XIEvent* xiEvent = reinterpret_cast<XIEvent*>(ev.xcookie.data);
+                        switch (xiEvent->evtype) {
+                            case XI_DeviceChanged:
+                                _xi2->deviceById.clear();
+                                _xi2IterateDevices();
+                                break;
+
+                            case XI_Motion: {
+                                XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
+                                
+                                it = _nativeWindowToMy.find(deviceEvent->event);
+
+                                if (it != _nativeWindowToMy.end()) {
+                                    myWindow = it->second;
+                                } else {
+                                    break;
+                                }
+
+                                if (myWindow->_layer) {
+                                    myWindow->_layer->makeCurrent();
+                                }
+
+                                auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
+                                if (itMyDevice == _xi2->deviceById.end()) {
+                                    break;
+                                }
+
+                                XInput2::Device& myDevice = itMyDevice->second;
+                                double dX = 0, dY = 0;
+                                for (int i = 0, valuatorIndex = 0; i < deviceEvent->valuators.mask_len * 8; ++i) {
+                                    if (!XIMaskIsSet(deviceEvent->valuators.mask, i)) {
+                                        continue;
+                                    }
+
+                                    for (auto& valuator : myDevice.scroll) {
+                                        if (valuator.number == i) {
+                                            double value = reinterpret_cast<double*>(deviceEvent->valuators.values)[valuatorIndex];
+                                            if (valuator.previousValue == 0) {
+                                                valuator.previousValue = value;
+                                                value = 0;
+                                            } else {
+                                                double delta = value - valuator.previousValue;
+                                                valuator.previousValue = value;
+                                                value = delta;                                                
+                                            }
+                                            if (valuator.isHorizontal) {
+                                                dX = value;
+                                            } else {
+                                                dY = value;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    ++valuatorIndex;
+                                }
+
+                                if (dX != 0 || dY != 0) {
+                                    jwm::JNILocal<jobject> eventScroll(
+                                        app.getJniEnv(),
+                                        EventScroll::make(
+                                            app.getJniEnv(),
+                                            -dX,
+                                            -dY,
+                                            jwm::KeyX11::getModifiers()
+                                        )
+                                    );
+                                    myWindow->dispatch(eventScroll.get()); 
+                                }
+
+                                break;
+                            }
+                        }
+                        XFreeEventData(display, &ev.xcookie);
+                    }
+                }
                 continue;
             }
             if (myWindow->_layer) {
                 myWindow->_layer->makeCurrent();
             }
+
             switch (ev.type) {
                 case ClientMessage: {
                     if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
@@ -322,6 +442,19 @@ void WindowManagerX11::runLoop() {
 
 void WindowManagerX11::registerWindow(WindowX11* window) {
     _nativeWindowToMy[window->_x11Window] = window;
+
+    // XInput
+    if (_xi2) {
+        XIEventMask eventMask;
+        unsigned char mask[2] = { 0 };
+        XISetMask(mask, XI_DeviceChanged);
+        XISetMask(mask, XI_Motion);
+        eventMask.deviceid = XIAllDevices;
+        eventMask.mask_len = sizeof(mask);
+        eventMask.mask = mask;
+
+        XISelectEvents(display, window->_x11Window, &eventMask, 1);
+    }
 }
 
 void WindowManagerX11::unregisterWindow(WindowX11* window) {

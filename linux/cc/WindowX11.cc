@@ -81,7 +81,6 @@ bool WindowX11::init()
                                CWColormap | CWEventMask | CWCursor,
                                &_windowManager.getSWA()
     );
-    _windowManager.registerWindow(this);
     XSetWMProtocols(_windowManager.getDisplay(),
                     _x11Window,
                     &_windowManager.getAtoms().WM_DELETE_WINDOW,
@@ -115,6 +114,7 @@ bool WindowX11::init()
                         (const unsigned char*)&_xsyncRequestCounter.counter, 1);
         
     }
+    _windowManager.registerWindow(this);
     return true;
 }
 
