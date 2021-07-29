@@ -71,7 +71,7 @@ namespace jwm {
         namespace EventTextInput {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, const char* text);
+            jobject make(JNIEnv* env, jstring text);
         }
 
         namespace EventWindowMove {

@@ -21,6 +21,7 @@ public class Example implements Consumer<Event> {
     public EventResize lastResize = new EventResize(0, 0);
     public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Point scroll = new Point(0, 0);
+    public String text = "";
 
     public String[] variants;
     public int variantIdx = 0;
@@ -136,6 +137,32 @@ public class Example implements Consumer<Event> {
                 canvas.drawLine(halfWidth - 2, scroll.getY() + y, halfWidth + 2, scroll.getY() + y, paint);
                 canvas.drawLine(halfWidth - 4, scroll.getY() + y + 25, halfWidth + 4, scroll.getY() + y + 25, paint);
             }
+        }
+
+        // Text
+        try (var paint = new Paint()) {
+            canvas.save();
+            var lines = text.split("\n", -1);
+            paint.setColor(0xFFFFFFFF);
+            canvas.translate((width - 300) / 2, 20);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 300, 50, 4), paint);
+            canvas.clipRect(Rect.makeXYWH(1, 1, 298, 48));
+            paint.setColor(0xFF000000);
+            var metrics = font24.getMetrics();
+            var lineHeight = metrics.getHeight();
+            var baseline = 50 - (50 - lineHeight) / 2 - metrics.getDescent();
+            if (lines.length > 1) {
+                paint.setColor(0xFF000000);
+                try (var line = TextLine.make(lines[lines.length - 2], font24)) {
+                    canvas.drawTextLine(line, 8, baseline - lineHeight, paint);
+                }
+            }
+            try (var line = TextLine.make(lines[lines.length - 1], font24)) {
+                canvas.drawTextLine(line, 8, baseline, paint);
+                paint.setColor(0xFF0087D8);
+                canvas.drawRect(Rect.makeXYWH(8 + line.getWidth(), baseline + metrics.getAscent() - 2, 2, metrics.getHeight() + 4), paint);
+            }
+            canvas.restore();
         }
 
         // Keys and Buttons
@@ -281,7 +308,7 @@ public class Example implements Consumer<Event> {
             paint();
         } else if (e instanceof EventTextInput) {
             EventTextInput eti = (EventTextInput) e;
-            System.out.println("Input: " + eti.getText());
+            text += eti.getText();
         } else if (e instanceof EventMouseButton) {
             EventMouseButton ee = (EventMouseButton) e;
             if (ee.isPressed())
@@ -292,23 +319,51 @@ public class Example implements Consumer<Event> {
             lastMouseMove = (EventMouseMove) e;
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
-            if (eventKeyboard.isPressed() == true) {
-                if (eventKeyboard.getKey() == Key.P) {
-                    _paused = !_paused;
-                    if (!_paused)
-                        _window.requestFrame();
-                } else if (eventKeyboard.getKey() == Key.N) {
-                    new Example();
-                } else if (eventKeyboard.getKey() == Key.W || eventKeyboard.getKey() == Key.ESCAPE) {
-                    accept(EventClose.INSTANCE);
-                } else if (eventKeyboard.getKey() == Key.DOWN) { // ↓
-                    variantIdx = (variantIdx + 1) % variants.length;
-                    changeLayer();
-                } else if (eventKeyboard.getKey() == Key.UP) { // ↑
-                    variantIdx = (variantIdx + variants.length - 1) % variants.length;
-                    changeLayer();
+            KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
+            if (eventKeyboard.isPressed() == true && eventKeyboard.isModifierDown(modifier)) {
+                switch(eventKeyboard.getKey()) {
+                    case P:
+                        _paused = !_paused;
+                        if (!_paused)
+                            _window.requestFrame();
+                        break;
+                    case N:
+                        new Example();
+                        break;
+                    case W:
+                        accept(EventClose.INSTANCE);
+                        break;
                 }
+            }
 
+            if (eventKeyboard.isPressed() == true) {
+                switch(eventKeyboard.getKey()) {
+                    case ESCAPE:
+                        accept(EventClose.INSTANCE);
+                        break;
+                    case DOWN:
+                        variantIdx = (variantIdx + 1) % variants.length;
+                        changeLayer();
+                        break;
+                    case UP:
+                        variantIdx = (variantIdx + variants.length - 1) % variants.length;
+                        changeLayer();
+                        break;
+                    case ENTER:
+                        text += "\n";
+                        break;
+                    case BACK_SPACE:
+                        if (text.length() > 0) {
+                            try (var iter = BreakIterator.makeCharacterInstance();) {
+                                iter.setText(text);
+                                text = text.substring(0, iter.preceding(text.length()));
+                            }
+                        }
+                        break;
+                }
+            }
+
+            if (eventKeyboard.isPressed() == true) {
                 keys.add(eventKeyboard.getKey());
             } else {
                 keys.remove(eventKeyboard.getKey());

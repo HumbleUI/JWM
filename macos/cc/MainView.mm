@@ -191,10 +191,13 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
 
 } // namespace jwm
 
+static const NSRange kEmptyRange = { NSNotFound, 0 };
+
 @implementation MainView {
     jwm::WindowMac* fWindow;
     // A TrackingArea prevents us from capturing events outside the view
     NSTrackingArea* fTrackingArea;
+    NSMutableAttributedString* fMarkedText;
     // We keep track of the state of the modifier keys on each event in order to synthesize
     // key-up/down events for each modifier.
     NSEventModifierFlags fLastFlags;
@@ -206,6 +209,7 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
 
     fWindow = initWindow;
     fTrackingArea = nil;
+    fMarkedText = [[NSMutableAttributedString alloc] init];
     fLastFlags = 0;
 
     [self updateTrackingAreas];
@@ -215,6 +219,7 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
 
 - (void)dealloc {
     [fTrackingArea release];
+    [fMarkedText release];
     [super dealloc];
 }
 
@@ -307,6 +312,8 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKeyboard::make(fWindow->fEnv, key, (jboolean) true, modifierMask));
     fWindow->dispatch(eventObj.get());
+
+    [self interpretKeyEvents:@[event]];
 }
 
 - (void)keyUp:(NSEvent *)event {
@@ -382,6 +389,78 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     }
 
     fLastFlags = flags;
+}
+
+// NSTextInputClient
+
+- (BOOL)hasMarkedText {
+    return [fMarkedText length] > 0;
+}
+
+- (NSRange)markedRange {
+    if ([fMarkedText length] > 0)
+        return NSMakeRange(0, [fMarkedText length] - 1);
+    else
+        return kEmptyRange;
+}
+
+- (NSRange)selectedRange {
+    return kEmptyRange;
+}
+
+- (void)setMarkedText:(id)string
+        selectedRange:(NSRange)selectedRange
+     replacementRange:(NSRange)replacementRange {
+    [fMarkedText release];
+    if ([string isKindOfClass:[NSAttributedString class]])
+        fMarkedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+    else
+        fMarkedText = [[NSMutableAttributedString alloc] initWithString:string];
+}
+
+- (void)unmarkText {
+    [[fMarkedText mutableString] setString:@""];
+}
+
+- (NSArray*)validAttributesForMarkedText {
+    return [NSArray array];
+}
+
+- (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
+                                               actualRange:(NSRangePointer)actualRange {
+    return nil;
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)point {
+    return 0;
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)range
+                         actualRange:(NSRangePointer)actualRange {
+    const NSRect frame = [fWindow->fNSWindow.contentView frame];
+    return NSMakeRect(frame.origin.x, frame.origin.y, 0.0, 0.0);
+}
+
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
+    NSString* characters;
+    NSEvent* event = [NSApp currentEvent];
+
+    if ([string isKindOfClass:[NSAttributedString class]])
+        characters = [string string];
+    else
+        characters = (NSString*) string;
+
+    size_t len = [characters length];
+    jchar* buffer = new jchar[len];
+    NSRange range = NSMakeRange(0, [characters length]);
+    [characters getCharacters:buffer range:range];
+    JNIEnv* env = fWindow->fEnv;
+    jwm::JNILocal<jstring> jtext(env, env->NewString(buffer, len));
+    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInput::make(env, jtext.get()));
+    fWindow->dispatch(inputEvent.get());
+}
+
+- (void)doCommandBySelector:(SEL)selector {
 }
 
 @end

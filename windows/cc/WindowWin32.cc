@@ -381,7 +381,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 char text[6];
                 _toUtf8(codepoint, text);
 
-                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text));
+                // FIXME do not use NewStringUTF
+                JNILocal<jstring> jtext(env, env->NewStringUTF(text));
+                
+                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
                 dispatch(eventTextInput.get());
             }
 

@@ -235,10 +235,8 @@ namespace jwm {
                 }
             }
 
-            jobject make(JNIEnv* env, const char* text) {
-                JNILocal<jobject> jtext(env, env->NewStringUTF(text));
-                Throwable::exceptionThrown(env);
-                jobject res = env->NewObject(kCls, kCtor, jtext.get());
+            jobject make(JNIEnv* env, jstring text) {
+                jobject res = env->NewObject(kCls, kCtor, text);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

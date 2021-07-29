@@ -402,9 +402,12 @@ void WindowManagerX11::runLoop() {
                     if (count > 0) {
                         // ignore delete key
                         if (textBuffer[0] != 127) {
-                            jwm::JNILocal<jobject> eventTextInput(app.getJniEnv(),
-                                                                  EventTextInput::make(app.getJniEnv(),
-                                                                                       textBuffer));
+                            JNIEnv* env = app.getJniEnv();
+                            
+                            // FIXME do not use NewStringUTF
+                            jwm::JNILocal<jstring> jtext(env, env->NewStringUTF(textBuffer));
+
+                            jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
                             myWindow->dispatch(eventTextInput.get());
                         }
                     }
