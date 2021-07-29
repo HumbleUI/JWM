@@ -28,6 +28,10 @@ namespace jwm {
 
         using Callback = std::function<void(Event)>;
         static const int BUTTON_DOWN = 0x8000;
+        static const UINT HIGH_SURROGATE_L = 0xd800;
+        static const UINT HIGH_SURROGATE_U = 0xdbff;
+        static const UINT LOW_SURROGATE_L = 0xdc00;
+        static const UINT LOW_SURROGATE_U = 0xdfff;
 
     public:
         explicit WindowWin32(JNIEnv* env, class WindowManagerWin32& windowManagerWin32);
@@ -64,6 +68,7 @@ namespace jwm {
         int _getModifiers() const;
         int _getMouseButtons() const;
         int _getNextCallbackID();
+        void _toUtf8(unsigned int codepoint, char* text);
         void _setFrameTimer();
         void _killFrameTimer();
         void _close();
@@ -80,6 +85,7 @@ namespace jwm {
 
         HWND _hWnd = nullptr;
         int _nextCallbackID = 0;
+        wchar_t _highSurrogate = 0;
 
         mutable std::mutex _accessMutex;
     };

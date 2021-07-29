@@ -351,6 +351,39 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
 
+        case WM_CHAR:
+        case WM_SYSCHAR: {
+            if (HIGH_SURROGATE_L <= wParam && wParam <= HIGH_SURROGATE_U) {
+                _highSurrogate = static_cast<wchar_t>(wParam);
+            }
+            else {
+                unsigned int codepoint = 0;
+
+                if (LOW_SURROGATE_L <= wParam && wParam <= LOW_SURROGATE_U) {
+                    if (_highSurrogate) {
+                        codepoint += (_highSurrogate - HIGH_SURROGATE_L) << 10u;
+                        codepoint += static_cast<wchar_t>(wParam) - LOW_SURROGATE_L;
+                        codepoint += 0x10000u;
+                    }
+                }
+                else
+                    codepoint = static_cast<wchar_t>(wParam);
+
+                _highSurrogate = 0;
+
+                char text[6];
+                _toUtf8(codepoint, text);
+
+                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text));
+                dispatch(eventTextInput.get());
+            }
+
+            if (uMsg == WM_SYSCHAR)
+                break;
+
+            return 0;
+        }
+
         case WM_CLOSE:
             dispatch(classes::EventClose::kInstance);
             return 0;
@@ -432,6 +465,33 @@ int jwm::WindowWin32::_getMouseButtons() const {
 
 int jwm::WindowWin32::_getNextCallbackID() {
     return _nextCallbackID++;
+}
+
+void jwm::WindowWin32::_toUtf8(unsigned int cp, char *text) {
+    text[0] = '\0';
+
+    if (cp < 0x80) {
+        text[1] = '\0';
+        text[0] = static_cast<char>(0b00000000u | (cp & 0b01111111u));
+    }
+    else if (cp < 0x800) {
+        text[2] = '\0';
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11000000u | (cp & 0b00011111u));
+    }
+    else if (cp < 0x10000) {
+        text[3] = '\0';
+        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11100000u | (cp & 0b00001111u));
+    }
+    else if (cp <= 0x10FFFF) {
+        text[4] = '\0';
+        text[3] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
+        text[0] = static_cast<char>(0b11110000u | (cp & 0b00000111u));
+    }
 }
 
 void jwm::WindowWin32::_setFrameTimer() {
