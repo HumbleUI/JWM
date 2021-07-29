@@ -54,6 +54,7 @@ def main():
     + ['-Djava.awt.headless=true',
     '-enableassertions',
     '-enablesystemassertions',
+    '-Dfile.encoding=UTF-8',
     '-Xcheck:jni',
     'org.jetbrains.jwm.examples.' + args.example
   ])
