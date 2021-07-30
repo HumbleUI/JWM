@@ -284,7 +284,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_MOUSEWHEEL: {
             auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto scrollValue = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto scrollScale = static_cast<float>(_getWheelScrollLines());
+            auto scrollValue = scrollScale * static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
@@ -295,7 +296,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_MOUSEHWHEEL: {
             auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto scrollValue = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto scrollScale = static_cast<float>(_getWheelScrollLines());
+            auto scrollValue = scrollScale * static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
@@ -427,6 +429,12 @@ DWORD jwm::WindowWin32::_getWindowStyle() const {
 
 DWORD jwm::WindowWin32::_getWindowExStyle() const {
     return 0;
+}
+
+UINT jwm::WindowWin32::_getWheelScrollLines() const {
+    UINT numLines;
+    SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, &numLines, 0);
+    return numLines;
 }
 
 int jwm::WindowWin32::_getModifiers() const {

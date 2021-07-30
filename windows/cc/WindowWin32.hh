@@ -70,6 +70,7 @@ namespace jwm {
     private:
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
+        UINT _getWheelScrollLines() const;
         int _getModifiers() const;
         int _getMouseButtons() const;
         int _getNextCallbackID();
