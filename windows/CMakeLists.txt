@@ -76,3 +76,7 @@ target_link_libraries(jwm PRIVATE "dxgi")
 target_link_libraries(jwm PRIVATE "dxguid")
 
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
+
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+target_link_options(jwm PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)

@@ -15,6 +15,7 @@ def build_native():
   print('Building', target_native)
   subprocess.check_call([
     "cmake",
+    "-DCMAKE_BUILD_TYPE=Release",
     "-B", "build",
     "-G", "Ninja",
     "-DJWM_ARCH=" + common.arch,
