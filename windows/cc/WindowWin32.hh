@@ -73,7 +73,6 @@ namespace jwm {
         int _getModifiers() const;
         int _getMouseButtons() const;
         int _getNextCallbackID();
-        void _toUtf8(unsigned int codepoint, char* text);
         void _setFrameTimer();
         void _killFrameTimer();
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);

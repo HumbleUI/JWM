@@ -343,15 +343,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_SYSKEYUP: {
             bool isPressed = !(HIWORD(lParam) & KF_UP);
             int keycode = (int) wParam;
-            int scancode = (int) MapVirtualKeyA((UINT) wParam, MAPVK_VK_TO_VSC);
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
             auto mapping = table.find(keycode);
 
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
-
-            // printf("WM_KEY win keycode: 0x%x win scancode: 0x%x Key: 0x%x isPressed:%i modifiers:%x\n",
-            //       keycode, scancode, (int)key, (int)isPressed, modifiers);
 
             JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, key, isPressed, modifiers));
             dispatch(eventKeyboard.get());
@@ -364,26 +360,25 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 _highSurrogate = static_cast<wchar_t>(wParam);
             }
             else {
-                unsigned int codepoint = 0;
+                jsize len = 0;
+                jchar text[2];
 
                 if (LOW_SURROGATE_L <= wParam && wParam <= LOW_SURROGATE_U) {
                     if (_highSurrogate) {
-                        codepoint += (_highSurrogate - HIGH_SURROGATE_L) << 10u;
-                        codepoint += static_cast<wchar_t>(wParam) - LOW_SURROGATE_L;
-                        codepoint += 0x10000u;
+                        text[len] = _highSurrogate;
+                        len += 1;
                     }
                 }
-                else
-                    codepoint = static_cast<wchar_t>(wParam);
+                else if (wParam == VK_BACK) {
+                    break;
+                }
+
+                text[len] = static_cast<wchar_t>(wParam);
+                len += 1;
 
                 _highSurrogate = 0;
 
-                char text[6];
-                _toUtf8(codepoint, text);
-
-                // FIXME do not use NewStringUTF
-                JNILocal<jstring> jtext(env, env->NewStringUTF(text));
-                
+                JNILocal<jstring> jtext(env, env->NewString(text, len));
                 JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
                 dispatch(eventTextInput.get());
             }
@@ -475,33 +470,6 @@ int jwm::WindowWin32::_getMouseButtons() const {
 
 int jwm::WindowWin32::_getNextCallbackID() {
     return _nextCallbackID++;
-}
-
-void jwm::WindowWin32::_toUtf8(unsigned int cp, char *text) {
-    text[0] = '\0';
-
-    if (cp < 0x80) {
-        text[1] = '\0';
-        text[0] = static_cast<char>(0b00000000u | (cp & 0b01111111u));
-    }
-    else if (cp < 0x800) {
-        text[2] = '\0';
-        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[0] = static_cast<char>(0b11000000u | (cp & 0b00011111u));
-    }
-    else if (cp < 0x10000) {
-        text[3] = '\0';
-        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[0] = static_cast<char>(0b11100000u | (cp & 0b00001111u));
-    }
-    else if (cp <= 0x10FFFF) {
-        text[4] = '\0';
-        text[3] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[2] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[1] = static_cast<char>(0b10000000u | (cp & 0b00111111u)); cp >>= 6u;
-        text[0] = static_cast<char>(0b11110000u | (cp & 0b00000111u));
-    }
 }
 
 void jwm::WindowWin32::_setFrameTimer() {
