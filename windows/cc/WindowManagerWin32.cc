@@ -38,42 +38,13 @@ int jwm::WindowManagerWin32::iteration() {
         }
     }
 
-    std::vector<WindowWin32*> windowsGL;
-    std::vector<WindowWin32*> windowsD3D;
-
-    for (auto entry: _windows) {
-        auto window = entry.second;
-
-        if (window->testFlag(WindowWin32::Flag::RequestFrame)) {
-            window->removeFlag(WindowWin32::Flag::RequestFrame);
-
-            if (window->testFlag(WindowWin32::Flag::HasLayerGL))
-                windowsGL.push_back(window);
-            else if (window->testFlag(WindowWin32::Flag::HasLayerD3D))
-                windowsD3D.push_back(window);
-        }
-    }
-
-    for (auto window: windowsD3D) {
-        window->notifyEvent(WindowWin32::Event::SwitchContext);
-        window->dispatch(classes::EventFrame::kInstance);
-        window->notifyEvent(WindowWin32::Event::SwapBuffers);
-    }
-
-    for (auto window: windowsGL) {
-        window->notifyEvent(WindowWin32::Event::SwitchContext);
-
-        if (window == windowsGL.back())
-            window->notifyEvent(WindowWin32::Event::EnableVsync);
-
-        window->dispatch(classes::EventFrame::kInstance);
-        window->notifyEvent(WindowWin32::Event::SwapBuffers);
-
-        if (window == windowsGL.back())
-            window->notifyEvent(WindowWin32::Event::DisableVsync);
-    }
+    _dispatchFrameEvents();
 
     return 0;
+}
+
+void jwm::WindowManagerWin32::timerUpdate() {
+    _dispatchFrameEvents();
 }
 
 int jwm::WindowManagerWin32::_registerWindowClass() {
@@ -384,4 +355,41 @@ void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {
 void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
     std::lock_guard<std::mutex> lock(_accessMutex);
     _windows.erase(window.getHWnd());
+}
+
+void jwm::WindowManagerWin32::_dispatchFrameEvents() {
+    std::vector<WindowWin32*> windowsGL;
+    std::vector<WindowWin32*> windowsD3D;
+
+    for (auto entry: _windows) {
+        auto window = entry.second;
+
+        if (window->testFlag(WindowWin32::Flag::RequestFrame)) {
+            window->removeFlag(WindowWin32::Flag::RequestFrame);
+
+            if (window->testFlag(WindowWin32::Flag::HasLayerGL))
+                windowsGL.push_back(window);
+            else if (window->testFlag(WindowWin32::Flag::HasLayerD3D))
+                windowsD3D.push_back(window);
+        }
+    }
+
+    for (auto window: windowsD3D) {
+        window->notifyEvent(WindowWin32::Event::SwitchContext);
+        window->dispatch(classes::EventFrame::kInstance);
+        window->notifyEvent(WindowWin32::Event::SwapBuffers);
+    }
+
+    for (auto window: windowsGL) {
+        window->notifyEvent(WindowWin32::Event::SwitchContext);
+
+        if (window == windowsGL.back())
+            window->notifyEvent(WindowWin32::Event::EnableVsync);
+
+        window->dispatch(classes::EventFrame::kInstance);
+        window->notifyEvent(WindowWin32::Event::SwapBuffers);
+
+        if (window == windowsGL.back())
+            window->notifyEvent(WindowWin32::Event::DisableVsync);
+    }
 }

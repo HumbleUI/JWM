@@ -15,6 +15,7 @@ namespace jwm {
     public:
         bool init();
         int iteration();
+        void timerUpdate();
 
     public:
         HWND getHelperWindow() const { return _hWndHelperWindow; }
@@ -26,6 +27,7 @@ namespace jwm {
         void _initKeyTable();
         void _registerWindow(class WindowWin32& window);
         void _unregisterWindow(class WindowWin32& window);
+        void _dispatchFrameEvents();
 
     private:
         friend class WindowWin32;

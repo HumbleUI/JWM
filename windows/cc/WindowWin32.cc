@@ -157,9 +157,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     notifyEvent(Event::SwitchContext);
 
     switch (uMsg) {
-        // HACK: Set timer to get JWM_WM_FRAME_TIMER event.
+        // HACK: Set timer to get JWM_WM_TIMER_UPDATE_EVENT event.
         // When user hold mouse button and drag window, app enter modal loop,
-        // animation is stopped. This hack allows us to get JWM_WM_FRAME_TIMER
+        // animation is stopped. This hack allows us to get JWM_WM_TIMER_UPDATE_EVENT
         // event with minimum possible delay to repaint window and animate it.
 
         case WM_ENTERSIZEMOVE:
@@ -192,14 +192,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return true;
 
         case WM_TIMER: {
-            if (wParam == JWM_WM_FRAME_TIMER) {
-                // Repaint window if requested
-
-                if (testFlag(Flag::RequestFrame)) {
-                    removeFlag(Flag::RequestFrame);
-                    dispatch(classes::EventFrame::kInstance);
-                    notifyEvent(Event::SwapBuffers);
-                }
+            if (wParam == JWM_WM_TIMER_UPDATE_EVENT) {
+                // HACK: modal event loop on move/resize for focus window blocks background windows.
+                // Therefore they are freeze. Here we can receive update event inside modal loop
+                // to get chance to process frame event and etc.
+                _windowManager.timerUpdate();
             }
 
             return 0;
@@ -427,11 +424,11 @@ int jwm::WindowWin32::_getNextCallbackID() {
 }
 
 void jwm::WindowWin32::_setFrameTimer() {
-    SetTimer(_hWnd, JWM_WM_FRAME_TIMER, USER_TIMER_MINIMUM, nullptr);
+    SetTimer(_hWnd, JWM_WM_TIMER_UPDATE_EVENT, USER_TIMER_MINIMUM, nullptr);
 }
 
 void jwm::WindowWin32::_killFrameTimer() {
-    KillTimer(_hWnd, JWM_WM_FRAME_TIMER);
+    KillTimer(_hWnd, JWM_WM_TIMER_UPDATE_EVENT);
 }
 
 bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t *caption) {
