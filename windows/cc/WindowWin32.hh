@@ -6,7 +6,6 @@
 #include <atomic>
 #include <bitset>
 #include <vector>
-#include <mutex>
 #include <jni.h>
 
 namespace jwm {
@@ -26,7 +25,9 @@ namespace jwm {
             HasAttachedLayer = 3,
             RecreateForNextLayer = 4,
             IgnoreMessages = 5,
-            Max = 6
+            HasLayerGL = 6,
+            HasLayerD3D = 7,
+            Max = 8
         };
 
         using Callback = std::function<void(Event)>;
@@ -41,7 +42,6 @@ namespace jwm {
         ~WindowWin32() override;
         bool init();
         void recreate();
-        void start();
         void show();
         void getPosition(int& left, int& top) const;
         void getSize(int& width, int& height) const;
@@ -53,8 +53,7 @@ namespace jwm {
         float getScale() const;
         void move(int left, int top);
         void resize(int width, int height);
-        void enqueueCallback(jobject callback);
-        void requestClose();
+        void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     public:
@@ -84,16 +83,12 @@ namespace jwm {
         friend class WindowManagerWin32;
 
         std::vector<std::pair<int, Callback>> _eventListeners;
-        std::vector<jobject> _callbacks;
         std::bitset<static_cast<size_t>(Flag::Max)> _flags;
-        std::atomic_bool _shouldClose{false};
 
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = nullptr;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
-
-        mutable std::mutex _accessMutex;
     };
 }

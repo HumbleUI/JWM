@@ -32,6 +32,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
     _windowWin32 = jwm::ref(window);
     _windowWin32->setFlag(WindowWin32::Flag::HasAttachedLayer);
+    _windowWin32->setFlag(WindowWin32::Flag::HasLayerGL);
 
     // If have no rendering context for window, then create it here
     if (_hRC == nullptr) {
@@ -185,6 +186,7 @@ void jwm::LayerWGL::_releaseInternal() {
 
     if (_windowWin32) {
         _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
+        _windowWin32->removeFlag(WindowWin32::Flag::HasLayerGL);
         _windowWin32->removeEventListener(_callbackID);
         jwm::unref(&_windowWin32);
     }

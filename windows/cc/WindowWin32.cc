@@ -48,55 +48,6 @@ void jwm::WindowWin32::recreate() {
     removeFlag(Flag::IgnoreMessages);
 }
 
-void jwm::WindowWin32::start() {
-    bool destroyed = false;
-
-    // Listen for window destroy event
-    // if window is destroyed while processing some event,
-    // we will know about that (leave event loop and start function)
-    addEventListener([&](Event event){
-        if (event == Event::Destroyed) {
-            destroyed = true;
-        }
-    });
-
-    AppWin32& app = AppWin32::getInstance();
-    JNIEnv* env = getJNIEnv();
-
-    while (!_shouldClose.load() && !app.isTerminateRequested()) {
-        MSG msg;
-
-        while (PeekMessageW(&msg, _hWnd, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-
-            if (destroyed)
-                return;
-        }
-
-        // If frame was requested, we must dispatch this event here.
-        // Note about context switch (if window in the separate thread it is not required)
-        if (testFlag(Flag::RequestFrame)) {
-            removeFlag(Flag::RequestFrame);
-            notifyEvent(Event::SwitchContext);
-            dispatch(classes::EventFrame::kInstance);
-            notifyEvent(Event::SwapBuffers);
-        }
-
-        // Process window thread callbacks
-        std::vector<jobject> toProcess;
-        {
-            std::lock_guard<std::mutex> lock(_accessMutex);
-            std::swap(toProcess, _callbacks);
-        }
-
-        for (auto callback: toProcess) {
-            classes::Runnable::run(env, callback);
-            env->DeleteGlobalRef(callback);
-        }
-    }
-}
-
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
@@ -193,13 +144,8 @@ void jwm::WindowWin32::resize(int width, int height) {
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
-void jwm::WindowWin32::enqueueCallback(jobject callback) {
-    std::lock_guard<std::mutex> lock(_accessMutex);
-    _callbacks.push_back(callback);
-}
-
-void jwm::WindowWin32::requestClose() {
-    _shouldClose.store(true);
+void jwm::WindowWin32::close() {
+    _close();
 }
 
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -537,13 +483,6 @@ void jwm::WindowWin32::_close() {
         notifyEvent(Event::Destroyed);
         _eventListeners.clear();
 
-        JNIEnv* env = getJNIEnv();
-
-        // Clear pending callbacks if present
-        for (auto callback: _callbacks)
-            env->DeleteGlobalRef(callback);
-        _callbacks.clear();
-
         // Native clean-up
         _destroyInternal();
     }
@@ -614,21 +553,15 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFram
     instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nStart
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->start();
-}
-
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRunOnWindowThread
         (JNIEnv* env, jobject obj, jobject callback) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    auto callbackRef = env->NewGlobalRef(callback);
-    instance->enqueueCallback(callbackRef);
+    jwm::AppWin32& app = jwm::AppWin32::getInstance();
+    jobject callbackRef = env->NewGlobalRef(callback);
+    app.enqueueCallback(callbackRef);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->requestClose();
+    instance->close();
 }

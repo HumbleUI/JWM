@@ -24,6 +24,7 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
 
     _windowWin32 = jwm::ref(window);
     _windowWin32->setFlag(WindowWin32::Flag::HasAttachedLayer);
+    _windowWin32->setFlag(WindowWin32::Flag::HasLayerD3D);
 
     DX12Common& dx12Common = app.getDx12Common();
 
@@ -96,6 +97,7 @@ void jwm::LayerD3D12::close() {
 
     if (_windowWin32) {
         _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
+        _windowWin32->removeFlag(WindowWin32::Flag::HasLayerD3D);
         _windowWin32->setFlag(WindowWin32::Flag::RecreateForNextLayer);
         _windowWin32->removeEventListener(_callbackID);
         jwm::unref(&_windowWin32);

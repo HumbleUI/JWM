@@ -17,11 +17,28 @@ void jwm::AppWin32::init(JNIEnv *jniEnv) {
 }
 
 int jwm::AppWin32::start() {
+    JNIEnv* env = getJniEnv();
+
     int result = 0;
 
-    while (!isTerminateRequested() && !result) {
+    while (!isTerminateRequested()) {
         result = _windowManager.iteration();
+
+        if (result)
+            break;
+
+        std::vector<jobject> toProcess;
+        std::swap(toProcess, _uiThreadCallbacks);
+
+        for (auto callback: toProcess) {
+            classes::Runnable::run(env, callback);
+            env->DeleteGlobalRef(callback);
+        }
     }
+
+    // Release enqueued but not executed callbacks
+    for (auto callback: _uiThreadCallbacks)
+        env->DeleteGlobalRef(callback);
 
     return result;
 }
@@ -38,9 +55,13 @@ void jwm::AppWin32::sendError(const char *what) {
     std::cerr << "jwm::Error: " << what << std::endl;
 }
 
+void jwm::AppWin32::enqueueCallback(jobject callback) {
+    _uiThreadCallbacks.push_back(callback);
+}
+
 const std::vector<jwm::ScreenWin32> &jwm::AppWin32::getScreens() {
     _screens.clear();
-    EnumDisplayMonitors(NULL, NULL, (MONITORENUMPROC) enumMonitorFunc, 0);
+    EnumDisplayMonitors(nullptr, nullptr, (MONITORENUMPROC) enumMonitorFunc, 0);
     return _screens;
 }
 
