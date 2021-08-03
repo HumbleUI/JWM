@@ -34,6 +34,8 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/ContextWGL.hh
     cc/LayerD3D12.cc
     cc/LayerD3D12.hh
+    cc/LayerRaster.cc
+    cc/LayerRaster.hh
     cc/LayerWGL.cc
     cc/LayerWGL.hh
     cc/PlatformWin32.hh

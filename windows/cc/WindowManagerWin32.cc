@@ -359,7 +359,7 @@ void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
 
 void jwm::WindowManagerWin32::_dispatchFrameEvents() {
     std::vector<WindowWin32*> windowsGL;
-    std::vector<WindowWin32*> windowsD3D;
+    std::vector<WindowWin32*> windowsD3DorRaster;
 
     for (auto entry: _windows) {
         auto window = entry.second;
@@ -369,12 +369,13 @@ void jwm::WindowManagerWin32::_dispatchFrameEvents() {
 
             if (window->testFlag(WindowWin32::Flag::HasLayerGL))
                 windowsGL.push_back(window);
-            else if (window->testFlag(WindowWin32::Flag::HasLayerD3D))
-                windowsD3D.push_back(window);
+            else if (window->testFlag(WindowWin32::Flag::HasLayerD3D) ||
+                     window->testFlag(WindowWin32::Flag::HasLayerRaster))
+                windowsD3DorRaster.push_back(window);
         }
     }
 
-    for (auto window: windowsD3D) {
+    for (auto window: windowsD3DorRaster) {
         window->notifyEvent(WindowWin32::Event::SwitchContext);
         window->dispatch(classes::EventFrame::kInstance);
         window->notifyEvent(WindowWin32::Event::SwapBuffers);
