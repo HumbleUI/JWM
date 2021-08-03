@@ -38,7 +38,7 @@ public class Example implements Consumer<Event> {
         if (Platform.CURRENT == Platform.MACOS)
             variants = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };
         else if (Platform.CURRENT == Platform.WINDOWS)
-            variants = new String[] { "SkijaLayerGL", "windows.SkijaLayerD3D12" };
+            variants = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
         else
             variants = new String[] { "SkijaLayerGL" };
 
@@ -284,6 +284,7 @@ public class Example implements Consumer<Event> {
             _layer.close();
 
         String className = "org.jetbrains.jwm.examples." + variants[variantIdx];
+
         try {
             _layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
