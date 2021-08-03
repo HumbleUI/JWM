@@ -8,11 +8,11 @@ namespace jwm
     /**
      * @brief std::string which uses jchar as a character type
      */
-    class JavaString: public std::basic_string<jchar> {
+    class StringUTF16: public std::basic_string<jchar> {
     public:
         using std::basic_string<jchar>::basic_string;
 
-        static JavaString makeFromUtf8(const char* str);
+        static StringUTF16 makeFromUtf8(const char* str);
     };
 
 } // namespace jwm

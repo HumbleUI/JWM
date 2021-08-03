@@ -9,7 +9,7 @@
 #include <X11/extensions/XInput2.h>
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
-#include "JavaString.hh"
+#include "StringUTF16.hh"
 
 using namespace jwm;
 
@@ -405,7 +405,7 @@ void WindowManagerX11::runLoop() {
                         if (textBuffer[0] != 127) {
                             JNIEnv* env = app.getJniEnv();
                             
-                            jwm::JavaString converted = jwm::JavaString::makeFromUtf8(textBuffer);
+                            jwm::StringUTF16 converted = jwm::StringUTF16::makeFromUtf8(textBuffer);
                             jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
 
                             jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
