@@ -9,6 +9,7 @@
 #include <X11/extensions/XInput2.h>
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
+#include "JavaString.hh"
 
 using namespace jwm;
 
@@ -404,8 +405,8 @@ void WindowManagerX11::runLoop() {
                         if (textBuffer[0] != 127) {
                             JNIEnv* env = app.getJniEnv();
                             
-                            // FIXME do not use NewStringUTF
-                            jwm::JNILocal<jstring> jtext(env, env->NewStringUTF(textBuffer));
+                            jwm::JavaString converted = jwm::JavaString::makeFromUtf8(textBuffer);
+                            jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
 
                             jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
                             myWindow->dispatch(eventTextInput.get());
