@@ -13,9 +13,7 @@ public class SkijaLayerRaster extends LayerRaster implements SkijaLayer {
             _surface = Surface.makeRasterDirect(imageInfo, getPixelsPtr(), getRowBytes());
         }
 
-        Canvas canvas = _surface.getCanvas();
-        canvas.clear(0xFFFFFFFF);
-        return canvas;
+        return _surface.getCanvas();
     }
 
     @Override
