@@ -68,8 +68,8 @@ void jwm::WindowWin32::getSize(int &width, int &height) const {
     height = area.bottom - area.top;
 
     // Explicitly clamp size, since w or h cannot be less than 0
-    width = width > 0? width: 0;
-    height = height > 0? height: 0;
+    width = width > 1? width: 1;
+    height = height > 1? height: 1;
 }
 
 void jwm::WindowWin32::getClientAreaSize(int &width, int &height) const {
@@ -80,8 +80,8 @@ void jwm::WindowWin32::getClientAreaSize(int &width, int &height) const {
     height = area.bottom - area.top;
 
     // Explicitly clamp size, since w or h cannot be less than 0
-    width = width > 0? width: 0;
-    height = height > 0? height: 0;
+    width = width > 1? width: 1;
+    height = height > 1? height: 1;
 }
 
 int jwm::WindowWin32::getLeft() const {
@@ -175,6 +175,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_SIZE: {
             int width = LOWORD(lParam);
             int height = HIWORD(lParam);
+            width = width > 1? width: 1;
+            height = height > 1? height: 1;
             JNILocal<jobject> eventResize(env, classes::EventResize::make(env, width, height));
             dispatch(eventResize.get());
             return 0;
