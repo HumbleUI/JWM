@@ -5,6 +5,6 @@ import lombok.*;
 
 @Data
 public class ClipboardEntry {
-    public final String _formatId;
+    public final ClipboardFormat _format;
     public final byte[] _data;
 }
