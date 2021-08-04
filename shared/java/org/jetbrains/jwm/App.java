@@ -43,6 +43,11 @@ public class App {
 
     public static native void terminate();
 
+    /**
+     * @return contents of the system clipboard. null if empty
+     */
+    public static native DataTransfer getClipboard();
+
     @ApiStatus.Internal public static native void _nInit();
 
     public static native Screen[] getScreens();

@@ -7,6 +7,7 @@
 #include "AppX11.hh"
 #include <X11/extensions/sync.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xatom.h>
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
 #include "StringUTF16.hh"
@@ -167,282 +168,415 @@ void WindowManagerX11::_xi2IterateDevices() {
     return XDefaultRootWindow(display);
 }
 
+
 void WindowManagerX11::runLoop() {
     _runLoop = true;
     XEvent ev;
     while (_runLoop) {
-        using namespace classes;
         while (XPending(display)) {
             XNextEvent(display, &ev);
-            WindowX11* myWindow = nullptr;
-            auto it = _nativeWindowToMy.find(ev.xkey.window);
-            if (it != _nativeWindowToMy.end()) {
-                myWindow = it->second;
-            }
-            if (myWindow == nullptr) {
-                // probably an XI2 event
-                if (ev.type == GenericEvent && _xi2 && _xi2->opcode == ev.xcookie.extension) {
-                    if (XGetEventData(display, &ev.xcookie)) {
-                        XIEvent* xiEvent = reinterpret_cast<XIEvent*>(ev.xcookie.data);
-                        switch (xiEvent->evtype) {
-                            case XI_DeviceChanged:
-                                _xi2->deviceById.clear();
-                                _xi2IterateDevices();
-                                break;
-
-                            case XI_Motion: {
-                                XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
-                                
-                                it = _nativeWindowToMy.find(deviceEvent->event);
-
-                                if (it != _nativeWindowToMy.end()) {
-                                    myWindow = it->second;
-                                } else {
-                                    break;
-                                }
-
-                                if (myWindow->_layer) {
-                                    myWindow->_layer->makeCurrent();
-                                }
-
-                                auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
-                                if (itMyDevice == _xi2->deviceById.end()) {
-                                    break;
-                                }
-
-                                XInput2::Device& myDevice = itMyDevice->second;
-                                double dX = 0, dY = 0;
-                                for (int i = 0, valuatorIndex = 0; i < deviceEvent->valuators.mask_len * 8; ++i) {
-                                    if (!XIMaskIsSet(deviceEvent->valuators.mask, i)) {
-                                        continue;
-                                    }
-
-                                    for (auto& valuator : myDevice.scroll) {
-                                        if (valuator.number == i) {
-                                            double value = reinterpret_cast<double*>(deviceEvent->valuators.values)[valuatorIndex];
-                                            if (valuator.previousValue == 0) {
-                                                valuator.previousValue = value;
-                                                value = 0;
-                                            } else {
-                                                double delta = value - valuator.previousValue;
-                                                valuator.previousValue = value;
-                                                value = delta;                                                
-                                            }
-                                            if (valuator.isHorizontal) {
-                                                dX = value;
-                                            } else {
-                                                dY = value;
-                                            }
-                                            break;
-                                        }
-                                    }
-                                    ++valuatorIndex;
-                                }
-
-                                if (dX != 0 || dY != 0) {
-                                    jwm::JNILocal<jobject> eventScroll(
-                                        app.getJniEnv(),
-                                        EventScroll::make(
-                                            app.getJniEnv(),
-                                            -dX,
-                                            -dY,
-                                            jwm::KeyX11::getModifiers()
-                                        )
-                                    );
-                                    myWindow->dispatch(eventScroll.get()); 
-                                }
-
-                                break;
-                            }
-                        }
-                        XFreeEventData(display, &ev.xcookie);
-                    }
-                }
-                continue;
-            }
-            if (myWindow->_layer) {
-                myWindow->_layer->makeCurrent();
-            }
-
-            switch (ev.type) {
-                case ClientMessage: {
-                    if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
-                        if (ev.xclient.data.l[0] == _atoms._NET_WM_SYNC_REQUEST) {
-                            // flicker-fix sync on resize
-                            myWindow->_xsyncRequestCounter.lo = ev.xclient.data.l[2];
-                            myWindow->_xsyncRequestCounter.hi = ev.xclient.data.l[3];
-                        } else if (ev.xclient.data.l[0] == _atoms.WM_DELETE_WINDOW) {
-                            // close button clicked
-                            myWindow->dispatch(EventClose::kInstance);
-                        }
-                    }
-                    break;
-                }
-                case ConfigureNotify: { // resize and move
-                    WindowX11* except = nullptr;
-                    if (ev.xconfigure.x != myWindow->_posX || ev.xconfigure.y != myWindow->_posY) {
-                        myWindow->_posX = ev.xconfigure.x;
-                        myWindow->_posY = ev.xconfigure.y;
-
-                        jwm::JNILocal<jobject> eventMove(
-                            app.getJniEnv(),
-                            EventWindowMove::make(
-                                app.getJniEnv(),
-                                ev.xconfigure.x,
-                                ev.xconfigure.y
-                            )
-                        );
-                        myWindow->dispatch(eventMove.get()); 
-                    }
-                    if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
-                    {
-                        except = myWindow;
-                        myWindow->_width = ev.xconfigure.width;
-                        myWindow->_height = ev.xconfigure.height;
-                        jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
-                        myWindow->dispatch(eventResize.get());
-
-                        // force redraw
-                        if (myWindow->_layer) {
-                            myWindow->_layer->makeCurrent();
-                            myWindow->_layer->setVsyncMode(ILayer::VSYNC_DISABLED);
-                        }
-                        myWindow->dispatch(EventFrame::kInstance);
-
-                        if (myWindow->_layer) {
-                            myWindow->_layer->setVsyncMode(ILayer::VSYNC_ADAPTIVE);
-                        }
-
-                        XSyncValue syncValue;
-                        XSyncIntsToValue(&syncValue,
-                                        myWindow->_xsyncRequestCounter.lo,
-                                        myWindow->_xsyncRequestCounter.hi);
-                        XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
-
-
-                        // force repaint all windows otherwise they will freeze on GTK-based WMs
-                        for (auto& p : _nativeWindowToMy) {
-                            if (except != p.second && p.second->isRedrawRequested()) {
-                                p.second->unsetRedrawRequest();
-                                if (p.second->_layer) {
-                                    p.second->_layer->makeCurrent();
-                                }
-                                p.second->dispatch(EventFrame::kInstance);
-                            }
-                        }
-                    }
-
-                    break;
-                }
-
-                case MotionNotify: { // mouse move
-                    unsigned mask;
-                    ::Window unused1;
-                    int unused2;
-                    XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
-                    jwm::JNILocal<jobject> eventMove(
-                        app.getJniEnv(),
-                        EventMouseMove::make(app.getJniEnv(),
-                            ev.xmotion.x,
-                            ev.xmotion.y,
-                            jwm::MouseButtonX11::fromNativeMask(mask),
-                            jwm::KeyX11::getModifiers()
-                        )
-                    );
-                    myWindow->dispatch(eventMove.get());
-                    break;
-                }
-
-                case ButtonPress: { // mouse down
-                    jwm::JNILocal<jobject> eventButton(
-                        app.getJniEnv(),
-                        EventMouseButton::make(
-                            app.getJniEnv(),
-                            MouseButtonX11::fromNative(ev.xbutton.button),
-                            true,
-                            jwm::KeyX11::getModifiers()
-                        )
-                    );
-                    myWindow->dispatch(eventButton.get());
-                    break;
-                }
-
-                case ButtonRelease: { // mouse down
-                    jwm::JNILocal<jobject> eventButton(
-                        app.getJniEnv(),
-                        EventMouseButton::make(
-                            app.getJniEnv(),
-                            MouseButtonX11::fromNative(ev.xbutton.button),
-                            false,
-                            jwm::KeyX11::getModifiers()
-                        )
-                    );
-                    myWindow->dispatch(eventButton.get());
-                    break;
-                }
-
-                case KeyPress: { // keyboard down
-                    KeySym s = XLookupKeysym(&ev.xkey, 0);
-                    jwm::Key key = KeyX11::fromNative(s);
-                    jwm::KeyX11::setKeyState(key, true);
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
-                                                         EventKeyboard::make(app.getJniEnv(),
-                                                                             key,
-                                                                             true,
-                                                                             jwm::KeyX11::getModifiers()));
-                    myWindow->dispatch(eventKeyboard.get());
-                    char textBuffer[0x20];
-                    Status status;
-                    int count = Xutf8LookupString(myWindow->_ic,
-                                                  (XKeyPressedEvent*)&ev,
-                                                  textBuffer,
-                                                  sizeof(textBuffer),
-                                                  &s,
-                                                  &status);
-                    textBuffer[count] = 0;
-                    if (count > 0) {
-                        // ignore delete key
-                        if (textBuffer[0] != 127) {
-                            JNIEnv* env = app.getJniEnv();
-                            
-                            jwm::StringUTF16 converted = jwm::StringUTF16::makeFromUtf8(textBuffer);
-                            jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
-
-                            jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
-                            myWindow->dispatch(eventTextInput.get());
-                        }
-                    }
-
-                    break;
-                }
-
-                case KeyRelease: { // keyboard down
-                    KeySym s = XLookupKeysym(&ev.xkey, 0);
-                    jwm::Key key = KeyX11::fromNative(s);
-                    jwm::KeyX11::setKeyState(key, false);
-                    jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
-                                                         EventKeyboard::make(app.getJniEnv(),
-                                                                             key,
-                                                                             false,
-                                                                             jwm::KeyX11::getModifiers()));
-                    myWindow->dispatch(eventKeyboard.get());
-                    break;
-                }
-            }
+            _processXEvent(ev);
         }
 
-        for (auto& p : _nativeWindowToMy) {
-            if (p.second->isRedrawRequested()) {
-                p.second->unsetRedrawRequest();
-                if (p.second->_layer) {
-                    p.second->_layer->makeCurrent();
-                }
-                p.second->dispatch(EventFrame::kInstance);
+        _processRedrawRequests();
+    }
+}
+
+void WindowManagerX11::_processRedrawRequests() {
+    for (auto& p : _nativeWindowToMy) {
+        if (p.second->isRedrawRequested()) {
+            p.second->unsetRedrawRequest();
+            if (p.second->_layer) {
+                p.second->_layer->makeCurrent();
             }
+            p.second->dispatch(classes::EventFrame::kInstance);
         }
     }
 }
 
+void WindowManagerX11::_processXEvent(XEvent& ev) {
+    using namespace classes;
+
+    WindowX11* myWindow = nullptr;
+    auto it = _nativeWindowToMy.find(ev.xkey.window);
+    if (it != _nativeWindowToMy.end()) {
+        myWindow = it->second;
+    }
+    if (myWindow == nullptr) {
+        // probably an XI2 event
+        if (ev.type == GenericEvent && _xi2 && _xi2->opcode == ev.xcookie.extension) {
+            if (XGetEventData(display, &ev.xcookie)) {
+                XIEvent* xiEvent = reinterpret_cast<XIEvent*>(ev.xcookie.data);
+                switch (xiEvent->evtype) {
+                    case XI_DeviceChanged:
+                        _xi2->deviceById.clear();
+                        _xi2IterateDevices();
+                        break;
+
+                    case XI_Motion: {
+                        XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
+                        
+                        it = _nativeWindowToMy.find(deviceEvent->event);
+
+                        if (it != _nativeWindowToMy.end()) {
+                            myWindow = it->second;
+                        } else {
+                            break;
+                        }
+
+                        if (myWindow->_layer) {
+                            myWindow->_layer->makeCurrent();
+                        }
+
+                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
+                        if (itMyDevice == _xi2->deviceById.end()) {
+                            break;
+                        }
+
+                        XInput2::Device& myDevice = itMyDevice->second;
+                        double dX = 0, dY = 0;
+                        for (int i = 0, valuatorIndex = 0; i < deviceEvent->valuators.mask_len * 8; ++i) {
+                            if (!XIMaskIsSet(deviceEvent->valuators.mask, i)) {
+                                continue;
+                            }
+
+                            for (auto& valuator : myDevice.scroll) {
+                                if (valuator.number == i) {
+                                    double value = reinterpret_cast<double*>(deviceEvent->valuators.values)[valuatorIndex];
+                                    if (valuator.previousValue == 0) {
+                                        valuator.previousValue = value;
+                                        value = 0;
+                                    } else {
+                                        double delta = value - valuator.previousValue;
+                                        valuator.previousValue = value;
+                                        value = delta;                                                
+                                    }
+                                    if (valuator.isHorizontal) {
+                                        dX = value;
+                                    } else {
+                                        dY = value;
+                                    }
+                                    break;
+                                }
+                            }
+                            ++valuatorIndex;
+                        }
+
+                        if (dX != 0 || dY != 0) {
+                            jwm::JNILocal<jobject> eventScroll(
+                                app.getJniEnv(),
+                                EventScroll::make(
+                                    app.getJniEnv(),
+                                    -dX,
+                                    -dY,
+                                    jwm::KeyX11::getModifiers()
+                                )
+                            );
+                            myWindow->dispatch(eventScroll.get()); 
+                        }
+
+                        break;
+                    }
+                }
+                XFreeEventData(display, &ev.xcookie);
+            }
+        }
+        return;
+    }
+    if (myWindow->_layer) {
+        myWindow->_layer->makeCurrent();
+    }
+
+    switch (ev.type) {
+        case ClientMessage: {
+            if (ev.xclient.message_type == _atoms.WM_PROTOCOLS) {
+                if (ev.xclient.data.l[0] == _atoms._NET_WM_SYNC_REQUEST) {
+                    // flicker-fix sync on resize
+                    myWindow->_xsyncRequestCounter.lo = ev.xclient.data.l[2];
+                    myWindow->_xsyncRequestCounter.hi = ev.xclient.data.l[3];
+                } else if (ev.xclient.data.l[0] == _atoms.WM_DELETE_WINDOW) {
+                    // close button clicked
+                    myWindow->dispatch(EventClose::kInstance);
+                }
+            }
+            break;
+        }
+        case ConfigureNotify: { // resize and move
+            WindowX11* except = nullptr;
+            if (ev.xconfigure.x != myWindow->_posX || ev.xconfigure.y != myWindow->_posY) {
+                myWindow->_posX = ev.xconfigure.x;
+                myWindow->_posY = ev.xconfigure.y;
+
+                jwm::JNILocal<jobject> eventMove(
+                    app.getJniEnv(),
+                    EventWindowMove::make(
+                        app.getJniEnv(),
+                        ev.xconfigure.x,
+                        ev.xconfigure.y
+                    )
+                );
+                myWindow->dispatch(eventMove.get()); 
+            }
+            if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
+            {
+                except = myWindow;
+                myWindow->_width = ev.xconfigure.width;
+                myWindow->_height = ev.xconfigure.height;
+                jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
+                myWindow->dispatch(eventResize.get());
+
+                // force redraw
+                if (myWindow->_layer) {
+                    myWindow->_layer->makeCurrent();
+                    myWindow->_layer->setVsyncMode(ILayer::VSYNC_DISABLED);
+                }
+                myWindow->dispatch(EventFrame::kInstance);
+
+                if (myWindow->_layer) {
+                    myWindow->_layer->setVsyncMode(ILayer::VSYNC_ADAPTIVE);
+                }
+
+                XSyncValue syncValue;
+                XSyncIntsToValue(&syncValue,
+                                myWindow->_xsyncRequestCounter.lo,
+                                myWindow->_xsyncRequestCounter.hi);
+                XSyncSetCounter(display, myWindow->_xsyncRequestCounter.counter, syncValue);
+
+
+                // force repaint all windows otherwise they will freeze on GTK-based WMs
+                for (auto& p : _nativeWindowToMy) {
+                    if (except != p.second && p.second->isRedrawRequested()) {
+                        p.second->unsetRedrawRequest();
+                        if (p.second->_layer) {
+                            p.second->_layer->makeCurrent();
+                        }
+                        p.second->dispatch(EventFrame::kInstance);
+                    }
+                }
+            }
+
+            break;
+        }
+
+        case MotionNotify: { // mouse move
+            unsigned mask;
+            ::Window unused1;
+            int unused2;
+            XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
+            jwm::JNILocal<jobject> eventMove(
+                app.getJniEnv(),
+                EventMouseMove::make(app.getJniEnv(),
+                    ev.xmotion.x,
+                    ev.xmotion.y,
+                    jwm::MouseButtonX11::fromNativeMask(mask),
+                    jwm::KeyX11::getModifiers()
+                )
+            );
+            myWindow->dispatch(eventMove.get());
+            break;
+        }
+
+        case ButtonPress: { // mouse down
+            jwm::JNILocal<jobject> eventButton(
+                app.getJniEnv(),
+                EventMouseButton::make(
+                    app.getJniEnv(),
+                    MouseButtonX11::fromNative(ev.xbutton.button),
+                    true,
+                    jwm::KeyX11::getModifiers()
+                )
+            );
+            myWindow->dispatch(eventButton.get());
+            break;
+        }
+
+        case ButtonRelease: { // mouse down
+            jwm::JNILocal<jobject> eventButton(
+                app.getJniEnv(),
+                EventMouseButton::make(
+                    app.getJniEnv(),
+                    MouseButtonX11::fromNative(ev.xbutton.button),
+                    false,
+                    jwm::KeyX11::getModifiers()
+                )
+            );
+            myWindow->dispatch(eventButton.get());
+            break;
+        }
+
+        case KeyPress: { // keyboard down
+            KeySym s = XLookupKeysym(&ev.xkey, 0);
+            jwm::Key key = KeyX11::fromNative(s);
+            jwm::KeyX11::setKeyState(key, true);
+            jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
+                                                    EventKeyboard::make(app.getJniEnv(),
+                                                                        key,
+                                                                        true,
+                                                                        jwm::KeyX11::getModifiers()));
+            myWindow->dispatch(eventKeyboard.get());
+            char textBuffer[0x20];
+            Status status;
+            int count = Xutf8LookupString(myWindow->_ic,
+                                          (XKeyPressedEvent*)&ev,
+                                          textBuffer,
+                                          sizeof(textBuffer),
+                                          &s,
+                                          &status);
+            textBuffer[count] = 0;
+            if (count > 0) {
+                // ignore delete key and other control symbols
+                if (textBuffer[0] != 127 && textBuffer[0] > 0x1f) {
+                    JNIEnv* env = app.getJniEnv();
+                    
+                    jwm::StringUTF16 converted = jwm::StringUTF16::makeFromUtf8(textBuffer);
+                    jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
+
+                    jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
+                    myWindow->dispatch(eventTextInput.get());
+                }
+            }
+
+            break;
+        }
+
+        case KeyRelease: { // keyboard down
+            KeySym s = XLookupKeysym(&ev.xkey, 0);
+            jwm::Key key = KeyX11::fromNative(s);
+            jwm::KeyX11::setKeyState(key, false);
+            jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
+                                                    EventKeyboard::make(app.getJniEnv(),
+                                                                        key,
+                                                                        false,
+                                                                        jwm::KeyX11::getModifiers()));
+            myWindow->dispatch(eventKeyboard.get());
+            break;
+        }
+    }
+}
+
+DataTransfer WindowManagerX11::getClipboard() {
+    auto owner = XGetSelectionOwner(display, _atoms.CLIPBOARD);
+    if (owner == None)
+    {
+        return {};
+    }
+    
+    assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
+
+    auto nativeHandle = _nativeWindowToMy.begin()->first;
+    assert(nativeHandle);
+
+    XConvertSelection(display,
+                      _atoms.CLIPBOARD,
+                      _atoms.TARGETS,
+                      _atoms.JWM_CLIPBOARD,
+                      nativeHandle,
+                      CurrentTime);
+
+    XEvent ev;
+
+    // fetch mime types
+    std::vector<std::string> mimes;
+    
+    // using lambda here in order to break 2 loops
+    [&]{
+        while (_runLoop) {
+            while (XPending(display)) {
+                XNextEvent(display, &ev);
+                if (ev.type == SelectionNotify) {
+                    int format;
+                    unsigned long count, lengthInBytes;
+                    Atom type;
+                    Atom* properties;
+                    XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, 1024 * sizeof(Atom), false, XA_ATOM, &type, &format, &count, &lengthInBytes, reinterpret_cast<unsigned char**>(&properties));
+                    
+                    for (unsigned long i = 0; i < count; ++i) {
+                        char* str = XGetAtomName(display, properties[i]);
+                        if (str) {
+                            std::string s = str;
+                            // include only mime types
+                            if (s.find('/') != std::string::npos) {
+                                mimes.push_back(s);
+                            }
+                            XFree(str);
+                        }
+                    }
+                    
+                    XFree(properties);
+                    return;
+                } else {
+                    _processXEvent(ev);
+                }
+            
+            }
+            _processRedrawRequests();
+        }
+    }();
+
+    // fetching data
+
+    auto iCurrentMime = mimes.begin();
+
+    auto requestData = [&] {
+        if (iCurrentMime != mimes.end()) {
+            XConvertSelection(display,
+                              _atoms.CLIPBOARD,
+                              XInternAtom(display, iCurrentMime->c_str(), false),
+                              _atoms.JWM_CLIPBOARD,
+                              nativeHandle,
+                              CurrentTime);
+        }
+    };
+
+    requestData();
+
+    DataTransfer dt;
+
+    while (_runLoop && iCurrentMime != mimes.end())
+    {
+        while (XPending(display)) {
+            XNextEvent(display, &ev);
+            switch (ev.type)
+            {
+                case SelectionNotify: {
+                    if (ev.xselection.property == None) {
+                        return {};
+                    }
+                    Atom da, incr, type;
+                    int di;
+                    unsigned long size, length, count;
+                    unsigned char* propRet = NULL;
+
+                    XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, 0, False, AnyPropertyType,
+                                    &type, &di, &length, &size, &propRet);
+                    XFree(propRet);
+
+                    // Clipboard data is too large and INCR mechanism not implemented
+                    if (type != _atoms.INCR)
+                    {
+                        XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, size, False, AnyPropertyType,
+                                        &da, &di, &length, &count, &propRet);
+                       
+                        dt[*iCurrentMime] = ByteBuf{ propRet, propRet + length };
+
+                        XFree(propRet);
+
+                        ++iCurrentMime;
+                        requestData();
+                    }
+
+                    break;
+                }
+                default:
+                    _processXEvent(ev);
+            }
+        }
+        _processRedrawRequests();
+    }
+
+    XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+    return dt;
+}
 
 void WindowManagerX11::registerWindow(WindowX11* window) {
     _nativeWindowToMy[window->_x11Window] = window;

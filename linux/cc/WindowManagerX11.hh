@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include "Types.hh"
 
 namespace jwm {
     class WindowX11;
@@ -29,6 +30,11 @@ namespace jwm {
         XVisualInfo* getVisualInfo() const { return x11VisualInfo; }
         XSetWindowAttributes& getSWA() { return x11SWA; }
         XIM getIM() const { return _im; }
+
+        void _processXEvent(XEvent& ev);
+        void _processRedrawRequests();
+
+        DataTransfer getClipboard();
 
         Display* display = nullptr;
         Screen* screen;
@@ -77,6 +83,10 @@ namespace jwm {
             // other atoms
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST_COUNTER);
             DEFINE_ATOM(WM_PROTOCOLS);
+            DEFINE_ATOM(CLIPBOARD);
+            DEFINE_ATOM(JWM_CLIPBOARD);
+            DEFINE_ATOM(INCR);
+            DEFINE_ATOM(TARGETS);
 
             #undef DEFINE_ATOM
         } _atoms;
