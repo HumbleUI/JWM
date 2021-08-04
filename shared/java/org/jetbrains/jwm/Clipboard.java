@@ -21,16 +21,16 @@ public abstract class Clipboard extends RefCounted {
         _nPutEntries(entries);
     }
 
-    Optional<String> preferredFormat(String[] formatsId) {
-        return _nPreferredFormat(formatsId);
+    Optional<ClipboardFormat> preferredFormat(ClipboardFormat[] formats) {
+        return _nPreferredFormat(formats);
     }
 
     Optional<String> getString() {
         return _nGetString();
     }
 
-    Optional<byte[]> getEntry(String formatId) {
-        return _nGetEntry(formatId);
+    Optional<byte[]> getEntry(ClipboardFormat format) {
+        return _nGetEntry(format);
     }
 
     @Override
@@ -43,7 +43,7 @@ public abstract class Clipboard extends RefCounted {
     @ApiStatus.Internal public native void _nPutString(String text);
     @ApiStatus.Internal public native void _nPutEntries(ClipboardEntry[] entries);
     @ApiStatus.Internal public native Optional<String> _nGetString();
-    @ApiStatus.Internal public native Optional<String> _nPreferredFormat(String[] formatsId);
-    @ApiStatus.Internal public native Optional<byte[]> _nGetEntry(String formatId);
+    @ApiStatus.Internal public native Optional<ClipboardFormat> _nPreferredFormat(ClipboardFormat[] formats);
+    @ApiStatus.Internal public native Optional<byte[]> _nGetEntry(ClipboardFormat format);
     @ApiStatus.Internal public native void _nClose();
 }
