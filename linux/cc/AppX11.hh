@@ -2,6 +2,7 @@
 
 #include "WindowManagerX11.hh"
 #include <jni.h>
+#include "Types.hh"
 
 namespace jwm {
     extern class AppX11 {

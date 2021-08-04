@@ -5,6 +5,7 @@
 #include "Key.hh"
 #include "MouseButton.hh"
 #include "JNILocal.hh"
+#include "StringUTF16.hh"
 
 namespace jwm {
 
@@ -276,6 +277,57 @@ namespace jwm {
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
+
+        namespace DataTransfer {
+            jclass kCls;
+            jmethodID kCtor;
+            jfieldID kDataMap;
+            jmethodID kDataMapPut;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/DataTransfer");
+                assert(cls);
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "()V");
+                assert(kCtor);
+                kDataMap = env->GetFieldID(kCls, "_data", "Ljava/util/HashMap;");
+                assert(kDataMap);
+                Throwable::exceptionThrown(env);
+
+                jclass kMap = env->FindClass("java/util/Map");
+                assert(kMap);
+                Throwable::exceptionThrown(env);
+
+                kDataMapPut = env->GetMethodID(kMap, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                assert(kDataMapPut);
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, const jwm::DataTransfer& dt) {
+                if (dt.empty()) {
+                    return nullptr;
+                }
+
+                jobject res = env->NewObject(kCls, kCtor);
+                Throwable::exceptionThrown(env);
+
+                jobject dataMap = env->GetObjectField(res, kDataMap);
+                Throwable::exceptionThrown(env);
+
+                for (auto& entry : dt) {
+                    jwm::StringUTF16 converted = jwm::StringUTF16::makeFromUtf8(entry.first.c_str());
+                    jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
+
+                    jwm::JNILocal<jbyteArray> jbytes(env, env->NewByteArray(entry.second.size()));
+                    env->SetByteArrayRegion(jbytes.get(), 0, entry.second.size(), reinterpret_cast<const jbyte*>(entry.second.data()));
+
+                    env->CallObjectMethod(dataMap, kDataMapPut, jtext.get(), jbytes.get());
+                    Throwable::exceptionThrown(env);
+                }
+                return res;
+            }
+        }
     }
 }
 
@@ -296,4 +348,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::Screen::onLoad(env);
+    jwm::classes::DataTransfer::onLoad(env);
 }
