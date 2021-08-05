@@ -53,6 +53,4 @@ public class App {
                 return s;
         throw new IllegalStateException("Can't find primary screen");
     }
-
-    public static native Clipboard getClipboard();
 }

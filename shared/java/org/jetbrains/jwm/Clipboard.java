@@ -1,49 +1,58 @@
 package org.jetbrains.jwm;
 
-import java.util.concurrent.*;
+import lombok.*;
+import java.util.*;
 import java.util.function.*;
-import java.util.Optional;
+import java.util.concurrent.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
 
-public abstract class Clipboard extends RefCounted {
-
+public class Clipboard {
     @ApiStatus.Internal
-    public Clipboard(long ptr) {
-        super(ptr);
+    public static Map<String, ClipboardFormat> _formats = Collections.synchronizedMap(new HashMap<String, ClipboardFormat>());
+
+    public static void set(ClipboardEntry ... entries) {
+        assert entries.length > 0;
+        _nSet(entries);
     }
 
-    void putString(String text) {
-        _nPutString(text);
+    @Nullable
+    public static ClipboardEntry get(ClipboardFormat ... formats) {
+        assert formats.length > 0;
+        return _nGet(formats);
     }
 
-    void putEntries(ClipboardEntry[] entries) {
-        _nPutEntries(entries);
+    public static ClipboardFormat[] getFormats() {
+        return _nGetFormats();
     }
 
-    Optional<ClipboardFormat> preferredFormat(ClipboardFormat[] formats) {
-        return _nPreferredFormat(formats);
+    public static void clear() {
+        _nClear();
     }
 
-    Optional<String> getString() {
-        return _nGetString();
+    @NotNull @SneakyThrows
+    public static ClipboardFormat registerFormat(String formatId) {
+        ClipboardFormat format = _formats.get(formatId);
+
+        if (format != null)
+            return format;
+
+        if (!_nRegisterFormat(formatId))
+            throw new RuntimeException("Failed to register format: " + formatId);
+
+        return registerFormatInternal(formatId);
     }
 
-    Optional<byte[]> getEntry(ClipboardFormat format) {
-        return _nGetEntry(format);
+    @ApiStatus.Internal @NotNull
+    public static ClipboardFormat registerFormatInternal(String formatId) {
+        ClipboardFormat format = new ClipboardFormat(formatId);
+        _formats.put(formatId, format);
+        return format;
     }
 
-    @Override
-    public void close() {
-        _nClose();
-        super.close();
-    }
-
-    @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nPutString(String text);
-    @ApiStatus.Internal public native void _nPutEntries(ClipboardEntry[] entries);
-    @ApiStatus.Internal public native Optional<String> _nGetString();
-    @ApiStatus.Internal public native Optional<ClipboardFormat> _nPreferredFormat(ClipboardFormat[] formats);
-    @ApiStatus.Internal public native Optional<byte[]> _nGetEntry(ClipboardFormat format);
-    @ApiStatus.Internal public native void _nClose();
+    @ApiStatus.Internal public static native void _nSet(ClipboardEntry[] entries);
+    @ApiStatus.Internal public static native ClipboardEntry _nGet(ClipboardFormat[] formats);
+    @ApiStatus.Internal public static native ClipboardFormat[] _nGetFormats();
+    @ApiStatus.Internal public static native void _nClear();
+    @ApiStatus.Internal public static native boolean _nRegisterFormat(String formatId);
 }
