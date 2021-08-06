@@ -30,21 +30,36 @@ public class Clipboard {
         _nClear();
     }
 
+    /**
+     * For user defined formats registration
+     */
     @NotNull @SneakyThrows
     public static ClipboardFormat registerFormat(String formatId) {
+        return _registerFormatInternal(formatId, true);
+    }
+
+    /**
+     * For predefined (external) formats registration
+     */
+    @ApiStatus.Internal @NotNull @SneakyThrows
+    public static ClipboardFormat _registerPredefinedFormat(String formatId) {
+        return _registerFormatInternal(formatId, false);
+    }
+
+    @ApiStatus.Internal @NotNull @SneakyThrows
+    public static ClipboardFormat _registerFormatInternal(String formatId, boolean needRegistration) {
         ClipboardFormat format = _formats.get(formatId);
 
         if (format != null)
             return format;
-
-        if (!_nRegisterFormat(formatId))
+        if (needRegistration && !_nRegisterFormat(formatId))
             throw new RuntimeException("Failed to register format: " + formatId);
 
-        return registerFormatInternal(formatId);
+        return _cacheFormatEntry(formatId);
     }
 
     @ApiStatus.Internal @NotNull
-    public static ClipboardFormat registerFormatInternal(String formatId) {
+    public static ClipboardFormat _cacheFormatEntry(String formatId) {
         ClipboardFormat format = new ClipboardFormat(formatId);
         _formats.put(formatId, format);
         return format;

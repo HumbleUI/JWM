@@ -35,7 +35,6 @@ public class ClipboardEntry {
 
     @NotNull @SneakyThrows
     public String getString() {
-        assert ClipboardFormat.isStringCompatible(_format);
         return new String(_data, "UTF-16LE");
     }
 }
