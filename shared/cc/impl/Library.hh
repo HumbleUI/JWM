@@ -26,6 +26,27 @@ namespace jwm {
             uintptr_t fromJava(JNIEnv* env, jobject object);
         }
 
+        namespace Clipboard {
+            extern jclass kCls;
+            extern jmethodID kRegisterPredefinedFormat;
+            jobject registerFormat(JNIEnv* env, jstring formatId);
+        }
+
+        namespace ClipboardEntry {
+            extern jclass kCls;
+            extern jmethodID kMake;
+            extern jfieldID kFormat;
+            extern jfieldID kData;
+            jobject make(JNIEnv* env, jobject format, jbyteArray data);
+            jobject getFormat(JNIEnv* env, jobject clipboardEntry);
+            jbyteArray getData(JNIEnv* env, jobject clipboardEntry);
+        }
+
+        namespace ClipboardFormat {
+            extern jfieldID kFormatId;
+            jstring getFormatId(JNIEnv* env, jobject clipboardFormat);
+        }
+
         namespace EventClose {
             extern jobject kInstance;
         }
