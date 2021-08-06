@@ -40,7 +40,7 @@ public class Example implements Consumer<Event> {
         else if (Platform.CURRENT == Platform.WINDOWS)
             variants = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
         else
-            variants = new String[] { "SkijaLayerGL" };
+            variants = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
 
         App.makeWindow((window) -> {
             _window = window;
