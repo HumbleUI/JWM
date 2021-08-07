@@ -30,6 +30,8 @@ file(GLOB JWM_SHARED_SOURCES_CXX_IMPL ${JWM_SHARED}/cc/impl/*.cc)
 set(JWM_WINDOWS_SOURCES_CXX
     cc/AppWin32.cc
     cc/AppWin32.hh
+    cc/ClipboardWin32.cc
+    cc/ClipboardWin32.hh
     cc/ContextWGL.cc
     cc/ContextWGL.hh
     cc/LayerD3D12.cc
@@ -81,4 +83,11 @@ set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "/MT")
 set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
-target_link_options(jwm PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)
+
+target_compile_options(jwm
+    PRIVATE /source-charset:utf-8)
+
+target_link_options(jwm
+    PRIVATE /INCREMENTAL:NO
+    PRIVATE /NODEFAULTLIB:MSVCRT
+    PRIVATE /machine:X64)

@@ -16,9 +16,22 @@ public class Clipboard {
         _nSet(entries);
     }
 
+    /**
+     * <p>Gets the system clipboard content.</p>
+     *
+     * <p>Clipboard content returned as an entry with specified format and serialized byte data.</p>
+     * <p>Uses provided formats list to extract preferred clipboard data. First format has
+     * has the highest priority, last specified format has the lowest priority.</p>
+     *
+     * <p>If formats list empty or there is no available data with specified formats,
+     * method returns null.</p>
+     *
+     * @param formats       List of clipboard formats to extract
+     * @return              Extracted clipboard entry; may be null
+     */
     @Nullable
     public static ClipboardEntry get(ClipboardFormat ... formats) {
-        assert formats.length > 0;
+        assert formats.length > 0: "must contain at least one format entry";
         return _nGet(formats);
     }
 
