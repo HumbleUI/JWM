@@ -176,9 +176,12 @@ void WindowManagerX11::runLoop() {
         while (XPending(display)) {
             XNextEvent(display, &ev);
             _processXEvent(ev);
+            if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
+                _runLoop = false;
         }
 
         _processRedrawRequests();
+
     }
 }
 
