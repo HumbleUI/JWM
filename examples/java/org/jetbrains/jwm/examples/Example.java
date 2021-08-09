@@ -341,6 +341,13 @@ public class Example implements Consumer<Event> {
                         ClipboardEntry entry = Clipboard.get(ClipboardFormat.TEXT);
                         if (entry != null)
                             text = entry.getString();
+                        break;
+                    case F:
+                        ClipboardFormat[] formats = Clipboard.getFormats();
+                        if (formats != null)
+                            for (ClipboardFormat format: formats)
+                                System.out.println(format.getFormatId());
+                        break;
                 }
             }
 
