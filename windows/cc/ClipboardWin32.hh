@@ -12,6 +12,7 @@ namespace jwm {
         static constexpr wchar_t* DF_RTF = L"text/rtf";
         static constexpr wchar_t* DF_HTML = L"text/html";
         static constexpr wchar_t* DF_URL = L"text/url";
+        static constexpr wchar_t* DF_BUILT_IN_PREFIX = L"win/built-in/format-";
 
     public:
         ClipboardWin32();
@@ -20,19 +21,21 @@ namespace jwm {
         ~ClipboardWin32() = default;
 
         jobject get(jobjectArray formats);
+        jobjectArray getFormats();
         void set(jobjectArray entries);
         void clear();
         bool registerFormat(jstring formatId);
 
     private:
-        void _emptyClipboard();
+        bool _emptyClipboard();
         void _registerDefaultFormats();
         UINT _getOrRegisterNativeID(const wchar_t* formatName);
         UINT _getOrRegisterNativeID(const char* formatName);
-        void _openClipboard();
+        bool _openClipboard();
         void _closeClipboard();
         void _getFormatStringId(jobject format, std::wstring& formatIdStr) const;
         void _getStringStringId(jstring formatId, std::wstring& formatIdStr) const;
+        bool _getDefaultFormatName(UINT nativeId, std::wstring& formatStrId) const;
 
     private:
         friend class ClipboardAccess;

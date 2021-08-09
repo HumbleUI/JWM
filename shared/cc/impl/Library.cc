@@ -149,12 +149,14 @@ namespace jwm {
         }
 
         namespace ClipboardFormat {
+            jclass kCls;
             jfieldID kFormatId;
 
             void onLoad(JNIEnv* env) {
                 jclass cls = env->FindClass("org/jetbrains/jwm/ClipboardFormat");
                 Throwable::exceptionThrown(env);
-                assert(cls);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
 
                 kFormatId = env->GetFieldID(cls, "_formatId", "Ljava/lang/String;");
                 Throwable::exceptionThrown(env);

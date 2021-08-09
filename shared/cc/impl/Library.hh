@@ -44,6 +44,7 @@ namespace jwm {
         }
 
         namespace ClipboardFormat {
+            extern jclass kCls;
             extern jfieldID kFormatId;
             jstring getFormatId(JNIEnv* env, jobject clipboardFormat);
         }

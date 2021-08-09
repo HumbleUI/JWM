@@ -21,13 +21,13 @@ public class Clipboard {
      *
      * <p>Clipboard content returned as an entry with specified format and serialized byte data.</p>
      * <p>Uses provided formats list to extract preferred clipboard data. First format has
-     * has the highest priority, last specified format has the lowest priority.</p>
+     * the highest priority, last specified format has the lowest priority.</p>
      *
-     * <p>If formats list empty or there is no available data with specified formats,
+     * <p>If formats list empty or there is no available data with one of specified formats,
      * method returns null.</p>
      *
-     * @param formats       List of clipboard formats to extract
-     * @return              Extracted clipboard entry; may be null
+     * @param formats   List of clipboard formats to extract
+     * @return          Extracted clipboard entry; may be null
      */
     @Nullable
     public static ClipboardEntry get(ClipboardFormat ... formats) {
@@ -35,6 +35,17 @@ public class Clipboard {
         return _nGet(formats);
     }
 
+    /**
+     * <p>Returns list of currently available clipboard data.</p>
+     *
+     * <p>If there is no data in the system clipboard, this function returns null.</p>
+     * <p>If there is in the system clipboard some data in formats, which are not
+     * predefined or are not manually registered by the user, then the implementation
+     * will automatically register this formats and make its data available to the user.</p>
+     *
+     * @return          List of available formats; may be null
+     */
+    @Nullable
     public static ClipboardFormat[] getFormats() {
         return _nGetFormats();
     }
