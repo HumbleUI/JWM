@@ -140,15 +140,16 @@ jobjectArray jwm::ClipboardWin32::getFormats() {
             std::wstring formatStrId;
 
             // If it is known format, we will get its name
-            // otherwise we create its string name and save mapping
+            // otherwise we create its string name
             if (!_getDefaultFormatName(currentFormatId, formatStrId)) {
-
                 wchar_t builtInFormatName[BUFFER_SIZE];
                 _snwprintf_s(builtInFormatName, BUFFER_SIZE, L"%ls%u", DF_BUILT_IN_PREFIX, currentFormatId);
-
                 formatStrId = std::move(std::wstring(builtInFormatName));
-                _registeredFormats.emplace(formatStrId, currentFormatId);
             }
+
+            // Register this string mapping if required
+            if (_registeredFormats.find(formatStrId) == _registeredFormats.end())
+                _registeredFormats.emplace(formatStrId, currentFormatId);
 
             JNILocal<jstring> formatId(env, env->NewString(reinterpret_cast<const jchar *>(formatStrId.c_str()), static_cast<jsize>(formatStrId.length())));
             format = classes::Clipboard::registerFormat(env, formatId.get());
@@ -168,7 +169,7 @@ jobjectArray jwm::ClipboardWin32::getFormats() {
         return jniFormats;
     }
 
-    // No available formats, return null as said method doc
+    // No available formats, return null as said in method doc
     return nullptr;
 }
 
