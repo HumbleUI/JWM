@@ -11,6 +11,15 @@ public class Clipboard {
     @ApiStatus.Internal
     public static Map<String, ClipboardFormat> _formats = Collections.synchronizedMap(new HashMap<String, ClipboardFormat>());
 
+    /**
+     * <p>Sets the system clipboard content.</p>
+     *
+     * <p>Previse clipboard content is cleared automatically.</p>
+     * <p>If provided entries list is emtpy, then this function is equivalent to clear call.</p>
+     * <p>If provided list contains several entries with the same format, then the last will be set.</p>
+     *
+     * @param entries   List if clipboard entries to set
+     */
     public static void set(ClipboardEntry ... entries) {
         assert entries.length > 0;
         _nSet(entries);
@@ -36,7 +45,7 @@ public class Clipboard {
     }
 
     /**
-     * <p>Returns list of currently available clipboard data.</p>
+     * <p>Returns list of currently available clipboard data formats.</p>
      *
      * <p>If there is no data in the system clipboard, this function returns null.</p>
      * <p>If there is in the system clipboard some data in formats, which are not
