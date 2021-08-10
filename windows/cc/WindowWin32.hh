@@ -27,7 +27,8 @@ namespace jwm {
             IgnoreMessages = 5,
             HasLayerGL = 6,
             HasLayerD3D = 7,
-            Max = 8
+            HasLayerRaster = 8,
+            Max = 9
         };
 
         using Callback = std::function<void(Event)>;

@@ -78,6 +78,95 @@ namespace jwm {
             }
         }
 
+        namespace Clipboard {
+            jclass kCls;
+            jmethodID kRegisterPredefinedFormat;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/Clipboard");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
+
+                // public static ClipboardFormat _registerPredefinedFormat(String formatId)
+                kRegisterPredefinedFormat = env->GetStaticMethodID(kCls,
+                "_registerPredefinedFormat",
+                "(Ljava/lang/String;)Lorg/jetbrains/jwm/ClipboardFormat;"
+                );
+                Throwable::exceptionThrown(env);
+                assert(kRegisterPredefinedFormat);
+            }
+
+            jobject registerFormat(JNIEnv* env, jstring formatId) {
+                jobject clipboardFormat = env->CallStaticObjectMethod(kCls, kRegisterPredefinedFormat, formatId);
+                return Throwable::exceptionThrown(env)? nullptr: clipboardFormat;
+            }
+        }
+
+        namespace ClipboardEntry {
+            jclass kCls;
+            jmethodID kMake;
+            jfieldID kFormat;
+            jfieldID kData;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/ClipboardEntry");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
+
+                // public static ClipboardEntry make(ClipboardFormat format, byte[] data)
+                kMake = env->GetStaticMethodID(kCls, "make",
+                "(Lorg/jetbrains/jwm/ClipboardFormat;[B)"
+                    "Lorg/jetbrains/jwm/ClipboardEntry;"
+                );
+                Throwable::exceptionThrown(env);
+                assert(kMake);
+
+                kFormat = env->GetFieldID(kCls, "_format", "Lorg/jetbrains/jwm/ClipboardFormat;");
+                Throwable::exceptionThrown(env);
+                assert(kFormat);
+
+                kData = env->GetFieldID(kCls, "_data", "[B");
+                Throwable::exceptionThrown(env);
+                assert(kData);
+            }
+
+            jobject make(JNIEnv* env, jobject format, jbyteArray data) {
+                jobject clipboardEntry = env->CallStaticObjectMethod(kCls, kMake, format, data);
+                return Throwable::exceptionThrown(env)? nullptr: clipboardEntry;
+            }
+
+            jobject getFormat(JNIEnv* env, jobject clipboardEntry) {
+                jobject format = env->GetObjectField(clipboardEntry, kFormat);
+                return Throwable::exceptionThrown(env)? nullptr: format;
+            }
+
+            jbyteArray getData(JNIEnv* env, jobject clipboardEntry) {
+                jobject data = env->GetObjectField(clipboardEntry, kData);
+                return Throwable::exceptionThrown(env)? nullptr: static_cast<jbyteArray>(data);
+            }
+        }
+
+        namespace ClipboardFormat {
+            jfieldID kFormatId;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/ClipboardFormat");
+                Throwable::exceptionThrown(env);
+                assert(cls);
+
+                kFormatId = env->GetFieldID(cls, "_formatId", "Ljava/lang/String;");
+                Throwable::exceptionThrown(env);
+                assert(kFormatId);
+            }
+
+            jstring getFormatId(JNIEnv* env, jobject clipboardFormat) {
+                jobject formatId = env->GetObjectField(clipboardFormat, kFormatId);
+                return Throwable::exceptionThrown(env)? nullptr: static_cast<jstring>(formatId);
+            }
+        }
+
         namespace EventClose {
             jobject kInstance;
 
@@ -337,6 +426,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Consumer::onLoad(env);
     jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);
+    jwm::classes::Clipboard::onLoad(env);
+    jwm::classes::ClipboardEntry::onLoad(env);
+    jwm::classes::ClipboardFormat::onLoad(env);
     jwm::classes::EventClose::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
     jwm::classes::EventKeyboard::onLoad(env);

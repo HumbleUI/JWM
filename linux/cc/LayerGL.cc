@@ -8,68 +8,67 @@
 
 namespace jwm {
 
-class LayerGL: public RefCounted, public ILayer {
-public:
-    WindowX11* fWindow;
-    GLXContext _context = nullptr;
-    using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
-    glXSwapIntervalEXT_t _glXSwapIntervalEXT;
+    class LayerGL: public RefCounted, public ILayer {
+    public:
+        WindowX11* fWindow;
+        GLXContext _context = nullptr;
+        using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
+        glXSwapIntervalEXT_t _glXSwapIntervalEXT;
 
-    LayerGL() = default;
-    ~LayerGL() = default;
+        LayerGL() = default;
+        virtual ~LayerGL() = default;
 
-    void attach(WindowX11* window) {
-        fWindow = jwm::ref(window);
-        assert(fWindow->_layer == nullptr);
-        fWindow->_layer = this;
-        if (_context == nullptr) {
-            _context = glXCreateContext(window->_windowManager.getDisplay(),
-                                        window->_windowManager.getVisualInfo(),
-                                        nullptr,
-                                        true);
-                                
+        void attach(WindowX11* window) {
+            fWindow = jwm::ref(window);
+            fWindow->setLayer(this);
+            if (_context == nullptr) {
+                _context = glXCreateContext(window->_windowManager.getDisplay(),
+                                            window->_windowManager.getVisualInfo(),
+                                            nullptr,
+                                            true);
+                                    
+            }
+            
+            makeCurrentForced();
+
+            _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
+            setVsyncMode(VSYNC_ADAPTIVE);
         }
-        
-        makeCurrentForced();
 
-        _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
-        setVsyncMode(VSYNC_ADAPTIVE);
-    }
+        void setVsyncMode(VSync v) override {
 
-    void setVsyncMode(VSync v) override {
-
-        if (_glXSwapIntervalEXT) {
-            _glXSwapIntervalEXT(fWindow->_windowManager.getDisplay(),
-                                fWindow->_x11Window,
-                                v);
+            if (_glXSwapIntervalEXT) {
+                _glXSwapIntervalEXT(fWindow->_windowManager.getDisplay(),
+                                    fWindow->_x11Window,
+                                    v);
+            }
         }
-    }
 
-    void resize(int width, int height) {
-        glClearStencil(0);
-        glClearColor(0, 0, 0, 255);
-        glStencilMask(0xffffffff);
-        glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        void resize(int width, int height) {
+            glClearStencil(0);
+            glClearColor(0, 0, 0, 255);
+            glStencilMask(0xffffffff);
+            glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-        glViewport(0, 0, width, height);
-    }
+            glViewport(0, 0, width, height);
+        }
 
-    void swapBuffers() {
-        glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
-    }
+        void swapBuffers() {
+            glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
+        }
 
-    void close() {
-        glXDestroyContext(fWindow->_windowManager.getDisplay(), _context);
-        jwm::unref(&fWindow);
-    }
+        void close() override {
+            glXDestroyContext(fWindow->_windowManager.getDisplay(), _context);
+            jwm::unref(&fWindow);
+        }
 
-    void makeCurrentForced() override {
-        ILayer::makeCurrentForced();
-        glXMakeCurrent(fWindow->_windowManager.getDisplay(),
-                       fWindow->_x11Window,
-                       _context);
-    }
-};
+        void makeCurrentForced() override {
+            ILayer::makeCurrentForced();
+            glXMakeCurrent(fWindow->_windowManager.getDisplay(),
+                          fWindow->_x11Window,
+                          _context);
+        }
+    };
 
 } // namespace jwm
 

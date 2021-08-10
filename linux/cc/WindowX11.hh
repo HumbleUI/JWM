@@ -38,6 +38,10 @@ namespace jwm {
             return _ic;
         }
 
+        void setLayer(ILayer* layer) {
+            _layer = layer;
+        }
+
         /**
          * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter
          */

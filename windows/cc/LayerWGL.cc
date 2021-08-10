@@ -100,7 +100,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
             return;
         }
 
-        // Listen for window events
+        // Listen to window events
         _callbackID = _windowWin32->addEventListener([this](WindowWin32::Event event){
             switch (event) {
                 case WindowWin32::Event::SwitchContext:

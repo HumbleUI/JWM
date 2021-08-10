@@ -14,6 +14,7 @@ public:
     void makeCurrent();
     virtual void makeCurrentForced();
     virtual void setVsyncMode(VSync v) = 0;
+    virtual void close() = 0;
 
 
     static ILayer* _ourCurrentLayer;
