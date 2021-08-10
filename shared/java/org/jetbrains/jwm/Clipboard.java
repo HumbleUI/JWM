@@ -11,17 +11,50 @@ public class Clipboard {
     @ApiStatus.Internal
     public static Map<String, ClipboardFormat> _formats = Collections.synchronizedMap(new HashMap<String, ClipboardFormat>());
 
+    /**
+     * <p>Sets the system clipboard content.</p>
+     *
+     * <p>Previse clipboard content is cleared automatically.</p>
+     * <p>If provided entries list is emtpy, then this function is equivalent to clear call.</p>
+     * <p>If provided list contains several entries with the same format, then the last will be set.</p>
+     *
+     * @param entries   List if clipboard entries to set
+     */
     public static void set(ClipboardEntry ... entries) {
         assert entries.length > 0;
         _nSet(entries);
     }
 
+    /**
+     * <p>Gets the system clipboard content.</p>
+     *
+     * <p>Clipboard content returned as an entry with specified format and serialized byte data.</p>
+     * <p>Uses provided formats list to extract preferred clipboard data. First format has
+     * the highest priority, last specified format has the lowest priority.</p>
+     *
+     * <p>If formats list empty or there is no available data with one of specified formats,
+     * method returns null.</p>
+     *
+     * @param formats   List of clipboard formats to extract
+     * @return          Extracted clipboard entry; may be null
+     */
     @Nullable
     public static ClipboardEntry get(ClipboardFormat ... formats) {
-        assert formats.length > 0;
+        assert formats.length > 0: "must contain at least one format entry";
         return _nGet(formats);
     }
 
+    /**
+     * <p>Returns list of currently available clipboard data formats.</p>
+     *
+     * <p>If there is no data in the system clipboard, this function returns null.</p>
+     * <p>If there is in the system clipboard some data in formats, which are not
+     * predefined or are not manually registered by the user, then the implementation
+     * will automatically register this formats and make its data available to the user.</p>
+     *
+     * @return          List of available formats; may be null
+     */
+    @Nullable
     public static ClipboardFormat[] getFormats() {
         return _nGetFormats();
     }

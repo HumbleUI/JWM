@@ -334,6 +334,20 @@ public class Example implements Consumer<Event> {
                     case W:
                         accept(EventClose.INSTANCE);
                         break;
+                    case C:
+                        Clipboard.set(ClipboardEntry.makePlainText(text));
+                        break;
+                    case V:
+                        ClipboardEntry entry = Clipboard.get(ClipboardFormat.TEXT);
+                        if (entry != null)
+                            text = entry.getString();
+                        break;
+                    case F:
+                        ClipboardFormat[] formats = Clipboard.getFormats();
+                        if (formats != null)
+                            for (ClipboardFormat format: formats)
+                                System.out.println(format.getFormatId());
+                        break;
                 }
             }
 

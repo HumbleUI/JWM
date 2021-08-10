@@ -81,8 +81,6 @@ void jwm::LayerRaster::swapBuffers() {
         _bitmapInfo->bmiColors, _bitmapInfo,
         DIB_RGB_COLORS, SRCCOPY
     );
-
-    SwapBuffers(_hDC);
 }
 
 void jwm::LayerRaster::close() {

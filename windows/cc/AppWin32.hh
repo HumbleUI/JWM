@@ -1,6 +1,7 @@
 #pragma once
 
 #include <WindowManagerWin32.hh>
+#include <ClipboardWin32.hh>
 #include <D3D12/DX12Common.hh>
 #include <ContextWGL.hh>
 #include <ScreenWin32.hh>
@@ -20,6 +21,7 @@ namespace jwm {
 
     public:
         WindowManagerWin32& getWindowManager() { return _windowManager; }
+        ClipboardWin32& getClipboard() { return _clipboard; }
         ContextWGL& getContextWGL() { return _wglContext; }
         DX12Common& getDx12Common() { return _dx12common; }
         JNIEnv* getJniEnv() const { return _jniEnv; }
@@ -29,6 +31,7 @@ namespace jwm {
         std::vector<jobject> _uiThreadCallbacks;
         std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
+        ClipboardWin32 _clipboard;
         ContextWGL _wglContext;
         DX12Common _dx12common;
         JNIEnv* _jniEnv;
