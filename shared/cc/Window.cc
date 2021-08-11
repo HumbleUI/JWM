@@ -21,3 +21,19 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Window_setEventListe
     instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
     return obj;
 }
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Window_setTextInputClient
+  (JNIEnv* env, jobject obj, jobject client) {
+    jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
+    if (instance->fTextInputClient)
+        env->DeleteGlobalRef(instance->fTextInputClient);
+    instance->fTextInputClient = client ? env->NewGlobalRef(client) : nullptr;
+    return obj;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Window_setTextInputEnabled
+  (JNIEnv* env, jobject obj, jboolean enabled) {
+    jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
+    instance->fTextInputEnabled = enabled;
+    return obj;
+}

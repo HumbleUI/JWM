@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-public class Example implements Consumer<Event> {
+public class Example implements Consumer<Event>, TextInputClient {
     public Window _window;
     public SkijaLayer _layer;
     public Timer timer = new Timer(true);
@@ -45,6 +45,8 @@ public class Example implements Consumer<Event> {
         App.makeWindow((window) -> {
             _window = window;
             _window.setEventListener(this);
+            _window.setTextInputClient(this);
+            _window.setTextInputEnabled(true);
             changeLayer();
             var scale = _window.getScale();
             _window.move((int) (100 * scale), (int) (100 * scale));
@@ -311,6 +313,7 @@ public class Example implements Consumer<Event> {
             EventTextInput eti = (EventTextInput) e;
             text += eti.getText();
         } else if (e instanceof EventMouseButton) {
+            _window.unmarkText();
             EventMouseButton ee = (EventMouseButton) e;
             if (ee.isPressed())
                 buttons.add(ee.getButton());
@@ -395,11 +398,12 @@ public class Example implements Consumer<Event> {
             } else {
                 keys.remove(eventKeyboard.getKey());
             }
-        } else if (e instanceof EventScroll) {
-            var ee = (EventScroll) e;
+        } else if (e instanceof EventTextMarkedSet ee) {
+            System.out.println("EventTextMarkedSet text='" + ee.getText() + "', range=" + ee.getFrom() + ".." + ee.getTo());
+        } else if (e instanceof EventScroll ee) {
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
-        } else if (e instanceof EventWindowMove) {
-            lastMove = (EventWindowMove) e;
+        } else if (e instanceof EventWindowMove ee) {
+            lastMove = ee;
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)
@@ -416,6 +420,12 @@ public class Example implements Consumer<Event> {
             if (App._windows.size() == 0)
                 App.terminate();
         }
+    }
+
+    @Override
+    public UIRect rectForMarkedRange(int from, int to) {
+        System.out.println("TextInputClient::rectForMarkedRange " + from + ".." + to);
+        return UIRect.makeLTRB(from * 100, 0, to * 100, 0);
     }
 
     public static void main(String[] args) {

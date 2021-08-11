@@ -17,6 +17,14 @@ public abstract class Window extends RefCounted {
     @NotNull @Contract("-> this")
     public native Window setEventListener(@Nullable Consumer<Event> eventListener);
 
+    @NotNull @Contract("-> this")
+    public native Window setTextInputClient(@Nullable TextInputClient client);
+
+    @NotNull @Contract("-> this")
+    public native Window setTextInputEnabled(boolean enabled);
+
+    public void unmarkText() { System.out.println("Window::unmarkText()"); } // TODO abstract
+
     public abstract void show();
 
     public abstract int getLeft();

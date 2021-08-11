@@ -43,7 +43,7 @@ def main():
       common.fetch_maven('org.jetbrains.skija', skija_native, args.skija_version, repo=common.space_skija),
     ]
   sources = glob.glob('examples/java/org/jetbrains/jwm/examples/*.java') + glob.glob('examples/java/org/jetbrains/jwm/examples/' + common.system + '/*.java')
-  common.javac(compile_classpath, sources, 'examples/target/classes')
+  common.javac(compile_classpath, sources, 'examples/target/classes', release='16')
 
   # run
   run_classpath = compile_classpath + ['examples/target/classes']

@@ -14,5 +14,7 @@ namespace jwm {
 
         JNIEnv* fEnv = nullptr;
         jobject fEventListener = nullptr;
+        jobject fTextInputClient = nullptr;
+        bool fTextInputEnabled = false;
     };
 }

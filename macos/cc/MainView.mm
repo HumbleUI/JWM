@@ -442,6 +442,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
+    [self unmarkText];
+
     NSString* characters;
     NSEvent* event = [NSApp currentEvent];
 

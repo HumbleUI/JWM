@@ -32,7 +32,7 @@ def deps():
     fetch_maven('org.jetbrains', 'annotations', '20.1.0'),
   ]
 
-def javac(classpath, sources, target):
+def javac(classpath, sources, target, release='11'):
   classes = {path.stem: path.stat().st_mtime for path in pathlib.Path(target).rglob('*.class') if '$' not in path.stem}
   newer = lambda path: path.stem not in classes or path.stat().st_mtime > classes.get(path.stem)
   new_sources = [path for path in sources if newer(pathlib.Path(path))]
@@ -41,6 +41,6 @@ def javac(classpath, sources, target):
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',
-      '--release', '11',
+      '--release', release,
       '--class-path', classpath_separator.join(classpath + [target]),
       '-d', target] + new_sources)
