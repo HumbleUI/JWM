@@ -12,7 +12,17 @@ namespace jwm
     public:
         using std::basic_string<jchar>::basic_string;
 
-        static StringUTF16 makeFromUtf8(const char* str);
+        /**
+         * Constructs StringUTF16 from C style string.
+         * @arg str C style null terminated string in UTF8 encoding.
+         */
+        StringUTF16(const char* str);
+
+        static StringUTF16 makeFromJString(JNIEnv* env, jstring js);
+
+        bool operator==(const char* str) const {
+            return (*this) == StringUTF16(str);
+        }
     };
 
 } // namespace jwm

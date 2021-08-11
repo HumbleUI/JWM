@@ -61,12 +61,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate(JNIEnv* e
     jwm::app.terminate();
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_App_getClipboard(JNIEnv* env, jclass jclass) {
-    jwm::DataTransfer dt = jwm::app.getWindowManager().getClipboard();
-
-    return jwm::classes::DataTransfer::make(env, dt);
-}
-
 extern"C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
     return JNI_VERSION_1_2;
 }

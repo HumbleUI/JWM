@@ -35,6 +35,9 @@ public class ClipboardEntry {
 
     @NotNull @SneakyThrows
     public String getString() {
+        if (Platform.CURRENT == Platform.X11) {
+            return new String(_data, "UTF-8");
+        }
         return new String(_data, "UTF-16LE");
     }
 }

@@ -34,7 +34,7 @@ namespace jwm {
         void _processXEvent(XEvent& ev);
         void _processRedrawRequests();
 
-        DataTransfer getClipboard();
+        ByteBuf getClipboard(const std::string& type);
 
         Display* display = nullptr;
         Screen* screen;

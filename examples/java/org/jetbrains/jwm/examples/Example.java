@@ -364,18 +364,6 @@ public class Example implements Consumer<Event> {
                         variantIdx = (variantIdx + variants.length - 1) % variants.length;
                         changeLayer();
                         break;
-                    case V:
-                        if (eventKeyboard.isModifierDown(KeyModifier.CONTROL)) {
-                            // paste
-                            DataTransfer cb = App.getClipboard();
-                            if (cb != null) {
-                                String t = cb.getString();
-                                if (t != null) {
-                                    text += t;
-                                }
-                            }
-                        }
-                        break;
                     case ENTER:
                         text += "\n";
                         break;

@@ -108,11 +108,5 @@ namespace jwm {
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary);
         }
-
-        namespace DataTransfer {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env, const jwm::DataTransfer& dt);
-        }
     }
 }

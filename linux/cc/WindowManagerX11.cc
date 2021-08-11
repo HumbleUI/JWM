@@ -431,7 +431,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 if (textBuffer[0] != 127 && textBuffer[0] > 0x1f) {
                     JNIEnv* env = app.getJniEnv();
                     
-                    jwm::StringUTF16 converted = jwm::StringUTF16::makeFromUtf8(textBuffer);
+                    jwm::StringUTF16 converted = textBuffer;
                     jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
 
                     jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
@@ -457,6 +457,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
     }
 }
 
+/*
 DataTransfer WindowManagerX11::getClipboard() {
     auto owner = XGetSelectionOwner(display, _atoms.CLIPBOARD);
     if (owner == None)
@@ -520,23 +521,21 @@ DataTransfer WindowManagerX11::getClipboard() {
 
     auto iCurrentMime = mimes.begin();
 
-    auto requestData = [&] {
-        if (iCurrentMime != mimes.end()) {
-            XConvertSelection(display,
-                              _atoms.CLIPBOARD,
-                              XInternAtom(display, iCurrentMime->c_str(), false),
-                              _atoms.JWM_CLIPBOARD,
-                              nativeHandle,
-                              CurrentTime);
-        }
-    };
+    XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+    return dt;
+}
+*/
+jwm::ByteBuf WindowManagerX11::getClipboard(const std::string& type) {
+    auto nativeHandle = _nativeWindowToMy.begin()->first;
 
-    requestData();
-
-    DataTransfer dt;
-
-    while (_runLoop && iCurrentMime != mimes.end())
-    {
+    XConvertSelection(display,
+                      _atoms.CLIPBOARD,
+                      XInternAtom(display, type.c_str(), false),
+                      _atoms.JWM_CLIPBOARD,
+                      nativeHandle,
+                      CurrentTime);
+    XEvent ev;
+    while (_runLoop) {
         while (XPending(display)) {
             XNextEvent(display, &ev);
             switch (ev.type)
@@ -545,6 +544,7 @@ DataTransfer WindowManagerX11::getClipboard() {
                     if (ev.xselection.property == None) {
                         return {};
                     }
+                    
                     Atom da, incr, type;
                     int di;
                     unsigned long size, length, count;
@@ -555,20 +555,18 @@ DataTransfer WindowManagerX11::getClipboard() {
                     XFree(propRet);
 
                     // Clipboard data is too large and INCR mechanism not implemented
+                    ByteBuf result;
                     if (type != _atoms.INCR)
                     {
                         XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, size, False, AnyPropertyType,
                                         &da, &di, &length, &count, &propRet);
-                       
-                        dt[*iCurrentMime] = ByteBuf{ propRet, propRet + length };
-
+                        
+                        result = ByteBuf{ propRet, propRet + length };
                         XFree(propRet);
-
-                        ++iCurrentMime;
-                        requestData();
+                        return result;
                     }
-
-                    break;
+                    XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+                    return result;
                 }
                 default:
                     _processXEvent(ev);
@@ -578,7 +576,7 @@ DataTransfer WindowManagerX11::getClipboard() {
     }
 
     XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
-    return dt;
+    return {};
 }
 
 void WindowManagerX11::registerWindow(WindowX11* window) {
