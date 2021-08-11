@@ -305,69 +305,63 @@ public class Example implements Consumer<Event>, TextInputClient {
         if (e instanceof EventReconfigure) {
             _layer.reconfigure();
             accept(new EventResize(_window.getWidth(), _window.getHeight()));
-        } else if (e instanceof EventResize) {
-            lastResize = (EventResize) e;
-            _layer.resize(lastResize.getWidth(), lastResize.getHeight());
+        } else if (e instanceof EventResize ee) {
+            lastResize = ee;
+            _layer.resize(ee.getWidth(), ee.getHeight());
             paint();
-        } else if (e instanceof EventTextInput) {
-            EventTextInput eti = (EventTextInput) e;
-            text += eti.getText();
-        } else if (e instanceof EventMouseButton) {
+        } else if (e instanceof EventTextInput ee) {
+            text += ee.getText();
+        } else if (e instanceof EventMouseButton ee) {
             _window.unmarkText();
-            EventMouseButton ee = (EventMouseButton) e;
             if (ee.isPressed())
                 buttons.add(ee.getButton());
             else
                 buttons.remove(ee.getButton());
-        } else if (e instanceof EventMouseMove) {
-            lastMouseMove = (EventMouseMove) e;
+        } else if (e instanceof EventMouseMove ee) {
+            lastMouseMove = ee;
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
             if (eventKeyboard.isPressed() == true && eventKeyboard.isModifierDown(modifier)) {
                 switch(eventKeyboard.getKey()) {
-                    case P:
+                    case P -> {
                         _paused = !_paused;
                         if (!_paused)
                             _window.requestFrame();
-                        break;
-                    case N:
+                    }
+                    case N ->
                         new Example();
-                        break;
-                    case W:
+                    case W ->
                         accept(EventClose.INSTANCE);
-                        break;
-                    case C:
+                    case C ->
                         Clipboard.set(ClipboardEntry.makePlainText(text));
-                        break;
-                    case V:
+                    case V -> {
                         ClipboardEntry entry = Clipboard.get(ClipboardFormat.TEXT);
                         if (entry != null)
                             text = entry.getString();
-                        break;
-                    case F:
+                    }
+                    case F -> {
                         ClipboardFormat[] formats = Clipboard.getFormats();
                         if (formats != null)
                             for (ClipboardFormat format: formats)
                                 System.out.println(format.getFormatId());
-                        break;
+                    }
                 }
             }
 
             if (eventKeyboard.isPressed() == true) {
                 switch(eventKeyboard.getKey()) {
-                    case ESCAPE:
+                    case ESCAPE ->
                         accept(EventClose.INSTANCE);
-                        break;
-                    case DOWN:
+                    case DOWN -> {
                         variantIdx = (variantIdx + 1) % variants.length;
                         changeLayer();
-                        break;
-                    case UP:
+                    }
+                    case UP -> {
                         variantIdx = (variantIdx + variants.length - 1) % variants.length;
                         changeLayer();
-                        break;
-                    case V:
+                    }
+                    case V -> {
                         if (eventKeyboard.isModifierDown(KeyModifier.CONTROL)) {
                             // paste
                             DataTransfer cb = App.getClipboard();
@@ -378,26 +372,24 @@ public class Example implements Consumer<Event>, TextInputClient {
                                 }
                             }
                         }
-                        break;
-                    case ENTER:
+                    }
+                    case ENTER ->
                         text += "\n";
-                        break;
-                    case BACK_SPACE:
+                    case BACK_SPACE -> {
                         if (text.length() > 0) {
                             try (var iter = BreakIterator.makeCharacterInstance();) {
                                 iter.setText(text);
                                 text = text.substring(0, iter.preceding(text.length()));
                             }
                         }
-                        break;
+                    }
                 }
             }
 
-            if (eventKeyboard.isPressed() == true) {
+            if (eventKeyboard.isPressed() == true)
                 keys.add(eventKeyboard.getKey());
-            } else {
+            else
                 keys.remove(eventKeyboard.getKey());
-            }
         } else if (e instanceof EventTextMarkedSet ee) {
             System.out.println("EventTextMarkedSet text='" + ee.getText() + "', range=" + ee.getFrom() + ".." + ee.getTo());
         } else if (e instanceof EventScroll ee) {
