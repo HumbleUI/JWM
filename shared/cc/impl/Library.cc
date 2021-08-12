@@ -333,6 +333,27 @@ namespace jwm {
             }
         }
 
+        namespace EventTextInputMarked {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventTextInputMarked");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
+
+                kCtor = env->GetMethodID(kCls, "<init>", "(Ljava/lang/String;II)V");
+                Throwable::exceptionThrown(env);
+                assert(kCtor);
+            }
+
+            jobject make(JNIEnv* env, jstring text, jint selectedFrom, jint selectedTo) {
+                jobject res = env->NewObject(kCls, kCtor, text, selectedFrom, selectedTo);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace EventWindowMove {
             jclass kCls;
             jmethodID kCtor;
@@ -388,7 +409,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventReconfigure::onLoad(env);
     jwm::classes::EventResize::onLoad(env);
     jwm::classes::EventScroll::onLoad(env);
-    jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
+    jwm::classes::EventTextInputMarked::onLoad(env);
+    jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::Screen::onLoad(env);
 }

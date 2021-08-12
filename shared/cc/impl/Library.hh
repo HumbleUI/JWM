@@ -97,6 +97,12 @@ namespace jwm {
             jobject make(JNIEnv* env, jstring text);
         }
 
+        namespace EventTextInputMarked {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jstring text, jint selectedFrom, jint selectedTo);
+        }
+
         namespace EventWindowMove {
             extern jclass kCls;
             extern jmethodID kCtor;
