@@ -305,23 +305,22 @@ public class Example implements Consumer<Event>, TextInputClient {
         if (e instanceof EventReconfigure) {
             _layer.reconfigure();
             accept(new EventResize(_window.getWidth(), _window.getHeight()));
-        } else if (e instanceof EventResize) {
-            lastResize = (EventResize) e;
-            _layer.resize(lastResize.getWidth(), lastResize.getHeight());
+        } else if (e instanceof EventResize ee) {
+            lastResize = ee;
+            _layer.resize(ee.getWidth(), ee.getHeight());
             paint();
-        } else if (e instanceof EventTextInput) {
-            text += ((EventTextInput) e).getText();
-        } else if (e instanceof EventMouseButton) {
-            EventMouseButton ee = (EventMouseButton) e;
+        } else if (e instanceof EventTextInput ee) {
+            text += ee.getText();
+        } else if (e instanceof EventMouseButton ee) {
+
             _window.unmarkText();
             if (ee.isPressed())
                 buttons.add(ee.getButton());
             else
                 buttons.remove(ee.getButton());
-        } else if (e instanceof EventMouseMove) {
-            lastMouseMove = (EventMouseMove) e;
-        } else if (e instanceof EventKeyboard) {
-            EventKeyboard eventKeyboard = (EventKeyboard) e;
+        } else if (e instanceof EventMouseMove ee) {
+            lastMouseMove = ee;
+        } else if (e instanceof EventKeyboard eventKeyboard) {
             KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
             if (eventKeyboard.isPressed() == true && eventKeyboard.isModifierDown(modifier)) {
                 switch (eventKeyboard.getKey()) {
@@ -382,14 +381,12 @@ public class Example implements Consumer<Event>, TextInputClient {
                 keys.add(eventKeyboard.getKey());
             else
                 keys.remove(eventKeyboard.getKey());
-        } else if (e instanceof EventTextInputMarked) {
-            EventTextInputMarked ee = (EventTextInputMarked) e;
+        } else if (e instanceof EventTextInputMarked ee) {
             System.out.println("EventTextInputMarked text='" + ee.getText() + "', range=" + ee.getSelectedFrom() + ".." + ee.getSelectedTo());
-        } else if (e instanceof EventScroll) {
-            EventScroll ee = (EventScroll) e;
+        } else if (e instanceof EventScroll ee) {
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
-        } else if (e instanceof EventWindowMove) {
-            lastMove = (EventWindowMove) e;
+        } else if (e instanceof EventWindowMove ee) {
+            lastMove = ee;
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)
