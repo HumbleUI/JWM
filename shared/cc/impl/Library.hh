@@ -7,6 +7,13 @@
 #include "Window.hh"
 
 namespace jwm {
+    struct UIRect {
+        int32_t fLeft;
+        int32_t fTop;
+        int32_t fRight;
+        int32_t fBottom;
+    };
+
     namespace classes {
         namespace Throwable {
             extern jmethodID kPrintStackTrace;
@@ -116,7 +123,7 @@ namespace jwm {
         namespace EventTextInputMarked {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jstring text, jint selectedFrom, jint selectedTo);
+            jobject make(JNIEnv* env, jstring text, jint selectionStart, jint selectionEnd);
         }
 
         namespace EventWindowMove {
@@ -129,6 +136,21 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary);
+        }
+
+        namespace TextInputClient {
+            extern jclass kCls;
+            extern jmethodID kGetRectForMarkedRange;
+            jwm::UIRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
+        }
+
+        namespace UIRect {
+            extern jclass kCls;
+            extern jfieldID kLeft;
+            extern jfieldID kTop;
+            extern jfieldID kRight;
+            extern jfieldID kBottom;
+            jwm::UIRect fromJava(JNIEnv* env, jobject uirect);
         }
     }
 }

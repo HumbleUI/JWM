@@ -22,6 +22,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Point scroll = new Point(0, 0);
     public String text = "";
+    public EventTextInputMarked lastMarked = null;
 
     public String[] variants;
     public int variantIdx = 0;
@@ -159,10 +160,31 @@ public class Example implements Consumer<Event>, TextInputClient {
                     canvas.drawTextLine(line, 8, baseline - lineHeight, paint);
                 }
             }
+            
             try (var line = TextLine.make(lines[lines.length - 1], font24)) {
                 canvas.drawTextLine(line, 8, baseline, paint);
+                canvas.translate(8 + line.getWidth(), 0);
+
+                // marked text
                 paint.setColor(0xFF0087D8);
-                canvas.drawRect(Rect.makeXYWH(8 + line.getWidth(), baseline + metrics.getAscent() - 2, 2, metrics.getHeight() + 4), paint);
+                if (lastMarked != null) {
+                    try (var marked = TextLine.make(lastMarked.getText(), font24)) {
+                        canvas.drawTextLine(marked, 0, baseline, paint);
+                        var start = marked.getCoordAtOffset(lastMarked.getSelectionStart());
+                        var end = marked.getCoordAtOffset(lastMarked.getSelectionEnd());
+                        if (0 < start - 1)
+                            canvas.drawRect(Rect.makeLTRB(0, baseline + 2, start - 1, baseline + 4), paint);
+                        if (start + 1 < end - 1)
+                            canvas.drawRect(Rect.makeLTRB(start + 1, baseline + 2, end - 1, baseline + 6), paint);
+                        if (end + 1 < marked.getWidth())
+                            canvas.drawRect(Rect.makeLTRB(end + 1, baseline + 2, marked.getWidth(), baseline + 4), paint);
+
+                        canvas.translate(marked.getWidth(), 0);
+                    }
+                }
+
+                // cursor                
+                canvas.drawRect(Rect.makeXYWH(0, baseline + metrics.getAscent() - 2, 2, metrics.getHeight() + 4), paint);
             }
             canvas.restore();
         }
@@ -311,6 +333,10 @@ public class Example implements Consumer<Event>, TextInputClient {
             paint();
         } else if (e instanceof EventTextInput ee) {
             text += ee.getText();
+            lastMarked = null;
+        } else if (e instanceof EventTextInputMarked ee) {
+            System.out.println(ee);
+            lastMarked = ee;
         } else if (e instanceof EventMouseButton ee) {
 
             _window.unmarkText();
@@ -346,6 +372,10 @@ public class Example implements Consumer<Event>, TextInputClient {
                             for (ClipboardFormat format: formats)
                                 System.out.println(format.getFormatId());
                     }
+                    case L -> {
+                        variantIdx = (variantIdx + 1) % variants.length;
+                        changeLayer();
+                    }
                 }
             }
 
@@ -353,15 +383,6 @@ public class Example implements Consumer<Event>, TextInputClient {
                 switch(eventKeyboard.getKey()) {
                     case ESCAPE ->
                         accept(EventClose.INSTANCE);
-                    case DOWN -> {
-                        variantIdx = (variantIdx + 1) % variants.length;
-                        changeLayer();
-                    }
-                    case UP -> {
-                        variantIdx = (variantIdx + variants.length - 1) % variants.length;
-                        changeLayer();
-                        break;
-                    }
                     case ENTER -> {
                         text += "\n";
                         break;
@@ -381,8 +402,6 @@ public class Example implements Consumer<Event>, TextInputClient {
                 keys.add(eventKeyboard.getKey());
             else
                 keys.remove(eventKeyboard.getKey());
-        } else if (e instanceof EventTextInputMarked ee) {
-            System.out.println("EventTextInputMarked text='" + ee.getText() + "', range=" + ee.getSelectedFrom() + ".." + ee.getSelectedTo());
         } else if (e instanceof EventScroll ee) {
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
         } else if (e instanceof EventWindowMove ee) {
@@ -406,9 +425,32 @@ public class Example implements Consumer<Event>, TextInputClient {
     }
 
     @Override
-    public UIRect rectForMarkedRange(int from, int to) {
-        System.out.println("TextInputClient::rectForMarkedRange " + from + ".." + to);
-        return UIRect.makeLTRB(from * 100, 0, to * 100, 0);
+    public UIRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
+        System.out.println("TextInputClient::getRectForMarkedRange " + selectionStart + ".." + selectionEnd);
+
+        float scale = _window.getScale();
+        var lines = text.split("\n", -1);
+        try (var line = TextLine.make(lines[lines.length - 1], font24);) {
+            var left = (_window.getWidth() / scale - 300) / 2 + 8 + line.getWidth();
+            var metrics = font24.getMetrics();
+            var top = 50 - (50 - metrics.getHeight()) / 2 + 20 - metrics.getHeight();
+
+            if (lastMarked != null) {
+                try (var marked = TextLine.make(lastMarked.getText(), font24)) {
+                    var start = marked.getCoordAtOffset(selectionStart);
+                    var end = marked.getCoordAtOffset(selectionEnd);
+                    return UIRect.makeXYWH((int) (scale * (left + start)),
+                                           (int) (scale * top),
+                                           (int) (scale * (end - start)),
+                                           (int) (scale * metrics.getHeight()));
+                }
+            } else {
+                return UIRect.makeXYWH((int) (scale * left),
+                                       (int) (scale * top),
+                                       0,
+                                       (int) (scale * metrics.getHeight()));
+            }
+        }
     }
 
     public static void main(String[] args) {

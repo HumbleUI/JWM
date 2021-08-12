@@ -6,6 +6,6 @@ import org.jetbrains.annotations.*;
 @Data 
 public class EventTextInputMarked implements Event {
     @ApiStatus.Internal public final String _text;
-    @ApiStatus.Internal public final int _selectedFrom;
-    @ApiStatus.Internal public final int _selectedTo;
+    @ApiStatus.Internal public final int _selectionStart;
+    @ApiStatus.Internal public final int _selectionEnd;
 }

@@ -6,6 +6,9 @@
 #include "KeyModifier.hh"
 #include "MainView.hh"
 #include "WindowMac.hh"
+#include "Util.hh"
+
+#include <stdio.h>
 
 namespace jwm {
 Key kKeyTable[128];
@@ -314,6 +317,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fWindow->dispatch(eventObj.get());
 
     [self interpretKeyEvents:@[event]];
+    // [[self inputContext] handleEvent:event];
 }
 
 - (void)keyUp:(NSEvent *)event {
@@ -394,17 +398,23 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 // NSTextInputClient
 
 - (BOOL)hasMarkedText {
+    // printf("hasMarkedText %lu\n", [fMarkedText length]);
+    // fflush(stdout);
     return [fMarkedText length] > 0;
 }
 
 - (NSRange)markedRange {
+    // printf("markedRange %lu\n", [fMarkedText length]);
+    // fflush(stdout);
     if ([fMarkedText length] > 0)
         return NSMakeRange(0, [fMarkedText length] - 1);
     else
         return kEmptyRange;
 }
-
+// watasinonamaehanakanodesu
 - (NSRange)selectedRange {
+    // printf("selectedRange\n");
+    // fflush(stdout);
     return kEmptyRange;
 }
 
@@ -416,29 +426,59 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         fMarkedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
     else
         fMarkedText = [[NSMutableAttributedString alloc] initWithString:string];
+    // printf("setMarkedText '%s' sel: %lu..%lu repl: %lu..%lu\n", [[fMarkedText string] UTF8String], selectedRange.location, selectedRange.length, replacementRange.location, replacementRange.length);
+    // fflush(stdout);
+
+    JNIEnv* env = fWindow->fEnv;
+    jwm::JNILocal<jstring> jtext(env, jwm::nsStringToJava(env, [fMarkedText string]));
+    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInputMarked::make(env, jtext.get(), selectedRange.location, selectedRange.location + selectedRange.length));
+    fWindow->dispatch(inputEvent.get());
 }
 
 - (void)unmarkText {
+    // printf("unmarkText\n");
+    // fflush(stdout);
     [[fMarkedText mutableString] setString:@""];
 }
 
 - (NSArray*)validAttributesForMarkedText {
+    // printf("validAttributesForMarkedText\n");
+    // fflush(stdout);
     return [NSArray array];
 }
 
 - (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
                                                actualRange:(NSRangePointer)actualRange {
+    // printf("attributedSubstringForProposedRange (%lu %lu)\n", range.location, range.length);
+    // fflush(stdout);
     return nil;
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point {
+    // printf("characterIndexForPoint (%f, %f)\n", point.x, point.y);
+    // fflush(stdout);
     return 0;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range
                          actualRange:(NSRangePointer)actualRange {
-    const NSRect frame = [fWindow->fNSWindow.contentView frame];
-    return NSMakeRect(frame.origin.x, frame.origin.y, 0.0, 0.0);
+    if (fWindow->fTextInputClient != nullptr) {
+        JNIEnv* env = fWindow->fEnv;
+        jwm::UIRect rect = jwm::classes::TextInputClient::getRectForMarkedRange(env, fWindow->fTextInputClient, range.location, range.location + range.length);
+        const NSRect frame = [fWindow->fNSWindow.contentView frame];
+        CGFloat scale = fWindow->getScale();
+        const NSRect res = NSMakeRect(
+            rect.fLeft / scale,
+            frame.size.height - rect.fBottom / scale,
+            (rect.fRight - rect.fLeft) / scale,
+            (rect.fBottom - rect.fTop) / scale
+        );
+        return [fWindow->fNSWindow convertRectToScreen:res];
+    } else {
+        const NSRect frame = [fWindow->fNSWindow.contentView frame];
+        const NSRect res = NSMakeRect(frame.size.width / 2.0, frame.size.height / 2.0, 0.0, 0.0);
+        return [fWindow->fNSWindow convertRectToScreen:res];
+    }
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
@@ -452,17 +492,19 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     else
         characters = (NSString*) string;
 
-    size_t len = [characters length];
-    jchar* buffer = new jchar[len];
-    NSRange range = NSMakeRange(0, [characters length]);
-    [characters getCharacters:buffer range:range];
+    // printf("insertText '%s' (%lu %lu)\n", [characters UTF8String], replacementRange.location, replacementRange.length);
+    // fflush(stdout);
+
     JNIEnv* env = fWindow->fEnv;
-    jwm::JNILocal<jstring> jtext(env, env->NewString(buffer, len));
+    jwm::JNILocal<jstring> jtext(env, jwm::nsStringToJava(env, characters));
     jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInput::make(env, jtext.get()));
     fWindow->dispatch(inputEvent.get());
 }
 
 - (void)doCommandBySelector:(SEL)selector {
+    // printf("doCommandBySelector %s\n", [NSStringFromSelector(selector) UTF8String]);
+    // fflush(stdout);
+    // [super doCommandBySelector:selector];
 }
 
 @end
