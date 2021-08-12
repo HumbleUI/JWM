@@ -18,6 +18,8 @@ namespace jwm
          */
         StringUTF16(const char* str);
 
+        StringUTF16() = default;
+
         static StringUTF16 makeFromJString(JNIEnv* env, jstring js);
 
         bool operator==(const char* str) const {
