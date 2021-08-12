@@ -11,6 +11,7 @@
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
 #include "StringUTF16.hh"
+#include <algorithm>
 
 using namespace jwm;
 
@@ -432,7 +433,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                     JNIEnv* env = app.getJniEnv();
                     
                     jwm::StringUTF16 converted = textBuffer;
-                    jwm::JNILocal<jstring> jtext(env, env->NewString(converted.c_str(), converted.length()));
+                    jwm::JNILocal<jstring> jtext = converted.toJString(env);
 
                     jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
                     myWindow->dispatch(eventTextInput.get());
@@ -457,7 +458,81 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
     }
 }
 
-jwm::ByteBuf WindowManagerX11::getClipboard(const std::string& type) {
+
+std::vector<std::string> WindowManagerX11::getClipboardFormats() {
+    auto owner = XGetSelectionOwner(display, _atoms.CLIPBOARD);
+    if (owner == None)
+    {
+        return {};
+    }
+    
+    assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
+
+    auto nativeHandle = _nativeWindowToMy.begin()->first;
+    assert(nativeHandle);
+
+    XConvertSelection(display,
+                      _atoms.CLIPBOARD,
+                      _atoms.TARGETS,
+                      _atoms.JWM_CLIPBOARD,
+                      nativeHandle,
+                      CurrentTime);
+
+    XEvent ev;
+
+    // fetch mime types
+    std::vector<std::string> result;
+    
+    // using lambda here in order to break 2 loops
+    [&]{
+        while (_runLoop) {
+            while (XPending(display)) {
+                XNextEvent(display, &ev);
+                if (ev.type == SelectionNotify) {
+                    int format;
+                    unsigned long count, lengthInBytes;
+                    Atom type;
+                    Atom* properties;
+                    XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, 1024 * sizeof(Atom), false, XA_ATOM, &type, &format, &count, &lengthInBytes, reinterpret_cast<unsigned char**>(&properties));
+                    
+                    for (unsigned long i = 0; i < count; ++i) {
+                        char* str = XGetAtomName(display, properties[i]);
+                        if (str) {
+                            std::string s = str;
+
+                            // include only mime types
+                            if (s.find('/') != std::string::npos) {
+                                result.push_back(s);
+                            } else if (s == "UTF8_STRING") {
+                                // HACK: treat UTF8_STRING as text/plain under the hood
+                                // avoid duplicates
+                                std::string textPlain = "text/plain";
+                                if (std::find(result.begin(), result.end(), textPlain) != result.end()) {
+                                    result.push_back(textPlain);
+                                }
+                            }
+                            XFree(str);
+                        }
+                    }
+                    
+                    XFree(properties);
+                    return;
+                } else {
+                    _processXEvent(ev);
+                }
+            
+            }
+            _processRedrawRequests();
+        }
+    }();
+
+    // fetching data
+
+    XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+    return result;
+}
+
+jwm::ByteBuf WindowManagerX11::getClipboardContents(const std::string& type) {
     auto nativeHandle = _nativeWindowToMy.begin()->first;
 
     XConvertSelection(display,

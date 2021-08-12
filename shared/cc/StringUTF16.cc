@@ -57,6 +57,10 @@ jwm::StringUTF16::StringUTF16(const char* str) {
     }
 }
 
+jwm::JNILocal<jstring> jwm::StringUTF16::toJString(JNIEnv* env) const {
+    return jwm::JNILocal<jstring>(env, env->NewString(c_str(), length()));
+}
+
 jwm::StringUTF16 jwm::StringUTF16::makeFromJString(JNIEnv* env, jstring js) {
     jwm::StringUTF16 result;
     jsize length = env->GetStringLength(js);

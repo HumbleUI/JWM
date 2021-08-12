@@ -13,6 +13,28 @@ namespace jwm {
             return s;
         }
         
+        jobjectArray getFormats(JNIEnv* env) const {
+            auto formats = jwm::app.getWindowManager().getClipboardFormats();
+            if (formats.empty()) {
+                return nullptr;
+            }
+
+            std::vector<jobject> formatObjs;
+
+            for (auto& format : formats) {
+                auto js = StringUTF16(format.c_str()).toJString(env);
+                formatObjs.push_back(classes::Clipboard::registerFormat(env, js.get()));
+            }
+            jobjectArray jniFormats = env->NewObjectArray(static_cast<jsize>(formats.size()), classes::ClipboardFormat::kCls, nullptr);
+
+            // fill java array
+            for (jsize i = 0; i < static_cast<jsize>(formatObjs.size()); ++i) {
+                env->SetObjectArrayElement(jniFormats, i, formatObjs[i]);
+            }
+
+            return jniFormats;
+        }
+
         jobject get(JNIEnv* env, jobjectArray formats) {
             jsize formatsSize = env->GetArrayLength(formats);
             for (jsize i = 0; i < formatsSize; ++i) {
@@ -24,7 +46,7 @@ namespace jwm {
                     ByteBuf contents;
                     // HACK: prefer UTF8_STRING over text/plain and convert it to utf16
                     if (formatId == "text/plain") {
-                        contents = app.getWindowManager().getClipboard("UTF8_STRING");
+                        contents = app.getWindowManager().getClipboardContents("UTF8_STRING");
                     }
                     // TODO add another formats
                     if (contents.empty()) {
@@ -63,7 +85,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Clipboard__1nGet
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_Clipboard__1nGetFormats
         (JNIEnv* env, jclass jclass) {
-    return nullptr;
+    return jwm::ClipboardX11::inst().getFormats(env);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nClear

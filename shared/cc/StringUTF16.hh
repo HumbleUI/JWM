@@ -2,6 +2,7 @@
 
 #include <string>
 #include <jni.h>
+#include <impl/JNILocal.hh>
 
 namespace jwm
 {
@@ -21,6 +22,8 @@ namespace jwm
         StringUTF16() = default;
 
         static StringUTF16 makeFromJString(JNIEnv* env, jstring js);
+
+        JNILocal<jstring> toJString(JNIEnv* env) const;
 
         bool operator==(const char* str) const {
             return (*this) == StringUTF16(str);
