@@ -305,25 +305,26 @@ public class Example implements Consumer<Event>, TextInputClient {
         if (e instanceof EventReconfigure) {
             _layer.reconfigure();
             accept(new EventResize(_window.getWidth(), _window.getHeight()));
-        } else if (e instanceof EventResize ee) {
-            lastResize = ee;
-            _layer.resize(ee.getWidth(), ee.getHeight());
+        } else if (e instanceof EventResize) {
+            lastResize = (EventResize) e;
+            _layer.resize(lastResize.getWidth(), lastResize.getHeight());
             paint();
-        } else if (e instanceof EventTextInput ee) {
-            text += ee.getText();
-        } else if (e instanceof EventMouseButton ee) {
+        } else if (e instanceof EventTextInput) {
+            text += ((EventTextInput) e).getText();
+        } else if (e instanceof EventMouseButton) {
+            EventMouseButton ee = (EventMouseButton) e;
             _window.unmarkText();
             if (ee.isPressed())
                 buttons.add(ee.getButton());
             else
                 buttons.remove(ee.getButton());
-        } else if (e instanceof EventMouseMove ee) {
-            lastMouseMove = ee;
+        } else if (e instanceof EventMouseMove) {
+            lastMouseMove = (EventMouseMove) e;
         } else if (e instanceof EventKeyboard) {
             EventKeyboard eventKeyboard = (EventKeyboard) e;
             KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
             if (eventKeyboard.isPressed() == true && eventKeyboard.isModifierDown(modifier)) {
-                switch(eventKeyboard.getKey()) {
+                switch (eventKeyboard.getKey()) {
                     case P -> {
                         _paused = !_paused;
                         if (!_paused)
@@ -381,12 +382,14 @@ public class Example implements Consumer<Event>, TextInputClient {
                 keys.add(eventKeyboard.getKey());
             else
                 keys.remove(eventKeyboard.getKey());
-        } else if (e instanceof EventTextMarkedSet ee) {
-            System.out.println("EventTextMarkedSet text='" + ee.getText() + "', range=" + ee.getFrom() + ".." + ee.getTo());
-        } else if (e instanceof EventScroll ee) {
+        } else if (e instanceof EventTextInputMarked) {
+            EventTextInputMarked ee = (EventTextInputMarked) e;
+            System.out.println("EventTextInputMarked text='" + ee.getText() + "', range=" + ee.getSelectedFrom() + ".." + ee.getSelectedTo());
+        } else if (e instanceof EventScroll) {
+            EventScroll ee = (EventScroll) e;
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
-        } else if (e instanceof EventWindowMove ee) {
-            lastMove = ee;
+        } else if (e instanceof EventWindowMove) {
+            lastMove = (EventWindowMove) e;
         } else if (e instanceof EventFrame) {
             paint();
             if (!_paused)
