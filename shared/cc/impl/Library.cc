@@ -376,23 +376,23 @@ namespace jwm {
             jmethodID kDataMapPut;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/DataTransfer");
-                assert(cls);
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "()V");
-                assert(kCtor);
-                kDataMap = env->GetFieldID(kCls, "_data", "Ljava/util/HashMap;");
-                assert(kDataMap);
-                Throwable::exceptionThrown(env);
-
-                jclass kMap = env->FindClass("java/util/Map");
-                assert(kMap);
-                Throwable::exceptionThrown(env);
-
-                kDataMapPut = env->GetMethodID(kMap, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-                assert(kDataMapPut);
-                Throwable::exceptionThrown(env);
+//                jclass cls = env->FindClass("org/jetbrains/jwm/DataTransfer");
+//                assert(cls);
+//                Throwable::exceptionThrown(env);
+//                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+//                kCtor = env->GetMethodID(kCls, "<init>", "()V");
+//                assert(kCtor);
+//                kDataMap = env->GetFieldID(kCls, "_data", "Ljava/util/HashMap;");
+//                assert(kDataMap);
+//                Throwable::exceptionThrown(env);
+//
+//                jclass kMap = env->FindClass("java/util/Map");
+//                assert(kMap);
+//                Throwable::exceptionThrown(env);
+//
+//                kDataMapPut = env->GetMethodID(kMap, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+//                assert(kDataMapPut);
+//                Throwable::exceptionThrown(env);
             }
 
             jobject make(JNIEnv* env, const jwm::DataTransfer& dt) {
@@ -442,5 +442,4 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::Screen::onLoad(env);
-    jwm::classes::DataTransfer::onLoad(env);
 }
