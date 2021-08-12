@@ -4,12 +4,28 @@
 #include "Key.hh"
 #include "MouseButton.hh"
 #include "Types.hh"
+#include "Window.hh"
 
 namespace jwm {
     namespace classes {
         namespace Throwable {
             extern jmethodID kPrintStackTrace;
             bool exceptionThrown(JNIEnv* env);
+        }
+
+        namespace TextInputClient {
+            extern jclass kCls;
+            extern jmethodID kRectForMarkedRange;
+            jobject rectForMarkedRange(JNIEnv* env, const Window* window, jint from, jint to);
+        }
+
+        namespace UIRect {
+            extern jclass kCls;
+            extern jfieldID kLeft;
+            extern jfieldID kTop;
+            extern jfieldID kRight;
+            extern jfieldID kBottom;
+            void getRectFields(JNIEnv* env, jobject uiRect, int& left, int& top, int& right, int& bottom);
         }
 
         namespace Consumer {

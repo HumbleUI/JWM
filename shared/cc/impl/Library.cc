@@ -30,6 +30,71 @@ namespace jwm {
             }
         }
 
+        namespace TextInputClient {
+            jclass kCls;
+            jmethodID kRectForMarkedRange;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/TextInputClient");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
+
+                kRectForMarkedRange = env->GetMethodID(cls,
+                    "rectForMarkedRange",
+                    "(II)Lorg/jetbrains/jwm/UIRect;"
+                );
+                Throwable::exceptionThrown(env);
+                assert(kRectForMarkedRange);
+            }
+
+            jobject rectForMarkedRange(JNIEnv* env, const Window* window, jint from, jint to) {
+                if (!window || !window->fTextInputClient)
+                    return nullptr;
+
+                jobject rect = env->CallObjectMethod(window->fTextInputClient, kRectForMarkedRange, from, to);
+                return Throwable::exceptionThrown(env)? nullptr: rect;
+            }
+        }
+
+        namespace UIRect {
+            jclass kCls;
+            jfieldID kLeft;
+            jfieldID kTop;
+            jfieldID kRight;
+            jfieldID kBottom;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/UIRect");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kCls);
+
+                kLeft = env->GetFieldID(kCls, "_left", "I");
+                Throwable::exceptionThrown(env);
+                assert(kLeft);
+
+                kTop = env->GetFieldID(kCls, "_top", "I");
+                Throwable::exceptionThrown(env);
+                assert(kTop);
+
+                kRight = env->GetFieldID(kCls, "_right", "I");
+                Throwable::exceptionThrown(env);
+                assert(kRight);
+
+                kBottom = env->GetFieldID(kCls, "_bottom", "I");
+                Throwable::exceptionThrown(env);
+                assert(kBottom);
+            }
+
+            void getRectFields(JNIEnv* env, jobject uiRect, int& left, int& top, int& right, int& bottom) {
+                left = env->GetIntField(uiRect, kLeft);
+                top = env->GetIntField(uiRect, kTop);
+                right = env->GetIntField(uiRect, kRight);
+                bottom = env->GetIntField(uiRect, kBottom);
+            }
+        }
+
         namespace Consumer {
             jmethodID kAccept;
 
@@ -395,6 +460,8 @@ namespace jwm {
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLoad
   (JNIEnv* env, jclass jclass) {
     jwm::classes::Throwable::onLoad(env);
+    jwm::classes::TextInputClient::onLoad(env);
+    jwm::classes::UIRect::onLoad(env);
     jwm::classes::Consumer::onLoad(env);
     jwm::classes::Runnable::onLoad(env);
     jwm::classes::Native::onLoad(env);

@@ -3,6 +3,7 @@
 #include <cwctype>
 #include <windows.h>
 #include <winuser.h>
+#include <imm.h>
 #include <windowsx.h>
 #include <shellscalingapi.h>
 #include <highlevelmonitorconfigurationapi.h>

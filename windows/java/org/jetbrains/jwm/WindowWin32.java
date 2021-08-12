@@ -28,6 +28,12 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public native Window setTextInputEnabled(boolean enabled);
+
+    @Override
+    public native void unmarkText();
+
+    @Override
     public native void show();
 
     @Override

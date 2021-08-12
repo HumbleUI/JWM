@@ -43,6 +43,8 @@ namespace jwm {
         ~WindowWin32() override;
         bool init();
         void recreate();
+        void unmarkText();
+        void setImeEnabled(bool enabled);
         void show();
         void getPosition(int& left, int& top) const;
         void getSize(int& width, int& height) const;
@@ -79,12 +81,18 @@ namespace jwm {
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
         void _destroyInternal();
         void _close();
+        void _imeResetComposition() const;
+        void _imeChangeCursorPos() const;
+        void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
+        std::wstring _imeGetCompositionString(HIMC hImc, DWORD compType) const;
 
     private:
         friend class WindowManagerWin32;
 
         std::vector<std::pair<int, Callback>> _eventListeners;
         std::bitset<static_cast<size_t>(Flag::Max)> _flags;
+        std::wstring _compositionStr;
+        LONG _compositionPos = 0;
 
         class WindowManagerWin32& _windowManager;
 
