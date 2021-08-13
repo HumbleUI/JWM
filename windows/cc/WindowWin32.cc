@@ -305,8 +305,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int keycode = (int) wParam;
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
-            auto mapping = table.find(keycode);
+            auto& ignoreList = _windowManager.getKeyIgnoreList();
 
+            if (ignoreList.find(keycode) != ignoreList.end())
+                break;
+
+            auto mapping = table.find(keycode);
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
             JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, key, isPressed, modifiers));
