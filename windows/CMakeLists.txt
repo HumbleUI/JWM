@@ -78,6 +78,7 @@ target_link_libraries(jwm PRIVATE "Dxva2")
 target_link_libraries(jwm PRIVATE "d3d12")
 target_link_libraries(jwm PRIVATE "dxgi")
 target_link_libraries(jwm PRIVATE "dxguid")
+target_link_libraries(jwm PRIVATE "Imm32")
 
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 

@@ -388,12 +388,13 @@ public class Example implements Consumer<Event>, TextInputClient {
                         break;
                     }
                     case BACK_SPACE -> {
-                        if (text.length() > 0) {
+                        if (lastMarked == null && text.length() > 0) {
                             try (var iter = BreakIterator.makeCharacterInstance();) {
                                 iter.setText(text);
                                 text = text.substring(0, iter.preceding(text.length()));
                             }
                         }
+
                     }
                 }
             }

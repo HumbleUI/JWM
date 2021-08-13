@@ -21,6 +21,7 @@ bool jwm::WindowManagerWin32::init() {
         return false;
 
     _initKeyTable();
+    _initKeyIgnoreList();
 
     return true;
 }
@@ -345,6 +346,10 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     // COMMAND,
     // FUNCTION,
     // SHORTCUT
+}
+
+void jwm::WindowManagerWin32::_initKeyIgnoreList() {
+    _keyIgnoreList.emplace(VK_PROCESSKEY);
 }
 
 void jwm::WindowManagerWin32::_registerWindow(class WindowWin32& window) {

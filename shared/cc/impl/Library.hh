@@ -4,6 +4,7 @@
 #include "Key.hh"
 #include "MouseButton.hh"
 #include "Types.hh"
+#include "Window.hh"
 
 namespace jwm {
     struct UIRect {

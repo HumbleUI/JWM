@@ -401,9 +401,9 @@ namespace jwm {
             }
 
             jwm::UIRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd) {
-                jobject uiRect = env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd);
+                JNILocal<jobject> uiRect(env, env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd));
                 Throwable::exceptionThrown(env);
-                return UIRect::fromJava(env, uiRect);
+                return UIRect::fromJava(env, uiRect.get());
             }
         }
 

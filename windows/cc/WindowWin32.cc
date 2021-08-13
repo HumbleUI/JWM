@@ -48,6 +48,19 @@ void jwm::WindowWin32::recreate() {
     removeFlag(Flag::IgnoreMessages);
 }
 
+void jwm::WindowWin32::unmarkText() {
+    _imeResetComposition();
+}
+
+void jwm::WindowWin32::setImeEnabled(bool enabled) {
+    if (enabled)
+        // Re-enabled Windows IME by associating default context.
+        ImmAssociateContextEx(getHWnd(), nullptr, IACE_DEFAULT);
+    else
+        // Disable Windows IME by associating 0 context.
+        ImmAssociateContext(getHWnd(), nullptr);
+}
+
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
@@ -125,7 +138,7 @@ void jwm::WindowWin32::move(int left, int top) {
     AdjustWindowRectEx(&rect, _getWindowStyle(),
                        FALSE, _getWindowExStyle());
 
-    SetWindowPos(_hWnd, NULL,
+    SetWindowPos(_hWnd, nullptr,
                  rect.left, rect.top,
                  0, 0,
                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
@@ -292,8 +305,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int keycode = (int) wParam;
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
-            auto mapping = table.find(keycode);
+            auto& ignoreList = _windowManager.getKeyIgnoreList();
 
+            if (ignoreList.find(keycode) != ignoreList.end())
+                break;
+
+            auto mapping = table.find(keycode);
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
             JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, key, isPressed, modifiers));
@@ -335,6 +352,112 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             return 0;
         }
+
+        case WM_IME_STARTCOMPOSITION:
+            // Reset cache for safety
+            _compositionStr.resize(0);
+            _compositionPos = 0;
+            _imeChangeCursorPos();
+            break;
+
+        case WM_IME_CHAR:
+            return 0;
+
+        case WM_IME_COMPOSITION: {
+            int iParam = (int)lParam;
+
+            HIMC hImc = ImmGetContext(getHWnd());
+
+            if (!hImc)
+                return false;
+
+            if (iParam & (GCS_COMPSTR | GCS_COMPATTR | GCS_CURSORPOS)) {
+                // Read partial composition result
+                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
+                _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_COMPSTR));
+                _compositionPos = ImmGetCompositionStringW(hImc, GCS_CURSORPOS, nullptr, 0);
+
+                int selectedFrom, selectedTo;
+                _imeGetCompositionStringConvertedRange(hImc, selectedFrom, selectedTo);
+
+                if ((lParam & CS_INSERTCHAR) && (lParam & CS_NOMOVECARET)) {
+                    selectedFrom = 0;
+                    selectedTo = static_cast<int>(_compositionStr.length());
+                }
+
+                if (!selectedTo)
+                    selectedFrom = 0;
+
+                if (!selectedFrom && !selectedTo) {
+                    selectedFrom = _compositionPos;
+                    selectedTo = static_cast<int>(_compositionStr.length());
+                }
+
+                auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
+                auto jlength = static_cast<jsize>(_compositionStr.length());
+
+                JNILocal<jstring> text(env, env->NewString(jcharText, jlength));
+                JNILocal<jobject> eventTextInputMarked(env, classes::EventTextInputMarked::make(env, text.get(), selectedFrom, selectedTo));
+                dispatch(eventTextInputMarked.get());
+            }
+
+            if (iParam & (GCS_RESULTSTR)) {
+                // If composition result, we must read its result string here.
+                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
+                _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_RESULTSTR));
+
+                auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
+                auto jlength = static_cast<jsize>(_compositionStr.length());
+
+                JNILocal<jstring> text(env, env->NewString(jcharText, jlength));
+                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text.get()));
+                dispatch(eventTextInput.get());
+            }
+
+            ImmReleaseContext(getHWnd(), hImc);
+            return true;
+        }
+
+        case WM_IME_ENDCOMPOSITION: {
+            // Reset cached objects
+            _compositionStr.resize(0);
+            _compositionPos = 0;
+
+            // Send commit message. This is required, for example if user suddenly closes ime window
+            JNILocal<jstring> text(env, env->NewString(nullptr, 0));
+            JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text.get()));
+            dispatch(eventTextInput.get());
+            break;
+        }
+
+        case WM_IME_REQUEST:
+            if (wParam == IMR_QUERYCHARPOSITION) {
+                // Query current cursor position
+                // If composition starts, Pos will be always 0
+                auto sectionStart = static_cast<int>(_compositionPos);
+                auto sectionEnd = sectionStart + 0;
+                auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
+
+                // Cursor upper left corner (doc requires baseline, but its enough)
+                POINT cursorPos;
+                cursorPos.x = uiRect.fLeft;
+                cursorPos.y = uiRect.fTop;
+                ClientToScreen(getHWnd(), &cursorPos);
+
+                // Area of the window (interpreted as document area (where we can place ime window))
+                RECT documentArea;
+                GetWindowRect(getHWnd(), &documentArea);
+
+                // Fill lParam structure
+                // its content will be read after this proc function returns
+                auto* imeCharPos = reinterpret_cast<IMECHARPOSITION*>(lParam);
+                imeCharPos->dwCharPos = _compositionPos;
+                imeCharPos->cLineHeight = uiRect.fBottom - uiRect.fTop;
+                imeCharPos->pt = cursorPos;
+                imeCharPos->rcDocument = documentArea;
+                return true;
+            }
+            break;
 
         case WM_CLOSE:
             dispatch(classes::EventClose::kInstance);
@@ -437,10 +560,10 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     DWORD style = _getWindowStyle();
     DWORD exStyle = _getWindowExStyle();
 
-    HWND hWndParent = NULL;
-    HMENU hMenu = NULL;
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    LPVOID lpParam = NULL;
+    HWND hWndParent = nullptr;
+    HMENU hMenu = nullptr;
+    HINSTANCE hInstance = GetModuleHandle(nullptr);
+    LPVOID lpParam = nullptr;
 
     _hWnd = CreateWindowExW(
         exStyle,
@@ -487,6 +610,91 @@ void jwm::WindowWin32::_close() {
     }
 }
 
+void jwm::WindowWin32::_imeResetComposition() {
+    HIMC hImc = ImmGetContext(getHWnd());
+
+    if (!hImc)
+        return;
+
+    ImmNotifyIME(hImc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
+    ImmReleaseContext(getHWnd(), hImc);
+
+    _compositionStr.resize(0);
+    _compositionPos = 0;
+}
+
+void jwm::WindowWin32::_imeChangeCursorPos() const {
+    auto sectionStart = static_cast<int>(_compositionPos);
+    auto sectionEnd = sectionStart + 0;
+    auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
+
+    HIMC hImc = ImmGetContext(getHWnd());
+
+    if (!hImc)
+        return;
+
+    COMPOSITIONFORM compositionform;
+    compositionform.dwStyle = CFS_FORCE_POSITION;
+    compositionform.ptCurrentPos.x = uiRect.fLeft;
+    compositionform.ptCurrentPos.y = uiRect.fBottom;
+
+    CANDIDATEFORM candidateform;
+    candidateform.dwIndex = 0;
+    candidateform.dwStyle = CFS_EXCLUDE;
+    candidateform.ptCurrentPos.x = uiRect.fLeft;;
+    candidateform.ptCurrentPos.y = uiRect.fTop;
+    candidateform.rcArea.left = uiRect.fLeft;
+    candidateform.rcArea.top = uiRect.fTop;
+    candidateform.rcArea.right = uiRect.fRight;
+    candidateform.rcArea.bottom = uiRect.fBottom;
+
+    ImmSetCompositionWindow(hImc, &compositionform);
+    ImmSetCandidateWindow(hImc, &candidateform);
+
+    ImmReleaseContext(getHWnd(), hImc);
+}
+
+void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const {
+    selFrom = selTo = 0;
+
+    // Size in bytes without terminating null character
+    DWORD sizeBytes = ImmGetCompositionStringW(hImc, GCS_COMPATTR, nullptr, 0);
+
+    if (sizeBytes) {
+        std::unique_ptr<uint8_t[]> buffer{new uint8_t[sizeBytes]};
+        ImmGetCompositionStringW(hImc, GCS_COMPATTR, buffer.get(), sizeBytes);
+
+        int start = 0;
+
+        while (start < static_cast<int>(sizeBytes) && !(buffer[start] & ATTR_TARGET_CONVERTED))
+            start += 1;
+
+        if (start < static_cast<int>(sizeBytes)) {
+            int end = start + 1;
+
+            while (end < static_cast<int>(sizeBytes) && (buffer[end] & ATTR_TARGET_CONVERTED))
+                end += 1;
+
+            selFrom = start;
+            selTo = end;
+        }
+    }
+}
+
+std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {
+    // Size in bytes without terminating null character
+    DWORD sizeBytes = ImmGetCompositionStringW(hImc, compType, nullptr, 0);
+
+    if (sizeBytes) {
+        // Get actual string and copy into tmp buffer
+        std::unique_ptr<uint8_t[]> buffer{new uint8_t[sizeBytes]};
+        ImmGetCompositionStringW(hImc, compType, buffer.get(), sizeBytes);
+        return std::wstring(reinterpret_cast<wchar_t*>(buffer.get()), sizeBytes / sizeof(wchar_t));
+    }
+
+    return std::wstring();
+}
+
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMake
@@ -496,6 +704,19 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMake
         return reinterpret_cast<jlong>(instance.release());
     else
         return 0;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32_setTextInputEnabled
+        (JNIEnv* env, jobject obj, jboolean enabled) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setImeEnabled(enabled);
+    return obj;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_unmarkText
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->unmarkText();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_show
