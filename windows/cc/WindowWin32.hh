@@ -81,7 +81,7 @@ namespace jwm {
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
         void _destroyInternal();
         void _close();
-        void _imeResetComposition() const;
+        void _imeResetComposition();
         void _imeChangeCursorPos() const;
         void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
         std::wstring _imeGetCompositionString(HIMC hImc, DWORD compType) const;

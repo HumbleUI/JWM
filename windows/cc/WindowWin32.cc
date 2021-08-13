@@ -349,17 +349,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
         }
 
-        case WM_IME_SETCONTEXT:
-            printf("WM_IME_SETCONTEXT\n");
-            fflush(stdout);
-            break;
         case WM_IME_STARTCOMPOSITION:
-            printf("WM_IME_STARTCOMPOSITION\n");
-            fflush(stdout);
+            // Reset cache for safety
             _compositionStr.resize(0);
             _compositionPos = 0;
             _imeChangeCursorPos();
-            return true;
+            break;
 
         case WM_IME_CHAR:
             return 0;
@@ -373,6 +368,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 return false;
 
             if (iParam & (GCS_COMPSTR | GCS_COMPATTR | GCS_CURSORPOS)) {
+                // Read partial composition result
+                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
                 _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_COMPSTR));
                 _compositionPos = ImmGetCompositionStringW(hImc, GCS_CURSORPOS, nullptr, 0);
 
@@ -387,6 +384,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 if (!selectedTo)
                     selectedFrom = 0;
 
+                if (!selectedFrom && !selectedTo) {
+                    selectedFrom = _compositionPos;
+                    selectedTo = static_cast<int>(_compositionStr.length());
+                }
+
                 auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
                 auto jlength = static_cast<jsize>(_compositionStr.length());
 
@@ -396,6 +398,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             }
 
             if (iParam & (GCS_RESULTSTR)) {
+                // If composition result, we must read its result string here.
+                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
                 _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_RESULTSTR));
 
                 auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
@@ -410,30 +414,43 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return true;
         }
 
-        case WM_IME_ENDCOMPOSITION:
-            return true;
+        case WM_IME_ENDCOMPOSITION: {
+            // Reset cached objects
+            _compositionStr.resize(0);
+            _compositionPos = 0;
+
+            // Send commit message. This is required, for example if user suddenly closes ime window
+            JNILocal<jstring> text(env, env->NewString(nullptr, 0));
+            JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text.get()));
+            dispatch(eventTextInput.get());
+            break;
+        }
 
         case WM_IME_REQUEST:
             if (wParam == IMR_QUERYCHARPOSITION) {
-                jobject uiRect = classes::TextInputClient::rectForMarkedRange(getJNIEnv(), this, 0, 0);
+                // Query current cursor position
+                // If composition starts, Pos will be always 0
+                auto sectionStart = static_cast<int>(_compositionPos);
+                auto sectionEnd = sectionStart + 0;
+                auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
 
-                if (!uiRect)
-                    break;
+                // Cursor upper left corner (doc requires baseline, but its enough)
+                POINT cursorPos;
+                cursorPos.x = uiRect.fLeft;
+                cursorPos.y = uiRect.fTop;
+                ClientToScreen(getHWnd(), &cursorPos);
 
-                int left, top, right, bottom;
-                classes::UIRect::getRectFields(getJNIEnv(), uiRect, left, top, right, bottom);
+                // Area of the window (interpreted as document area (where we can place ime window))
+                RECT documentArea;
+                GetWindowRect(getHWnd(), &documentArea);
 
-                POINT coords;
-                coords.x = left;
-                coords.y = top;
-                ClientToScreen(getHWnd(), &coords);
-
+                // Fill lParam structure
+                // its content will be read after this proc function returns
                 auto* imeCharPos = reinterpret_cast<IMECHARPOSITION*>(lParam);
-                imeCharPos->dwCharPos = 0;
-                imeCharPos->pt.x = coords.x;
-                imeCharPos->pt.y = coords.y;
-
-                printf("imeCharPos->pt.x %i imeCharPos->pt.y %i\n", imeCharPos->pt.x, imeCharPos->pt.y);
+                imeCharPos->dwCharPos = _compositionPos;
+                imeCharPos->cLineHeight = uiRect.fBottom - uiRect.fTop;
+                imeCharPos->pt = cursorPos;
+                imeCharPos->rcDocument = documentArea;
                 return true;
             }
             break;
@@ -589,7 +606,7 @@ void jwm::WindowWin32::_close() {
     }
 }
 
-void jwm::WindowWin32::_imeResetComposition() const {
+void jwm::WindowWin32::_imeResetComposition() {
     HIMC hImc = ImmGetContext(getHWnd());
 
     if (!hImc)
@@ -597,16 +614,15 @@ void jwm::WindowWin32::_imeResetComposition() const {
 
     ImmNotifyIME(hImc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
     ImmReleaseContext(getHWnd(), hImc);
+
+    _compositionStr.resize(0);
+    _compositionPos = 0;
 }
 
 void jwm::WindowWin32::_imeChangeCursorPos() const {
-    jobject uiRect = classes::TextInputClient::rectForMarkedRange(getJNIEnv(), this, 0, 0);
-
-    if (!uiRect)
-        return;
-
-    int left, top, right, bottom;
-    classes::UIRect::getRectFields(getJNIEnv(), uiRect, left, top, right, bottom);
+    auto sectionStart = static_cast<int>(_compositionPos);
+    auto sectionEnd = sectionStart + 0;
+    auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
 
     HIMC hImc = ImmGetContext(getHWnd());
 
@@ -615,18 +631,18 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
 
     COMPOSITIONFORM compositionform;
     compositionform.dwStyle = CFS_FORCE_POSITION;
-    compositionform.ptCurrentPos.x = left;
-    compositionform.ptCurrentPos.y = bottom;
+    compositionform.ptCurrentPos.x = uiRect.fLeft;
+    compositionform.ptCurrentPos.y = uiRect.fBottom;
 
     CANDIDATEFORM candidateform;
     candidateform.dwIndex = 0;
     candidateform.dwStyle = CFS_EXCLUDE;
-    candidateform.ptCurrentPos.x = left;
-    candidateform.ptCurrentPos.y = top;
-    candidateform.rcArea.left = left;
-    candidateform.rcArea.top = top;
-    candidateform.rcArea.right = right;
-    candidateform.rcArea.bottom = bottom;
+    candidateform.ptCurrentPos.x = uiRect.fLeft;;
+    candidateform.ptCurrentPos.y = uiRect.fTop;
+    candidateform.rcArea.left = uiRect.fLeft;
+    candidateform.rcArea.top = uiRect.fTop;
+    candidateform.rcArea.right = uiRect.fRight;
+    candidateform.rcArea.bottom = uiRect.fBottom;
 
     ImmSetCompositionWindow(hImc, &compositionform);
     ImmSetCandidateWindow(hImc, &candidateform);
