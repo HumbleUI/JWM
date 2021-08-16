@@ -418,11 +418,11 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                                                         true,
                                                                         jwm::KeyX11::getModifiers()));
             myWindow->dispatch(eventKeyboard.get());
-            char textBuffer[0x20];
+            uint8_t textBuffer[0x20];
             Status status;
             int count = Xutf8LookupString(myWindow->_ic,
                                           (XKeyPressedEvent*)&ev,
-                                          textBuffer,
+                                          reinterpret_cast<char*>(textBuffer),
                                           sizeof(textBuffer),
                                           &s,
                                           &status);
@@ -431,8 +431,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 // ignore delete key and other control symbols
                 if (textBuffer[0] != 127 && textBuffer[0] > 0x1f) {
                     JNIEnv* env = app.getJniEnv();
-                    
-                    jwm::StringUTF16 converted = textBuffer;
+
+                    jwm::StringUTF16 converted = reinterpret_cast<const char*>(textBuffer);
                     jwm::JNILocal<jstring> jtext = converted.toJString(env);
 
                     jwm::JNILocal<jobject> eventTextInput(env, EventTextInput::make(env, jtext.get()));
