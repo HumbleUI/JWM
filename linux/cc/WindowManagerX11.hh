@@ -44,6 +44,7 @@ namespace jwm {
         bool _runLoop;
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
+        std::map<std::string, ByteBuf> _myClipboardContents;
 
         /**
          * Input Manager
@@ -92,5 +93,6 @@ namespace jwm {
             #undef DEFINE_ATOM
         } _atoms;
         Atoms& getAtoms() { return _atoms; }
+        void setClipboardContents(std::map<std::string, ByteBuf>&& c);
     };
 }

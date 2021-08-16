@@ -67,6 +67,32 @@ namespace jwm {
             return nullptr;
         }
 
+
+        void set(JNIEnv* env, jobjectArray entries) {
+            jsize size = env->GetArrayLength(entries);
+            std::map<std::string, ByteBuf> contents;
+            for (jsize i = 0; i < size; ++i) {
+                jobject entry = env->GetObjectArrayElement(entries, i);
+
+                if (entry) {
+                    jobject format = classes::ClipboardEntry::getFormat(env, entry);
+                    jbyteArray data = classes::ClipboardEntry::getData(env, entry);
+                    jsize dataSize = env->GetArrayLength(data);
+                    
+                    StringUTF16 formatId = StringUTF16::makeFromJString(env, classes::ClipboardFormat::getFormatId(env, format));
+
+                    ByteBuf resultBuffer;
+                    {
+                        jbyte* dataBytes = env->GetByteArrayElements(data, nullptr);
+                        resultBuffer.insert(resultBuffer.end(), dataBytes, dataBytes + dataSize);
+                        env->ReleaseByteArrayElements(data, dataBytes, JNI_ABORT);
+                    }
+               
+                    contents[formatId.toAscii()] = std::move(resultBuffer);       
+                }
+            }
+            jwm::app.getWindowManager().setClipboardContents(std::move(contents));
+        }
     };
 }
 
@@ -75,7 +101,7 @@ namespace jwm {
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nSet
         (JNIEnv* env, jclass jclass, jobjectArray entries) {
-    
+    return jwm::ClipboardX11::inst().set(env, entries);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Clipboard__1nGet
@@ -95,5 +121,5 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nClear
 
 extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_Clipboard__1nRegisterFormat
         (JNIEnv* env, jclass jclass, jstring formatId) {
-   return 0;
+   return true;
 }

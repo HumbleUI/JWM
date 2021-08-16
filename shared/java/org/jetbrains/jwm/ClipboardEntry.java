@@ -30,6 +30,9 @@ public class ClipboardEntry {
 
     @NotNull @SneakyThrows
     public static ClipboardEntry makeString(ClipboardFormat format, String text) {
+        if (Platform.CURRENT == Platform.X11) {
+            return make(format, text.getBytes("UTF-8"));
+        }
         return make(format, text.getBytes("UTF-16LE"));
     }
 

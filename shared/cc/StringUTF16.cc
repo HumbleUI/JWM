@@ -69,3 +69,12 @@ jwm::StringUTF16 jwm::StringUTF16::makeFromJString(JNIEnv* env, jstring js) {
     env->ReleaseStringChars(js, chars);
     return result;
 }
+std::string jwm::StringUTF16::toAscii() const {
+    std::string result;
+    result.resize(length());
+    size_t i = 0;
+    for (auto c : *this) {
+        result[i++] = c;
+    }
+    return result;
+}

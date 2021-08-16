@@ -25,6 +25,8 @@ namespace jwm
 
         JNILocal<jstring> toJString(JNIEnv* env) const;
 
+        std::string toAscii() const;
+
         bool operator==(const char* str) const {
             return (*this) == StringUTF16(str);
         }

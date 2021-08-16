@@ -455,6 +455,80 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             myWindow->dispatch(eventKeyboard.get());
             break;
         }
+
+        case SelectionRequest: {
+            if (ev.xselectionrequest.property == None) {
+                break;
+            }
+            if (ev.xselectionrequest.target == _atoms.TARGETS) { // data type request
+                std::vector<Atom> targetAtoms = {
+                        XInternAtom(display, "TIMESTAMP", false),
+                        XInternAtom(display, "TARGETS", false),
+                        XInternAtom(display, "SAVE_TARGETS", false),
+                        XInternAtom(display, "MULTIPLE", false)
+                };
+                // additional 10 elements to be sure
+                targetAtoms.reserve(10 + _myClipboardContents.size());
+                for (auto& entry : _myClipboardContents) {
+                    targetAtoms.push_back(XInternAtom(display, entry.first.c_str(), false));
+                }
+
+                // if user stored text, we should also add UTF8_STRING and STRING
+                if (_myClipboardContents.find("text/plain") != _myClipboardContents.end()) {
+                    targetAtoms.insert(targetAtoms.end(),
+                                 {
+                                     XInternAtom(display, "STRING", false),
+                                     XInternAtom(display, "UTF8_STRING", false),
+                                     XInternAtom(display, "text/plain;charset=utf-8", false),
+                                 });
+                }
+
+                XChangeProperty(display,
+                                ev.xselectionrequest.requestor,
+                                ev.xselectionrequest.property,
+                                ev.xselectionrequest.target,
+                                targetAtoms.size(),
+                                PropModeReplace,
+                                (unsigned char*) targetAtoms.data(),
+                                sizeof(Atom) * targetAtoms.size());
+            } else { // data request
+                std::string targetName;
+                {
+                    char* targetNameC = XGetAtomName(display, ev.xselectionrequest.target);
+                    targetName = targetNameC;
+                    XFree(targetNameC);
+                }
+                auto it = _myClipboardContents.find(targetName);
+                if (it == _myClipboardContents.end() && (targetName == "UTF8_STRING" || targetName == "STRING" || targetName == "text/plain;charset=utf-8")) { // check for UTF8_STRING
+                    it = _myClipboardContents.find("text/plain");
+                }
+                if (it != _myClipboardContents.end()) {
+                    XChangeProperty(display,
+                                    ev.xselectionrequest.requestor,
+                                    ev.xselectionrequest.property,
+                                    ev.xselectionrequest.target,
+                                    8,
+                                    PropModeReplace,
+                                    (unsigned char*) it->second.data(),
+                                    it->second.size());
+                } else {
+                    // we cannot supply contents
+                    ev.xselectionrequest.property = None;
+                }
+            }
+
+            // notify the requestor
+            XSelectionEvent ssev;
+            ssev.type = SelectionNotify;
+            ssev.requestor = ev.xselectionrequest.requestor;
+            ssev.selection = ev.xselectionrequest.selection;
+            ssev.target = ev.xselectionrequest.target;
+            ssev.property = ev.xselectionrequest.property;
+            ssev.time = ev.xselectionrequest.time;
+
+            XSendEvent(display, ev.xselectionrequest.requestor, True, NoEventMask, (XEvent *)&ssev);
+            break;
+        }
     }
 }
 
@@ -499,7 +573,6 @@ std::vector<std::string> WindowManagerX11::getClipboardFormats() {
                         char* str = XGetAtomName(display, properties[i]);
                         if (str) {
                             std::string s = str;
-
                             // include only mime types
                             if (s.find('/') != std::string::npos) {
                                 result.push_back(s);
@@ -612,4 +685,10 @@ void WindowManagerX11::unregisterWindow(WindowX11* window) {
 
 void WindowManagerX11::terminate() {
     _runLoop = false;
+}
+
+void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
+    assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
+    _myClipboardContents = c;
+    XSetSelectionOwner(display, _atoms.CLIPBOARD, _nativeWindowToMy.begin()->first, CurrentTime);
 }
