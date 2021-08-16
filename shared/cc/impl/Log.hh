@@ -78,7 +78,7 @@ namespace jwm {
         friend class Log;
 
         // Uses wchar_t string for correct unicode handling
-        // NOTE: linux/mac (utf-8) and win (utf-16)
+        // NOTE: linux/mac (utf-32) and win (utf-16)
         std::wstring _message;
         std::string _file;
         std::string _function;
