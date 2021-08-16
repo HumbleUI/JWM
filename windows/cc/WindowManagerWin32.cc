@@ -56,7 +56,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
     wndclassexw.hInstance     = GetModuleHandleW(nullptr);
-    wndclassexw.hCursor       = LoadCursorA(nullptr, IDC_ARROW);
+    wndclassexw.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
     wndclassexw.lpszClassName = JWM_WIN32_WINDOW_CLASS_NAME;
 
     // Icon provided by user
@@ -65,7 +65,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
                                                       0, 0, LR_DEFAULTSIZE | LR_SHARED));
     if (!wndclassexw.hIcon) {
         // Default icon
-        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(nullptr,
+        wndclassexw.hIcon = static_cast<HICON>(LoadImageW(nullptr,
                                                           IDI_APPLICATION, IMAGE_ICON,
                                                           0, 0, LR_DEFAULTSIZE | LR_SHARED));
     }
