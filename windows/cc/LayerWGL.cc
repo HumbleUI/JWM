@@ -42,7 +42,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
         // Init context, if it is not initialized yet
         if (!contextWgl.init()) {
-            app.sendError("Failed to initialize WGL globals");
+            JWM_ERROR("Failed to initialize WGL globals");
             return;
         }
 

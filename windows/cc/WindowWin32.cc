@@ -6,6 +6,7 @@
 #include <KeyModifier.hh>
 #include <MouseButton.hh>
 #include <impl/Library.hh>
+#include <impl/Log.hh>
 #include <impl/JNILocal.hh>
 #include <memory>
 
@@ -579,7 +580,7 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     );
 
     if (!_hWnd) {
-        AppWin32::getInstance().sendError("Failed to init WindowWin32");
+        JWM_ERROR("Failed to init WindowWin32");
         return false;
     }
 

@@ -15,7 +15,6 @@ namespace jwm {
         int start();
         void terminate();
         bool isTerminateRequested() const;
-        void sendError(const char* what);
         void enqueueCallback(jobject callback);
         const std::vector<ScreenWin32> &getScreens();
 
