@@ -111,6 +111,8 @@ namespace jwm {
 
         void enableLogging(bool enable);
         bool checkLevel(LogLevel level) const;
+        bool isEnabled() const { return _enabled; }
+        LogLevel getLevel() const { return _level; }
 
     public:
         static Log& getInstance();

@@ -1,6 +1,7 @@
 #include "Log.hh"
 #include <cassert>
 #include <cstdio>
+#include <jni.h>
 
 jwm::LogEntry::LogEntry(std::wstring message, std::string file,
                         std::string function, std::time_t time,
@@ -113,4 +114,26 @@ void jwm::LogBuilder::commit() {
 
     _log.log(std::move(entry));
     this->clear();
+}
+
+// JNI
+
+extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_Log__1nEnabled
+        (JNIEnv* env, jclass jclass) {
+    return jwm::Log::getInstance().isEnabled();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nEnable
+        (JNIEnv* env, jclass jclass, jboolean enabled) {
+    jwm::Log::getInstance().enableLogging(enabled);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nSetLevel
+    (JNIEnv* env, jclass jclass, jint level) {
+    jwm::Log::getInstance().setLevel(static_cast<jwm::LogLevel>(level));
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_Log__1nGetLevel
+        (JNIEnv* env, jclass jclass) {
+    return static_cast<jint>(jwm::Log::getInstance().getLevel());
 }
