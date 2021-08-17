@@ -7,6 +7,10 @@
 #include <memory>
 #include <vector>
 #include "Types.hh"
+#include <functional>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 namespace jwm {
     class WindowX11;
@@ -31,8 +35,10 @@ namespace jwm {
         XSetWindowAttributes& getSWA() { return x11SWA; }
         XIM getIM() const { return _im; }
 
+        void enqueueTask(const std::function<void()>& task);
+
         void _processXEvent(XEvent& ev);
-        void _processRedrawRequests();
+        void _processCallbacks();
 
         ByteBuf getClipboardContents(const std::string& type);
         std::vector<std::string> getClipboardFormats();
@@ -50,6 +56,10 @@ namespace jwm {
          * Input Manager
          */
         XIM _im;
+
+        std::mutex _taskQueueLock;
+        std::condition_variable _taskQueueNotify;
+        std::queue<std::function<void()>> _taskQueue;
 
         struct XInput2 {
             int opcode;

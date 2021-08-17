@@ -66,6 +66,16 @@ extern"C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
 }
 
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+        (JNIEnv* env, jclass cls, jobject callback) {
+    jobject callbackRef = env->NewGlobalRef(callback);
+    jwm::app.getWindowManager().enqueueTask([callbackRef] {
+        jwm::classes::Runnable::run(jwm::app.getJniEnv(), callbackRef);
+        jwm::app.getJniEnv()->DeleteGlobalRef(callbackRef);
+    });
+}
+
+
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens(JNIEnv* env, jobject cls) noexcept {
     Display* display = jwm::app.getWindowManager().getDisplay();
     XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());

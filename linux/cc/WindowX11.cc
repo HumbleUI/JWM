@@ -150,9 +150,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_show
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->show();
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11_getWindowRect
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
-    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     return jwm::classes::UIRect::toJavaXYWH(
       env,
       instance->getLeft(),
@@ -162,9 +162,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11_getWindowR
     );
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11_getContentRect
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetContentRect
   (JNIEnv* env, jobject obj) {
-    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     // FIXME
     return jwm::classes::UIRect::toJavaXYWH(
       env,
@@ -175,7 +175,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11_getContent
     );
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowRect
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetWindowRect
         (JNIEnv* env, jobject obj, int left, int top, int width, int height) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->move(left, top);

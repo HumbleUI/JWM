@@ -181,19 +181,37 @@ void WindowManagerX11::runLoop() {
                 _runLoop = false;
         }
 
-        _processRedrawRequests();
+        _processCallbacks();
 
     }
 }
 
-void WindowManagerX11::_processRedrawRequests() {
-    for (auto& p : _nativeWindowToMy) {
-        if (p.second->isRedrawRequested()) {
-            p.second->unsetRedrawRequest();
-            if (p.second->_layer) {
-                p.second->_layer->makeCurrent();
+void WindowManagerX11::_processCallbacks() {
+    {
+        // process ui thread callbacks
+        std::unique_lock<std::mutex> lock(_taskQueueLock);
+        
+        // TODO better solution for handling both XPending and condition_variable
+        _taskQueueNotify.wait_for(lock, std::chrono::microseconds(500));
+
+        while (!_taskQueue.empty()) {
+            auto callback = std::move(_taskQueue.front());
+            _taskQueue.pop();
+            lock.unlock();
+            callback();
+            lock.lock();
+        }        
+    }
+    {
+        // process redraw requests
+        for (auto& p : _nativeWindowToMy) {
+            if (p.second->isRedrawRequested()) {
+                p.second->unsetRedrawRequest();
+                if (p.second->_layer) {
+                    p.second->_layer->makeCurrent();
+                }
+                p.second->dispatch(classes::EventFrame::kInstance);
             }
-            p.second->dispatch(classes::EventFrame::kInstance);
         }
     }
 }
@@ -595,7 +613,7 @@ std::vector<std::string> WindowManagerX11::getClipboardFormats() {
                 }
             
             }
-            _processRedrawRequests();
+            _processCallbacks();
         }
     }();
 
@@ -652,7 +670,7 @@ jwm::ByteBuf WindowManagerX11::getClipboardContents(const std::string& type) {
                     _processXEvent(ev);
             }
         }
-        _processRedrawRequests();
+        _processCallbacks();
     }
 
     XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
@@ -691,4 +709,10 @@ void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) 
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
     XSetSelectionOwner(display, _atoms.CLIPBOARD, _nativeWindowToMy.begin()->first, CurrentTime);
+}
+
+void WindowManagerX11::enqueueTask(const std::function<void()>& task) {
+    std::unique_lock<std::mutex> lock(_taskQueueLock);
+    _taskQueue.push(task);
+    _taskQueueNotify.notify_one();
 }
