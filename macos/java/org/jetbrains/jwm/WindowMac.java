@@ -24,8 +24,20 @@ public class WindowMac extends Window {
     }
 
     @Override
-    public Window setWindowRect(int left, int top, int width, int height) {
-        _nSetWindowRect(left, top, width, height);
+    public Window setWindowPosition(int left, int top) {
+        _nSetWindowPosition(left, top);
+        return this;
+    }
+
+    @Override
+    public Window setWindowSize(int width, int height) {
+        _nSetWindowSize(width, height);
+        return this;
+    }
+
+    @Override
+    public Window setContentSize(int width, int height) {
+        _nSetContentSize(width, height);
         return this;
     }
 
@@ -44,6 +56,8 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
-    @ApiStatus.Internal public native void _nSetWindowRect(int left, int top, int width, int height);
+    @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
+    @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
+    @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nClose();
 }

@@ -33,12 +33,11 @@ public abstract class Window extends RefCounted {
 
     public abstract float getScale(); // TODO Screen API
 
-    public Window setWindowRect(@NotNull UIRect rect) {
-        assert rect != null : "Can’t Window::setWindowRect with rect == null";
-        return setWindowRect(rect._left, rect._top, rect.getWidth(), rect.getHeight());
-    }
+    public abstract Window setWindowPosition(int left, int top);
 
-    public abstract Window setWindowRect(int left, int top, int width, int height);
+    public abstract Window setWindowSize(int width, int height);
+    
+    public abstract Window setContentSize(int width, int height);
 
     public abstract void requestFrame();
 

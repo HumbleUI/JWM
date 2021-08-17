@@ -51,7 +51,8 @@ public class Example implements Consumer<Event>, TextInputClient {
         window.setTextInputEnabled(true);
         changeLayer();
         var scale = window.getScale();
-        window.setWindowRect((int) (100 * scale), (int) (100 * scale), (int) (800 * scale), (int) (600 * scale));
+        window.setWindowPosition((int) (100 * scale), (int) (100 * scale));
+        window.setWindowSize((int) (800 * scale), (int) (600 * scale));
         window.show();
         window.requestFrame();
 
@@ -210,7 +211,7 @@ public class Example implements Consumer<Event>, TextInputClient {
         }
 
         // VSync
-        var hudHeight = 8 * 2 + 32 + 24 * (10 + paintCounters.size());
+        var hudHeight = 8 * 2 + 32 + 24 * (11 + paintCounters.size());
         try (var paint = new Paint()) {
             canvas.save();
             canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - hudHeight - 68);
@@ -246,6 +247,17 @@ public class Example implements Consumer<Event>, TextInputClient {
             canvas.translate(0, 24);
 
             // Variant
+            paint.setColor(0x80000000);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
+            canvas.drawRRect(RRect.makeXYWH(20, 0, 16, 16, 2), paint);
+            canvas.drawRRect(RRect.makeXYWH(40, 0, 16, 16, 2), paint);
+            paint.setColor(0xFFFFFFFF);
+            canvas.drawString("1", 3, 12, font, paint);
+            canvas.drawString("2", 23, 12, font, paint);
+            canvas.drawString("3", 43, 12, font, paint);
+            canvas.drawString("Pos / Wndw / Cont", 64, 12, font, paint);
+            canvas.translate(0, 24);
+
             paint.setColor(0x80000000);
             canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
             paint.setColor(0xFFFFFFFF);
@@ -342,6 +354,7 @@ public class Example implements Consumer<Event>, TextInputClient {
 
     @Override
     public void accept(Event e) {
+        float scale = window.getScale();
         if (e instanceof EventEnvironmentChange) {
             layer.reconfigure();
             accept(new EventWindowResize(window.getWindowRect().getWidth(),
@@ -371,6 +384,12 @@ public class Example implements Consumer<Event>, TextInputClient {
             KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
             if (eventKey.isPressed() == true && eventKey.isModifierDown(modifier)) {
                 switch (eventKey.getKey()) {
+                    case DIGIT1 ->
+                        window.setWindowPosition((int) (200 * scale), (int) (200 * scale));
+                    case DIGIT2 ->
+                        window.setWindowSize((int) (600 * scale), (int) (500 * scale));
+                    case DIGIT3 ->
+                        window.setContentSize((int) (600 * scale), (int) (500 * scale));
                     case P -> {
                         paused = !paused;
                         if (!paused)

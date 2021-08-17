@@ -13,7 +13,6 @@ namespace jwm {
         void show();
         void reconfigure();
         float getScale() const;
-        void setWindowRect(int left, int top, int width, int height);
         void requestFrame();
         void close();
 

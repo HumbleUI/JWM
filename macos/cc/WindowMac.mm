@@ -88,16 +88,6 @@ float jwm::WindowMac::getScale() const {
     return (fNSWindow.screen ?: [NSScreen mainScreen]).backingScaleFactor;
 }
 
-void jwm::WindowMac::setWindowRect(int left, int top, int width, int height) {
-  auto screen = fNSWindow.screen ?: [NSScreen mainScreen];
-  auto scale = screen.backingScaleFactor;
-  NSRect frame = NSMakeRect((CGFloat) left / scale,
-                            screen.frame.size.height - (CGFloat) (top + height) / scale,
-                            (CGFloat) width / scale,
-                            (CGFloat) height / scale);
-  [fNSWindow setFrame:frame display:YES];
-}
-
 void jwm::WindowMac::requestFrame() {
     fFrameRequested = true;
     if (!CVDisplayLinkIsRunning(fDisplayLink))
@@ -130,8 +120,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_show
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    auto screen = instance->fNSWindow.screen ?: [NSScreen mainScreen];
-    const NSRect frame = [instance->fNSWindow frame];
+    NSWindow* nsWindow = instance->fNSWindow;
+    auto screen = nsWindow.screen ?: [NSScreen mainScreen];
+    const NSRect frame = [nsWindow frame];
     const NSRect outerFrame = [screen frame];
     auto scale = instance->getScale();
     return jwm::classes::UIRect::toJavaXYWH(
@@ -146,8 +137,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWind
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetContentRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    const NSRect frame = [instance->fNSWindow.contentView frame];
-    const NSRect outerFrame = [instance->fNSWindow frame];
+    NSWindow* nsWindow = instance->fNSWindow;
+    const NSRect frame = [nsWindow.contentView frame];
+    const NSRect outerFrame = [nsWindow frame];
     auto scale = instance->getScale();
     return jwm::classes::UIRect::toJavaXYWH(
       env,
@@ -164,10 +156,36 @@ extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac_getScale
     return instance->getScale();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowRect
-  (JNIEnv* env, jobject obj, int left, int top, int width, int height) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowPosition
+  (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    instance->setWindowRect(left, top, width, height);
+    NSWindow* nsWindow = instance->fNSWindow;
+    NSScreen* screen = nsWindow.screen ?: [NSScreen mainScreen];
+    CGFloat scale = screen.backingScaleFactor;
+    NSPoint point {(CGFloat) left / scale, screen.frame.size.height - (CGFloat) top / scale};
+    [nsWindow setFrameTopLeftPoint:point];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowSize
+  (JNIEnv* env, jobject obj, int width, int height) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    const NSRect oldFrame = [nsWindow frame];
+    CGFloat scale = instance->getScale();
+    NSRect frame = NSMakeRect(oldFrame.origin.x,
+                              oldFrame.origin.y - ((CGFloat) height / scale) + oldFrame.size.height,
+                              (CGFloat) width / scale,
+                              (CGFloat) height / scale);
+    [nsWindow setFrame:frame display:YES];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContentSize
+  (JNIEnv* env, jobject obj, int width, int height) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    CGFloat scale = instance->getScale();
+    NSSize size {(CGFloat) width / scale, (CGFloat) height / scale};
+    [nsWindow setContentSize:size];
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_requestFrame
