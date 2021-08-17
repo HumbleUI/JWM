@@ -2,6 +2,7 @@
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
 #include <impl/Library.hh>
+#include <Log.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
@@ -56,7 +57,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     wndclassexw.style         = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wndclassexw.lpfnWndProc   = (WNDPROC) windowMessageProc;
     wndclassexw.hInstance     = GetModuleHandleW(nullptr);
-    wndclassexw.hCursor       = LoadCursorA(nullptr, IDC_ARROW);
+    wndclassexw.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
     wndclassexw.lpszClassName = JWM_WIN32_WINDOW_CLASS_NAME;
 
     // Icon provided by user
@@ -65,13 +66,13 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
                                                       0, 0, LR_DEFAULTSIZE | LR_SHARED));
     if (!wndclassexw.hIcon) {
         // Default icon
-        wndclassexw.hIcon = static_cast<HICON>(LoadImageA(nullptr,
+        wndclassexw.hIcon = static_cast<HICON>(LoadImageW(nullptr,
                                                           IDI_APPLICATION, IMAGE_ICON,
                                                           0, 0, LR_DEFAULTSIZE | LR_SHARED));
     }
 
     if (!RegisterClassExW(&wndclassexw)) {
-        AppWin32::getInstance().sendError("Failed to register window class");
+        JWM_LOG("Failed to register window class");
         return false;
     }
 
@@ -89,7 +90,7 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
                                         nullptr);
 
     if (!_hWndHelperWindow) {
-        AppWin32::getInstance().sendError("Failed to create helper window");
+        JWM_LOG("Failed to create helper window");
         return false;
     }
 

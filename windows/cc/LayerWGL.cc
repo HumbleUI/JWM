@@ -4,6 +4,7 @@
 #include <WindowManagerWin32.hh>
 #include <ContextWGL.hh>
 #include <impl/Library.hh>
+#include <Log.hh>
 #include <jni.h>
 
 void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
@@ -12,12 +13,12 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
     AppWin32& app = AppWin32::getInstance();
 
     if (!window) {
-        app.sendError("Passed null WindowWin32 object to attach");
+        JWM_LOG("Passed null WindowWin32 object to attach");
         return;
     }
 
     if (window->testFlag(WindowWin32::Flag::HasAttachedLayer)) {
-        app.sendError("Window already has attached layer. Cannot re-attach.");
+        JWM_LOG("Window already has attached layer. Cannot re-attach.");
         return;
     }
 
@@ -41,7 +42,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
         // Init context, if it is not initialized yet
         if (!contextWgl.init()) {
-            app.sendError("Failed to initialize WGL globals");
+            JWM_LOG("Failed to initialize WGL globals");
             return;
         }
 
@@ -70,7 +71,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         bool status = contextWgl.wglChoosePixelFormatARB(_hDC, pixelAttribs, nullptr, 1, &pixelFormatID, &numFormats);
 
         if (!status || numFormats == 0) {
-            app.sendError("Failed to chose pixel format");
+            JWM_LOG("Failed to chose pixel format");
             _releaseInternal();
             return;
         }
@@ -79,7 +80,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         DescribePixelFormat(_hDC, pixelFormatID, sizeof(PFD), &PFD);
 
         if (!SetPixelFormat(_hDC, pixelFormatID, &PFD)) {
-            app.sendError("Failed to set selected pixel format");
+            JWM_LOG("Failed to set selected pixel format");
             _releaseInternal();
             return;
         }
@@ -95,7 +96,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         _hRC = contextWgl.wglCreateContextAttribsARB(_hDC, nullptr, contextAttribs);
 
         if (!_hRC) {
-            app.sendError("Failed to create rendering context");
+            JWM_LOG("Failed to create rendering context");
             _releaseInternal();
             return;
         }
@@ -123,13 +124,15 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
     // Make context current (since we running in separate thread it won't be changed)
     if (!wglMakeCurrent(_hDC, _hRC)) {
-        app.sendError("Failed to make rendering context current");
+        JWM_LOG("Failed to make rendering context current");
         _releaseInternal();
         return;
     }
 
     // Force v-sync (maybe in the future we will add some options)
     vsync(true);
+
+    JWM_VERBOSE("Create GL layer for window 0x" << _windowWin32);
 }
 
 void jwm::LayerWGL::resize(int width, int height) {
@@ -156,6 +159,7 @@ void jwm::LayerWGL::makeCurrent() {
 }
 
 void jwm::LayerWGL::close() {
+    JWM_VERBOSE("Close GL layer for window 0x" << _windowWin32);
     _releaseInternal();
 }
 

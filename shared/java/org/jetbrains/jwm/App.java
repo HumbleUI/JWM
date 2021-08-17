@@ -19,6 +19,8 @@ public class App {
     public static void init() {
         Library.load();
         _nInit();
+        Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
+        Log.setLogger(System.out::println);
     }
 
     @NotNull @SneakyThrows

@@ -51,10 +51,6 @@ bool jwm::AppWin32::isTerminateRequested() const {
     return _terminateRequested.load();
 }
 
-void jwm::AppWin32::sendError(const char *what) {
-    std::cerr << "jwm::Error: " << what << std::endl;
-}
-
 void jwm::AppWin32::enqueueCallback(jobject callback) {
     _uiThreadCallbacks.push_back(callback);
 }

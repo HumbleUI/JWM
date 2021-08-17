@@ -3,6 +3,11 @@ project(jwm LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (NOT MSVC)
+    message(FATAL_ERROR "Support only MSVC C++ compiler for windows JWM library build.
+                         Please, use MSVC toolchain.")
+endif()
+
 if(NOT JWM_ARCH)
     if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
         set(JWM_ARCH "arm64")
@@ -84,6 +89,15 @@ set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "/MT")
 set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+
+target_compile_definitions(jwm
+    PRIVATE WIN32
+    PRIVATE _WIN32
+    PRIVATE _WINDOWS
+    PRIVATE UNICODE
+    PRIVATE _UNICODE
+    PRIVATE _CRT_SECURE_NO_WARNINGS
+    PRIVATE _SCL_SECURE_NO_WARNINGS)
 
 target_compile_options(jwm
     PRIVATE /source-charset:utf-8)

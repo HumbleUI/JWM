@@ -19,6 +19,12 @@ namespace jwm
          */
         StringUTF16(const char* str);
 
+        /**
+         * Constructs StringUTF16 from C style string.
+         * @arg str C style null terminated string in UTF32 encoding.
+         */
+        explicit StringUTF16(const uint32_t* str);
+
         StringUTF16() = default;
 
         static StringUTF16 makeFromJString(JNIEnv* env, jstring js);

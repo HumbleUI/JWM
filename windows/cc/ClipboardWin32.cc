@@ -1,6 +1,7 @@
 #include <ClipboardWin32.hh>
 #include <AppWin32.hh>
 #include <impl/Library.hh>
+#include <Log.hh>
 #include <Richedit.h>
 #include <cstring>
 #include <algorithm>
@@ -60,7 +61,7 @@ jobject jwm::ClipboardWin32::get(jobjectArray formats) {
             auto isRegistered = registeredFormat != _registeredFormats.end();
 
             if (!isDefault && !isRegistered) {
-                _app.sendError("Unregistered clipboard format");
+                JWM_LOG("Unregistered clipboard format '" << formatId << "'");
                 continue;
             }
 
@@ -204,7 +205,7 @@ void jwm::ClipboardWin32::set(jobjectArray entries) {
             auto isRegistered = registeredFormat != _registeredFormats.end();
 
             if (!isDefault && !isRegistered) {
-                _app.sendError("Unregistered clipboard format");
+                JWM_LOG("Unregistered clipboard format '" << formatId << "'");
                 continue;
             }
 
@@ -270,7 +271,7 @@ bool jwm::ClipboardWin32::registerFormat(jstring formatId) {
 
 bool jwm::ClipboardWin32::_emptyClipboard() {
     if (!EmptyClipboard()) {
-        _app.sendError("Failed to empty clipboard");
+        JWM_LOG("Failed to empty clipboard");
         return false;
     }
 
@@ -290,7 +291,7 @@ bool jwm::ClipboardWin32::_openClipboard() {
     HWND hHelperWindow = man.getHelperWindow();
 
     if (!OpenClipboard(hHelperWindow)) {
-        _app.sendError("Failed to open clipboard");
+        JWM_LOG("Failed to open clipboard");
         return false;
     }
 
@@ -299,7 +300,7 @@ bool jwm::ClipboardWin32::_openClipboard() {
 
 void jwm::ClipboardWin32::_closeClipboard() {
     if (!CloseClipboard())
-        _app.sendError("Failed to close clipboard");
+        JWM_LOG("Failed to close clipboard");
 }
 
 void jwm::ClipboardWin32::_getFormatStringId(jobject format, std::wstring &formatIdStr) const {

@@ -1,6 +1,7 @@
 #include <ContextWGL.hh>
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
+#include <Log.hh>
 
 bool jwm::ContextWGL::init() {
     std::lock_guard<std::mutex> lock(_accessMutex);
@@ -31,31 +32,31 @@ bool jwm::ContextWGL::init() {
     int pixelFormatID = ChoosePixelFormat(helperWindowDC, &helperWindowPFD);
 
     if (!pixelFormatID) {
-        app.sendError("Failed to choose pixel format for helper window");
+        JWM_LOG("Failed to choose pixel format for helper window");
         return false;
     }
 
     if (!SetPixelFormat(helperWindowDC, pixelFormatID, &helperWindowPFD)) {
-        app.sendError("Failed to set pixel format for helper window");
+        JWM_LOG("Failed to set pixel format for helper window");
         return false;
     }
 
     HGLRC helperWindowRC = wglCreateContext(helperWindowDC);
 
     if (!helperWindowRC) {
-        app.sendError("Failed to create rendering context for helper window");
+        JWM_LOG("Failed to create rendering context for helper window");
         return false;
     }
 
     // Used to release helper window temporary rendering context
     auto releaseHelperWindowResources = [=](){
-        wglMakeCurrent(NULL, NULL);
+        wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(helperWindowRC);
         ReleaseDC(helperWindow, helperWindowDC);
     };
 
     if (!wglMakeCurrent(helperWindowDC, helperWindowRC)) {
-        app.sendError("Failed to make helper window context current");
+        JWM_LOG("Failed to make helper window context current");
         releaseHelperWindowResources();
         return false;
     }
