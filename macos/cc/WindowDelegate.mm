@@ -29,20 +29,20 @@
     NSView* view = fWindow->fNSWindow.contentView;
     CGFloat scale = fWindow->getScale();
 
-    jwm::JNILocal<jobject> eventResize(fWindow->fEnv, jwm::classes::EventResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
-    fWindow->dispatch(eventResize.get());
+    jwm::JNILocal<jobject> eventWindowResize(fWindow->fEnv, jwm::classes::EventWindowResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
+    fWindow->dispatch(eventWindowResize.get());
 }
 
 - (void)windowDidChangeScreen:(NSNotification*)notification {
     NSWindow* window = fWindow->fNSWindow;
     CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
     fWindow->reconfigure();
-    fWindow->dispatch(jwm::classes::EventReconfigure::kInstance);
+    fWindow->dispatch(jwm::classes::EventEnvironmentChange::kInstance);
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {
     std::cout << "windowShouldClose" << std::endl;
-    fWindow->dispatch(jwm::classes::EventClose::kInstance);
+    fWindow->dispatch(jwm::classes::EventWindowCloseRequest::kInstance);
     return FALSE;
 }
 

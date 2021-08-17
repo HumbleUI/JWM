@@ -13,7 +13,7 @@
 - Getter methods ALWAYS start with `get...` / `is...` (`lineNumber` -> `getLineNumber()`, `accessible` -> `isAccessible()`).
 - Constructors/static builders ALWAYS start with `make...`.
 - Setters/updaters must return `this`.
-- Class names use `<Generic>-<Specific>` pattern (`EventClose`, not `CloseEvent`, `WindowMac`, not `MacWindow`). That way they group nicely in file lists.
+- Class names use `<Generic>-<Specific>` pattern (`EventKey`, not `KeyEvent`, `WindowMac`, not `MacWindow`). That way they group nicely in file lists.
 
 Some common dictionary:
 

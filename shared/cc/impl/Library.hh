@@ -57,7 +57,7 @@ namespace jwm {
             jstring getFormatId(JNIEnv* env, jobject clipboardFormat);
         }
 
-        namespace EventClose {
+        namespace EventWindowCloseRequest {
             extern jobject kInstance;
         }
 
@@ -65,7 +65,7 @@ namespace jwm {
             extern jobject kInstance;
         }
 
-        namespace EventKeyboard {
+        namespace EventKey {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint jmodifiers);
@@ -83,17 +83,17 @@ namespace jwm {
             jobject make(JNIEnv* env, jint x, jint y, jint buttons = 0, jint modifiers = 0);
         }
 
-        namespace EventReconfigure {
+        namespace EventEnvironmentChange {
             extern jobject kInstance;
         }
 
-        namespace EventResize {
+        namespace EventWindowResize {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint width, jint height);
         }
 
-        namespace EventScroll {
+        namespace EventMouseScroll {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jfloat dx, jfloat dy, jint modifiers = 0);

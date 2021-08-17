@@ -190,8 +190,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int height = HIWORD(lParam);
             width = width > 1? width: 1;
             height = height > 1? height: 1;
-            JNILocal<jobject> eventResize(env, classes::EventResize::make(env, width, height));
-            dispatch(eventResize.get());
+            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, width, height));
+            dispatch(eventWindowResize.get());
             return 0;
         }
 
@@ -247,8 +247,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventScroll(env, classes::EventScroll::make(env, 0.0f, scrollValue, modifiers));
-            dispatch(eventScroll.get());
+            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, scrollValue, modifiers));
+            dispatch(eventMouseScroll.get());
             return 0;
         }
 
@@ -259,8 +259,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventScroll(env, classes::EventScroll::make(env, -scrollValue, 0.0f, modifiers));
-            dispatch(eventScroll.get());
+            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, modifiers));
+            dispatch(eventMouseScroll.get());
             return 0;
         }
 
@@ -313,8 +313,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             auto mapping = table.find(keycode);
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
 
-            JNILocal<jobject> eventKeyboard(env, classes::EventKeyboard::make(env, key, isPressed, modifiers));
-            dispatch(eventKeyboard.get());
+            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers));
+            dispatch(eventKey.get());
             break;
         }
 
@@ -460,7 +460,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_CLOSE:
-            dispatch(classes::EventClose::kInstance);
+            dispatch(classes::EventWindowCloseRequest::kInstance);
             return 0;
 
         default:

@@ -19,7 +19,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
     public EventMouseMove lastMouseMove = null;
-    public EventResize lastResize = new EventResize(0, 0);
+    public EventWindowResize lastResize = new EventWindowResize(0, 0);
     public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Point scroll = new Point(0, 0);
     public String text = "";
@@ -338,10 +338,10 @@ public class Example implements Consumer<Event>, TextInputClient {
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventReconfigure) {
+        if (e instanceof EventEnvironmentChange) {
             _layer.reconfigure();
-            accept(new EventResize(_window.getWidth(), _window.getHeight()));
-        } else if (e instanceof EventResize ee) {
+            accept(new EventWindowResize(_window.getWidth(), _window.getHeight()));
+        } else if (e instanceof EventWindowResize ee) {
             lastResize = ee;
             _layer.resize(ee.getWidth(), ee.getHeight());
             paint("Resize");
@@ -360,10 +360,10 @@ public class Example implements Consumer<Event>, TextInputClient {
                 buttons.remove(ee.getButton());
         } else if (e instanceof EventMouseMove ee) {
             lastMouseMove = ee;
-        } else if (e instanceof EventKeyboard eventKeyboard) {
+        } else if (e instanceof EventKey eventKey) {
             KeyModifier modifier = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
-            if (eventKeyboard.isPressed() == true && eventKeyboard.isModifierDown(modifier)) {
-                switch (eventKeyboard.getKey()) {
+            if (eventKey.isPressed() == true && eventKey.isModifierDown(modifier)) {
+                switch (eventKey.getKey()) {
                     case P -> {
                         _paused = !_paused;
                         if (!_paused)
@@ -372,7 +372,7 @@ public class Example implements Consumer<Event>, TextInputClient {
                     case N ->
                         new Example();
                     case W ->
-                        accept(EventClose.INSTANCE);
+                        accept(EventWindowCloseRequest.INSTANCE);
                     case C ->
                         Clipboard.set(ClipboardEntry.makePlainText(text));
                     case V -> {
@@ -393,8 +393,8 @@ public class Example implements Consumer<Event>, TextInputClient {
                 }
             }
 
-            if (eventKeyboard.isPressed() == true) {
-                switch(eventKeyboard.getKey()) {
+            if (eventKey.isPressed() == true) {
+                switch(eventKey.getKey()) {
                     case ENTER -> {
                         text += "\n";
                         break;
@@ -411,11 +411,11 @@ public class Example implements Consumer<Event>, TextInputClient {
                 }
             }
 
-            if (eventKeyboard.isPressed() == true)
-                keys.add(eventKeyboard.getKey());
+            if (eventKey.isPressed() == true)
+                keys.add(eventKey.getKey());
             else
-                keys.remove(eventKeyboard.getKey());
-        } else if (e instanceof EventScroll ee) {
+                keys.remove(eventKey.getKey());
+        } else if (e instanceof EventMouseScroll ee) {
             scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
         } else if (e instanceof EventWindowMove ee) {
             lastMove = ee;
@@ -423,7 +423,7 @@ public class Example implements Consumer<Event>, TextInputClient {
             paint("Frame");
             if (!_paused)
                 _window.requestFrame();
-        } else if (e instanceof EventClose) {
+        } else if (e instanceof EventWindowCloseRequest) {
             timerTask.cancel();
             _layer.close();
             _window.close();

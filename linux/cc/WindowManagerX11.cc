@@ -267,16 +267,16 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                         }
 
                         if (dX != 0 || dY != 0) {
-                            jwm::JNILocal<jobject> eventScroll(
+                            jwm::JNILocal<jobject> eventMouseScroll(
                                 app.getJniEnv(),
-                                EventScroll::make(
+                                EventMouseScroll::make(
                                     app.getJniEnv(),
                                     -dX,
                                     -dY,
                                     jwm::KeyX11::getModifiers()
                                 )
                             );
-                            myWindow->dispatch(eventScroll.get()); 
+                            myWindow->dispatch(eventMouseScroll.get()); 
                         }
 
                         break;
@@ -300,7 +300,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                     myWindow->_xsyncRequestCounter.hi = ev.xclient.data.l[3];
                 } else if (ev.xclient.data.l[0] == _atoms.WM_DELETE_WINDOW) {
                     // close button clicked
-                    myWindow->dispatch(EventClose::kInstance);
+                    myWindow->dispatch(EventWindowCloseRequest::kInstance);
                 }
             }
             break;
@@ -326,8 +326,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 except = myWindow;
                 myWindow->_width = ev.xconfigure.width;
                 myWindow->_height = ev.xconfigure.height;
-                jwm::JNILocal<jobject> eventResize(app.getJniEnv(), EventResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
-                myWindow->dispatch(eventResize.get());
+                jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), EventWindowResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
+                myWindow->dispatch(eventWindowResize.get());
 
                 // force redraw
                 if (myWindow->_layer) {
@@ -412,12 +412,12 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             KeySym s = XLookupKeysym(&ev.xkey, 0);
             jwm::Key key = KeyX11::fromNative(s);
             jwm::KeyX11::setKeyState(key, true);
-            jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
-                                                    EventKeyboard::make(app.getJniEnv(),
+            jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
+                                                    EventKey::make(app.getJniEnv(),
                                                                         key,
                                                                         true,
                                                                         jwm::KeyX11::getModifiers()));
-            myWindow->dispatch(eventKeyboard.get());
+            myWindow->dispatch(eventKey.get());
             uint8_t textBuffer[0x20];
             Status status;
             int count = Xutf8LookupString(myWindow->_ic,
@@ -447,12 +447,12 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             KeySym s = XLookupKeysym(&ev.xkey, 0);
             jwm::Key key = KeyX11::fromNative(s);
             jwm::KeyX11::setKeyState(key, false);
-            jwm::JNILocal<jobject> eventKeyboard(app.getJniEnv(),
-                                                    EventKeyboard::make(app.getJniEnv(),
+            jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
+                                                    EventKey::make(app.getJniEnv(),
                                                                         key,
                                                                         false,
                                                                         jwm::KeyX11::getModifiers()));
-            myWindow->dispatch(eventKeyboard.get());
+            myWindow->dispatch(eventKey.get());
             break;
         }
 

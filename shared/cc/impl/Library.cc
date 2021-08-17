@@ -169,13 +169,13 @@ namespace jwm {
             }
         }
 
-        namespace EventClose {
+        namespace EventWindowCloseRequest {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventClose");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowCloseRequest");
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventClose;");
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowCloseRequest;");
                 jobject instance = env->GetStaticObjectField(cls, field);
                 kInstance = env->NewGlobalRef(instance);
             }
@@ -193,21 +193,21 @@ namespace jwm {
             }
         }
 
-        namespace EventKeyboard {
+        namespace EventKey {
             jclass kCls;
             jmethodID kCtor;
             jobjectArray kKeys;
 
             void onLoad(JNIEnv* env) {
-                // kCls = EventKeyboard
+                // kCls = EventKey
                 {
-                    jclass cls = env->FindClass("org/jetbrains/jwm/EventKeyboard");
+                    jclass cls = env->FindClass("org/jetbrains/jwm/EventKey");
                     Throwable::exceptionThrown(env);
                     kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                     assert(kCls);
                 }
 
-                // kCtor = EventKeyboard::<init>(Key key, boolean isPressed, int modifiers)
+                // kCtor = EventKey::<init>(Key key, boolean isPressed, int modifiers)
                 {
                     kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
                     Throwable::exceptionThrown(env);
@@ -258,24 +258,24 @@ namespace jwm {
             }
         }
 
-        namespace EventReconfigure {
+        namespace EventEnvironmentChange {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventReconfigure");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventEnvironmentChange");
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventReconfigure;");
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventEnvironmentChange;");
                 jobject instance = env->GetStaticObjectField(cls, field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
 
-        namespace EventResize {
+        namespace EventWindowResize {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventResize");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowResize");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
@@ -288,12 +288,12 @@ namespace jwm {
             }
         }
     
-        namespace EventScroll {
+        namespace EventMouseScroll {
             jclass kCls;
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventScroll");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventMouseScroll");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(FFI)V");
@@ -451,14 +451,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Clipboard::onLoad(env);
     jwm::classes::ClipboardEntry::onLoad(env);
     jwm::classes::ClipboardFormat::onLoad(env);
-    jwm::classes::EventClose::onLoad(env);
+    jwm::classes::EventWindowCloseRequest::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
-    jwm::classes::EventKeyboard::onLoad(env);
+    jwm::classes::EventKey::onLoad(env);
     jwm::classes::EventMouseButton::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
-    jwm::classes::EventReconfigure::onLoad(env);
-    jwm::classes::EventResize::onLoad(env);
-    jwm::classes::EventScroll::onLoad(env);
+    jwm::classes::EventEnvironmentChange::onLoad(env);
+    jwm::classes::EventWindowResize::onLoad(env);
+    jwm::classes::EventMouseScroll::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
     jwm::classes::EventWindowMove::onLoad(env);
