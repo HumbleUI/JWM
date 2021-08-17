@@ -5,7 +5,6 @@ import org.jetbrains.annotations.*;
 
 @Getter
 @EqualsAndHashCode
-@ToString
 public class UIRect {
     public final int _left;
     public final int _top;
@@ -66,5 +65,9 @@ public class UIRect {
     @NotNull
     public UIRect offset(int dx, int dy) {
         return new UIRect(_left + dx, _top + dy, _right + dx, _bottom + dy);
+    }
+
+    public String toString() {
+        return "(" + _left + "," + _top + ") " + (_right - _left) + "×" + (_bottom - _top);
     }
 }

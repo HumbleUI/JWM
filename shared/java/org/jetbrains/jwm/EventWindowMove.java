@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class EventWindowMove implements Event {
-    public final int _left;
-    public final int _top;
+    public final int _windowLeft;
+    public final int _windowTop;
 }

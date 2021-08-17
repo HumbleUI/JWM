@@ -326,7 +326,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 except = myWindow;
                 myWindow->_width = ev.xconfigure.width;
                 myWindow->_height = ev.xconfigure.height;
-                jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), EventWindowResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height));
+                jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), EventWindowResize::make(app.getJniEnv(), ev.xconfigure.width, ev.xconfigure.height, ev.xconfigure.width, ev.xconfigure.height));
                 myWindow->dispatch(eventWindowResize.get());
 
                 // force redraw

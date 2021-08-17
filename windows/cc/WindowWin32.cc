@@ -190,7 +190,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int height = HIWORD(lParam);
             width = width > 1? width: 1;
             height = height > 1? height: 1;
-            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, width, height));
+            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, width, height, width, height));
             dispatch(eventWindowResize.get());
             return 0;
         }
@@ -725,46 +725,42 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_show
     instance->show();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowWin32_getLeft
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->getLeft();
+    return jwm::classes::UIRect::toJavaXYWH(
+      env,
+      instance->getLeft(),
+      instance->getTop(),
+      instance->getWidth(),
+      instance->getHeight()
+    );
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowWin32_getTop
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetContentRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->getTop();
+    // FIXME
+    return jwm::classes::UIRect::toJavaXYWH(
+      env,
+      0,
+      0,
+      instance->getWidth(),
+      instance->getHeight()
+    );
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowWin32_getWidth
-        (JNIEnv* env, jobject obj) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowRect
+        (JNIEnv* env, jobject obj, int left, int top, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->getWidth();
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_WindowWin32_getHeight
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->getHeight();
+    instance->move(left, top);
+    instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowWin32_getScale
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScale();
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_move
-        (JNIEnv* env, jobject obj, int left, int top) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->move(left, top);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_resize
-        (JNIEnv* env, jobject obj, int width, int height) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame

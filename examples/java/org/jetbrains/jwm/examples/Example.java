@@ -9,8 +9,8 @@ import java.util.function.*;
 import java.util.stream.*;
 
 public class Example implements Consumer<Event>, TextInputClient {
-    public Window _window;
-    public SkijaLayer _layer;
+    public Window window;
+    public SkijaLayer layer;
     public static Timer timer = new Timer(true);
     public TimerTask timerTask;
 
@@ -19,7 +19,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public Font font48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
     public EventMouseMove lastMouseMove = null;
-    public EventWindowResize lastResize = new EventWindowResize(0, 0);
+    public EventWindowResize lastResize = new EventWindowResize(0, 0, 0, 0);
     public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Point scroll = new Point(0, 0);
     public String text = "";
@@ -32,7 +32,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
     public int timesIdx = 0;
-    public boolean _paused = false;
+    public boolean paused = false;
 
     public Set<Key> keys = Collections.synchronizedSortedSet(new TreeSet<Key>());
     public Set<MouseButton> buttons = Collections.synchronizedSortedSet(new TreeSet<MouseButton>());
@@ -45,16 +45,15 @@ public class Example implements Consumer<Event>, TextInputClient {
         else
             variants = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
 
-        _window = App.makeWindow();
-        _window.setEventListener(this);
-        _window.setTextInputClient(this);
-        _window.setTextInputEnabled(true);
+        window = App.makeWindow();
+        window.setEventListener(this);
+        window.setTextInputClient(this);
+        window.setTextInputEnabled(true);
         changeLayer();
-        var scale = _window.getScale();
-        _window.move((int) (100 * scale), (int) (100 * scale));
-        _window.resize((int) (800 * scale), (int) (600 * scale));
-        _window.show();
-        _window.requestFrame();
+        var scale = window.getScale();
+        window.setWindowRect((int) (100 * scale), (int) (100 * scale), (int) (800 * scale), (int) (600 * scale));
+        window.show();
+        window.requestFrame();
 
         timerTask = new TimerTask() {
             public void run() {
@@ -67,16 +66,16 @@ public class Example implements Consumer<Event>, TextInputClient {
     public void paint(String reason) {
         paintCounters.merge(reason, 1, Integer::sum);
 
-        if (_layer == null)
+        if (layer == null)
             return;
 
-        var canvas = _layer.beforePaint();
+        var canvas = layer.beforePaint();
 
         canvas.clear(0xFF264653);
-        int layer = canvas.save();
-        float scale = _window.getScale();
-        int width = (int) (_window.getWidth() / scale);
-        int height = (int) (_window.getHeight() / scale);
+        int canvasCount = canvas.save();
+        float scale = window.getScale();
+        int width = (int) (window.getContentRect().getWidth() / scale);
+        int height = (int) (window.getContentRect().getHeight() / scale);
         int halfWidth = width / 2;
         int halfHeight = height / 2;
         canvas.scale(scale, scale);
@@ -103,8 +102,8 @@ public class Example implements Consumer<Event>, TextInputClient {
             // Cursor
             paint.setColor(0x20FFFFFF);
             if (lastMouseMove != null) {
-                var x = (int) (lastMouseMove.getX() / _window.getScale());
-                var y = (int) (lastMouseMove.getY() / _window.getScale());
+                var x = (int) (lastMouseMove.getX() / window.getScale());
+                var y = (int) (lastMouseMove.getY() / window.getScale());
                 canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
                 canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
 
@@ -211,9 +210,10 @@ public class Example implements Consumer<Event>, TextInputClient {
         }
 
         // VSync
+        var hudHeight = 8 * 2 + 32 + 24 * (10 + paintCounters.size());
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - (8 * 2 + 32 + 24 * (8 + paintCounters.size())) - 68);
+            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - hudHeight - 68);
             paint.setColor(0xFFE0E0E0);
             canvas.drawRRect(RRect.makeXYWH(0, 0, 196, 60, 4), paint);
             paint.setColor(angle % 2 == 0 ? 0xFFEF8784 : 0xFFA1FCFE);
@@ -225,20 +225,24 @@ public class Example implements Consumer<Event>, TextInputClient {
         // HUD
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - (8 * 2 + 32 + 24 * (8 + paintCounters.size())));
+            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - hudHeight);
 
             // bg
             paint.setColor(0x40000000);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, (8 * 2 + 32 + 24 * (8 + paintCounters.size())), 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, hudHeight, 4), paint);
             canvas.translate(8, 8);
 
             // Dimensions
             paint.setColor(0xFFFFFFFF);
-            canvas.drawString("Pos: " + _window.getLeft() + "×" + _window.getTop() + " (" + lastMove.getLeft() + "×" + lastMove.getTop() + ")", 0, 12, font, paint);
+            canvas.drawString("Window: " + window.getWindowRect(), 0, 12, font, paint);
             canvas.translate(0, 24);
-            canvas.drawString("Size: " + _window.getWidth() + "×" + _window.getHeight() + " (" + lastResize.getWidth() + "×" + lastResize.getHeight() + ")", 0, 12, font, paint);
+            canvas.drawString("Content: " + window.getContentRect(), 0, 12, font, paint);
             canvas.translate(0, 24);
-            canvas.drawString("Scale: " + _window.getScale(), 0, 12, font, paint);
+            canvas.drawString("Resize: " + lastResize.getWindowWidth() + "×" + lastResize.getWindowHeight() + " " + lastResize.getContentWidth() + "×" + lastResize.getContentHeight(), 0, 12, font, paint);
+            canvas.translate(0, 24);
+            canvas.drawString("Move: (" + lastMove.getWindowLeft() + "," + lastMove.getWindowTop() + ")", 0, 12, font, paint);
+            canvas.translate(0, 24);
+            canvas.drawString("Scale: " + window.getScale(), 0, 12, font, paint);
             canvas.translate(0, 24);
 
             // Variant
@@ -253,7 +257,7 @@ public class Example implements Consumer<Event>, TextInputClient {
             canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
             paint.setColor(0xFFFFFFFF);
             canvas.drawString("P", 3, 12, font, paint);
-            canvas.drawString(_paused ? "Paused" : "Not paused", 24, 12, font, paint);
+            canvas.drawString(paused ? "Paused" : "Not paused", 24, 12, font, paint);
             canvas.translate(0, 24);
 
             paint.setColor(0x80000000);
@@ -312,38 +316,41 @@ public class Example implements Consumer<Event>, TextInputClient {
             canvas.restore();
         }
 
-        canvas.restoreToCount(layer);
+        canvas.restoreToCount(canvasCount);
 
-        _layer.afterPaint();
+        layer.afterPaint();
     }
 
     public void changeLayer() {
-        if (_layer != null)
-            _layer.close();
+        if (layer != null)
+            layer.close();
 
         String className = "org.jetbrains.jwm.examples." + variants[variantIdx];
 
         try {
-            _layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+            layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             System.err.println("Failed to create class " + className);
             e.printStackTrace();
-            _layer = null;
+            layer = null;
         }
 
-        _layer.attach(_window);
-        _layer.reconfigure();
-        _layer.resize(_window.getWidth(), _window.getHeight());
+        layer.attach(window);
+        layer.reconfigure();
+        layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
 
     @Override
     public void accept(Event e) {
         if (e instanceof EventEnvironmentChange) {
-            _layer.reconfigure();
-            accept(new EventWindowResize(_window.getWidth(), _window.getHeight()));
+            layer.reconfigure();
+            accept(new EventWindowResize(window.getWindowRect().getWidth(),
+                                         window.getWindowRect().getHeight(),
+                                         window.getContentRect().getWidth(),
+                                         window.getContentRect().getHeight()));
         } else if (e instanceof EventWindowResize ee) {
             lastResize = ee;
-            _layer.resize(ee.getWidth(), ee.getHeight());
+            layer.resize(ee.getContentWidth(), ee.getContentHeight());
             paint("Resize");
         } else if (e instanceof EventTextInput ee) {
             text += ee.getText();
@@ -353,7 +360,7 @@ public class Example implements Consumer<Event>, TextInputClient {
             lastMarked = ee;
         } else if (e instanceof EventMouseButton ee) {
 
-            _window.unmarkText();
+            window.unmarkText();
             if (ee.isPressed())
                 buttons.add(ee.getButton());
             else
@@ -365,9 +372,9 @@ public class Example implements Consumer<Event>, TextInputClient {
             if (eventKey.isPressed() == true && eventKey.isModifierDown(modifier)) {
                 switch (eventKey.getKey()) {
                     case P -> {
-                        _paused = !_paused;
-                        if (!_paused)
-                            _window.requestFrame();
+                        paused = !paused;
+                        if (!paused)
+                            window.requestFrame();
                     }
                     case N ->
                         new Example();
@@ -421,12 +428,12 @@ public class Example implements Consumer<Event>, TextInputClient {
             lastMove = ee;
         } else if (e instanceof EventFrame) {
             paint("Frame");
-            if (!_paused)
-                _window.requestFrame();
+            if (!paused)
+                window.requestFrame();
         } else if (e instanceof EventWindowCloseRequest) {
             timerTask.cancel();
-            _layer.close();
-            _window.close();
+            layer.close();
+            window.close();
             if (App._windows.size() == 0)
                 App.terminate();
         }
@@ -436,10 +443,10 @@ public class Example implements Consumer<Event>, TextInputClient {
     public UIRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
         System.out.println("TextInputClient::getRectForMarkedRange " + selectionStart + ".." + selectionEnd);
 
-        float scale = _window.getScale();
+        float scale = window.getScale();
         var lines = text.split("\n", -1);
         try (var line = TextLine.make(lines[lines.length - 1], font24);) {
-            var left = (_window.getWidth() / scale - 300) / 2 + 8 + line.getWidth();
+            var left = (window.getContentRect().getWidth() / scale - 300) / 2 + 8 + line.getWidth();
             var metrics = font24.getMetrics();
             var top = 50 - (50 - metrics.getHeight()) / 2 + 20 - metrics.getHeight();
 

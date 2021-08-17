@@ -26,10 +26,18 @@
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-    NSView* view = fWindow->fNSWindow.contentView;
+    const NSRect windowFrame = [fWindow->fNSWindow frame];
+    const NSRect contentFrame = [fWindow->fNSWindow.contentView frame];
     CGFloat scale = fWindow->getScale();
 
-    jwm::JNILocal<jobject> eventWindowResize(fWindow->fEnv, jwm::classes::EventWindowResize::make(fWindow->fEnv, view.bounds.size.width * scale, view.bounds.size.height * scale));
+    jwm::JNILocal<jobject> eventWindowResize(
+        fWindow->fEnv,
+        jwm::classes::EventWindowResize::make(
+            fWindow->fEnv,
+            windowFrame.size.width * scale,
+            windowFrame.size.height * scale,
+            contentFrame.size.width * scale,
+            contentFrame.size.height * scale));
     fWindow->dispatch(eventWindowResize.get());
 }
 

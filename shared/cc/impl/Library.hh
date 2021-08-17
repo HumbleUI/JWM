@@ -57,7 +57,7 @@ namespace jwm {
             jstring getFormatId(JNIEnv* env, jobject clipboardFormat);
         }
 
-        namespace EventWindowCloseRequest {
+        namespace EventEnvironmentChange {
             extern jobject kInstance;
         }
 
@@ -83,16 +83,6 @@ namespace jwm {
             jobject make(JNIEnv* env, jint x, jint y, jint buttons = 0, jint modifiers = 0);
         }
 
-        namespace EventEnvironmentChange {
-            extern jobject kInstance;
-        }
-
-        namespace EventWindowResize {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint width, jint height);
-        }
-
         namespace EventMouseScroll {
             extern jclass kCls;
             extern jmethodID kCtor;
@@ -111,10 +101,20 @@ namespace jwm {
             jobject make(JNIEnv* env, jstring text, jint selectionStart, jint selectionEnd);
         }
 
+        namespace EventWindowCloseRequest {
+            extern jobject kInstance;
+        }
+
         namespace EventWindowMove {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint left, jint top);
+        }
+
+        namespace EventWindowResize {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint windowWidth, jint windowHeight, jint contentWidth, jint contentHeight);
         }
         
         namespace Screen {
@@ -131,11 +131,13 @@ namespace jwm {
 
         namespace UIRect {
             extern jclass kCls;
+            extern jmethodID kCtor;
             extern jfieldID kLeft;
             extern jfieldID kTop;
             extern jfieldID kRight;
             extern jfieldID kBottom;
             jwm::UIRect fromJava(JNIEnv* env, jobject uirect);
+            jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height);
         }
     }
 }

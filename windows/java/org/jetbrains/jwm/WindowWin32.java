@@ -22,26 +22,24 @@ public class WindowWin32 extends Window {
     @Override
     public native void show();
 
-    @Override
-    public native int getLeft();
+    @Override 
+    public UIRect getWindowRect() {
+        return _nGetWindowRect();
+    }
+
+    @Override 
+    public UIRect getContentRect() {
+        return _nGetContentRect();
+    }
 
     @Override
-    public native int getTop();
-
-    @Override
-    public native int getWidth();
-
-    @Override
-    public native int getHeight();
-
+    public Window setWindowRect(int left, int top, int width, int height) {
+        _nSetWindowRect(left, top, width, height);
+        return this;
+    }
+    
     @Override
     public native float getScale();
-
-    @Override
-    public native void move(int left, int top);
-
-    @Override
-    public native void resize(int width, int height);
 
     @Override
     public native void requestFrame();
@@ -53,5 +51,8 @@ public class WindowWin32 extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
+    @ApiStatus.Internal public native UIRect _nGetWindowRect();
+    @ApiStatus.Internal public native UIRect _nGetContentRect();
+    @ApiStatus.Internal public native void _nSetWindowRect(int left, int top, int width, int height);
     @ApiStatus.Internal public native void _nClose();
 }

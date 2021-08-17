@@ -169,13 +169,13 @@ namespace jwm {
             }
         }
 
-        namespace EventWindowCloseRequest {
+        namespace EventEnvironmentChange {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowCloseRequest");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventEnvironmentChange");
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowCloseRequest;");
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventEnvironmentChange;");
                 jobject instance = env->GetStaticObjectField(cls, field);
                 kInstance = env->NewGlobalRef(instance);
             }
@@ -258,36 +258,7 @@ namespace jwm {
             }
         }
 
-        namespace EventEnvironmentChange {
-            jobject kInstance;
 
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventEnvironmentChange");
-                Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventEnvironmentChange;");
-                jobject instance = env->GetStaticObjectField(cls, field);
-                kInstance = env->NewGlobalRef(instance);
-            }
-        }
-
-        namespace EventWindowResize {
-            jclass kCls;
-            jmethodID kCtor;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowResize");
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
-                Throwable::exceptionThrown(env);
-            }
-
-            jobject make(JNIEnv* env, jint width, jint height) {
-                jobject res = env->NewObject(kCls, kCtor, width, height);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
-            }
-        }
-    
         namespace EventMouseScroll {
             jclass kCls;
             jmethodID kCtor;
@@ -354,6 +325,18 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowCloseRequest {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowCloseRequest");
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowCloseRequest;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
         namespace EventWindowMove {
             jclass kCls;
             jmethodID kCtor;
@@ -372,6 +355,24 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowResize {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowResize");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint windowWidth, jint windowHeight, jint contentWidth, jint contentHeight) {
+                jobject res = env->NewObject(kCls, kCtor, windowWidth, windowHeight, contentWidth, contentHeight);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+    
         namespace Screen {
             jclass kCls;
             jmethodID kCtor;
@@ -408,6 +409,8 @@ namespace jwm {
         }
 
         namespace UIRect {
+            jclass kCls;
+            jmethodID kCtor;
             jfieldID kLeft;
             jfieldID kTop;
             jfieldID kRight;
@@ -415,6 +418,9 @@ namespace jwm {
 
             void onLoad(JNIEnv* env) {
                 jclass cls = env->FindClass("org/jetbrains/jwm/UIRect");
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
                 Throwable::exceptionThrown(env);
                 kLeft = env->GetFieldID(cls, "_left", "I");
                 Throwable::exceptionThrown(env);
@@ -437,6 +443,11 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
                 return { left, top, right, bottom };
             }
+
+            jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height) {
+                jobject res = env->NewObject(kCls, kCtor, left, top, left + width, top + height);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
         }
 
     }
@@ -451,17 +462,17 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Clipboard::onLoad(env);
     jwm::classes::ClipboardEntry::onLoad(env);
     jwm::classes::ClipboardFormat::onLoad(env);
-    jwm::classes::EventWindowCloseRequest::onLoad(env);
+    jwm::classes::EventEnvironmentChange::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
     jwm::classes::EventKey::onLoad(env);
     jwm::classes::EventMouseButton::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
-    jwm::classes::EventEnvironmentChange::onLoad(env);
-    jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::EventMouseScroll::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
+    jwm::classes::EventWindowCloseRequest::onLoad(env);
     jwm::classes::EventWindowMove::onLoad(env);
+    jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::Screen::onLoad(env);
     jwm::classes::TextInputClient::onLoad(env);
     jwm::classes::UIRect::onLoad(env);

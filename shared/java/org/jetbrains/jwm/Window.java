@@ -27,19 +27,18 @@ public abstract class Window extends RefCounted {
 
     public abstract void show();
 
-    public abstract int getLeft();
+    public abstract UIRect getWindowRect();
 
-    public abstract int getTop();
-
-    public abstract int getWidth();
-
-    public abstract int getHeight();
+    public abstract UIRect getContentRect();
 
     public abstract float getScale(); // TODO Screen API
 
-    public abstract void move(int left, int top);
+    public Window setWindowRect(@NotNull UIRect rect) {
+        assert rect != null : "Can’t Window::setWindowRect with rect == null";
+        return setWindowRect(rect._left, rect._top, rect.getWidth(), rect.getHeight());
+    }
 
-    public abstract void resize(int width, int height);
+    public abstract Window setWindowRect(int left, int top, int width, int height);
 
     public abstract void requestFrame();
 
