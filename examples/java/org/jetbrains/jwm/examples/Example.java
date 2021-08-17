@@ -456,7 +456,10 @@ public class Example implements Consumer<Event>, TextInputClient {
 
     public static void main(String[] args) {
         App.init();
-        System.out.println("Log: enabled=" + Log.enabled() + "; level=" + Log.getLevel());
+
+        Log.setVerbose(true);
+        Log.setLogger(message -> System.out.println(message));
+
         System.out.println("Screens:");
         for (Screen screen: App.getScreens())
             System.out.println("  " + screen);

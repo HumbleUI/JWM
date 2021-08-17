@@ -6,7 +6,7 @@
 #include <D3D12/DX12SwapChain.hh>
 #include <D3D12/DX12CommandQueue.hh>
 #include <impl/Library.hh>
-#include <impl/Log.hh>
+#include <Log.hh>
 
 void jwm::LayerD3D12::attach(WindowWin32 *window) {
     assert(!_windowWin32);
@@ -14,12 +14,12 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     AppWin32& app = AppWin32::getInstance();
 
     if (!window) {
-        JWM_ERROR("Passed null WindowWin32 object to attach");
+        JWM_LOG("Passed null WindowWin32 object to attach");
         return;
     }
 
     if (window->testFlag(WindowWin32::Flag::HasAttachedLayer)) {
-        JWM_ERROR("Window already has attached layer. Cannot re-attach.");
+        JWM_LOG("Window already has attached layer. Cannot re-attach.");
         return;
     }
 
@@ -30,7 +30,7 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     DX12Common& dx12Common = app.getDx12Common();
 
     if (!dx12Common.init()) {
-        JWM_ERROR("Failed to init DX12Common");
+        JWM_LOG("Failed to init DX12Common");
         return;
     }
 
@@ -72,7 +72,7 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     _fenceValue = DX12Fence::INITIAL_VALUE;
     _tearingFeature = dx12Common.checkTearingFeature();
 
-    JWM_DEBUG("Create DX12 layer for window 0x" << _windowWin32);
+    JWM_VERBOSE("Create DX12 layer for window 0x" << _windowWin32);
 }
 
 void jwm::LayerD3D12::resize(int width, int height) {
@@ -89,7 +89,7 @@ void jwm::LayerD3D12::swapBuffers() {
 }
 
 void jwm::LayerD3D12::close() {
-    JWM_DEBUG("Close DX12 layer for window 0x" << _windowWin32);
+    JWM_VERBOSE("Close DX12 layer for window 0x" << _windowWin32);
 
     // Wait until queue idle to safely release resources
     _dx12commandQueue->waitIdle(*_dx12fence, _fenceValue);

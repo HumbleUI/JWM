@@ -2,7 +2,7 @@
 #include <AppWin32.hh>
 #include <WindowWin32.hh>
 #include <impl/Library.hh>
-#include <impl/Log.hh>
+#include <Log.hh>
 #include <jni.h>
 
 void jwm::LayerRaster::attach(WindowWin32 *window) {
@@ -11,12 +11,12 @@ void jwm::LayerRaster::attach(WindowWin32 *window) {
     AppWin32& app = AppWin32::getInstance();
 
     if (!window) {
-        JWM_ERROR("Passed null WindowWin32 object to attach");
+        JWM_LOG("Passed null WindowWin32 object to attach");
         return;
     }
 
     if (window->testFlag(WindowWin32::Flag::HasAttachedLayer)) {
-        JWM_ERROR("Window already has attached layer. Cannot re-attach.");
+        JWM_LOG("Window already has attached layer. Cannot re-attach.");
         return;
     }
 
@@ -54,7 +54,7 @@ void jwm::LayerRaster::attach(WindowWin32 *window) {
 
     resize(width, height);
 
-    JWM_DEBUG("Create Raster layer for window 0x" << _windowWin32);
+    JWM_VERBOSE("Create Raster layer for window 0x" << _windowWin32);
 }
 
 void jwm::LayerRaster::resize(int width, int height) {
@@ -87,7 +87,7 @@ void jwm::LayerRaster::swapBuffers() {
 }
 
 void jwm::LayerRaster::close() {
-    JWM_DEBUG("Close Raster layer for window 0x" << _windowWin32);
+    JWM_VERBOSE("Close Raster layer for window 0x" << _windowWin32);
     _releaseInternal();
 }
 

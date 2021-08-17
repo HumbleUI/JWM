@@ -2,7 +2,7 @@
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
 #include <impl/Library.hh>
-#include <impl/Log.hh>
+#include <Log.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
@@ -72,7 +72,7 @@ int jwm::WindowManagerWin32::_registerWindowClass() {
     }
 
     if (!RegisterClassExW(&wndclassexw)) {
-        JWM_ERROR("Failed to register window class");
+        JWM_LOG("Failed to register window class");
         return false;
     }
 
@@ -90,7 +90,7 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
                                         nullptr);
 
     if (!_hWndHelperWindow) {
-        JWM_ERROR("Failed to create helper window");
+        JWM_LOG("Failed to create helper window");
         return false;
     }
 

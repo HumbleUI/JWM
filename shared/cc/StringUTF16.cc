@@ -57,6 +57,18 @@ jwm::StringUTF16::StringUTF16(const char* str) {
     }
 }
 
+jwm::StringUTF16::StringUTF16(const uint32_t *str) {
+    for (uint32_t c = *str; c != 0; c = *(str += 1)) {
+        if (c <= 0xffff) {
+            push_back(static_cast<jchar>(c));
+        } else {
+            c -= 0x10000;
+            push_back(static_cast<jchar>((c >> 10) + 0xd800));
+            push_back(static_cast<jchar>((c & 0x3ff) + 0xdc00));
+        }
+    }
+}
+
 jwm::JNILocal<jstring> jwm::StringUTF16::toJString(JNIEnv* env) const {
     return jwm::JNILocal<jstring>(env, env->NewString(c_str(), length()));
 }

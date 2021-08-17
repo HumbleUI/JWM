@@ -1,26 +1,32 @@
 package org.jetbrains.jwm;
 
+import java.util.function.*;
 import org.jetbrains.annotations.*;
 
 public class Log {
-    public static boolean enabled() {
-        return _nEnabled();
+    @ApiStatus.Internal public static boolean _verbose = false;
+    @ApiStatus.Internal public static Consumer<String> _listener;
+
+    public static void log(String message) {
+        if (_listener != null)
+            _listener.accept(message);
     }
 
-    public static void enable(boolean enabled) {
-        _nEnable(enabled);
+    public static void verbose(String message) {
+        if (_listener != null && _verbose)
+            _listener.accept(message);
     }
 
-    public static void setLevel(LogLevel level) {
-        _nSetLevel(level._getNativeId());
+    public static void setLogger(@Nullable Consumer<String> listener) {
+        _listener = listener;
+        _nSetListener(listener);
     }
 
-    public static LogLevel getLevel() {
-        return LogLevel.makeFromInt(_nGetLevel());
+    public static void setVerbose(boolean enabled) {
+        _verbose = enabled;
+        _nSetVerbose(enabled);
     }
 
-    @ApiStatus.Internal public static native boolean _nEnabled();
-    @ApiStatus.Internal public static native void _nEnable(boolean enabled);
-    @ApiStatus.Internal public static native void _nSetLevel(int level);
-    @ApiStatus.Internal public static native int _nGetLevel();
+    @ApiStatus.Internal public static native void _nSetVerbose(boolean enabled);
+    @ApiStatus.Internal public static native void _nSetListener(Consumer<String> listener);
 }
