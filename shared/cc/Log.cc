@@ -56,24 +56,24 @@ namespace jwm {
 }
 
 jwm::LogEntry::LogEntry(std::wstring message, std::string file,
-                        std::string function, unsigned long line, jwm::LogLevel level)
+                        std::string function, unsigned long line, bool verbose)
     : _message(std::move(message)),
       _file(std::move(file)),
       _function(std::move(function)),
       _line(line),
-      _level(level) {
+      _verbose(verbose) {
 
 }
 
 void jwm::Log::log(const jwm::LogEntry &entry) {
-    if (checkLevel(entry.getLevel())) {
+    if (checkLevel(entry.isVerbose())) {
         if (_listener)
             _listener->notify(entry);
     }
 }
 
-void jwm::Log::setLevel(jwm::LogLevel level) {
-    _level = level;
+void jwm::Log::setVerbose(bool verbose) {
+    _verbose = verbose;
 }
 
 void jwm::Log::setListener(class LogListenerProxy *listener) {
@@ -87,8 +87,8 @@ void jwm::Log::enable(bool enabled) {
     _enabled = enabled;
 }
 
-bool jwm::Log::checkLevel(jwm::LogLevel level) const {
-    return _enabled && level >= _level;
+bool jwm::Log::checkLevel(bool verbose) const {
+    return _enabled && (_verbose || !verbose);
 }
 
 jwm::Log &jwm::Log::getInstance() {
@@ -97,11 +97,11 @@ jwm::Log &jwm::Log::getInstance() {
 }
 
 jwm::LogBuilder::LogBuilder(std::string file, std::string function,
-                            unsigned long line, jwm::LogLevel level, jwm::Log &log)
+                            unsigned long line, bool verbose, jwm::Log &log)
     : _file(std::move(file)),
       _function(std::move(function)),
       _line(line),
-      _level(level),
+      _verbose(verbose),
       _log(log) {
 
 }
@@ -113,7 +113,7 @@ void jwm::LogBuilder::commit() {
         std::move(_file),
         std::move(_function),
         _line,
-        _level
+        _verbose
     );
 
     _log.log(entry);
@@ -125,7 +125,7 @@ void jwm::LogBuilder::commit() {
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nSetVerbose
     (JNIEnv* env, jclass jclass, jboolean enabled) {
     jwm::Log& log = jwm::Log::getInstance();
-    log.setLevel(enabled? jwm::LogLevel::Verbose: jwm::LogLevel::Log);
+    log.setVerbose(enabled);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nSetListener

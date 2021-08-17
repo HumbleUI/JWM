@@ -6,34 +6,16 @@
 
 namespace jwm {
 
-    enum class LogLevel {
-        /**
-         * Verbose message log level.
-         * Must be used for debug/development, for displaying any expanded information about the library.
-         *
-         * @note Will be disabled by default in release builds.
-         */
-        Verbose = 0,
-
-        /**
-         * Default message log level.
-         * Must be used for displaying important/error/warning messages.
-         *
-         * @note Will be enabled by default in release builds.
-         */
-        Log = 1
-    };
-
     class LogEntry {
     public:
         LogEntry(std::wstring message, std::string file,
-                 std::string function, unsigned long int line, LogLevel level);
+                 std::string function, unsigned long int line, bool verbose);
 
         const std::wstring &getMessage() const { return _message; }
         const std::string &getFile() const { return _file; }
         const std::string &getFunction() const { return _function; }
         unsigned long int getLine() const { return _line; }
-        LogLevel getLevel() const { return _level; }
+        bool isVerbose() const { return _verbose; }
 
     private:
         friend class Log;
@@ -44,7 +26,7 @@ namespace jwm {
         std::string _file;
         std::string _function;
         unsigned long int _line;
-        LogLevel _level;
+        bool _verbose;
     };
 
     /**
@@ -55,27 +37,24 @@ namespace jwm {
 
     class Log {
     public:
-        static const LogLevel DEFAULT_LEVEL = LogLevel::Log;
-
-    public:
         Log() = default;
         Log(const Log&) = delete;
         Log(Log&&) = delete;
         ~Log() = default;
 
         void log(const LogEntry& entry);
-        void setLevel(LogLevel level);
+        void setVerbose(bool verbose);
         void setListener(class LogListenerProxy *listener);
 
         void enable(bool enabled);
-        bool checkLevel(LogLevel level) const;
+        bool checkLevel(bool verbose) const;
 
     public:
         static Log& getInstance();
 
     private:
-        LogLevel _level = DEFAULT_LEVEL;
         class LogListenerProxy* _listener = nullptr;
+        bool _verbose = false;
         bool _enabled = false;
     };
 
@@ -83,7 +62,7 @@ namespace jwm {
     class LogBuilder: public std::wstringstream {
     public:
         LogBuilder(std::string file, std::string function,
-                   unsigned long int line, LogLevel level, Log& log);
+                   unsigned long int line, bool verbose, Log& log);
 
         void commit();
 
@@ -91,23 +70,26 @@ namespace jwm {
         std::string _file;
         std::string _function;
         unsigned long int _line;
-        LogLevel _level;
+        bool _verbose;
         Log& _log;
     };
 
 }
 
+#define JWM_LEVEL_VERBOSE true
+#define JWM_LEVEL_LOG false
+
 // Macro to check if message can be logged, if can than
 // create builder and assemble message
-#define JWM_LOG_CAT(logLevel, message)                      \
+#define JWM_LOG_CAT(verbose, message)                       \
     do {                                                    \
         auto& __log = ::jwm::Log::getInstance();            \
-        if (__log.checkLevel(logLevel)) {                   \
+        if (__log.checkLevel(verbose)) {                    \
             LogBuilder __builder(                           \
                 __FILE__,                                   \
                 __FUNCTION__,                               \
                 static_cast<unsigned long int>(__LINE__),   \
-                logLevel,                                   \
+                verbose,                                    \
                 __log                                       \
             );                                              \
             __builder << message;                           \
@@ -117,8 +99,8 @@ namespace jwm {
 
 // Log macro proxy for logging global instance verbose (debug) messages
 #define JWM_VERBOSE(message)        \
-    JWM_LOG_CAT(::jwm::LogLevel::Verbose, message)
+    JWM_LOG_CAT(JWM_LEVEL_VERBOSE, message)
 
 // Log macro proxy for logging global instance log (default) messages
 #define JWM_LOG(message)            \
-    JWM_LOG_CAT(::jwm::LogLevel::Log, message)
+    JWM_LOG_CAT(JWM_LEVEL_LOG, message)
