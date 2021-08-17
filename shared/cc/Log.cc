@@ -22,13 +22,19 @@ namespace jwm {
 
         void notify(const LogEntry& entry) const {
             std::wstringstream finalMessageBuilder;
+            const std::string& file = entry.getFile();
 
+#ifdef WIN32
+            const char sep[] = "\\";
+#else
+            const char sep[] = "/";
+#endif
+
+            auto pos = file.find_last_of(sep);
             finalMessageBuilder
-                << "[level='" << logLevelToStr(entry.getLevel()) << "'; "
-                << "file='" << entry.getFile().c_str() << "'; "
-                << "line=" << entry.getLine() << "; "
-                << "function='" << entry.getFunction().c_str() << "']"
-                << " what: " << entry.getMessage();
+                << (pos == std::string::npos? file.c_str(): file.substr(pos + 1).c_str()) << ":"
+                << entry.getLine() << " "
+                << entry.getMessage();
 
             std::wstring finalMessage = finalMessageBuilder.str();
 
@@ -59,25 +65,15 @@ jwm::LogEntry::LogEntry(std::wstring message, std::string file,
 
 }
 
-void jwm::Log::log(jwm::LogEntry &&entry) {
+void jwm::Log::log(const jwm::LogEntry &entry) {
     if (checkLevel(entry.getLevel())) {
-        _entries.push_back(std::move(entry));
-        auto& pushed = _entries.back();
-
         if (_listener)
-            _listener->notify(pushed);
-
-        _eraseEntries();
+            _listener->notify(entry);
     }
 }
 
 void jwm::Log::setLevel(jwm::LogLevel level) {
     _level = level;
-}
-
-void jwm::Log::setEntriesToKeep(std::size_t numEntries) {
-    assert(numEntries > 0);
-    _entriesToKeep = numEntries;
 }
 
 void jwm::Log::setListener(class LogListenerProxy *listener) {
@@ -93,11 +89,6 @@ void jwm::Log::enable(bool enabled) {
 
 bool jwm::Log::checkLevel(jwm::LogLevel level) const {
     return _enabled && level >= _level;
-}
-
-void jwm::Log::_eraseEntries() {
-    while (_entries.size() > _entriesToKeep)
-        _entries.pop_front();
 }
 
 jwm::Log &jwm::Log::getInstance() {
@@ -125,7 +116,7 @@ void jwm::LogBuilder::commit() {
         _level
     );
 
-    _log.log(std::move(entry));
+    _log.log(entry);
     this->clear();
 }
 

@@ -20,7 +20,7 @@ public class App {
         Library.load();
         _nInit();
         Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
-        Log.setLogger(message -> System.out.println("JWM LOG: " + message));
+        Log.setLogger(System.out::println);
     }
 
     @NotNull @SneakyThrows

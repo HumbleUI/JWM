@@ -2,7 +2,6 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <deque>
 #include <memory>
 
 namespace jwm {
@@ -23,17 +22,6 @@ namespace jwm {
          * @note Will be enabled by default in release builds.
          */
         Log = 1
-    };
-
-    static const wchar_t* logLevelToStr(LogLevel level) {
-        switch (level) {
-            case LogLevel::Verbose:
-                return L"Verbose";
-            case LogLevel::Log:
-                return L"Log";
-            default:
-                return L"Unknown";
-        }
     };
 
     class LogEntry {
@@ -67,7 +55,6 @@ namespace jwm {
 
     class Log {
     public:
-        static const std::size_t ENTRIES_TO_KEEP = 100;
         static const LogLevel DEFAULT_LEVEL = LogLevel::Log;
 
     public:
@@ -76,24 +63,17 @@ namespace jwm {
         Log(Log&&) = delete;
         ~Log() = default;
 
-        void log(LogEntry&& entry);
+        void log(const LogEntry& entry);
         void setLevel(LogLevel level);
-        void setEntriesToKeep(std::size_t numEntries);
         void setListener(class LogListenerProxy *listener);
 
         void enable(bool enabled);
         bool checkLevel(LogLevel level) const;
-        LogLevel getLevel() const { return _level; }
 
     public:
         static Log& getInstance();
 
     private:
-        void _eraseEntries();
-
-    private:
-        std::deque<LogEntry> _entries;
-        std::size_t _entriesToKeep = ENTRIES_TO_KEEP;
         LogLevel _level = DEFAULT_LEVEL;
         class LogListenerProxy* _listener = nullptr;
         bool _enabled = false;
