@@ -4,15 +4,16 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
 public class Example implements Consumer<Event>, TextInputClient {
     public Window _window;
     public SkijaLayer _layer;
-    public Timer timer = new Timer(true);
+    public static Timer timer = new Timer(true);
+    public TimerTask timerTask;
 
-    public long paintCount = 0;
     public int angle = 0;
     public Font font = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public Font font24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
@@ -23,6 +24,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public Point scroll = new Point(0, 0);
     public String text = "";
     public EventTextInputMarked lastMarked = null;
+    public Map<String, Integer> paintCounters = new ConcurrentHashMap<>();
 
     public String[] variants;
     public int variantIdx = 0;
@@ -43,22 +45,27 @@ public class Example implements Consumer<Event>, TextInputClient {
         else
             variants = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
 
-        App.makeWindow((window) -> {
-            _window = window;
-            _window.setEventListener(this);
-            _window.setTextInputClient(this);
-            _window.setTextInputEnabled(true);
-            changeLayer();
-            var scale = _window.getScale();
-            _window.move((int) (100 * scale), (int) (100 * scale));
-            _window.resize((int) (800 * scale), (int) (600 * scale));
-            _window.show();
-            _window.requestFrame();
-        });
+        _window = App.makeWindow();
+        _window.setEventListener(this);
+        _window.setTextInputClient(this);
+        _window.setTextInputEnabled(true);
+        changeLayer();
+        var scale = _window.getScale();
+        _window.move((int) (100 * scale), (int) (100 * scale));
+        _window.resize((int) (800 * scale), (int) (600 * scale));
+        _window.show();
+        _window.requestFrame();
+
+        timerTask = new TimerTask() {
+            public void run() {
+                App.runOnUIThread(() -> { paint("Timer"); });
+            }
+        };
+        timer.schedule(timerTask, 10, 1000);
     }
 
-    public void paint() {
-        paintCount += 1;
+    public void paint(String reason) {
+        paintCounters.merge(reason, 1, Integer::sum);
 
         if (_layer == null)
             return;
@@ -206,7 +213,7 @@ public class Example implements Consumer<Event>, TextInputClient {
         // VSync
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8) - 68);
+            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - (8 * 2 + 32 + 24 * (8 + paintCounters.size())) - 68);
             paint.setColor(0xFFE0E0E0);
             canvas.drawRRect(RRect.makeXYWH(0, 0, 196, 60, 4), paint);
             paint.setColor(angle % 2 == 0 ? 0xFFEF8784 : 0xFFA1FCFE);
@@ -218,11 +225,11 @@ public class Example implements Consumer<Event>, TextInputClient {
         // HUD
         try (var paint = new Paint()) {
             canvas.save();
-            canvas.translate(width - (8 + 180 + 8 + 8), height - (8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8 + 8));
+            canvas.translate(width - (8 + 180 + 8 + 8), height - 8 - (8 * 2 + 32 + 24 * (8 + paintCounters.size())));
 
             // bg
             paint.setColor(0x40000000);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, 8 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24 + 32 + 8, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, 8 + 180 + 8, (8 * 2 + 32 + 24 * (8 + paintCounters.size())), 4), paint);
             canvas.translate(8, 8);
 
             // Dimensions
@@ -238,7 +245,7 @@ public class Example implements Consumer<Event>, TextInputClient {
             paint.setColor(0x80000000);
             canvas.drawRRect(RRect.makeXYWH(0, 0, 16, 16, 2), paint);
             paint.setColor(0xFFFFFFFF);
-            canvas.drawString("↓↑", 0, 12, font, paint);
+            canvas.drawString("L", 3, 12, font, paint);
             canvas.drawString(variants[variantIdx], 24, 12, font, paint);
             canvas.translate(0, 24);
 
@@ -262,6 +269,13 @@ public class Example implements Consumer<Event>, TextInputClient {
             canvas.drawString("W", 3, 12, font, paint);
             canvas.drawString("Close window", 24, 12, font, paint);
             canvas.translate(0, 24);
+
+            // Paint counters
+            for (var entry: paintCounters.entrySet()) {
+                paint.setColor(0xFFFFFFFF);
+                canvas.drawString(entry.getKey() + ": " + entry.getValue(), 0, 12, font, paint);
+                canvas.translate(0, 24);
+            }
 
             // FPS
             long t1 = System.nanoTime();
@@ -330,7 +344,7 @@ public class Example implements Consumer<Event>, TextInputClient {
         } else if (e instanceof EventResize ee) {
             lastResize = ee;
             _layer.resize(ee.getWidth(), ee.getHeight());
-            paint();
+            paint("Resize");
         } else if (e instanceof EventTextInput ee) {
             text += ee.getText();
             lastMarked = null;
@@ -381,8 +395,6 @@ public class Example implements Consumer<Event>, TextInputClient {
 
             if (eventKeyboard.isPressed() == true) {
                 switch(eventKeyboard.getKey()) {
-                    case ESCAPE ->
-                        accept(EventClose.INSTANCE);
                     case ENTER -> {
                         text += "\n";
                         break;
@@ -408,16 +420,11 @@ public class Example implements Consumer<Event>, TextInputClient {
         } else if (e instanceof EventWindowMove ee) {
             lastMove = ee;
         } else if (e instanceof EventFrame) {
-            paint();
+            paint("Frame");
             if (!_paused)
                 _window.requestFrame();
-//             System.out.println((System.nanoTime() - t0) + " PaintEvent");
-//             timer.schedule(new TimerTask() {
-//                 public void run() {
-//                     App.runOnUIThread(() -> { System.out.println((System.nanoTime() - t0) + " Paint"); paint(); });
-//                 }
-//             }, 10);
         } else if (e instanceof EventClose) {
+            timerTask.cancel();
             _layer.close();
             _window.close();
             if (App._windows.size() == 0)

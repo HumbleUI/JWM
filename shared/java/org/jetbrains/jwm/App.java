@@ -22,7 +22,7 @@ public class App {
     }
 
     @NotNull @SneakyThrows
-    public static void makeWindow(Consumer<Window> onCreate) {
+    public static Window makeWindow() {
         Class cls;
         if (Platform.CURRENT == Platform.WINDOWS) {
             cls = App.class.forName("org.jetbrains.jwm.WindowWin32");
@@ -32,8 +32,10 @@ public class App {
             cls = App.class.forName("org.jetbrains.jwm.WindowX11");
         } else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
-        Method factory = cls.getDeclaredMethod("makeOnWindowThread", Consumer.class);
-        factory.invoke(null, onCreate);
+        Constructor<Window> ctor = cls.getDeclaredConstructor();
+        Window window = ctor.newInstance();;
+        _windows.add(window);
+        return window;
     }
 
     /**
@@ -47,10 +49,16 @@ public class App {
 
     public static native Screen[] getScreens();
 
+    public static void runOnUIThread(Runnable callback) {
+        _nRunOnUIThread(callback);
+    }
+
     public static Screen getPrimaryScreen() {
         for (Screen s: getScreens())
             if (s.isPrimary())
                 return s;
         throw new IllegalStateException("Can't find primary screen");
     }
+
+    @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable callback);
 }

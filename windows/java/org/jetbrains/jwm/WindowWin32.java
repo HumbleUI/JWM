@@ -9,22 +9,8 @@ import org.jetbrains.jwm.impl.*;
 
 public class WindowWin32 extends Window {
     @ApiStatus.Internal
-    public static void makeOnWindowThread(Consumer<Window> onCreate) {
-        WindowWin32 window = new WindowWin32();
-        window.runOnWindowThread(() -> {
-            onCreate.accept(window);
-        });
-    }
-
-    @ApiStatus.Internal
     public WindowWin32() {
         super(_nMake());
-        App._windows.add(this);
-    }
-
-    @Override
-    public void runOnWindowThread(Runnable runnable) {
-        _nRunOnWindowThread(runnable);
     }
 
     @Override
@@ -67,6 +53,5 @@ public class WindowWin32 extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nRunOnWindowThread(Runnable runnable);
     @ApiStatus.Internal public native void _nClose();
 }

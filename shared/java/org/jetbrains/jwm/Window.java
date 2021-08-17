@@ -43,8 +43,6 @@ public abstract class Window extends RefCounted {
 
     public abstract void requestFrame();
 
-    public abstract void runOnWindowThread(Runnable runnable);
-    
     @Override
     public void close() {
         setEventListener(null);

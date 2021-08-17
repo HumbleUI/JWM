@@ -55,3 +55,17 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
     env->SetObjectArrayElement(array, 0, screen);
     return array;
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+  (JNIEnv* env, jclass cls, jobject callback) {
+    JavaVM* javaVM;
+    env->GetJavaVM(&javaVM);
+    auto callbackRef = env->NewGlobalRef(callback);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        JNIEnv* env2;
+        if (javaVM->GetEnv(reinterpret_cast<void**>(&env2), JNI_VERSION_1_8) == JNI_OK) {
+          jwm::classes::Runnable::run(env2, callbackRef);
+          env2->DeleteGlobalRef(callbackRef);
+        }
+    });
+}

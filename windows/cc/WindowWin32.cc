@@ -773,13 +773,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFram
     instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRunOnWindowThread
-        (JNIEnv* env, jobject obj, jobject callback) {
-    jwm::AppWin32& app = jwm::AppWin32::getInstance();
-    jobject callbackRef = env->NewGlobalRef(callback);
-    app.enqueueCallback(callbackRef);
-}
-
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));

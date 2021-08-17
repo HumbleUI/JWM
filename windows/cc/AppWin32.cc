@@ -156,3 +156,10 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
 
     return array;
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+        (JNIEnv* env, jclass cls,, jobject callback) {
+    jwm::AppWin32& app = jwm::AppWin32::getInstance();
+    jobject callbackRef = env->NewGlobalRef(callback);
+    app.enqueueCallback(callbackRef);
+}
