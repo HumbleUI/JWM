@@ -34,7 +34,9 @@ void jwm::DX12SwapChain::create() {
     ComPtr<IDXGIFactory4> dxgiFactory4 = dx12Common.getFactory();
     ComPtr<IDXGISwapChain1> swapChain1;
 
-    _window->getClientAreaSize(_currentWidth, _currentHeight);
+    UIRect rect = _window->getContentRect();
+    _currentWidth = rect.getWidth();
+    _currentHeight = rect.getHeight();
 
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
     swapChainDesc.Width = _currentWidth;

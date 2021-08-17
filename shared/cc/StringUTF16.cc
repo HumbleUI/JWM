@@ -58,7 +58,7 @@ jwm::StringUTF16::StringUTF16(const char* str) {
 }
 
 jwm::JNILocal<jstring> jwm::StringUTF16::toJString(JNIEnv* env) const {
-    return jwm::JNILocal<jstring>(env, env->NewString(c_str(), length()));
+    return jwm::JNILocal<jstring>(env, env->NewString(c_str(), static_cast<jsize>(length())));
 }
 
 jwm::StringUTF16 jwm::StringUTF16::makeFromJString(JNIEnv* env, jstring js) {
@@ -74,7 +74,7 @@ std::string jwm::StringUTF16::toAscii() const {
     result.resize(length());
     size_t i = 0;
     for (auto c : *this) {
-        result[i++] = c;
+        result[i++] = static_cast<char>(c);
     }
     return result;
 }

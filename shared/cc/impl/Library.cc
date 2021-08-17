@@ -444,6 +444,11 @@ namespace jwm {
                 return { left, top, right, bottom };
             }
 
+            jobject toJava(JNIEnv* env, const struct UIRect& rect) {
+                jobject res = env->NewObject(kCls, kCtor, rect.fLeft, rect.fTop, rect.fRight, rect.fBottom);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height) {
                 jobject res = env->NewObject(kCls, kCtor, left, top, left + width, top + height);
                 return Throwable::exceptionThrown(env) ? nullptr : res;

@@ -46,11 +46,9 @@ void jwm::LayerRaster::attach(WindowWin32 *window) {
         }
     });
 
-    int width;
-    int height;
-
-    _windowWin32->getClientAreaSize(width, height);
-
+    UIRect rect = _windowWin32->getContentRect();
+    int width = rect.getWidth();
+    int height = rect.getHeight();
     resize(width, height);
 }
 

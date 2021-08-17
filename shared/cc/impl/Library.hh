@@ -12,6 +12,9 @@ namespace jwm {
         int32_t fTop;
         int32_t fRight;
         int32_t fBottom;
+
+        int32_t getWidth() const { return fRight - fLeft; }
+        int32_t getHeight() const { return fBottom - fTop; }
     };
 
     namespace classes {
@@ -137,6 +140,7 @@ namespace jwm {
             extern jfieldID kRight;
             extern jfieldID kBottom;
             jwm::UIRect fromJava(JNIEnv* env, jobject uirect);
+            jobject toJava(JNIEnv* env, const struct UIRect& rect);
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height);
         }
     }

@@ -29,14 +29,13 @@ bool jwm::WindowWin32::init() {
 }
 
 void jwm::WindowWin32::recreate() {
-    int x;
-    int y;
-    int width;
-    int height;
     const wchar_t* caption = JWM_WIN32_WINDOW_DEFAULT_NAME;
 
-    getPosition(x, y);
-    getSize(width, height);
+    UIRect rect = getWindowRect();
+    int x = rect.fLeft;
+    int y = rect.fTop;
+    int width = rect.getWidth();
+    int height = rect.getHeight();
 
     setFlag(Flag::IgnoreMessages);
 
@@ -44,7 +43,6 @@ void jwm::WindowWin32::recreate() {
     _createInternal(x, y, width, height, caption);
 
     show();
-
     removeFlag(Flag::IgnoreMessages);
 }
 
@@ -65,60 +63,31 @@ void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
 
-void jwm::WindowWin32::getPosition(int &left, int &top) const {
-    RECT area;
-    GetWindowRect(_hWnd, &area);
-
-    left = area.left;
-    top = area.top;
+jwm::UIRect jwm::WindowWin32::getWindowRect() const {
+    RECT rect;
+    GetWindowRect(_hWnd, &rect);
+    return UIRect{rect.left, rect.top, rect.right, rect.bottom};
 }
 
-void jwm::WindowWin32::getSize(int &width, int &height) const {
-    RECT area;
-    GetWindowRect(_hWnd, &area);
-
-    width = area.right - area.left;
-    height = area.bottom - area.top;
-
-    // Explicitly clamp size, since w or h cannot be less than 0
-    width = width > 1? width: 1;
-    height = height > 1? height: 1;
+jwm::UIRect jwm::WindowWin32::getContentRect() const {
+    RECT wRect;
+    GetClientRect(_hWnd, &wRect);
+    return UIRect{wRect.left, wRect.top, wRect.right, wRect.bottom};
 }
 
-void jwm::WindowWin32::getClientAreaSize(int &width, int &height) const {
-    RECT area;
-    GetClientRect(_hWnd, &area);
+void jwm::WindowWin32::setWindowRect(const UIRect& rect) {
+    RECT wRect{rect.fLeft, rect.fTop, rect.fRight, rect.fBottom};
 
-    width = area.right - area.left;
-    height = area.bottom - area.top;
+    SetWindowPos(_hWnd, nullptr,
+                 wRect.left, wRect.top,
+                 0, 0,
+                 SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
 
-    // Explicitly clamp size, since w or h cannot be less than 0
-    width = width > 1? width: 1;
-    height = height > 1? height: 1;
-}
-
-int jwm::WindowWin32::getLeft() const {
-    int left, top;
-    getPosition(left, top);
-    return left;
-}
-
-int jwm::WindowWin32::getTop() const {
-    int left, top;
-    getPosition(left, top);
-    return top;
-}
-
-int jwm::WindowWin32::getWidth() const {
-    int width, height;
-    getClientAreaSize(width, height);
-    return width;
-}
-
-int jwm::WindowWin32::getHeight() const {
-    int width, height;
-    getClientAreaSize(width, height);
-    return height;
+    SetWindowPos(_hWnd, HWND_TOP,
+                 0, 0,
+                 wRect.right - wRect.left,
+                 wRect.bottom - wRect.top,
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
 float jwm::WindowWin32::getScale() const {
@@ -130,31 +99,6 @@ float jwm::WindowWin32::getScale() const {
         scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
 
     return (float) scaleFactor / (float) SCALE_100_PERCENT;
-}
-
-void jwm::WindowWin32::move(int left, int top) {
-    RECT rect = { left, top, left, top };
-
-    AdjustWindowRectEx(&rect, _getWindowStyle(),
-                       FALSE, _getWindowExStyle());
-
-    SetWindowPos(_hWnd, nullptr,
-                 rect.left, rect.top,
-                 0, 0,
-                 SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
-}
-
-void jwm::WindowWin32::resize(int width, int height) {
-    RECT rect = { 0, 0, width, height };
-
-    AdjustWindowRectEx(&rect, _getWindowStyle(),
-                       FALSE, _getWindowExStyle());
-
-    SetWindowPos(_hWnd, HWND_TOP,
-                 0, 0,
-                 rect.right - rect.left,
-                 rect.bottom - rect.top,
-                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void jwm::WindowWin32::close() {
@@ -650,7 +594,6 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
 
     ImmSetCompositionWindow(hImc, &compositionform);
     ImmSetCandidateWindow(hImc, &candidateform);
-
     ImmReleaseContext(getHWnd(), hImc);
 }
 
@@ -725,38 +668,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_show
     instance->show();
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return jwm::classes::UIRect::toJavaXYWH(
-      env,
-      instance->getLeft(),
-      instance->getTop(),
-      instance->getWidth(),
-      instance->getHeight()
-    );
-}
-
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetContentRect
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    // FIXME
-    return jwm::classes::UIRect::toJavaXYWH(
-      env,
-      0,
-      0,
-      instance->getWidth(),
-      instance->getHeight()
-    );
-}
-
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowRect
-        (JNIEnv* env, jobject obj, int left, int top, int width, int height) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->move(left, top);
-    instance->resize(width, height);
-}
-
 extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowWin32_getScale
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
@@ -767,6 +678,27 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFram
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::UIRect rect = instance->getWindowRect();
+    return jwm::classes::UIRect::toJava(env, rect);
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetContentRect
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::UIRect rect = instance->getContentRect();
+    return jwm::classes::UIRect::toJava(env, rect);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowRect
+        (JNIEnv* env, jobject obj, int left, int top, int width, int height) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::UIRect rect{left, top, width, height};
+    instance->setWindowRect(rect);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

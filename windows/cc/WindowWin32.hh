@@ -1,6 +1,7 @@
 #pragma once
 #include <Window.hh>
 #include <PlatformWin32.hh>
+#include <impl/Library.hh>
 #include <functional>
 #include <utility>
 #include <atomic>
@@ -46,16 +47,10 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void show();
-        void getPosition(int& left, int& top) const;
-        void getSize(int& width, int& height) const;
-        void getClientAreaSize(int& width, int& height) const;
-        int getLeft() const;
-        int getTop() const;
-        int getWidth() const;
-        int getHeight() const;
+        UIRect getWindowRect() const;
+        UIRect getContentRect() const;
+        void setWindowRect(const UIRect& rect);
         float getScale() const;
-        void move(int left, int top);
-        void resize(int width, int height);
         void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
