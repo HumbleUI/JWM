@@ -5,9 +5,7 @@
 #include <Key.hh>
 #include <KeyModifier.hh>
 #include <MouseButton.hh>
-#include <impl/Library.hh>
 #include <Log.hh>
-#include <impl/JNILocal.hh>
 #include <memory>
 
 jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
@@ -48,6 +46,7 @@ void jwm::WindowWin32::recreate() {
 }
 
 void jwm::WindowWin32::unmarkText() {
+    JWM_VERBOSE("Request abort IME composition (unmarkText)");
     _imeResetComposition();
 }
 
@@ -76,18 +75,38 @@ jwm::UIRect jwm::WindowWin32::getContentRect() const {
     return UIRect{wRect.left, wRect.top, wRect.right, wRect.bottom};
 }
 
-void jwm::WindowWin32::setWindowRect(const UIRect& rect) {
-    RECT wRect{rect.fLeft, rect.fTop, rect.fRight, rect.fBottom};
+void jwm::WindowWin32::setWindowPosition(int left, int top) {
+    JWM_VERBOSE("Set window position left=" << left << " top=" << top);
 
     SetWindowPos(_hWnd, nullptr,
-                 wRect.left, wRect.top,
+                 left, top,
                  0, 0,
                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
+}
+
+void jwm::WindowWin32::setWindowSize(int width, int height) {
+    JWM_VERBOSE("Set window size w=" << width << " h=" << height);
 
     SetWindowPos(_hWnd, HWND_TOP,
                  0, 0,
-                 wRect.right - wRect.left,
-                 wRect.bottom - wRect.top,
+                 width,
+                 height,
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
+}
+
+void jwm::WindowWin32::setContentSize(int width, int height) {
+    RECT rect{0, 0, width, height};
+
+    AdjustWindowRectEx(&rect, _getWindowStyle(),
+                       FALSE, _getWindowExStyle());
+
+    JWM_VERBOSE("Set content size " << "w=" << width << " h=" << height << " "
+                << "(adjusted window size" << " w=" << rect.right - rect.left << " h=" << rect.bottom - rect.top << ")");
+
+    SetWindowPos(_hWnd, HWND_TOP,
+                 0, 0,
+                 rect.right - rect.left,
+                 rect.bottom - rect.top,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
@@ -131,19 +150,30 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
 
         case WM_SIZE: {
-            int width = LOWORD(lParam);
-            int height = HIWORD(lParam);
-            width = width > 1? width: 1;
-            height = height > 1? height: 1;
-            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, width, height, width, height));
+            UIRect rect = getWindowRect();
+            int windowWidth = rect.getWidth();
+            int windowHeight = rect.getHeight();
+            int contentWidth = LOWORD(lParam);
+            int contentHeight = HIWORD(lParam);
+
+            JWM_VERBOSE("Size event "
+                        << "window w=" << windowWidth << " h=" << windowHeight << " "
+                        << "content w=" << contentWidth << " h=" << contentHeight);
+
+            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, windowWidth, windowHeight,
+                                                                                      contentWidth, contentHeight));
             dispatch(eventWindowResize.get());
             return 0;
         }
 
         case WM_MOVE: {
-            int left = GET_X_LPARAM(lParam);
-            int top = GET_Y_LPARAM(lParam);
-            JNILocal<jobject> eventMove(env, classes::EventWindowMove::make(env, left, top));
+            UIRect rect = getWindowRect();
+            int windowLeft= rect.fLeft;
+            int windowTop = rect.fTop;
+
+            JWM_VERBOSE("Move event left=" << windowLeft << " top" << windowTop)
+
+            JNILocal<jobject> eventMove(env, classes::EventWindowMove::make(env, windowLeft, windowTop));
             dispatch(eventMove.get());
             return 0;
         }
@@ -244,8 +274,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
+        case WM_IME_KEYDOWN:
         case WM_KEYUP:
-        case WM_SYSKEYUP: {
+        case WM_SYSKEYUP:
+        case WM_IME_KEYUP: {
             bool isPressed = !(HIWORD(lParam) & KF_UP);
             int keycode = (int) wParam;
             int modifiers = _getModifiers();
@@ -299,6 +331,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_IME_STARTCOMPOSITION:
+            JWM_VERBOSE("Start IME composition");
+
             // Reset cache for safety
             _compositionStr.resize(0);
             _compositionPos = 0;
@@ -364,6 +398,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_IME_ENDCOMPOSITION: {
+            JWM_VERBOSE("End IME composition");
+
             // Reset cached objects
             _compositionStr.resize(0);
             _compositionPos = 0;
@@ -405,6 +441,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_CLOSE:
+            JWM_VERBOSE("Event close");
             dispatch(classes::EventWindowCloseRequest::kInstance);
             return 0;
 
@@ -698,19 +735,19 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetCo
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowPosition
         (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO
+    instance->setWindowPosition(left, top);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO
+    instance->setWindowSize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetContentSize
-        (JNIEnv* env, jobject obj, int left, int top) {
+        (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO
+    instance->setContentSize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

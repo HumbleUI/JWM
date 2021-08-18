@@ -49,7 +49,9 @@ namespace jwm {
         void show();
         UIRect getWindowRect() const;
         UIRect getContentRect() const;
-        void setWindowRect(const UIRect& rect);
+        void setWindowPosition(int left, int top);
+        void setWindowSize(int width, int height);
+        void setContentSize(int width, int height);
         float getScale() const;
         void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
