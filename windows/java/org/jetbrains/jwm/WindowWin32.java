@@ -51,7 +51,9 @@ public class WindowWin32 extends Window {
     }
     
     @Override
-    public native float getScale();
+    public Screen getScreen() {
+        return _nGetScreen();
+    }
 
     @Override
     public native void requestFrame();
@@ -68,5 +70,6 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
+    @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nClose();
 }

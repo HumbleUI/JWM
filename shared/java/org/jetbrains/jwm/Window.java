@@ -31,7 +31,7 @@ public abstract class Window extends RefCounted {
 
     public abstract UIRect getContentRect();
 
-    public abstract float getScale(); // TODO Screen API
+    public abstract Screen getScreen();
 
     public abstract Window setWindowPosition(int left, int top);
 

@@ -50,7 +50,7 @@ public class Example implements Consumer<Event>, TextInputClient {
         window.setTextInputClient(this);
         window.setTextInputEnabled(true);
         changeLayer();
-        var scale = window.getScale();
+        var scale = window.getScreen().getScale();
         window.setWindowPosition((int) (100 * scale), (int) (100 * scale));
         window.setWindowSize((int) (800 * scale), (int) (600 * scale));
         window.show();
@@ -74,7 +74,7 @@ public class Example implements Consumer<Event>, TextInputClient {
 
         canvas.clear(0xFF264653);
         int canvasCount = canvas.save();
-        float scale = window.getScale();
+        float scale = window.getScreen().getScale();
         int width = (int) (window.getContentRect().getWidth() / scale);
         int height = (int) (window.getContentRect().getHeight() / scale);
         int halfWidth = width / 2;
@@ -103,8 +103,8 @@ public class Example implements Consumer<Event>, TextInputClient {
             // Cursor
             paint.setColor(0x20FFFFFF);
             if (lastMouseMove != null) {
-                var x = (int) (lastMouseMove.getX() / window.getScale());
-                var y = (int) (lastMouseMove.getY() / window.getScale());
+                var x = (int) (lastMouseMove.getX() / window.getScreen().getScale());
+                var y = (int) (lastMouseMove.getY() / window.getScreen().getScale());
                 canvas.drawRect(Rect.makeXYWH(0, y - 1, width, 2), paint);
                 canvas.drawRect(Rect.makeXYWH(x - 1, 0, 2, height), paint);
 
@@ -243,7 +243,7 @@ public class Example implements Consumer<Event>, TextInputClient {
             canvas.translate(0, 24);
             canvas.drawString("Move: (" + lastMove.getWindowLeft() + "," + lastMove.getWindowTop() + ")", 0, 12, font, paint);
             canvas.translate(0, 24);
-            canvas.drawString("Scale: " + window.getScale(), 0, 12, font, paint);
+            canvas.drawString("Scale: " + window.getScreen().getScale(), 0, 12, font, paint);
             canvas.translate(0, 24);
 
             // Variant
@@ -354,7 +354,7 @@ public class Example implements Consumer<Event>, TextInputClient {
 
     @Override
     public void accept(Event e) {
-        float scale = window.getScale();
+        float scale = window.getScreen().getScale();
         if (e instanceof EventEnvironmentChange) {
             layer.reconfigure();
             accept(new EventWindowResize(window.getWindowRect().getWidth(),
@@ -372,7 +372,6 @@ public class Example implements Consumer<Event>, TextInputClient {
             System.out.println(ee);
             lastMarked = ee;
         } else if (e instanceof EventMouseButton ee) {
-
             window.unmarkText();
             if (ee.isPressed())
                 buttons.add(ee.getButton());
@@ -462,7 +461,7 @@ public class Example implements Consumer<Event>, TextInputClient {
     public UIRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
         System.out.println("TextInputClient::getRectForMarkedRange " + selectionStart + ".." + selectionEnd);
 
-        float scale = window.getScale();
+        float scale = window.getScreen().getScale();
         var lines = text.split("\n", -1);
         try (var line = TextLine.make(lines[lines.length - 1], font24);) {
             var left = (window.getContentRect().getWidth() / scale - 300) / 2 + 8 + line.getWidth();

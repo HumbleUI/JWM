@@ -706,12 +706,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_show
     instance->show();
 }
 
-extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowWin32_getScale
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->getScale();
-}
-
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
@@ -748,6 +742,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetConte
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, instance->getScale(), true); // FIXME #103
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

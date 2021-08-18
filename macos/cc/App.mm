@@ -51,7 +51,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
   (JNIEnv* env, jclass jclass) {
     jobjectArray array = env->NewObjectArray(1, jwm::classes::Screen::kCls, 0);
-    jobject screen = jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, 2.0, true);
+    jobject screen = jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, 2.0, true); // FIXME
     env->SetObjectArrayElement(array, 0, screen);
     return array;
 }
