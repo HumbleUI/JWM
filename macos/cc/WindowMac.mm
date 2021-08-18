@@ -111,7 +111,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_show
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nShow
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->show();
@@ -150,7 +150,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetCont
     );
 }
 
-extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac_getScale
+extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScale
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScale();
@@ -188,7 +188,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContent
     [nsWindow setContentSize:size];
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac_requestFrame
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRequestFrame
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();

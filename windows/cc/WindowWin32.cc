@@ -51,12 +51,16 @@ void jwm::WindowWin32::unmarkText() {
 }
 
 void jwm::WindowWin32::setImeEnabled(bool enabled) {
-    if (enabled)
+    if (enabled) {
         // Re-enabled Windows IME by associating default context.
         ImmAssociateContextEx(getHWnd(), nullptr, IACE_DEFAULT);
-    else
+        JWM_VERBOSE("Enable ime text input")
+    }
+    else {
         // Disable Windows IME by associating 0 context.
         ImmAssociateContext(getHWnd(), nullptr);
+        JWM_VERBOSE("Disable ime text input");
+    }
 }
 
 void jwm::WindowWin32::show() {
@@ -687,32 +691,32 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMake
         return 0;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32_setTextInputEnabled
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTextInputEnabled
         (JNIEnv* env, jobject obj, jboolean enabled) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setImeEnabled(enabled);
     return obj;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_unmarkText
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nUnmarkText
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_show
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nShow
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->show();
 }
 
-extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowWin32_getScale
+extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScale
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScale();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32_requestFrame
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRequestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);

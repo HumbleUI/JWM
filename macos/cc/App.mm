@@ -36,19 +36,19 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     jwm::initKeyTable();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_start
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nStart
   (JNIEnv* env, jclass jclass) {
     [NSApp run];
     return EXIT_SUCCESS;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
   (JNIEnv* env, jclass jclass) {
     [NSApp stop:nil];
     [NSApp terminate:nil];
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
+extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens
   (JNIEnv* env, jclass jclass) {
     jobjectArray array = env->NewObjectArray(1, jwm::classes::Screen::kCls, 0);
     jobject screen = jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, 2.0, true);

@@ -21,6 +21,7 @@ public class Clipboard {
      * @param entries   List if clipboard entries to set
      */
     public static void set(ClipboardEntry ... entries) {
+        assert _isValidCall();
         assert entries.length > 0;
         _nSet(entries);
     }
@@ -40,6 +41,7 @@ public class Clipboard {
      */
     @Nullable
     public static ClipboardEntry get(ClipboardFormat ... formats) {
+        assert _isValidCall();
         assert formats.length > 0: "must contain at least one format entry";
         return _nGet(formats);
     }
@@ -56,10 +58,12 @@ public class Clipboard {
      */
     @Nullable
     public static ClipboardFormat[] getFormats() {
+        assert _isValidCall();
         return _nGetFormats();
     }
 
     public static void clear() {
+        assert _isValidCall();
         _nClear();
     }
 
@@ -68,6 +72,7 @@ public class Clipboard {
      */
     @NotNull @SneakyThrows
     public static ClipboardFormat registerFormat(String formatId) {
+        assert _isValidCall();
         return _registerFormatInternal(formatId, true);
     }
 
@@ -96,6 +101,10 @@ public class Clipboard {
         ClipboardFormat format = new ClipboardFormat(formatId);
         _formats.put(formatId, format);
         return format;
+    }
+
+    @ApiStatus.Internal public static boolean _isValidCall() {
+        return App._isValidCall();
     }
 
     @ApiStatus.Internal public static native void _nSet(ClipboardEntry[] entries);

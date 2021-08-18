@@ -144,7 +144,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
     return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_show
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nShow
   (JNIEnv* env, jobject obj) {
       
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->show();
@@ -194,13 +194,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetContent
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowX11_getScale
+extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetScale
   (JNIEnv* env, jobject obj) {
    
     return reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->getScale();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11_requestFrame
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRequestFrame
   (JNIEnv* env, jobject obj) {
     
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->requestRedraw();

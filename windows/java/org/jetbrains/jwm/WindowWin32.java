@@ -14,59 +14,86 @@ public class WindowWin32 extends Window {
     }
 
     @Override
-    public native Window setTextInputEnabled(boolean enabled);
+    public Window setTextInputEnabled(boolean enabled) {
+        assert _isValidCall();
+        _nSetTextInputEnabled(enabled);
+        return this;
+    }
 
     @Override
-    public native void unmarkText();
+    public void unmarkText() {
+        assert _isValidCall();
+        _nUnmarkText();
+    }
 
     @Override
-    public native void show();
+    public void show() {
+        assert _isValidCall();
+        _nShow();
+    }
 
     @Override 
     public UIRect getWindowRect() {
+        assert _isValidCall();
         return _nGetWindowRect();
     }
 
     @Override 
     public UIRect getContentRect() {
+        assert _isValidCall();
         return _nGetContentRect();
     }
 
     @Override
     public Window setWindowPosition(int left, int top) {
+        assert _isValidCall();
         _nSetWindowPosition(left, top);
         return this;
     }
 
     @Override
     public Window setWindowSize(int width, int height) {
+        assert _isValidCall();
         _nSetWindowSize(width, height);
         return this;
     }
 
     @Override
     public Window setContentSize(int width, int height) {
+        assert _isValidCall();
         _nSetContentSize(width, height);
         return this;
     }
     
     @Override
-    public native float getScale();
+    public float getScale() {
+        assert _isValidCall();
+        return _nGetScale();
+    }
 
     @Override
-    public native void requestFrame();
+    public void requestFrame() {
+        assert _isValidCall();
+        _nRequestFrame();
+    }
 
     @Override
     public void close() {
+        assert _isValidCall();
         _nClose();
         super.close();
     }
 
     @ApiStatus.Internal public static native long _nMake();
+    @ApiStatus.Internal public native void _nSetTextInputEnabled(boolean enabled);
+    @ApiStatus.Internal public native void _nUnmarkText();
+    @ApiStatus.Internal public native void _nShow();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
+    @ApiStatus.Internal public native float _nGetScale();
+    @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();
 }

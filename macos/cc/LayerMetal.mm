@@ -132,19 +132,19 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nClose
     instance->close();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_getDevicePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nGetDevicePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fDevice);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_getQueuePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nGetQueuePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fQueue);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal_nextDrawableTexturePtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nNextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];

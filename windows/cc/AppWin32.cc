@@ -113,17 +113,17 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     jwm::AppWin32::getInstance().init(env);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App_start
+extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nStart
         (JNIEnv* env, jclass jclass) {
     return jwm::AppWin32::getInstance().start();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
         (JNIEnv* env, jclass jclass) {
     jwm::AppWin32::getInstance().terminate();
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
+extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens
         (JNIEnv* env, jclass jclass) {
     auto& app = jwm::AppWin32::getInstance();
     auto& screens = app.getScreens();
