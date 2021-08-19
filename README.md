@@ -34,8 +34,8 @@ Alpha. Expect API breakages.
 | init              | ✅   | ✅   | ✅   |
 | makeWindow        | ✅   | ✅   | ✅   |
 | start             | ✅   | ✅   | ✅   |
-| getScreens        | ✅   | [#114](https://github.com/jetbrains/jwm/issues/114) | ✅   |
-| getPrimaryScreen  | ✅   | [#114](https://github.com/jetbrains/jwm/issues/114) | ✅   |
+| getScreens        | ✅   | ✅   | ✅   |
+| getPrimaryScreen  | ✅   | ✅   | ✅   |
 | runOnUIThread     | [#113](https://github.com/jetbrains/jwm/issues/113) | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | terminate         | ✅   | ✅   | ✅   |
 | Show notification | ❌   | ❌   | ❌   |
@@ -47,15 +47,15 @@ Alpha. Expect API breakages.
 |---------------------|---------|-------|-----|
 | setEventListener    | ✅   | ✅   | ✅   |
 | setTextInputClient  | ✅   | ✅   | ✅   |
-| setTextInputEnabled | ❌   | ❌   | ❌   |
-| unmarkText          | ❌   | ❌   | ❌   |
+| setTextInputEnabled | ✅   | ❌   | ❌   |
+| unmarkText          | ✅   | ❌   | ❌   |
 | show                | ✅   | ✅   | ✅   |
 | getWindowRect       | ✅   | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) |
 | getContentRect      | ✅   | ✅   | ✅   |
 | setWindowPosition   | ✅   | ✅   | ✅   |
 | setWindowSize       | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) | ✅   |
 | setContentSize      | ✅   | ✅   | ✅   |
-| getScreen           | ✅   | [#114](https://github.com/jetbrains/jwm/issues/114) | ✅   |
+| getScreen           | ✅   | ✅   | ✅   |
 | requestFrame        | [#113](https://github.com/jetbrains/jwm/issues/113) | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
 | minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |
@@ -97,6 +97,7 @@ Alpha. Expect API breakages.
 |-------------------------|---------|-------|-----|
 | x/y/width/height        | ✅      | ✅    | ✅  |
 | scale                   | ✅      | ✅    | ✅  |
+| visibleRect             | [#119](https://github.com/jetbrains/jwm/issues/119) | [#119](https://github.com/jetbrains/jwm/issues/119) | [#119](https://github.com/jetbrains/jwm/issues/119) |
 | colorSpace              | ❌      | ❌    | ❌  |
 
 ### Clipboard

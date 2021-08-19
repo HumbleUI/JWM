@@ -5,6 +5,7 @@
 #include <memory>
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
+#include "Util.hh"
 
 static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
     jwm::WindowMac* window = (jwm::WindowMac*) ctx;
@@ -121,14 +122,13 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWind
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
-    auto screen = nsWindow.screen ?: [NSScreen mainScreen];
+    NSPoint pos = jwm::nsWindowPosition(nsWindow);
     const NSRect frame = [nsWindow frame];
-    const NSRect outerFrame = [screen frame];
     auto scale = instance->getScale();
     return jwm::classes::UIRect::toJavaXYWH(
       env,
-      frame.origin.x * scale,
-      (outerFrame.size.height - frame.origin.y - frame.size.height) * scale,
+      pos.x,
+      pos.y,
       frame.size.width * scale,
       frame.size.height * scale
     );
@@ -185,7 +185,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContent
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    return jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, instance->getScale(), true); // FIXME
+    return jwm::screenFromNSScreen(env, [instance->fNSWindow screen]);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRequestFrame

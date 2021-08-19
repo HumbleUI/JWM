@@ -152,12 +152,6 @@ public class Example implements Consumer<Event> {
         if (e instanceof EventKey eventKey) {
             if (eventKey.isPressed() == true && eventKey.isModifierDown(MODIFIER)) {
                 switch (eventKey.getKey()) {
-                    case DIGIT1 ->
-                        window.setWindowPosition((int) (200 * scale), (int) (200 * scale));
-                    case DIGIT2 ->
-                        window.setWindowSize((int) (600 * scale), (int) (500 * scale));
-                    case DIGIT3 ->
-                        window.setContentSize((int) (600 * scale), (int) (500 * scale));
                     case P -> {
                         paused = !paused;
                         if (!paused)

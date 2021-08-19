@@ -4,6 +4,7 @@
 #include "impl/Library.hh"
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
+#include "Util.hh"
 
 @implementation WindowDelegate {
     jwm::WindowMac* fWindow;
@@ -15,13 +16,8 @@
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-    NSWindow* window = fWindow->fNSWindow;
-    auto screen = window.screen ?: [NSScreen mainScreen];
-    auto left = window.frame.origin.x;
-    auto top = screen.frame.size.height - window.frame.origin.y - window.frame.size.height;
-
-    CGFloat scale = fWindow->getScale();
-    jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, left * scale, top * scale));
+    NSPoint pos = jwm::nsWindowPosition(fWindow->fNSWindow);
+    jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, pos.x, pos.y));
     fWindow->dispatch(event.get());
 }
 

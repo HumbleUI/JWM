@@ -1,7 +1,9 @@
 #import <Cocoa/Cocoa.h>
 #include <jni.h>
+#include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "MainView.hh"
+#include "Util.hh"
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {
@@ -50,10 +52,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens
   (JNIEnv* env, jclass jclass) {
-    jobjectArray array = env->NewObjectArray(1, jwm::classes::Screen::kCls, 0);
-    jobject screen = jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, 2.0, true); // FIXME
-    env->SetObjectArrayElement(array, 0, screen);
-    return array;
+    NSArray* screens = [NSScreen screens];
+    jobjectArray res = env->NewObjectArray([screens count], jwm::classes::Screen::kCls, 0);
+    for (int i = 0; i < [screens count]; ++i) {
+      NSScreen* screen = [screens objectAtIndex:i];
+      jwm::JNILocal<jobject> obj(env, jwm::screenFromNSScreen(env, screen));
+      env->SetObjectArrayElement(res, i, obj.get());
+    }
+    return res;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread

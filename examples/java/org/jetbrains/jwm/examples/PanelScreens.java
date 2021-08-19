@@ -9,7 +9,9 @@ public class PanelScreens extends Panel {
     public EventWindowMove lastMove = new EventWindowMove(0, 0);
     public Paint stroke = new Paint().setMode(PaintMode.STROKE).setColor(0x80FFFFFF);
     public Paint fill = new Paint().setColor(0x20FFFFFF);
+    public Paint white = new Paint().setColor(0xFFFFFFFF);
     public Window window;
+    public int screenIdx = -1;
 
     public PanelScreens(Window window) {
         this.window = window;
@@ -17,7 +19,27 @@ public class PanelScreens extends Panel {
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventWindowResize ee) {
+        float scale = window.getScreen().getScale();
+        if (e instanceof EventKey eventKey) {
+            if (eventKey.isPressed() == true && eventKey.isModifierDown(Example.MODIFIER)) {
+                switch (eventKey.getKey()) {
+                    case DIGIT1 -> {
+                        Screen[] screens = App.getScreens();
+                        screenIdx = (screenIdx + 1) % screens.length;
+                        Screen screen = screens[screenIdx];
+                        System.out.println("Screen #" + screenIdx + " pos: " + (screen.getX() + screen.getWidth() / 2) + ", " + (screen.getY() + screen.getHeight() / 2) + " for: " + screen);
+                        window.setWindowPosition(screen.getX() + screen.getWidth() / 2,
+                                                 screen.getY() + screen.getHeight() / 2);
+                        window.setWindowSize(screen.getWidth() / 2,
+                                             screen.getHeight() / 2);
+                    }
+                    case DIGIT2 ->
+                        window.setWindowSize((int) (600 * scale), (int) (500 * scale));
+                    case DIGIT3 ->
+                        window.setContentSize((int) (600 * scale), (int) (500 * scale));
+                }
+            }
+        } if (e instanceof EventWindowResize ee) {
             lastResize = ee;
         } else if (e instanceof EventWindowMove ee) {
             lastMove = ee;
@@ -31,23 +53,26 @@ public class PanelScreens extends Panel {
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        float maxX = 0; 
-        float maxY = 0;
+        float minX = 0, minY = 0, maxX = 0, maxY = 0;
         for (var screen: App.getScreens()) {
+            minX = Math.min(minX, screen.getX());
+            minY = Math.min(minY, screen.getY());
             maxX = Math.max(maxX, screen.getX() + screen.getWidth());
             maxY = Math.max(maxY, screen.getY() + screen.getHeight());
         }
 
         canvas.save();
-        float scale2 = Math.min((width - Example.PADDING * 2) / maxX,
-                               (height - Example.PADDING * 2) / maxY);
+        float scale2 = Math.min((width - Example.PADDING * 2) / (maxX - minX),
+                               (height - Example.PADDING * 2) / (maxY - minY));
         canvas.translate(Example.PADDING, Example.PADDING);
         canvas.scale(scale2, scale2);
+        canvas.translate(-minX, -minY);
         stroke.setStrokeWidth(1 * scale / scale2);
-        stroke.setColor(0x80FFFFFF);
         for (var screen: App.getScreens()) {
+            stroke.setColor(screen.isPrimary() ? 0x80CC3333 : 0x80FFFFFF);
             drawRect(canvas, screen.getX(), screen.getY(), screen.getWidth(), screen.getHeight());
         }
+        stroke.setColor(0x80FFFFFF);
         drawRect(canvas, lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight());
         UIRect contentRect = window.getContentRect();
         drawRect(canvas,
