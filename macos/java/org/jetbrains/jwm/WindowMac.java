@@ -62,10 +62,10 @@ public class WindowMac extends Window {
         return this;
     }
 
-    @Override 
-    public float getScale() {
+    @Override
+    public Screen getScreen() {
         assert _onUIThread();
-        return _nGetScale();
+        return _nGetScreen();
     }
 
     @Override
@@ -88,7 +88,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
-    @ApiStatus.Internal public native float _nGetScale();
+    @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();
 }

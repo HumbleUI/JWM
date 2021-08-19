@@ -117,3 +117,10 @@ Run examples without building (use version from the table above):
 ```
 ./script/run.py --jwm-version <version>
 ```
+
+# Authors
+
+- [Nikita Prokopov](https://github.com/tonsky)
+- [Egor Orachyov](https://github.com/EgorOrachyov)
+- [Alexey Titov](https://github.com/Alex2772)
+- [Pavel Sergeev](https://github.com/SergeevPavel)

@@ -150,12 +150,15 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetCont
     );
 }
 
+<<<<<<< HEAD
 extern "C" JNIEXPORT jfloat JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScale
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScale();
 }
 
+=======
+>>>>>>> main
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowPosition
   (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
@@ -186,6 +189,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContent
     CGFloat scale = instance->getScale();
     NSSize size {(CGFloat) width / scale, (CGFloat) height / scale};
     [nsWindow setContentSize:size];
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    return jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, instance->getScale(), true); // FIXME
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRequestFrame

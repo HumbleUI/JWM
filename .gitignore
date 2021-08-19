@@ -8,3 +8,6 @@ __pycache__
 # clion build directories
 /*build*
 /macos/cmake-build-debug
+
+# jvm crash logs
+hs_err_*.log
