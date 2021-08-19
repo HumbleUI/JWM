@@ -62,47 +62,8 @@ const std::vector<jwm::ScreenWin32> &jwm::AppWin32::getScreens() {
 }
 
 BOOL jwm::AppWin32::enumMonitorFunc(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM data) {
-    ScreenWin32 screen{};
-    screen.hMonitor = monitor;
-
-    MONITORINFO monitorinfo;
-    ZeroMemory(&monitorinfo, sizeof(monitorinfo));
-    monitorinfo.cbSize = sizeof(monitorinfo);
-
-    GetMonitorInfoW(monitor, &monitorinfo);
-
-    auto& area = monitorinfo.rcMonitor;
-
-    // Position
-    {
-        screen.x = area.left;
-        screen.y = area.top;
-    }
-
-    // Size
-    {
-        screen.width = area.right - area.left;
-        screen.height = area.bottom - area.top;
-    }
-
-    // Scale
-    {
-        DEVICE_SCALE_FACTOR scaleFactor;
-        GetScaleFactorForMonitor(monitor, &scaleFactor);
-
-        if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
-            scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
-
-        screen.scale = (float) scaleFactor / (float) SCALE_100_PERCENT;
-    }
-
-    // Is primary
-    {
-        screen.isPrimary = monitorinfo.dwFlags & MONITORINFOF_PRIMARY;
-    }
-
+    ScreenWin32 screen = ScreenWin32::fromHMonitor(monitor);
     AppWin32::getInstance()._screens.push_back(screen);
-
     return TRUE;
 }
 
@@ -136,17 +97,7 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens
 
     for (jsize i = 0; i < screensCount; i++) {
         const jwm::ScreenWin32& screenData = screens[i];
-        auto id = reinterpret_cast<jlong>(screenData.hMonitor);
-
-        jwm::JNILocal<jobject> screen(env, jwm::classes::Screen::make(
-            env,
-            id,
-            screenData.x, screenData.y,
-            screenData.width, screenData.height,
-            screenData.scale,
-            screenData.isPrimary
-        ));
-
+        jwm::JNILocal<jobject> screen(env, screenData.toJni(env));
         env->SetObjectArrayElement(array, i, screen.get());
     }
 

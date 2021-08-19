@@ -110,15 +110,9 @@ void jwm::WindowWin32::setContentSize(int width, int height) {
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
-float jwm::WindowWin32::getScale() const {
+jwm::ScreenWin32 jwm::WindowWin32::getScreen() const {
     HMONITOR hMonitor = MonitorFromWindow(_hWnd, MONITOR_DEFAULTTOPRIMARY);
-    DEVICE_SCALE_FACTOR scaleFactor;
-    GetScaleFactorForMonitor(hMonitor, &scaleFactor);
-
-    if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
-        scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
-
-    return (float) scaleFactor / (float) SCALE_100_PERCENT;
+    return ScreenWin32::fromHMonitor(hMonitor);
 }
 
 void jwm::WindowWin32::close() {
@@ -747,7 +741,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetConte
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, instance->getScale(), true); // FIXME #103
+    jwm::ScreenWin32 screen = instance->getScreen();
+    return screen.toJni(env);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

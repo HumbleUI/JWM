@@ -1,6 +1,7 @@
 #pragma once
 #include <Window.hh>
 #include <PlatformWin32.hh>
+#include <ScreenWin32.hh>
 #include <impl/Library.hh>
 #include <functional>
 #include <utility>
@@ -52,7 +53,7 @@ namespace jwm {
         void setWindowPosition(int left, int top);
         void setWindowSize(int width, int height);
         void setContentSize(int width, int height);
-        float getScale() const;
+        ScreenWin32 getScreen() const;
         void close();
         LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
