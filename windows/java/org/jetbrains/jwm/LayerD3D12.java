@@ -14,20 +14,20 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public void attach(Window window) {
-        assert _isValidCall();
+        assert _onUIThread();
         _window = window;
         _nAttach(window);
     }
 
     @Override
     public void reconfigure() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nReconfigure();
     }
 
     @Override
     public void resize(int width, int height) {
-        assert _isValidCall();
+        assert _onUIThread();
         _width = width;
         _height = height;
         _nResize(width, height);
@@ -35,67 +35,67 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public int getWidth() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _width;
     }
 
     @Override
     public int getHeight() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _height;
     }
 
     @Override
     public void swapBuffers() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSwapBuffers();
     }
 
     @Override
     public void close() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nClose();
         _window = null;
         super.close();
     }
 
     public long getAdapterPtr() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetAdapterPtr();
     }
 
     public long getDevicePtr() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetDevicePtr();
     }
 
     public long getQueuePtr() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetQueuePtr();
     }
 
     public int getFormat() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetFormat();
     }
 
     public int getSampleCount() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetSampleCount();
     }
 
     public int getLevelCount() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetLevelCount();
     }
 
     public long nextDrawableTexturePtr() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nNextDrawableTexturePtr();
     }
 
-    @ApiStatus.Internal public static boolean _isValidCall() {
-        return App._isValidCall();
+    @ApiStatus.Internal public static boolean _onUIThread() {
+        return App._onUIThread();
     }
 
     @ApiStatus.Internal public static native long _nMake();

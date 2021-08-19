@@ -12,71 +12,71 @@ public class WindowMac extends Window {
 
     @Override
     public Window setTextInputEnabled(boolean enabled) {
-        assert _isValidCall();
+        assert _onUIThread();
         // TODO: impl me
         return this;
     }
 
     @Override
     public void show() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nShow();
     }
 
     @Override
     public void unmarkText() {
-        assert _isValidCall();
+        assert _onUIThread();
         // TODO: impl me!
     }
 
     @Override 
     public UIRect getWindowRect() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetWindowRect();
     }
 
     @Override 
     public UIRect getContentRect() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetContentRect();
     }
 
     @Override
     public Window setWindowPosition(int left, int top) {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSetWindowPosition(left, top);
         return this;
     }
 
     @Override
     public Window setWindowSize(int width, int height) {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSetWindowSize(width, height);
         return this;
     }
 
     @Override
     public Window setContentSize(int width, int height) {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSetContentSize(width, height);
         return this;
     }
 
     @Override 
     public float getScale() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetScale();
     }
 
     @Override
     public void requestFrame() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nRequestFrame();
     }
 
     @Override
     public void close() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nClose();
         super.close();
     }

@@ -14,7 +14,6 @@ public class App {
     public static List<Window> _windows = Collections.synchronizedList(new ArrayList<Window>());
     @ApiStatus.Internal
     public static long _uiThreadId;
-    public static boolean _initCalled = false;
 
     /**
      * Call this before you do anything else
@@ -23,7 +22,6 @@ public class App {
     public static void init() {
         Library.load();
         _nInit();
-        _initCalled = true;
         _uiThreadId = Thread.currentThread().getId();
         Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
         Log.setLogger(System.out::println);
@@ -31,7 +29,7 @@ public class App {
 
     @NotNull @SneakyThrows
     public static Window makeWindow() {
-        assert _isValidCall();
+        assert _onUIThread();
         Class cls;
         if (Platform.CURRENT == Platform.WINDOWS) {
             cls = App.class.forName("org.jetbrains.jwm.WindowWin32");
@@ -51,17 +49,17 @@ public class App {
      * Will block until you call {@link #terminate()}
      */
     public static int start() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nStart();
     }
 
     public static void terminate() {
-        assert _isValidCall();
+        assert _onUIThread();
         _nTerminate();
     }
 
     public static Screen[] getScreens() {
-        assert _isValidCall();
+        assert _onUIThread();
         return _nGetScreens();
     }
 
@@ -74,15 +72,15 @@ public class App {
     }
 
     public static Screen getPrimaryScreen() {
-        assert _isValidCall();
+        assert _onUIThread();
         for (Screen s: getScreens())
             if (s.isPrimary())
                 return s;
         throw new IllegalStateException("Can't find primary screen");
     }
 
-    @ApiStatus.Internal public static boolean _isValidCall() {
-        return _uiThreadId == Thread.currentThread().getId() && _initCalled;
+    @ApiStatus.Internal public static boolean _onUIThread() {
+        return _uiThreadId == Thread.currentThread().getId();
     }
 
     @ApiStatus.Internal public static native void _nInit();

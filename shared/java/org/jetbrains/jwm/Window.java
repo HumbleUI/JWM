@@ -13,14 +13,14 @@ public abstract class Window extends RefCounted {
 
     @NotNull @Contract("-> this")
     public Window setEventListener(@Nullable Consumer<Event> eventListener) {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSetEventListener(eventListener);
         return this;
     }
 
     @NotNull @Contract("-> this")
     public Window setTextInputClient(@Nullable TextInputClient client) {
-        assert _isValidCall();
+        assert _onUIThread();
         _nSetTextInputClient(client);
         return this;
     }
@@ -48,14 +48,14 @@ public abstract class Window extends RefCounted {
 
     @Override
     public void close() {
-        assert _isValidCall();
+        assert _onUIThread();
         setEventListener(null);
         App._windows.remove(this);
         super.close();
     }
 
-    @ApiStatus.Internal public static boolean _isValidCall() {
-        return App._isValidCall();
+    @ApiStatus.Internal public static boolean _onUIThread() {
+        return App._onUIThread();
     }
 
     @ApiStatus.Internal public native void _nSetEventListener(Consumer<Event> eventListener);
