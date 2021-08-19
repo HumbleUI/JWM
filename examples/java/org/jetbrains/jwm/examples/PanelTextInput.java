@@ -1,5 +1,6 @@
 package org.jetbrains.jwm.examples;
 
+import java.util.*;
 import java.util.function.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
@@ -8,11 +9,20 @@ public class PanelTextInput extends Panel implements TextInputClient {
     public final Window window;
     public String text = "";
     public EventTextInputMarked lastMarked = null;
+    public boolean cursorDraw = true;
+    public TimerTask timerTask;
+    public static Timer timer = new Timer(true);
 
     public PanelTextInput(Window window) {
         this.window = window;
         window.setTextInputEnabled(true);
         window.setTextInputClient(this);
+        timerTask = new TimerTask() {
+            public void run() {
+                cursorDraw = !cursorDraw;
+            }
+        };
+        timer.schedule(timerTask, 0, 700);
     }
 
     @Override
@@ -93,8 +103,10 @@ public class PanelTextInput extends Panel implements TextInputClient {
                     }
                 }
 
-                // cursor                
-                canvas.drawRect(Rect.makeXYWH(0, metrics.getAscent(), 2 * scale, metrics.getHeight()), paint);
+                // cursor (cursorDraw used for blink animation)
+                if (cursorDraw)
+                    canvas.drawRect(Rect.makeXYWH(0, metrics.getAscent(), 2 * scale, metrics.getHeight()), paint);
+
                 canvas.restore();
             }
 
