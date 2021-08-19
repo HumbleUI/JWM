@@ -45,7 +45,7 @@
     NSWindow* window = fWindow->fNSWindow;
     CGDirectDisplayID displayID = (CGDirectDisplayID)[[[[window screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
     fWindow->reconfigure();
-    fWindow->dispatch(jwm::classes::EventEnvironmentChange::kInstance);
+    fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {

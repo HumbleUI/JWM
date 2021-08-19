@@ -60,7 +60,7 @@ namespace jwm {
             jstring getFormatId(JNIEnv* env, jobject clipboardFormat);
         }
 
-        namespace EventEnvironmentChange {
+        namespace EventWindowScreenChange {
             extern jobject kInstance;
         }
 

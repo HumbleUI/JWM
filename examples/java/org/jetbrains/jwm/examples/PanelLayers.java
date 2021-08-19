@@ -43,7 +43,7 @@ public class PanelLayers extends Panel {
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventEnvironmentChange) {
+        if (e instanceof EventWindowScreenChange) {
             layer.reconfigure();
             accept(new EventWindowResize(window.getWindowRect().getWidth(),
                                          window.getWindowRect().getHeight(),

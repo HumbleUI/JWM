@@ -169,13 +169,13 @@ namespace jwm {
             }
         }
 
-        namespace EventEnvironmentChange {
+        namespace EventWindowScreenChange {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("org/jetbrains/jwm/EventEnvironmentChange");
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowScreenChange");
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventEnvironmentChange;");
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowScreenChange;");
                 jobject instance = env->GetStaticObjectField(cls, field);
                 kInstance = env->NewGlobalRef(instance);
             }
@@ -467,7 +467,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::Clipboard::onLoad(env);
     jwm::classes::ClipboardEntry::onLoad(env);
     jwm::classes::ClipboardFormat::onLoad(env);
-    jwm::classes::EventEnvironmentChange::onLoad(env);
+    jwm::classes::EventWindowScreenChange::onLoad(env);
     jwm::classes::EventFrame::onLoad(env);
     jwm::classes::EventKey::onLoad(env);
     jwm::classes::EventMouseButton::onLoad(env);
