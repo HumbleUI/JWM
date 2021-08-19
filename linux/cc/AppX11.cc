@@ -53,11 +53,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit(JNIEnv* env
     jwm::app.init(env);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_start(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nStart(JNIEnv* env, jclass jclass) {
     jwm::app.start();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App_terminate(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate(JNIEnv* env, jclass jclass) {
     jwm::app.terminate();
 }
 
@@ -76,7 +76,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
 }
 
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App_getScreens(JNIEnv* env, jobject cls) noexcept {
+extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
     Display* display = jwm::app.getWindowManager().getDisplay();
     XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());
     RROutput primaryOutput = XRRGetOutputPrimary(display, jwm::app.getWindowManager().getRootWindow());

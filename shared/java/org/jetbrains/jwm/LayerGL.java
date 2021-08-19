@@ -14,17 +14,20 @@ public class LayerGL extends RefCounted implements Layer {
 
     @Override
     public void attach(Window window) {
+        assert _onUIThread();
         _window = window;
         _nAttach(window);
     }
 
     @Override
     public void reconfigure() {
+        assert _onUIThread();
         _nReconfigure();
     }
 
     @Override
     public void resize(int width, int height) {
+        assert _onUIThread();
         _width = width;
         _height = height;
         _nResize(width, height);
@@ -32,24 +35,32 @@ public class LayerGL extends RefCounted implements Layer {
 
     @Override
     public int getWidth() {
+        assert _onUIThread();
         return _width;
     }
 
     @Override
     public int getHeight() {
+        assert _onUIThread();
         return _height;
     }
 
     @Override
     public void swapBuffers() {
+        assert _onUIThread();
         _nSwapBuffers();
     }
 
     @Override
     public void close() {
+        assert _onUIThread();
         _nClose();
         _window = null;
         super.close();
+    }
+
+    @ApiStatus.Internal public static boolean _onUIThread() {
+        return App._onUIThread();
     }
 
     @ApiStatus.Internal public static native long _nMake();

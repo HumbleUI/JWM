@@ -157,13 +157,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nClose
     instance->close();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster_getPixelsPtr
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster__1nGetPixelsPtr
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->getPixelsPtr());
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster_getRowBytes
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster__1nGetRowBytes
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     return static_cast<jint>(instance->getRowBytes());
