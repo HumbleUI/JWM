@@ -34,6 +34,7 @@ public class Example implements Consumer<Event> {
     public TimerTask timerTask;
 
     public boolean paused = false;
+    public boolean closed = false;
 
     public Example() {
         window = App.makeWindow();
@@ -66,7 +67,7 @@ public class Example implements Consumer<Event> {
     }
 
     public void paint(String reason) {
-        if (panelLayers.layer == null)
+        if (closed)
             return;
 
         float scale = window.getScreen().getScale();
@@ -175,6 +176,7 @@ public class Example implements Consumer<Event> {
             if (!paused)
                 window.requestFrame();
         } else if (e instanceof EventWindowCloseRequest) {
+            closed = true;
             timerTask.cancel();
             window.close();
             if (App._windows.size() == 0)
