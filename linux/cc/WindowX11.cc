@@ -3,6 +3,7 @@
 #include <memory>
 #include "AppX11.hh"
 #include "impl/Library.hh"
+#include "impl/JNILocal.hh"
 #include <X11/Xatom.h>
 #include <X11/extensions/sync.h>
 
@@ -126,6 +127,8 @@ void WindowX11::resize(int width, int height) {
     _width = width;
     _height = height;
     XResizeWindow(_windowManager.display, _x11Window, width, height);
+    jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), classes::EventWindowResize::make(app.getJniEnv(), width, height, width, height));
+    dispatch(eventWindowResize.get());
 }
 
 
