@@ -143,6 +143,15 @@ void jwm::LayerWGL::resize(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+void jwm::LayerWGL::reconfigure() {
+    if (_windowWin32) {
+        WindowWin32* window = jwm::ref(_windowWin32);
+        close();
+        attach(window);
+        jwm::unref(&window);
+    }
+}
+
 void jwm::LayerWGL::swapBuffers() {
     assert(_hDC);
     wglSwapLayerBuffers(_hDC, WGL_SWAP_MAIN_PLANE);
@@ -175,6 +184,10 @@ void jwm::LayerWGL::vsync(bool enable) {
         contextWgl.wglSwapIntervalEXT(interval);
 }
 
+void jwm::LayerWGL::requestSwap() {
+    if (_windowWin32)
+        _windowWin32->requestSwap();
+}
 
 void jwm::LayerWGL::_releaseInternal() {
     if (_hRC) {
@@ -213,7 +226,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
-    // todo: what to do here?
+//    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
+//    instance->reconfigure();
+//    instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
@@ -224,8 +239,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
-    //jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
-    //instance->swapBuffers();
+    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
+    instance->requestSwap();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nClose

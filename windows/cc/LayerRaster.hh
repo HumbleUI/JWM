@@ -16,9 +16,11 @@ namespace jwm {
     public:
         void attach(class WindowWin32* window);
         void resize(int width, int height);
+        void reconfigure();
         void swapBuffers();
         void close();
         void vsync(bool enable);
+        void requestSwap();
 
     public:
         void* getPixelsPtr() const;

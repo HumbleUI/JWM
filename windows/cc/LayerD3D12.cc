@@ -80,6 +80,15 @@ void jwm::LayerD3D12::resize(int width, int height) {
     _dx12swapChain->resize(width, height);
 }
 
+void jwm::LayerD3D12::reconfigure() {
+    if (_windowWin32) {
+        WindowWin32* window = jwm::ref(_windowWin32);
+        close();
+        attach(window);
+        jwm::unref(&window);
+    }
+}
+
 void jwm::LayerD3D12::swapBuffers() {
     UINT bufferIndex = _dx12swapChain->getCurrentBackBufferIndex();
     UINT syncInterval = _vsync == Vsync::Enable ? 1: 0;
@@ -111,6 +120,11 @@ void jwm::LayerD3D12::close() {
 
 void jwm::LayerD3D12::vsync(bool enable) {
     _vsync = enable? Vsync::Enable: Vsync::Disable;
+}
+
+void jwm::LayerD3D12::requestSwap() {
+    if (_windowWin32)
+        _windowWin32->requestSwap();
 }
 
 IDXGIAdapter1 *jwm::LayerD3D12::getAdapterPtr() const {
@@ -162,7 +176,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nAttach
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
-    // todo: what to do here?
+//    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+//    instance->reconfigure();
+//    instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nResize
@@ -173,8 +189,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nResize
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
-    //jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
-    //instance->swapBuffers();
+    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
+    instance->requestSwap();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nClose

@@ -17,6 +17,7 @@ namespace jwm {
         bool isTerminateRequested() const;
         void enqueueCallback(jobject callback);
         const std::vector<ScreenWin32> &getScreens();
+        LRESULT processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     public:
         WindowManagerWin32& getWindowManager() { return _windowManager; }
@@ -26,14 +27,13 @@ namespace jwm {
         JNIEnv* getJniEnv() const { return _jniEnv; }
 
     private:
-        std::atomic_bool _terminateRequested{false};
-        std::vector<jobject> _uiThreadCallbacks;
         std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
         ClipboardWin32 _clipboard;
         ContextWGL _wglContext;
         DX12Common _dx12common;
         JNIEnv* _jniEnv;
+        bool _terminateRequested = false;
 
     public:
         static BOOL enumMonitorFunc(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM data);

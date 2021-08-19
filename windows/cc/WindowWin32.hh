@@ -24,13 +24,14 @@ namespace jwm {
         enum class Flag: size_t {
             EnterSizeMove = 1,
             RequestFrame = 2,
-            HasAttachedLayer = 3,
-            RecreateForNextLayer = 4,
-            IgnoreMessages = 5,
-            HasLayerGL = 6,
-            HasLayerD3D = 7,
-            HasLayerRaster = 8,
-            Max = 9
+            RequestSwap = 3,
+            HasAttachedLayer = 4,
+            RecreateForNextLayer = 5,
+            IgnoreMessages = 6,
+            HasLayerGL = 7,
+            HasLayerD3D = 8,
+            HasLayerRaster = 9,
+            Max = 10
         };
 
         using Callback = std::function<void(Event)>;
@@ -48,6 +49,7 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void show();
+        void requestSwap();
         UIRect getWindowRect() const;
         UIRect getContentRect() const;
         void setWindowPosition(int left, int top);

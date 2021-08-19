@@ -67,6 +67,15 @@ void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
 
+void jwm::WindowWin32::requestSwap() {
+    if (testFlag(Flag::HasAttachedLayer)) {
+        if (!testFlag(Flag::RequestSwap)) {
+            setFlag(Flag::RequestSwap);
+            //
+        }
+    }
+}
+
 jwm::UIRect jwm::WindowWin32::getWindowRect() const {
     RECT rect;
     GetWindowRect(_hWnd, &rect);

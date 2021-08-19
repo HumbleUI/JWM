@@ -14,8 +14,9 @@ namespace jwm {
     class WindowManagerWin32 {
     public:
         bool init();
-        int iteration();
+        int start();
         void timerUpdate();
+        void postMessage(UINT messageId, void* lParam);
 
     public:
         HWND getHelperWindow() const { return _hWndHelperWindow; }

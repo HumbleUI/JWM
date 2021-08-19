@@ -74,6 +74,15 @@ void jwm::LayerRaster::resize(int width, int height) {
     _bitmapInfo->bmiHeader.biCompression = BI_RGB;
 }
 
+void jwm::LayerRaster::reconfigure() {
+    if (_windowWin32) {
+        WindowWin32* window = jwm::ref(_windowWin32);
+        close();
+        attach(window);
+        jwm::unref(&window);
+    }
+}
+
 void jwm::LayerRaster::swapBuffers() {
     StretchDIBits(
         _hDC,
@@ -91,6 +100,11 @@ void jwm::LayerRaster::close() {
 
 void jwm::LayerRaster::vsync(bool enable) {
 
+}
+
+void jwm::LayerRaster::requestSwap() {
+    if (_windowWin32)
+        _windowWin32->requestSwap();
 }
 
 void jwm::LayerRaster::_releaseInternal() {
@@ -135,8 +149,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nAttach
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
-    jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
-    instance->resize(width, height);
+//    jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
+//    instance->reconfigure();
+//    instance->resize(width, height);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nResize
@@ -147,8 +162,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nResize
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
-    //jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
-    //instance->swapBuffers();
+    jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
+    instance->requestSwap();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nClose

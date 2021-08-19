@@ -1,15 +1,15 @@
 #include <AppWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <WindowWin32.hh>
-#include <impl/Library.hh>
 #include <Log.hh>
 
 static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(GetPropW(hWnd, L"JWM"));
 
     if (!window) {
-        // Handle messages for hidden helper window
-        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+        jwm::AppWin32& app = jwm::AppWin32::getInstance();
+        LRESULT result = app.processEvent(uMsg, wParam, lParam);
+        return result? result: DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
 
     return window->processEvent(uMsg, wParam, lParam);
@@ -27,12 +27,14 @@ bool jwm::WindowManagerWin32::init() {
     return true;
 }
 
-int jwm::WindowManagerWin32::iteration() {
+int jwm::WindowManagerWin32::start() {
     MSG msg;
 
     while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-        if (msg.message == WM_QUIT) {
-            // post close event to managed windows?
+        if (msg.message == WM_CLOSE) {
+            // App terminate requested
+            // leave event loop and close application
+            break;
         }
         else {
             TranslateMessage(&msg);
@@ -384,7 +386,11 @@ void jwm::WindowManagerWin32::_dispatchFrameEvents() {
     for (auto window: windowsD3DorRaster) {
         window->notifyEvent(WindowWin32::Event::SwitchContext);
         window->dispatch(classes::EventFrame::kInstance);
-        window->notifyEvent(WindowWin32::Event::SwapBuffers);
+
+        if (window->testFlag(WindowWin32::Flag::RequestSwap)) {
+            window->notifyEvent(WindowWin32::Event::SwapBuffers);
+            window->removeFlag(WindowWin32::Flag::RequestSwap);
+        }
     }
 
     for (auto window: windowsGL) {
@@ -394,9 +400,17 @@ void jwm::WindowManagerWin32::_dispatchFrameEvents() {
             window->notifyEvent(WindowWin32::Event::EnableVsync);
 
         window->dispatch(classes::EventFrame::kInstance);
-        window->notifyEvent(WindowWin32::Event::SwapBuffers);
+
+        if (window->testFlag(WindowWin32::Flag::RequestSwap)) {
+            window->notifyEvent(WindowWin32::Event::SwapBuffers);
+            window->removeFlag(WindowWin32::Flag::RequestSwap);
+        }
 
         if (window == windowsGL.back())
             window->notifyEvent(WindowWin32::Event::DisableVsync);
     }
+}
+
+void jwm::WindowManagerWin32::postMessage(UINT messageId, void *lParam) {
+    PostMessageW(getHelperWindow(), messageId, 0, reinterpret_cast<LONG_PTR>(lParam));
 }

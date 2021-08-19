@@ -17,42 +17,26 @@ void jwm::AppWin32::init(JNIEnv *jniEnv) {
 }
 
 int jwm::AppWin32::start() {
-    JNIEnv* env = getJniEnv();
-
     int result = 0;
 
     while (!isTerminateRequested()) {
-        result = _windowManager.iteration();
-
-        if (result)
-            break;
-
-        std::vector<jobject> toProcess;
-        std::swap(toProcess, _uiThreadCallbacks);
-
-        for (auto callback: toProcess) {
-            classes::Runnable::run(env, callback);
-            env->DeleteGlobalRef(callback);
-        }
+        result = _windowManager.start();
     }
-
-    // Release enqueued but not executed callbacks
-    for (auto callback: _uiThreadCallbacks)
-        env->DeleteGlobalRef(callback);
 
     return result;
 }
 
 void jwm::AppWin32::terminate() {
-    _terminateRequested.store(true);
+    _terminateRequested = true;
+    _windowManager.postMessage(WM_CLOSE, nullptr);
 }
 
 bool jwm::AppWin32::isTerminateRequested() const {
-    return _terminateRequested.load();
+    return _terminateRequested;
 }
 
 void jwm::AppWin32::enqueueCallback(jobject callback) {
-    _uiThreadCallbacks.push_back(callback);
+    _windowManager.postMessage(JWM_WM_UI_CALLBACK_EVENT, callback);
 }
 
 const std::vector<jwm::ScreenWin32> &jwm::AppWin32::getScreens() {
@@ -65,6 +49,18 @@ BOOL jwm::AppWin32::enumMonitorFunc(HMONITOR monitor, HDC dc, LPRECT rect, LPARA
     ScreenWin32 screen = ScreenWin32::fromHMonitor(monitor);
     AppWin32::getInstance()._screens.push_back(screen);
     return TRUE;
+}
+
+LRESULT jwm::AppWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (uMsg == JWM_WM_UI_CALLBACK_EVENT) {
+        JNIEnv* env = getJniEnv();
+        jobject callbackRef = reinterpret_cast<jobject>(lParam);
+        classes::Runnable::run(env, callbackRef);
+        env->DeleteGlobalRef(callbackRef);
+        return true;
+    }
+
+    return false;
 }
 
 // JNI
