@@ -54,7 +54,7 @@ public class PanelLayers extends Panel {
         } else if (e instanceof EventKey ee && ee.isPressed()) {
             Key key = ee.getKey();
             boolean modifier = ee.isModifierDown(Example.MODIFIER);
-            if (Key.L == key) {
+            if (Key.L == key && modifier) {
                 layerIdx = (layerIdx + 1) % layers.length;
                 changeLayer();
             }
