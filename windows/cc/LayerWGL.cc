@@ -243,6 +243,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
     instance->resize(width, height);
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nMakeCurrent
+        (JNIEnv* env, jobject obj) {
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
     jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));

@@ -45,6 +45,11 @@ public class LayerGL extends RefCounted implements Layer {
         return _height;
     }
 
+    public void makeCurrent() {
+        assert _onUIThread();
+        _nMakeCurrent();
+    }
+
     @Override
     public void swapBuffers() {
         assert _onUIThread();
@@ -66,6 +71,7 @@ public class LayerGL extends RefCounted implements Layer {
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nAttach(Window window);
     @ApiStatus.Internal public native void _nReconfigure();
+    @ApiStatus.Internal public native void _nMakeCurrent();
     @ApiStatus.Internal public native void _nResize(int width, int height);
     @ApiStatus.Internal public native void _nSwapBuffers();
     @ApiStatus.Internal public native void _nClose();

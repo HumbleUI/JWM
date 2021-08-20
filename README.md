@@ -115,7 +115,7 @@ Alpha. Expect API breakages.
 |            | Windows | macOS | X11 |
 |------------|---------|-------|-----|
 | Raster     | ✅      | [#81](https://github.com/jetbrains/jwm/issues/81)   | ✅  |
-| OpenGL     | ✅      | [#118](https://github.com/jetbrains/jwm/issues/118)  | ✅  |
+| OpenGL     | ✅      | ✅    | ✅  |
 | DirectX 11 | ❌      | ➖    | ➖  |
 | DirectX 12 | ✅      | ➖    | ➖  |
 | Metal      | ➖      | ✅    | ➖  |

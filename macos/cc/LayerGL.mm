@@ -124,6 +124,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
   (JNIEnv* env, jobject obj, jint width, jint height) {
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nMakeCurrent
+  (JNIEnv* env, jobject obj) {
+    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    [instance->fGLContext makeCurrentContext];
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
   (JNIEnv* env, jobject obj, jint width, jint height) {
     jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
