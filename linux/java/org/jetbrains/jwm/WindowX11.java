@@ -91,6 +91,21 @@ public class WindowX11 extends Window {
         super.close();
     }
 
+    @Override
+    public void maximize() {
+        _nMaximize();
+    }
+
+    @Override
+    public void minimize() {
+        _nMinimize();
+    }
+
+    @Override
+    public void restore() {
+        _nRestore();
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nShow();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
@@ -101,4 +116,7 @@ public class WindowX11 extends Window {
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();
+    @ApiStatus.Internal public native void _nMaximize();
+    @ApiStatus.Internal public native void _nMinimize();
+    @ApiStatus.Internal public native void _nRestore();
 }

@@ -165,6 +165,12 @@ public class Example implements Consumer<Event> {
                         new Example();
                     case W ->
                         accept(EventWindowCloseRequest.INSTANCE);
+                    case UP ->
+                        window.maximize();
+                    case DOWN ->
+                        window.restore();
+                    case M ->
+                        window.minimize();
                 }
             }
         } else if (e instanceof EventWindowResize ee) {

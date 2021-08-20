@@ -34,6 +34,10 @@ namespace jwm {
             return _isRedrawRequested;
         }
 
+        void maximize();
+        void minimize();
+        void restore();
+
         XIC getIC() const {
             return _ic;
         }
@@ -41,6 +45,8 @@ namespace jwm {
         void setLayer(ILayer* layer) {
             _layer = layer;
         }
+        void _xSendEventToWM(Atom atom, long a, long b, long c, long d, long e) const;
+        unsigned long _xGetWindowProperty(Atom property, Atom type, unsigned char** value) const;
 
         /**
          * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter

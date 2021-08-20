@@ -93,6 +93,9 @@ namespace jwm {
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST);
             
             // other atoms
+            DEFINE_ATOM(_NET_WM_STATE);
+            DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_VERT);
+            DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_HORZ);
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST_COUNTER);
             DEFINE_ATOM(WM_PROTOCOLS);
             DEFINE_ATOM(CLIPBOARD);

@@ -28,6 +28,115 @@ void WindowX11::close() {
         _x11Window = 0;
     }
 }
+void WindowX11::_xSendEventToWM(Atom atom, long a, long b, long c, long d, long e) const {
+    XEvent event = { 0 };
+    event.type = ClientMessage;
+    event.xclient.window = _x11Window;
+    event.xclient.format = 32; // data is 32-bit longs
+    event.xclient.message_type = atom;
+    event.xclient.data.l[0] = a;
+    event.xclient.data.l[1] = b;
+    event.xclient.data.l[2] = c;
+    event.xclient.data.l[3] = d;
+    event.xclient.data.l[4] = e;
+
+    XSendEvent(_windowManager.display,
+               DefaultRootWindow(_windowManager.display),
+               False,
+               SubstructureNotifyMask | SubstructureRedirectMask,
+               &event);
+}
+unsigned long WindowX11::_xGetWindowProperty(Atom property, Atom type, unsigned char** value) const {
+    Atom actualType;
+    int actualFormat;
+    unsigned long itemCount, bytesAfter;
+
+    XGetWindowProperty(_windowManager.display,
+                       _x11Window,
+                       property,
+                       0,
+                       std::numeric_limits<long>::max(),
+                       false,
+                       type,
+                       &actualType,
+                       &actualFormat,
+                       &itemCount,
+                       &bytesAfter,
+                       value);
+
+    return itemCount;
+}
+
+void WindowX11::maximize() {
+    XWindowAttributes wa;
+    XGetWindowAttributes(_windowManager.display, _x11Window, &wa);
+
+    if (wa.map_state == IsViewable) {
+        _xSendEventToWM(_windowManager._atoms._NET_WM_STATE,
+                        1,
+                        _windowManager._atoms._NET_WM_STATE_MAXIMIZED_HORZ,
+                        _windowManager._atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                        0,
+                        0);
+    } else {
+        Atom* states = nullptr;
+        unsigned long count = _xGetWindowProperty(_windowManager._atoms._NET_WM_STATE,
+                                                  XA_ATOM,
+                                                  reinterpret_cast<unsigned char**>(&states));
+
+
+        Atom missing[2] = {
+            _windowManager._atoms._NET_WM_STATE_MAXIMIZED_VERT,
+            _windowManager._atoms._NET_WM_STATE_MAXIMIZED_HORZ
+        };
+        unsigned long missingCount = 2;
+
+        for (unsigned long i = 0;  i < count;  i++)
+        {
+            for (unsigned long j = 0;  j < missingCount;  j++)
+            {
+                if (states[i] == missing[j])
+                {
+                    missing[j] = missing[missingCount - 1];
+                    missingCount--;
+                }
+            }
+        }
+
+        if (states)
+            XFree(states);
+
+        if (!missingCount)
+            return;
+
+        XChangeProperty(_windowManager.display,
+                        _x11Window,
+                        _windowManager._atoms._NET_WM_STATE,
+                        XA_ATOM,
+                        32,
+                        PropModeAppend,
+                        (unsigned char*) missing,
+                        missingCount);
+    }
+    XFlush(_windowManager.display);
+}
+
+void WindowX11::minimize() {
+    XIconifyWindow(_windowManager.display, _x11Window, 0);
+}
+
+void WindowX11::restore() {
+    if (_windowManager._atoms._NET_WM_STATE &&
+        _windowManager._atoms._NET_WM_STATE_MAXIMIZED_VERT &&
+        _windowManager._atoms._NET_WM_STATE_MAXIMIZED_HORZ) {
+            _xSendEventToWM(_windowManager._atoms._NET_WM_STATE,
+                            0,
+                            _windowManager._atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                            _windowManager._atoms._NET_WM_STATE_MAXIMIZED_HORZ,
+                            1,
+                            0);
+    }
+}
 
 void WindowX11::getPosition(int& posX, int& posY) {
     int x, y;
@@ -209,7 +318,19 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRequestFra
     instance->requestRedraw();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nMaximize
   (JNIEnv* env, jobject obj) {
-    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->close();
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->maximize();
+}
+
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nMinimize
+  (JNIEnv* env, jobject obj) {
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->minimize();
+}
+
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRestore
+  (JNIEnv* env, jobject obj) {
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->restore();
 }
