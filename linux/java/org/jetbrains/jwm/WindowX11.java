@@ -92,18 +92,21 @@ public class WindowX11 extends Window {
     }
 
     @Override
-    public void maximize() {
+    public Window maximize() {
         _nMaximize();
+        return this;
     }
 
     @Override
-    public void minimize() {
+    public Window minimize() {
         _nMinimize();
+        return this;
     }
 
     @Override
-    public void restore() {
+    public Window restore() {
         _nRestore();
+        return this;
     }
 
     @ApiStatus.Internal public static native long _nMake();

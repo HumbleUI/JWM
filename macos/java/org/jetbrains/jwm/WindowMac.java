@@ -81,6 +81,21 @@ public class WindowMac extends Window {
         _nRequestFrame();
     }
 
+    public Window maximize() {
+        // TODO https://github.com/JetBrains/JWM/issues/96
+        return this;
+    }
+
+    public Window minimize() {
+        // TODO https://github.com/JetBrains/JWM/issues/96
+        return this;
+    }
+
+    public Window restore() {
+        // TODO https://github.com/JetBrains/JWM/issues/96
+        return this;
+    }
+
     @Override
     public void close() {
         assert _onUIThread();

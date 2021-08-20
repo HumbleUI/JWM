@@ -52,7 +52,7 @@ Alpha. Expect API breakages.
 | show                | ✅   | ✅   | ✅   |
 | getWindowRect       | ✅   | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) |
 | getContentRect      | ✅   | ✅   | ✅   |
-| setWindowPosition   | ✅   | ✅   | ✅   |
+| setWindowPosition   | ✅   | [#120](https://github.com/jetbrains/jwm/issues/120) | ✅   |
 | setWindowSize       | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) | ✅   |
 | setContentSize      | ✅   | ✅   | ✅   |
 | getScreen           | ✅   | ✅   | ✅   |

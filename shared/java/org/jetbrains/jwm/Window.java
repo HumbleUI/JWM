@@ -52,28 +52,26 @@ public abstract class Window extends RefCounted {
 
     public abstract void requestFrame();
 
-
     /**
      * Expands the window to take up all of the space of the desktop except taskbars, docks, etc..
      * On Windows titlebar, the single square icon [] has the same behaviour.
      * On macOS titlebar, the yellow circle has the same behaviour.
      */
-    public abstract void maximize();
+    public abstract Window maximize();
 
     /**
      * Hides the window to the system taskbar or dock.
      * On Windows titlebar, the underline icon _ has the same behaviour.
      * On macOS titlebar, the green circle has the same behaviour.
      */
-    public abstract void minimize();
-
+    public abstract Window minimize();
 
     /**
      * Cancels the effect of Window::minimize() and Window::maximize() functions.
      * On Windows titlebar, the double square icon []] has the same behaviour.
      * On macOS titlebar, the yellow circle has the same behaviour.
      */
-    public abstract void restore();
+    public abstract Window restore();
 
     @Override
     public void close() {
