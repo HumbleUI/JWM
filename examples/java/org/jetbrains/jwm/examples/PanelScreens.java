@@ -27,7 +27,6 @@ public class PanelScreens extends Panel {
                         Screen[] screens = App.getScreens();
                         screenIdx = (screenIdx + 1) % screens.length;
                         Screen screen = screens[screenIdx];
-                        System.out.println("Screen #" + screenIdx + " pos: " + (screen.getX() + screen.getWidth() / 2) + ", " + (screen.getY() + screen.getHeight() / 2) + " for: " + screen);
                         window.setWindowPosition(screen.getX() + screen.getWidth() / 2,
                                                  screen.getY() + screen.getHeight() / 2);
                         window.setWindowSize(screen.getWidth() / 2,

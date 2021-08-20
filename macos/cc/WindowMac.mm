@@ -150,14 +150,26 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetCont
     );
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowPosition
+extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowPosition
   (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
-    NSScreen* screen = nsWindow.screen ?: [NSScreen mainScreen];
-    CGFloat scale = screen.backingScaleFactor;
-    NSPoint point {(CGFloat) left / scale, screen.frame.size.height - (CGFloat) top / scale};
-    [nsWindow setFrameTopLeftPoint:point];
+
+    NSArray* screens = [NSScreen screens];
+    for (int i = 0; i < [screens count]; ++i) {
+      NSScreen* screen = [screens objectAtIndex:i];
+      jwm::UIRect rect = jwm::nsScreenRect(screen);
+      if (rect.fLeft <= left && left <= rect.fRight && rect.fTop <= top && top <= rect.fBottom) {
+        CGFloat scale = [screen backingScaleFactor];
+        CGFloat relativeLeft = (left - rect.fLeft) / scale;
+        CGFloat relativeTop = screen.frame.size.height - (top - rect.fTop) / scale;
+        NSPoint point { screen.frame.origin.x + relativeLeft, screen.frame.origin.y + relativeTop };
+        [nsWindow setFrameTopLeftPoint:point];
+        return true;
+      }
+    }
+
+    return false;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowSize

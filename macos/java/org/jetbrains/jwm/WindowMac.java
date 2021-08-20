@@ -44,8 +44,10 @@ public class WindowMac extends Window {
     @Override
     public Window setWindowPosition(int left, int top) {
         assert _onUIThread();
-        _nSetWindowPosition(left, top);
-        return this;
+        if (_nSetWindowPosition(left, top))
+            return this;
+        else
+            throw new IllegalArgumentException("Position is outside of any screen: " + left + ", " + top);
     }
 
     @Override
@@ -107,7 +109,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nShow();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
-    @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
+    @ApiStatus.Internal public native boolean _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native Screen _nGetScreen();
