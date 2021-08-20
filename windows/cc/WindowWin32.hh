@@ -8,6 +8,7 @@
 #include <atomic>
 #include <bitset>
 #include <vector>
+#include <string>
 #include <jni.h>
 
 namespace jwm {
@@ -48,6 +49,7 @@ namespace jwm {
         void recreate();
         void unmarkText();
         void setImeEnabled(bool enabled);
+        void setTitle(const std::wstring& title);
         void show();
         void requestSwap();
         UIRect getWindowRect() const;

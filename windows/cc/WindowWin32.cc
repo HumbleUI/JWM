@@ -63,6 +63,11 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
     }
 }
 
+void jwm::WindowWin32::setTitle(const std::wstring& title) {
+    JWM_VERBOSE("Set window title '" << title << "'");
+    SetWindowTextW(_hWnd, title.c_str());
+}
+
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
@@ -743,6 +748,15 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetConte
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
+        (JNIEnv* env, jobject obj, jstring title) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    const jchar* titleStr = env->GetStringChars(title, nullptr);
+    jsize length = env->GetStringLength(title);
+    instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
+    env->ReleaseStringChars(title, titleStr);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
