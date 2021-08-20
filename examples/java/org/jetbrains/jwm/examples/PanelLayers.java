@@ -23,20 +23,33 @@ public class PanelLayers extends Panel {
     }
 
     public void changeLayer() {
-        if (layer != null)
+        if (layer != null) {
             layer.close();
-
-        String className = "org.jetbrains.jwm.examples." + layers[layerIdx];
-
-        try {
-            layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            System.err.println("Failed to create class " + className);
-            e.printStackTrace();
             layer = null;
         }
 
-        layer.attach(window);
+        int attemptsCount = layers.length;
+
+        while (layer == null && attemptsCount > 0) {
+            String className = "org.jetbrains.jwm.examples." + layers[layerIdx];
+
+            try {
+                layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+                layer.attach(window);
+            } catch (Exception e) {
+                System.err.println("Failed to create class " + className);
+                e.printStackTrace();
+                layer = null;
+
+                nextLayerIdx();
+            }
+
+            attemptsCount -= 1;
+        }
+
+        if (layer == null)
+            throw new RuntimeException("No available layer to create");
+
         layer.reconfigure();
         layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
@@ -55,7 +68,7 @@ public class PanelLayers extends Panel {
             Key key = ee.getKey();
             boolean modifier = ee.isModifierDown(Example.MODIFIER);
             if (Key.L == key && modifier) {
-                layerIdx = (layerIdx + 1) % layers.length;
+                nextLayerIdx();
                 changeLayer();
             }
         } else if (e instanceof EventWindowCloseRequest) {
@@ -99,5 +112,10 @@ public class PanelLayers extends Panel {
                                   paint);
             }
         }
+    }
+
+    private int nextLayerIdx() {
+        layerIdx = (layerIdx + 1) % layers.length;
+        return layerIdx;
     }
 }

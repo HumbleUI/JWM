@@ -19,8 +19,12 @@ namespace jwm {
 
     namespace classes {
         namespace Throwable {
+            extern jclass kClsRuntimeException;
+            extern jclass kClsLayerNotSupportedException;
             extern jmethodID kPrintStackTrace;
             bool exceptionThrown(JNIEnv* env);
+            void throwRuntimeException(JNIEnv* env, const char* message);
+            void throwLayerNotSupportedException(JNIEnv* env, const char* message);
         }
 
         namespace Consumer {

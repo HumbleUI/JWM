@@ -1,13 +1,24 @@
 #include <D3D12/DX12Device.hh>
 
 jwm::DX12Device::DX12Device(jwm::DX12Common &dx12Common) : _dx12Common(dx12Common) {
+
+}
+
+bool jwm::DX12Device::init() {
     using namespace Microsoft::WRL;
 
     _dxgiAdapter = _dx12Common.getAdapter();
+
+    if (!_dxgiAdapter)
+        return false;
+
     _setupDefaultDenyList();
     _setupDefaultSuppressSeverity();
 
-    THROW_IF_FAILED(D3D12CreateDevice(_dxgiAdapter.Get(), dx12Common.getFeatureLevel(), IID_PPV_ARGS(&_d3d12Device)));
+    CHECK_IF_FAILED(D3D12CreateDevice(_dxgiAdapter.Get(), _dx12Common.getFeatureLevel(), IID_PPV_ARGS(&_d3d12Device)));
+
+    if (!_d3d12Device)
+        return false;
 
 #if defined(_DEBUG)
     ComPtr<ID3D12InfoQueue> pInfoQueue;
@@ -23,9 +34,11 @@ jwm::DX12Device::DX12Device(jwm::DX12Common &dx12Common) : _dx12Common(dx12Commo
         NewFilter.DenyList.NumIDs = static_cast<UINT>(_denyList.size());
         NewFilter.DenyList.pIDList = _denyList.data();
 
-        THROW_IF_FAILED(pInfoQueue->PushStorageFilter(&NewFilter));
+        CHECK_IF_FAILED(pInfoQueue->PushStorageFilter(&NewFilter));
     }
 #endif
+
+    return true;
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> jwm::DX12Device::createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numDescriptors) {
@@ -39,7 +52,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> jwm::DX12Device::createDescriptorHe
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     desc.NodeMask = 0;
 
-    THROW_IF_FAILED(_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
+    CHECK_IF_FAILED(_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
 
     return descriptorHeap;
 }

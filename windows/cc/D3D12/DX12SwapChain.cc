@@ -27,7 +27,7 @@ void jwm::DX12SwapChain::setBuffersCount(unsigned int buffersCount) {
     _buffersCount = buffersCount;
 }
 
-void jwm::DX12SwapChain::create() {
+bool jwm::DX12SwapChain::create() {
     using namespace Microsoft::WRL;
 
     DX12Common& dx12Common = _dx12device.getDx12Common();
@@ -55,7 +55,7 @@ void jwm::DX12SwapChain::create() {
 
     HWND hWnd = _window->getHWnd();
 
-    THROW_IF_FAILED(dxgiFactory4->CreateSwapChainForHwnd(
+    CHECK_IF_FAILED(dxgiFactory4->CreateSwapChainForHwnd(
         _dx12commandQueue.getQueuePtr().Get(),
         hWnd,
         &swapChainDesc,
@@ -64,21 +64,24 @@ void jwm::DX12SwapChain::create() {
         &swapChain1)
     );
 
+    if (!swapChain1)
+        return false;
+
     // Disable the Alt+Enter fullscreen toggle feature
-    THROW_IF_FAILED(dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
-    THROW_IF_FAILED(swapChain1.As(&_dxgiSwapChain));
+    CHECK_IF_FAILED(dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
+    CHECK_IF_FAILED(swapChain1.As(&_dxgiSwapChain));
 
     // Set transparent background color
     DXGI_RGBA color = { 0.0f, 0.0f, 0.0f, 0.0f };
     _dxgiSwapChain->SetBackgroundColor(&color);
 
-    ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
-
     _updateRenderTargetViews();
+
+    return true;
 }
 
 void jwm::DX12SwapChain::present(UINT syncInterval, UINT presentationFlags) {
-    THROW_IF_FAILED(_dxgiSwapChain->Present(syncInterval, presentationFlags));
+    CHECK_IF_FAILED(_dxgiSwapChain->Present(syncInterval, presentationFlags));
 }
 
 void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
@@ -90,8 +93,8 @@ void jwm::DX12SwapChain::resize(int newWidth, int newHeight) {
         _backBuffers.clear();
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-        THROW_IF_FAILED(_dxgiSwapChain->GetDesc(&swapChainDesc));
-        THROW_IF_FAILED(_dxgiSwapChain->ResizeBuffers(
+        CHECK_IF_FAILED(_dxgiSwapChain->GetDesc(&swapChainDesc));
+        CHECK_IF_FAILED(_dxgiSwapChain->ResizeBuffers(
             _buffersCount,
             _currentWidth, _currentHeight,
             swapChainDesc.BufferDesc.Format,
@@ -118,7 +121,7 @@ void jwm::DX12SwapChain::_updateRenderTargetViews() {
     for (unsigned int i = 0; i < _buffersCount; i++) {
         ComPtr<ID3D12Resource> backBuffer;
 
-        THROW_IF_FAILED(_dxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
+        CHECK_IF_FAILED(_dxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
 
         _backBuffers.push_back(std::move(backBuffer));
     }

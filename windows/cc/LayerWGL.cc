@@ -3,7 +3,6 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <ContextWGL.hh>
-#include <impl/Library.hh>
 #include <Log.hh>
 #include <jni.h>
 
@@ -11,6 +10,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
     assert(!_windowWin32);
 
     AppWin32& app = AppWin32::getInstance();
+    JNIEnv* env = app.getJniEnv();
 
     if (!window) {
         JWM_LOG("Passed null WindowWin32 object to attach");
@@ -43,6 +43,8 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
         // Init context, if it is not initialized yet
         if (!contextWgl.init()) {
             JWM_LOG("Failed to initialize WGL globals");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to initialize WGL globals");
+            _releaseInternal();
             return;
         }
 
@@ -72,6 +74,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
         if (!status || numFormats == 0) {
             JWM_LOG("Failed to chose pixel format");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to chose pixel format");
             _releaseInternal();
             return;
         }
@@ -81,6 +84,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
         if (!SetPixelFormat(_hDC, pixelFormatID, &PFD)) {
             JWM_LOG("Failed to set selected pixel format");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to set selected pixel format");
             _releaseInternal();
             return;
         }
@@ -97,6 +101,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
 
         if (!_hRC) {
             JWM_LOG("Failed to create rendering context");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to create rendering context");
             _releaseInternal();
             return;
         }
@@ -125,6 +130,7 @@ void jwm::LayerWGL::attach(jwm::WindowWin32* window) {
     // Make context current (since we running in separate thread it won't be changed)
     if (!wglMakeCurrent(_hDC, _hRC)) {
         JWM_LOG("Failed to make rendering context current");
+        classes::Throwable::throwRuntimeException(env, "Failed to make rendering context current");
         _releaseInternal();
         return;
     }

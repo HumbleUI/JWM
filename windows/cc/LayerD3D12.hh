@@ -31,6 +31,9 @@ namespace jwm {
         class DX12SwapChain &getSwapChain() const;
 
     private:
+        void _releaseInternal();
+
+    private:
         std::unique_ptr<class DX12Device> _dx12device;
         std::unique_ptr<class DX12CommandQueue> _dx12commandQueue;
         std::unique_ptr<class DX12SwapChain> _dx12swapChain;

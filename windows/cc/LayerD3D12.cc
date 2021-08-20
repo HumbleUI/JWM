@@ -12,6 +12,7 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
     assert(!_windowWin32);
 
     AppWin32& app = AppWin32::getInstance();
+    JNIEnv* env = app.getJniEnv();
 
     if (!window) {
         JWM_LOG("Passed null WindowWin32 object to attach");
@@ -31,11 +32,20 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
 
     if (!dx12Common.init()) {
         JWM_LOG("Failed to init DX12Common");
+        classes::Throwable::throwLayerNotSupportedException(env, "Failed to init DX12 common");
+        _releaseInternal();
         return;
     }
 
     // Create unique device instance for layer
     _dx12device = std::make_unique<DX12Device>(dx12Common);
+
+    if (!_dx12device->init()) {
+        JWM_LOG("Failed to init DX12Device");
+        classes::Throwable::throwLayerNotSupportedException(env, "Failed to init DX12 device");
+        _releaseInternal();
+        return;
+    }
 
     // Direct (default) command queue, used to submit all commands
     _dx12commandQueue = std::make_unique<DX12CommandQueue>(
@@ -46,7 +56,13 @@ void jwm::LayerD3D12::attach(WindowWin32 *window) {
 
     // Window swap chain (encapsulates all presentation/resize logic)
     _dx12swapChain = std::make_unique<DX12SwapChain>(_windowWin32, *_dx12commandQueue);
-    _dx12swapChain->create();
+
+    if (!_dx12swapChain->create()) {
+        JWM_LOG("Failed to create DX12SwapChain");
+        classes::Throwable::throwLayerNotSupportedException(env, "Failed to create DX12 swapChain");
+        _releaseInternal();
+        return;
+    }
 
     // Fence used to synchronize commands submission and back buffers presentation
     _dx12fence = std::make_unique<DX12Fence>(*_dx12device);
@@ -101,21 +117,11 @@ void jwm::LayerD3D12::close() {
     JWM_VERBOSE("Close DX12 layer for window 0x" << _windowWin32);
 
     // Wait until queue idle to safely release resources
-    _dx12commandQueue->waitIdle(*_dx12fence, _fenceValue);
+    if (_dx12commandQueue && _dx12fence)
+        _dx12commandQueue->waitIdle(*_dx12fence, _fenceValue);
 
-    // Release in reverse order
-    _dx12fence.reset();
-    _dx12swapChain.reset();
-    _dx12commandQueue.reset();
-    _dx12device.reset();
-
-    if (_windowWin32) {
-        _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
-        _windowWin32->removeFlag(WindowWin32::Flag::HasLayerD3D);
-        _windowWin32->setFlag(WindowWin32::Flag::RecreateForNextLayer);
-        _windowWin32->removeEventListener(_callbackID);
-        jwm::unref(&_windowWin32);
-    }
+    // Release resources
+    _releaseInternal();
 }
 
 void jwm::LayerD3D12::vsync(bool enable) {
@@ -131,7 +137,7 @@ IDXGIAdapter1 *jwm::LayerD3D12::getAdapterPtr() const {
     using namespace Microsoft::WRL;
     ComPtr<IDXGIAdapter1> adapter1;
     ComPtr<IDXGIAdapter4> adapter4 = _dx12device->getAdapterPtr();
-    THROW_IF_FAILED(adapter4.As(&adapter1));
+    CHECK_IF_FAILED(adapter4.As(&adapter1));
     return adapter1.Get();
 }
 
@@ -139,7 +145,7 @@ ID3D12Device *jwm::LayerD3D12::getDevicePtr() const {
     using namespace Microsoft::WRL;
     ComPtr<ID3D12Device> device;
     ComPtr<ID3D12Device2> device2 = _dx12device->getDevicePtr();
-    THROW_IF_FAILED(device2.As(&device));
+    CHECK_IF_FAILED(device2.As(&device));
     return device.Get();
 }
 
@@ -157,6 +163,22 @@ ID3D12Resource *jwm::LayerD3D12::getNextRenderTexture() const {
 
 jwm::DX12SwapChain &jwm::LayerD3D12::getSwapChain() const {
     return *_dx12swapChain;
+}
+
+void jwm::LayerD3D12::_releaseInternal() {
+    // Release in reverse order
+    _dx12fence.reset();
+    _dx12swapChain.reset();
+    _dx12commandQueue.reset();
+    _dx12device.reset();
+
+    if (_windowWin32) {
+        _windowWin32->removeFlag(WindowWin32::Flag::HasAttachedLayer);
+        _windowWin32->removeFlag(WindowWin32::Flag::HasLayerD3D);
+        _windowWin32->setFlag(WindowWin32::Flag::RecreateForNextLayer);
+        _windowWin32->removeEventListener(_callbackID);
+        jwm::unref(&_windowWin32);
+    }
 }
 
 // JNI

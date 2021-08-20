@@ -26,7 +26,7 @@ void jwm::DX12Common::enableDebugLayer() {
     using namespace Microsoft::WRL;
 
     ComPtr<ID3D12Debug> debugInterface;
-    THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+    CHECK_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
 
     debugInterface->EnableDebugLayer();
 #endif
@@ -61,7 +61,7 @@ Microsoft::WRL::ComPtr<IDXGIFactory4> jwm::DX12Common::getFactory() const {
     factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-    THROW_IF_FAILED(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
+    CHECK_IF_FAILED(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
     return dxgiFactory;
 }
@@ -75,8 +75,8 @@ Microsoft::WRL::ComPtr<IDXGIAdapter4> jwm::DX12Common::getAdapter(bool useWarp) 
     ComPtr<IDXGIAdapter4> dxgiAdapter4;
 
     if (useWarp) {
-        THROW_IF_FAILED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&dxgiAdapter1)));
-        THROW_IF_FAILED(dxgiAdapter1.As(&dxgiAdapter4));
+        CHECK_IF_FAILED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&dxgiAdapter1)));
+        CHECK_IF_FAILED(dxgiAdapter1.As(&dxgiAdapter4));
     }
     else {
         SIZE_T maxDedicatedVideoMemory = 0;
@@ -98,7 +98,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter4> jwm::DX12Common::getAdapter(bool useWarp) 
             // Maybe add later some hooks to customize the choice
             if (notSoftwareAdapter && canCreateDX12Device && hasMoreMem) {
                 maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
-                THROW_IF_FAILED(dxgiAdapter1.As(&dxgiAdapter4));
+                CHECK_IF_FAILED(dxgiAdapter1.As(&dxgiAdapter4));
             }
         }
     }

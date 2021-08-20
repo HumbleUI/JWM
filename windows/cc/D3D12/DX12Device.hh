@@ -10,6 +10,8 @@ namespace jwm {
         DX12Device(const DX12Device&) = delete;
         DX12Device(DX12Device&&) = delete;
 
+        bool init();
+
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, unsigned int numDescriptors);
 
         Microsoft::WRL::ComPtr<ID3D12Device2> getDevicePtr() const { return _d3d12Device; };

@@ -11,11 +11,23 @@ namespace jwm {
 
     namespace classes {
         namespace Throwable {
+            jclass kClsRuntimeException;
+            jclass kClsLayerNotSupportedException;
             jmethodID kPrintStackTrace;
 
             void onLoad(JNIEnv* env) {
                 jclass cls = env->FindClass("java/lang/Throwable");
                 kPrintStackTrace = env->GetMethodID(cls, "printStackTrace", "()V");
+
+                cls = env->FindClass("java/lang/RuntimeException");
+                Throwable::exceptionThrown(env);
+                kClsRuntimeException = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kClsRuntimeException);
+
+                cls = env->FindClass("org/jetbrains/jwm/LayerNotSupportedException");
+                Throwable::exceptionThrown(env);
+                kClsLayerNotSupportedException = static_cast<jclass>(env->NewGlobalRef(cls));
+                assert(kClsLayerNotSupportedException);
             }
 
             bool exceptionThrown(JNIEnv* env) {
@@ -27,6 +39,14 @@ namespace jwm {
                     return true;
                 } else
                     return false;
+            }
+
+            void throwRuntimeException(JNIEnv* env, const char* message) {
+                env->ThrowNew(kClsRuntimeException, message);
+            }
+
+            void throwLayerNotSupportedException(JNIEnv* env, const char* message) {
+                env->ThrowNew(kClsLayerNotSupportedException, message);
             }
         }
 

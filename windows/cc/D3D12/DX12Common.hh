@@ -1,5 +1,6 @@
 #pragma once
 #include <PlatformWin32.hh>
+#include <Log.hh>
 #include <d3d12.h>
 #include <D3D12/d3dx12.h>
 #include <dxgi1_6.h>
@@ -9,10 +10,11 @@
 #include <exception>
 #include <mutex>
 
-#define THROW_IF_FAILED(hr)                     \
+#define CHECK_IF_FAILED(hr)                     \
     {                                           \
-        if (FAILED(hr))                         \
-        { throw std::exception(); }             \
+        if (FAILED(hr)) {                       \
+            JWM_LOG("Failed to call " << #hr);  \
+        }                                       \
     }
 
 namespace jwm {

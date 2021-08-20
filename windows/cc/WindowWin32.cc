@@ -71,7 +71,7 @@ void jwm::WindowWin32::requestSwap() {
     if (testFlag(Flag::HasAttachedLayer)) {
         if (!testFlag(Flag::RequestSwap)) {
             setFlag(Flag::RequestSwap);
-            //
+            // TODO:
         }
     }
 }

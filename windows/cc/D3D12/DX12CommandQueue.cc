@@ -12,13 +12,12 @@ jwm::DX12CommandQueue::DX12CommandQueue(D3D12_COMMAND_LIST_TYPE type, D3D12_COMM
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     desc.NodeMask = 0;
 
-    THROW_IF_FAILED(_dx12device.getDevicePtr()->CreateCommandQueue(&desc, IID_PPV_ARGS(&_d3d12CommandQueue)));
+    CHECK_IF_FAILED(_dx12device.getDevicePtr()->CreateCommandQueue(&desc, IID_PPV_ARGS(&_d3d12CommandQueue)));
 }
-
 
 UINT64 jwm::DX12CommandQueue::Signal(DX12Fence &fence, UINT64 &value) {
     UINT64 valueToSignal = ++value;
-    THROW_IF_FAILED(_d3d12CommandQueue->Signal(fence.getPtr().Get(), valueToSignal));
+    CHECK_IF_FAILED(_d3d12CommandQueue->Signal(fence.getPtr().Get(), valueToSignal));
     return valueToSignal;
 }
 
@@ -37,7 +36,7 @@ Microsoft::WRL::ComPtr<ID3D12CommandAllocator> jwm::DX12CommandQueue::createComm
 
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
     ComPtr<ID3D12CommandAllocator> commandAllocator;
-    THROW_IF_FAILED(device->CreateCommandAllocator(_cmdListType, IID_PPV_ARGS(&commandAllocator)));
+    CHECK_IF_FAILED(device->CreateCommandAllocator(_cmdListType, IID_PPV_ARGS(&commandAllocator)));
 
     return commandAllocator;
 }
@@ -49,8 +48,8 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> jwm::DX12CommandQueue::createC
     ComPtr<ID3D12Device2> device = _dx12device.getDevicePtr();
     ComPtr<ID3D12GraphicsCommandList> commandList;
 
-    THROW_IF_FAILED(device->CreateCommandList(0, _cmdListType, cmdAlloc.Get(), nullptr, IID_PPV_ARGS(&commandList)));
-    THROW_IF_FAILED(commandList->Close());
+    CHECK_IF_FAILED(device->CreateCommandList(0, _cmdListType, cmdAlloc.Get(), nullptr, IID_PPV_ARGS(&commandList)));
+    CHECK_IF_FAILED(commandList->Close());
 
     return commandList;
 }

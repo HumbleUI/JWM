@@ -26,7 +26,7 @@ namespace jwm {
         void setAlphaMode(DXGI_ALPHA_MODE alphaMode) { _alphaMode = alphaMode; }
         void setBuffersCount(unsigned int buffersCount);
 
-        void create();
+        bool create();
 
         void present(UINT syncInterval, UINT presentationFlags);
         void resize(int newWidth, int newHeight);

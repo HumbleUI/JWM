@@ -1,6 +1,6 @@
 #include <AppWin32.hh>
 #include <impl/Library.hh>
-#include <impl/JNILocal.hh>
+#include <Log.hh>
 #include <iostream>
 
 // Globally accessible instance
@@ -11,8 +11,8 @@ void jwm::AppWin32::init(JNIEnv *jniEnv) {
     _jniEnv = jniEnv;
 
     if (!_windowManager.init()) {
-        jclass Exception = _jniEnv->FindClass("java/lang/Exception");
-        _jniEnv->ThrowNew(Exception, "Failed to initialize Win32 Window Manager");
+        JWM_LOG("Failed to initialize Win32 Window Manager");
+        classes::Throwable::throwRuntimeException(_jniEnv, "Failed to initialize Win32 Window Manager");
     }
 }
 
