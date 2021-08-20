@@ -17,6 +17,7 @@ namespace jwm {
         int start();
         void timerUpdate();
         void postMessage(UINT messageId, void* lParam);
+        void requestFrameEvent();
 
     public:
         HWND getHelperWindow() const { return _hWndHelperWindow; }
@@ -40,6 +41,7 @@ namespace jwm {
         std::unordered_set<int> _keyIgnoreList;
 
         HWND _hWndHelperWindow = nullptr;
+        bool _requestFrame = false;
 
         mutable std::mutex _accessMutex;
     };

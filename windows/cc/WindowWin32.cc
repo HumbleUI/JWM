@@ -74,10 +74,14 @@ void jwm::WindowWin32::show() {
 
 void jwm::WindowWin32::requestSwap() {
     if (testFlag(Flag::HasAttachedLayer)) {
-        if (!testFlag(Flag::RequestSwap)) {
-            setFlag(Flag::RequestSwap);
-            // TODO:
-        }
+        setFlag(Flag::RequestSwap);
+    }
+}
+
+void jwm::WindowWin32::requestFrame() {
+    if (testFlag(Flag::HasAttachedLayer)) {
+        setFlag(Flag::RequestFrame);
+        _windowManager.requestFrameEvent();
     }
 }
 
@@ -769,7 +773,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetSc
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRequestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->setFlag(jwm::WindowWin32::Flag::RequestFrame);
+    instance->requestFrame();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose

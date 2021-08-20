@@ -52,6 +52,7 @@ namespace jwm {
         void setTitle(const std::wstring& title);
         void show();
         void requestSwap();
+        void requestFrame();
         UIRect getWindowRect() const;
         UIRect getContentRect() const;
         void setWindowPosition(int left, int top);

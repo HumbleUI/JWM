@@ -30,16 +30,34 @@ bool jwm::WindowManagerWin32::init() {
 int jwm::WindowManagerWin32::start() {
     MSG msg;
 
+    auto dispatch = [&](){
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    };
+
+    while (GetMessageW(&msg, nullptr, 0, 0)) {
+        if (msg.message == WM_CLOSE) {
+            // App terminate requested
+            // leave event loop and close application
+            return 0;
+        }
+        if (msg.message == JWM_WM_FRAME_EVENT) {
+            // Frame requested.
+            // Peek all messages and swap buffers.
+            break;
+        }
+
+        dispatch();
+    }
+
     while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
         if (msg.message == WM_CLOSE) {
             // App terminate requested
             // leave event loop and close application
-            break;
+            return 0;
         }
-        else {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
+
+        dispatch();
     }
 
     _dispatchFrameEvents();
@@ -366,6 +384,11 @@ void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
 }
 
 void jwm::WindowManagerWin32::_dispatchFrameEvents() {
+    // NOTE: now request is process.
+    // If user request new frame in this method,
+    // we will catch it and will handle in the new processing iteration
+    _requestFrame = false;
+
     std::vector<WindowWin32*> windowsGL;
     std::vector<WindowWin32*> windowsD3DorRaster;
 
@@ -413,4 +436,11 @@ void jwm::WindowManagerWin32::_dispatchFrameEvents() {
 
 void jwm::WindowManagerWin32::postMessage(UINT messageId, void *lParam) {
     PostMessageW(getHelperWindow(), messageId, 0, reinterpret_cast<LONG_PTR>(lParam));
+}
+
+void jwm::WindowManagerWin32::requestFrameEvent() {
+    if (!_requestFrame) {
+        _requestFrame = true;
+        postMessage(JWM_WM_FRAME_EVENT, nullptr);
+    }
 }
