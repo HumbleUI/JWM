@@ -17,6 +17,7 @@ namespace jwm {
         void close();
 
         NSWindow* fNSWindow = nullptr;
+        NSPoint fLastPosition = {0, 0};
         CVDisplayLinkRef fDisplayLink = 0;
         volatile bool fFrameRequested = false;
         volatile bool fFrameScheduled = false;

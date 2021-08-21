@@ -16,12 +16,17 @@
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-    NSPoint pos = jwm::nsWindowPosition(fWindow->fNSWindow);
-    jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, pos.x, pos.y));
-    fWindow->dispatch(event.get());
+    NSPoint origin = fWindow->fNSWindow.frame.origin;
+    if (origin.x != fWindow->fLastPosition.x || origin.y != fWindow->fLastPosition.y) {
+        fWindow->fLastPosition = origin;
+        NSPoint pos = jwm::nsWindowPosition(fWindow->fNSWindow);
+        jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, pos.x, pos.y));
+        fWindow->dispatch(event.get());
+    }
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
+    [self windowDidMove:notification];
     const NSRect windowFrame = [fWindow->fNSWindow frame];
     const NSRect contentFrame = [fWindow->fNSWindow.contentView frame];
     CGFloat scale = fWindow->getScale();
