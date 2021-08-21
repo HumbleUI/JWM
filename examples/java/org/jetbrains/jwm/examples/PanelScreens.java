@@ -26,11 +26,11 @@ public class PanelScreens extends Panel {
                     case DIGIT1 -> {
                         Screen[] screens = App.getScreens();
                         screenIdx = (screenIdx + 1) % screens.length;
-                        Screen screen = screens[screenIdx];
-                        window.setWindowPosition(screen.getX() + screen.getWidth() / 2,
-                                                 screen.getY() + screen.getHeight() / 2);
-                        window.setWindowSize(screen.getWidth() / 2,
-                                             screen.getHeight() / 2);
+                        UIRect bounds = screens[screenIdx].getBounds();
+                        window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2,
+                                                 bounds.getTop() + bounds.getHeight() / 2);
+                        window.setWindowSize(bounds.getWidth() / 2,
+                                             bounds.getHeight() / 2);
                     }
                     case DIGIT2 ->
                         window.setWindowSize((int) (600 * scale), (int) (500 * scale));
@@ -45,19 +45,20 @@ public class PanelScreens extends Panel {
         }
     }
 
-    public void drawRect(Canvas canvas, int left, int top, int width, int height) {
-        canvas.drawRect(Rect.makeXYWH(left, top, width, height), fill);
-        canvas.drawRect(Rect.makeXYWH(left, top, width, height), stroke);
+    public void drawRect(Canvas canvas, UIRect rect) {
+        canvas.drawRect(Rect.makeXYWH(rect.getLeft(), rect.getTop(), rect.getWidth(), rect.getHeight()), fill);
+        canvas.drawRect(Rect.makeXYWH(rect.getLeft(), rect.getTop(), rect.getWidth(), rect.getHeight()), stroke);
     }
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
         float minX = 0, minY = 0, maxX = 0, maxY = 0;
         for (var screen: App.getScreens()) {
-            minX = Math.min(minX, screen.getX());
-            minY = Math.min(minY, screen.getY());
-            maxX = Math.max(maxX, screen.getX() + screen.getWidth());
-            maxY = Math.max(maxY, screen.getY() + screen.getHeight());
+            var bounds = screen.getBounds();
+            minX = Math.min(minX, bounds.getLeft());
+            minY = Math.min(minY, bounds.getTop());
+            maxX = Math.max(maxX, bounds.getRight());
+            maxY = Math.max(maxY, bounds.getBottom());
         }
 
         canvas.save();
@@ -69,23 +70,14 @@ public class PanelScreens extends Panel {
         stroke.setStrokeWidth(1 * scale / scale2);
         for (var screen: App.getScreens()) {
             stroke.setColor(screen.isPrimary() ? 0x80CC3333 : 0x80FFFFFF);
-            drawRect(canvas, screen.getX(), screen.getY(), screen.getWidth(), screen.getHeight());
+            drawRect(canvas, screen.getBounds());
+            drawRect(canvas, screen.getWorkArea());
         }
-        stroke.setColor(0x80FFFFFF);
-        drawRect(canvas, lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight());
-        UIRect contentRect = window.getContentRect();
-        drawRect(canvas,
-                 lastMove.getWindowLeft() + contentRect.getLeft(),
-                 lastMove.getWindowTop() + contentRect.getTop(),
-                 contentRect.getWidth(),
-                 contentRect.getHeight());
-
-        stroke.setColor(0x80CC3333);
         UIRect windowRect = window.getWindowRect();
-        canvas.drawRect(Rect.makeXYWH(windowRect.getLeft(),
-                                      windowRect.getTop(),
-                                      windowRect.getWidth(),
-                                      windowRect.getHeight()), stroke);
+        drawRect(canvas, windowRect);
+        drawRect(canvas, window.getContentRectAbsolute());
+        stroke.setColor(0x80CC3333);
+        drawRect(canvas, UIRect.makeXYWH(lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight()));
 
         canvas.restore();
 

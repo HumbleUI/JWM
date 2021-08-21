@@ -3,7 +3,9 @@
 
 jobject jwm::ScreenWin32::toJni(JNIEnv* env) const {
     auto id = reinterpret_cast<jlong>(hMonitor);
-    return jwm::classes::Screen::make(env, id, x, y, width, height, scale, isPrimary);
+    auto bounds = jwm::UIRect::makeXYWH(x, y, width, height);
+    auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
+    return jwm::classes::Screen::make(env, id, isPrimary, bounds, workArea, scale);
 }
 
 jwm::ScreenWin32 jwm::ScreenWin32::fromHMonitor(HMONITOR monitor) {

@@ -309,7 +309,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetContent
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    return jwm::classes::Screen::make(env, 0, 0, 0, 2880, 1800, instance->getScale(), true); // FIXME #103
+    auto bounds = UIRect::makeXYWH(0, 0, 0, 2880, 1800); // TODO https://github.com/JetBrains/JWM/issues/103
+    auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
+    return jwm::classes::Screen::make(env, true, bounds, workArea, instance->getScale()); 
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRequestFrame

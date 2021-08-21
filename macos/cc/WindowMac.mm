@@ -154,21 +154,19 @@ extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWin
   (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
-
     NSArray* screens = [NSScreen screens];
     for (int i = 0; i < [screens count]; ++i) {
-      NSScreen* screen = [screens objectAtIndex:i];
-      jwm::UIRect rect = jwm::nsScreenRect(screen);
-      if (rect.fLeft <= left && left <= rect.fRight && rect.fTop <= top && top <= rect.fBottom) {
+        NSScreen* screen = [screens objectAtIndex:i];
         CGFloat scale = [screen backingScaleFactor];
-        CGFloat relativeLeft = (left - rect.fLeft) / scale;
-        CGFloat relativeTop = screen.frame.size.height - (top - rect.fTop) / scale;
-        NSPoint point { screen.frame.origin.x + relativeLeft, screen.frame.origin.y + relativeTop };
-        [nsWindow setFrameTopLeftPoint:point];
-        return true;
-      }
+        jwm::UIRect rect = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
+        if (rect.fLeft <= left && left <= rect.fRight && rect.fTop <= top && top <= rect.fBottom) {
+            CGFloat relativeLeft = (left - rect.fLeft) / scale;
+            CGFloat relativeTop = screen.frame.size.height - (top - rect.fTop) / scale;
+            NSPoint point { screen.frame.origin.x + relativeLeft, screen.frame.origin.y + relativeTop };
+            [nsWindow setFrameTopLeftPoint:point];
+            return true;
+        }
     }
-
     return false;
 }
 
@@ -192,6 +190,16 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContent
     CGFloat scale = instance->getScale();
     NSSize size {(CGFloat) width / scale, (CGFloat) height / scale};
     [nsWindow setContentSize:size];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetTitle
+  (JNIEnv* env, jobject obj, jstring titleStr) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    jsize len = env->GetStringLength(titleStr);
+    const jchar* chars = env->GetStringCritical(titleStr, nullptr);
+    NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(titleStr, chars);
+    instance->fNSWindow.title = title;
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen

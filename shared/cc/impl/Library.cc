@@ -401,12 +401,14 @@ namespace jwm {
                 jclass cls = env->FindClass("org/jetbrains/jwm/Screen");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(JIIIIFZ)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(JZLorg/jetbrains/jwm/UIRect;Lorg/jetbrains/jwm/UIRect;F)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary) {
-                jobject res = env->NewObject(kCls, kCtor, id, x, y, width, height, scale, isPrimary);
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::UIRect bounds, jwm::UIRect workArea, jfloat scale) {
+                JNILocal<jobject> boundsObj(env, jwm::classes::UIRect::toJava(env, bounds));
+                JNILocal<jobject> workAreaObj(env, jwm::classes::UIRect::toJava(env, workArea));
+                jobject res = env->NewObject(kCls, kCtor, id, isPrimary, boundsObj.get(), workAreaObj.get(), scale);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

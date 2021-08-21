@@ -110,15 +110,15 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScree
                 }
             }
 
+            auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
+            auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
             jwm::JNILocal<jobject> obj(env, jwm::classes::Screen::make(
                 env,
                 info->outputs[0],
-                info->x,
-                info->y,
-                info->width,
-                info->height,
-                dpi,
-                isPrimary
+                isPrimary,
+                bounds,
+                workArea,
+                dpi
             ));
             env->SetObjectArrayElement(array, i, obj.get());
         }

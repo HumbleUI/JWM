@@ -131,7 +131,7 @@ namespace jwm {
         namespace Screen {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jlong id, jint x, jint y, jint width, jint height, jfloat scale, jboolean isPrimary);
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::UIRect bounds, jwm::UIRect workArea, jfloat scale);
         }
 
         namespace TextInputClient {

@@ -32,7 +32,7 @@ Alpha. Expect API breakages.
 |                   | Windows | macOS | X11 |
 |-------------------|---------|-------|-----|
 | init              | ✅   | ✅   | ✅   |
-| makeWindow        | ✅   | ✅   | ✅   |
+| makeWindow        | ✅   | [#121](https://github.com/jetbrains/jwm/issues/121)   | ✅   |
 | start             | ✅   | ✅   | ✅   |
 | getScreens        | ✅   | ✅   | ✅   |
 | getPrimaryScreen  | ✅   | ✅   | ✅   |
@@ -55,13 +55,13 @@ Alpha. Expect API breakages.
 | setWindowPosition   | ✅   | ✅   | ✅   |
 | setWindowSize       | ✅   | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) |
 | setContentSize      | ✅   | ✅   | ✅   |
-| getScreen           | ✅   | ✅   | ✅   |
+| getScreen           | ✅   | ✅   | [#103](https://github.com/jetbrains/jwm/issues/103) |
 | requestFrame        | [#113](https://github.com/jetbrains/jwm/issues/113) | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
 | minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |
 | maximize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |
 | restore             | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |
-| setTitle            | [#94](https://github.com/jetbrains/jwm/issues/94)  | [#94](https://github.com/jetbrains/jwm/issues/94)  | [#94](https://github.com/jetbrains/jwm/issues/94)  |
+| setTitle            | ✅  | ✅  | [#94](https://github.com/jetbrains/jwm/issues/94)  |
 | setIcon             | [#95](https://github.com/jetbrains/jwm/issues/95)  | [#95](https://github.com/jetbrains/jwm/issues/95)  | [#95](https://github.com/jetbrains/jwm/issues/95)  |
 | Set system cursor       | [#99](https://github.com/jetbrains/jwm/issues/99)  | [#99](https://github.com/jetbrains/jwm/issues/99)  | [#99](https://github.com/jetbrains/jwm/issues/99)  |
 | Remove decorations  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  |
@@ -95,10 +95,12 @@ Alpha. Expect API breakages.
 
 |                         | Windows | macOS | X11 |
 |-------------------------|---------|-------|-----|
-| x/y/width/height        | ✅      | ✅    | ✅  |
+| id                      | ✅      | ✅    | ✅  |
+| isPrimary               | ✅      | ✅    | ✅  |
+| bounds                  | ✅      | ✅    | ✅  |
 | scale                   | ✅      | ✅    | ✅  |
-| visibleRect             | [#119](https://github.com/jetbrains/jwm/issues/119) | [#119](https://github.com/jetbrains/jwm/issues/119) | [#119](https://github.com/jetbrains/jwm/issues/119) |
-| colorSpace              | ❌      | ❌    | ❌  |
+| workArea                | [#119](https://github.com/jetbrains/jwm/issues/119) | ✅ | [#119](https://github.com/jetbrains/jwm/issues/119) |
+| colorSpace              | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) |
 
 ### Clipboard
 

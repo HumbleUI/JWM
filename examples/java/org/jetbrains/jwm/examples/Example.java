@@ -9,7 +9,6 @@ import java.util.function.*;
 import java.util.stream.*;
 
 public class Example implements Consumer<Event> {
-    public static int EXAMPLE_COUNT = 0;
     public static int PADDING = 10;
     public static int ROWS = 3, COLS = 4;
     public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
@@ -54,9 +53,19 @@ public class Example implements Consumer<Event> {
         panelLegend = new PanelLegend();
 
         var scale = window.getScreen().getScale();
-        window.setWindowPosition((int) (100 * scale), (int) (100 * scale));
-        window.setWindowSize((int) (800 * scale), (int) (600 * scale));
-        window.setTitle("JWM Window " + EXAMPLE_COUNT);
+        int count = App._windows.size() - 1;
+        Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
+        UIRect bounds = screen.getWorkArea();
+
+        window.setWindowSize(bounds.getWidth() / 2, bounds.getHeight() / 2);
+        switch (count % 5) {
+            case 0 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 4, bounds.getTop() + bounds.getHeight() / 4);
+            case 1 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop());
+            case 2 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop());
+            case 3 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop() + bounds.getHeight() / 2);
+            case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
+        }
+        window.setTitle("JWM Window #" + count);
         window.show();
         window.requestFrame();
 
@@ -66,8 +75,6 @@ public class Example implements Consumer<Event> {
             }
         };
         timer.schedule(timerTask, 10, 1000);
-
-        EXAMPLE_COUNT += 1;
     }
 
     public void paint(String reason) {
