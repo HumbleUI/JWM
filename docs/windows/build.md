@@ -41,7 +41,7 @@ Then, run `C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe` a
 
 After reboot, open one of the command prompts for VS 2019 matching your arch.
 
-Usually, you can open command prompt fo VS from `C:\path\to\Start Menu\Programs\Visual Studio 2019\Visual Studio Tools\VC`.
+Usually, you can open command prompt for VS from `C:\path\to\Start Menu\Programs\Visual Studio 2019\Visual Studio Tools\VC`.
 
 ### Configure path and env (optional)
 
@@ -76,7 +76,7 @@ To run example application, you need  [JDK 16](https://jdk.java.net/16/).
 
 
 ```sh
-# from command prompt for vs 2
+# from command prompt for vs
 python script\build.py
 python script\run.py
 
