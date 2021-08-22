@@ -91,6 +91,7 @@ You will get something like this.
 ## troubleshooting
 - disable other c++ compilers like minGW
 - try removing windows/build directory and re-run command
+- run `python ./script/crean.py`
 - check environment variables and paths (`echo`, `where <cmd>` in power shell or `which <cmd>` in unix-like shell)
 
 
