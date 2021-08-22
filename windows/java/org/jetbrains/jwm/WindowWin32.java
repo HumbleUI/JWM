@@ -71,6 +71,14 @@ public class WindowWin32 extends Window {
         _nSetTitle(title);
         return this;
     }
+
+    
+    @Override
+    public Window setIcon(String iconPath){
+        assert _onUIThread();
+        _nSetIcon(iconPath);
+        return this;
+    }
     
     @Override
     public Screen getScreen() {
@@ -116,6 +124,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+    @ApiStatus.Internal public native void _nSetIcon(String iconPath);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();

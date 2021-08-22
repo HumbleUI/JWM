@@ -50,6 +50,7 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void setTitle(const std::wstring& title);
+        void setIcon(const std::wstring& iconPath);
         void show();
         void requestSwap();
         void requestFrame();

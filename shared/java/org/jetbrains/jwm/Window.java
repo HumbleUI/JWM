@@ -53,6 +53,9 @@ public abstract class Window extends RefCounted {
     @NotNull @Contract("-> this")
     public abstract Window setTitle(String title);
 
+    @NotNull @Contract("-> this")
+    public abstract Window setIcon(String iconPath);
+
     public abstract Screen getScreen();
 
     public abstract void requestFrame();

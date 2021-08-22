@@ -68,6 +68,12 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
     SetWindowTextW(_hWnd, title.c_str());
 }
 
+void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
+    JWM_VERBOSE("Set window icon '" << iconPath << "'");
+    HICON hicon = (HICON)LoadImage(NULL, L"sample.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+    SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+}
+
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
@@ -761,6 +767,15 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
     jsize length = env->GetStringLength(title);
     instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
     env->ReleaseStringChars(title, titleStr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
+        (JNIEnv* env, jobject obj, jstring iconPath) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    const jchar* iconPathStr = env->GetStringChars(iconPath, nullptr);
+    jsize length = env->GetStringLength(iconPath);
+    instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
+    env->ReleaseStringChars(iconPath, iconPathStr);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
