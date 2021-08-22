@@ -6,6 +6,7 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
+import java.io.File;
 
 public class WindowWin32 extends Window {
     @ApiStatus.Internal
@@ -74,9 +75,9 @@ public class WindowWin32 extends Window {
 
     
     @Override
-    public Window setIcon(String iconPath){
+    public Window setIcon(File icon){
         assert _onUIThread();
-        _nSetIcon(iconPath);
+        _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
     

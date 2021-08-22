@@ -4,6 +4,7 @@ import java.util.concurrent.*;
 import java.util.function.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.impl.*;
+import java.io.File;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal
@@ -54,7 +55,7 @@ public abstract class Window extends RefCounted {
     public abstract Window setTitle(String title);
 
     @NotNull @Contract("-> this")
-    public abstract Window setIcon(String iconPath);
+    public abstract Window setIcon(File icon);
 
     public abstract Screen getScreen();
 

@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
+import java.io.File;
+
 
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
@@ -66,7 +68,7 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
         window.setTitle("JWM Window #" + count);
-        window.setIcon("sample.ico");
+        window.setIcon(new File("sample.ico"));
         window.show();
         window.requestFrame();
 
