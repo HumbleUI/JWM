@@ -39,7 +39,7 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-      - run: python3 script/deploy_native.py --arch=x64
+      - run: python3 script/deploy_native.py
         env:
           SPACE_TOKEN: ${{ secrets.SPACE_TOKEN }}
 
@@ -63,13 +63,12 @@ jobs:
 
   linux:
     runs-on: ubuntu-latest
+    container: tonsky/jwm:latest
     needs: shared
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: seanmiddleditch/gha-setup-ninja@master
-      - run: sudo apt-get install libxcomposite-dev libxrandr-dev libgl1-mesa-dev libxi-dev
-      - run: python3 script/deploy_native.py --arch=x64
+      - run: python3 script/deploy_native.py
         env:
           SPACE_TOKEN: ${{ secrets.SPACE_TOKEN }}
