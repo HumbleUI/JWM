@@ -69,6 +69,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: python3 script/deploy_native.py
+      - run: bash -c 'source /etc/profile && python3 script/deploy_native.py'
         env:
           SPACE_TOKEN: ${{ secrets.SPACE_TOKEN }}
