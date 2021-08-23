@@ -67,6 +67,10 @@ public class UIRect {
         return new UIRect(_left + dx, _top + dy, _right + dx, _bottom + dy);
     }
 
+    public boolean inside(int x, int y) {
+        return _left <= x && x <= _right && _top <= y && y <= _bottom;
+    }
+
     public String toString() {
         return "(" + _left + "," + _top + ") " + (_right - _left) + "×" + (_bottom - _top);
     }

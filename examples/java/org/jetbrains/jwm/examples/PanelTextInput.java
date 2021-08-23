@@ -12,6 +12,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
     public boolean cursorDraw = true;
     public TimerTask timerTask;
     public static Timer timer = new Timer(true);
+    public boolean _wasInside = false;
 
     public PanelTextInput(Window window) {
         this.window = window;
@@ -34,6 +35,13 @@ public class PanelTextInput extends Panel implements TextInputClient {
             lastMarked = ee;
         } else if (e instanceof EventMouseButton ee) {
             window.unmarkText();
+        } else if (e instanceof EventMouseMove ee) {
+            boolean isInside = testPointInside(ee.getX(), ee.getY());
+            if (!_wasInside && isInside)
+                window.setMouseCursor(MouseCursor.IBEAM);
+            if (_wasInside && !isInside)
+                window.setMouseCursor(MouseCursor.ARROW);
+            _wasInside = isInside;
         } else if (e instanceof EventKey ee && ee.isPressed()) {
             Key key = ee.getKey();
             boolean modifier = ee.isModifierDown(Example.MODIFIER);

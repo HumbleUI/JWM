@@ -30,4 +30,8 @@ public abstract class Panel implements Consumer<Event> {
         lastY = y;
         lastScale = scale;
     }
+
+    public boolean testPointInside(int x, int y) {
+        return UIRect.makeXYWH(lastX, lastY, lastWidth, lastHeight).inside(x, y);
+    }
 }
