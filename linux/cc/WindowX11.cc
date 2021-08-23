@@ -349,3 +349,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRestore
   (JNIEnv* env, jobject obj) {
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->restore();
 }
+
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    instance->close();
+}
