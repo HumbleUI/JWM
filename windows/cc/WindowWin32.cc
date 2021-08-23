@@ -68,6 +68,43 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
     SetWindowTextW(_hWnd, title.c_str());
 }
 
+void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
+    JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
+
+    const wchar_t* cursorName = IDC_ARROW;
+
+    switch (cursor) {
+        case MouseCursor::ARROW:
+            cursorName = IDC_ARROW;
+            break;
+        case MouseCursor::CROSS:
+            cursorName = IDC_CROSS;
+            break;
+        case MouseCursor::HAND:
+            cursorName = IDC_HAND;
+            break;
+        case MouseCursor::HELP:
+            cursorName = IDC_HELP;
+            break;
+        case MouseCursor::IBEAM:
+            cursorName = IDC_IBEAM;
+            break;
+        case MouseCursor::UPARROW:
+            cursorName = IDC_UPARROW;
+            break;
+        default:
+            break;
+    }
+
+    if (_hMouseCursor) {
+        DestroyCursor(_hMouseCursor);
+        _hMouseCursor = nullptr;
+    }
+
+    _hMouseCursor = LoadCursorW(nullptr, cursorName);
+    _setMouseCursorInternal();
+}
+
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
 }
@@ -265,6 +302,15 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
+        }
+
+        case WM_SETCURSOR: {
+            if (LOWORD(lParam) == HTCLIENT) {
+                _setMouseCursorInternal();
+                return true;
+            }
+
+            break;
         }
 
         case WM_LBUTTONDOWN:
@@ -608,8 +654,16 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
 void jwm::WindowWin32::_destroyInternal() {
     // Remove window from manager and destroy OS object
     _windowManager._unregisterWindow(*this);
-    DestroyWindow(_hWnd);
-    _hWnd = nullptr;
+
+    if (_hMouseCursor) {
+        DestroyCursor(_hMouseCursor);
+        _hMouseCursor = nullptr;
+    }
+
+    if (_hWnd) {
+        DestroyWindow(_hWnd);
+        _hWnd = nullptr;
+    }
 }
 
 void jwm::WindowWin32::_close() {
@@ -621,6 +675,10 @@ void jwm::WindowWin32::_close() {
         // Native clean-up
         _destroyInternal();
     }
+}
+
+void jwm::WindowWin32::_setMouseCursorInternal() {
+    SetCursor(_hMouseCursor);
 }
 
 void jwm::WindowWin32::_imeResetComposition() {
@@ -776,6 +834,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
     jsize length = env->GetStringLength(title);
     instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
     env->ReleaseStringChars(title, titleStr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
+        (JNIEnv* env, jobject obj, jint cursorId) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setMouseCursor(static_cast<jwm::MouseCursor>(cursorId));
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
