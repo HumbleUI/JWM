@@ -599,6 +599,9 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     // Register window, so manager can process its update
     _windowManager._registerWindow(*this);
 
+    // Set active focus
+    SetFocus(_hWnd);
+
     return true;
 }
 
