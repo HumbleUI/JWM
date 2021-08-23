@@ -92,9 +92,21 @@ jwm::UIRect jwm::WindowWin32::getWindowRect() const {
 }
 
 jwm::UIRect jwm::WindowWin32::getContentRect() const {
-    RECT wRect;
-    GetClientRect(_hWnd, &wRect);
-    return UIRect{wRect.left, wRect.top, wRect.right, wRect.bottom};
+    RECT clientRect;
+    GetClientRect(_hWnd, &clientRect);
+    RECT windowRect;
+    GetWindowRect(_hWnd, &windowRect);
+
+    // Convert client area rect to screen space and
+    POINT corners[] = {POINT{clientRect.left, clientRect.top}, POINT{clientRect.right, clientRect.bottom}};
+    MapWindowPoints(getHWnd(), nullptr, corners, sizeof(corners)/sizeof(corners[0]));
+
+    POINT leftTop = corners[0];
+    POINT rightBottom = corners[1];
+
+    // Build rect with client area rect relative to the window rect to handle title bar
+    return UIRect{leftTop.x - windowRect.left, leftTop.y - windowRect.top,
+                  rightBottom.x - windowRect.left, rightBottom.y - windowRect.top};
 }
 
 void jwm::WindowWin32::setWindowPosition(int left, int top) {
