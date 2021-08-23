@@ -1,10 +1,7 @@
 #include <ScreenWin32.hh>
-#include <impl/Library.hh>
 
 jobject jwm::ScreenWin32::toJni(JNIEnv* env) const {
     auto id = reinterpret_cast<jlong>(hMonitor);
-    auto bounds = jwm::UIRect::makeXYWH(x, y, width, height);
-    auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
     return jwm::classes::Screen::make(env, id, isPrimary, bounds, workArea, scale);
 }
 
@@ -19,13 +16,18 @@ jwm::ScreenWin32 jwm::ScreenWin32::fromHMonitor(HMONITOR monitor) {
     GetMonitorInfoW(monitor, &monitorInfo);
     auto& area = monitorInfo.rcMonitor;
 
-    // Position
-    screen.x = area.left;
-    screen.y = area.top;
+    // Bounds
+    screen.bounds.fTop = area.left;
+    screen.bounds.fTop = area.top;
+    screen.bounds.fRight = area.right;
+    screen.bounds.fBottom = area.bottom;
 
-    // Size
-    screen.width = area.right - area.left;
-    screen.height = area.bottom - area.top;
+    // Work area
+    auto& workArea = monitorInfo.rcWork;
+    screen.workArea.fTop = workArea.left;
+    screen.workArea.fTop = workArea.top;
+    screen.workArea.fRight = workArea.right;
+    screen.workArea.fBottom = workArea.bottom;
 
     // Scale
     DEVICE_SCALE_FACTOR scaleFactor;
