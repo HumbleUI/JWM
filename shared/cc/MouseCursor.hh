@@ -7,13 +7,11 @@ namespace jwm {
         ARROW         = 0,
         CROSSHAIR     = 1,
         HELP          = 2,
-        HAND_POINTING = 3,
-        HAND_OPEN     = 4,
-        HAND_CLOSED   = 5,
-        IBEAM         = 6,
-        UPARROW       = 7,
-        NOT_ALLOWED   = 8,
-        WAIT          = 9
+        POINTING_HAND = 3,
+        IBEAM         = 4,
+        UPARROW       = 5,
+        NOT_ALLOWED   = 6,
+        WAIT          = 7
     };
 
     static const char* mouseCursorToStr(MouseCursor cursor) {
@@ -24,12 +22,8 @@ namespace jwm {
                 return "Crosshair";
             case MouseCursor::HELP:
                 return "Help";
-            case MouseCursor::HAND_POINTING:
-                return "HandPointing";
-            case MouseCursor::HAND_OPEN:
-                return "HandOpen";
-            case MouseCursor::HAND_CLOSED:
-                return "HandClosed";
+            case MouseCursor::POINTING_HAND:
+                return "PointingHand";
             case MouseCursor::IBEAM:
                 return "I-beam";
             case MouseCursor::UPARROW:

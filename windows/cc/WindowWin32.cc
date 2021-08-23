@@ -83,9 +83,7 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
         case MouseCursor::HELP:
             cursorName = IDC_HELP;
             break;
-        case MouseCursor::HAND_POINTING:
-        case MouseCursor::HAND_OPEN:
-        case MouseCursor::HAND_CLOSED:
+        case MouseCursor::POINTING_HAND:
             cursorName = IDC_HAND;
             break;
         case MouseCursor::IBEAM:
