@@ -75,7 +75,7 @@ public class WindowWin32 extends Window {
     @Override
     public Window setMouseCursor(MouseCursor cursor) {
         assert _onUIThread();
-        _nSetMouseCursor(cursor._id);
+        _nSetMouseCursor(cursor.ordinal());
         return this;
     }
 
