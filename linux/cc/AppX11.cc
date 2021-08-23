@@ -77,55 +77,59 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
 
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
-    Display* display = jwm::app.getWindowManager().getDisplay();
-    XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());
-    RROutput primaryOutput = XRRGetOutputPrimary(display, jwm::app.getWindowManager().getRootWindow());
-    int count = resources->ncrtc;
+    // TODO update mechanism for monitors
+    static jobjectArray array = (jobjectArray)env->NewGlobalRef([&] {   
+        Display* display = jwm::app.getWindowManager().getDisplay();
+        XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());
+        RROutput primaryOutput = XRRGetOutputPrimary(display, jwm::app.getWindowManager().getRootWindow());
+        int count = resources->ncrtc;
 
 
-    // skip empty monitors
-    for (int i = 0; i < resources->ncrtc; ++i) {
-        XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
-        if (info->width == 0) {
-            count -= 1;
-        }
-        XRRFreeCrtcInfo(info);
-    }
-
-
-    jobjectArray array = env->NewObjectArray(count, jwm::classes::Screen::kCls, 0);    
-
-    float dpi = jwm::app.getScale();
-
-    for (int i = 0; i < count; ++i) {
-        XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
         // skip empty monitors
-        if (info->width != 0) {
-            bool isPrimary = false;
-            for (int o = 0; o < info->noutput; ++o) {
-                RROutput output = info->outputs[o];
-                if (output == primaryOutput) {
-                    isPrimary = true;
-                    break;
+        for (int i = 0; i < resources->ncrtc; ++i) {
+            XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
+            if (info->width == 0) {
+                count -= 1;
+            }
+            XRRFreeCrtcInfo(info);
+        }
+
+
+        jobjectArray array = env->NewObjectArray(count, jwm::classes::Screen::kCls, 0);    
+
+        float dpi = jwm::app.getScale();
+
+        for (int i = 0; i < count; ++i) {
+            XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
+            // skip empty monitors
+            if (info->width != 0) {
+                bool isPrimary = false;
+                for (int o = 0; o < info->noutput; ++o) {
+                    RROutput output = info->outputs[o];
+                    if (output == primaryOutput) {
+                        isPrimary = true;
+                        break;
+                    }
                 }
+
+                auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
+                auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
+                jwm::JNILocal<jobject> obj(env, jwm::classes::Screen::make(
+                    env,
+                    info->outputs[0],
+                    isPrimary,
+                    bounds,
+                    workArea,
+                    dpi
+                ));
+                env->SetObjectArrayElement(array, i, obj.get());
             }
 
-            auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
-            auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
-            jwm::JNILocal<jobject> obj(env, jwm::classes::Screen::make(
-                env,
-                info->outputs[0],
-                isPrimary,
-                bounds,
-                workArea,
-                dpi
-            ));
-            env->SetObjectArrayElement(array, i, obj.get());
+            XRRFreeCrtcInfo(info);
         }
+        XRRFreeScreenResources(resources);
 
-        XRRFreeCrtcInfo(info);
-    }
-    XRRFreeScreenResources(resources);
-
+        return array;
+    }());
     return array;
 }
