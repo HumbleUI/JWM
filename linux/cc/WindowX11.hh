@@ -34,6 +34,7 @@ namespace jwm {
         bool isRedrawRequested() {
             return _isRedrawRequested;
         }
+        void setTitle(const std::string& title);
 
         void maximize();
         void minimize();

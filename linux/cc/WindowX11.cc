@@ -21,6 +21,17 @@ WindowX11::~WindowX11() {
     close();
 }
 
+void WindowX11::setTitle(const std::string& title) {
+    XChangeProperty(_windowManager.getDisplay(),
+                    _x11Window,
+                    _windowManager.getAtoms()._NET_WM_NAME,
+                    _windowManager.getAtoms().UTF8_STRING,
+                    8,
+                    PropModeReplace,
+                    reinterpret_cast<const unsigned char*>(title.c_str()),
+                    title.length());
+}
+
 void WindowX11::close() {
     if (_x11Window) {
         _windowManager.unregisterWindow(this);
@@ -191,6 +202,8 @@ bool WindowX11::init()
                                CWColormap | CWEventMask | CWCursor,
                                &_windowManager.getSWA()
     );
+
+    // tell X11 we want to handle close button
     XSetWMProtocols(_windowManager.getDisplay(),
                     _x11Window,
                     &_windowManager.getAtoms().WM_DELETE_WINDOW,
@@ -355,4 +368,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
+}
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetTitle
+        (JNIEnv* env, jobject obj, jbyteArray title) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+
+    jbyte* bytes = env->GetByteArrayElements(title, nullptr);
+    std::string titleS = { bytes, bytes + env->GetArrayLength(title) };
+    env->ReleaseByteArrayElements(title, bytes, 0);
+
+    instance->setTitle(titleS);
 }
