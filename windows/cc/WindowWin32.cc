@@ -70,8 +70,8 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
 
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     JWM_VERBOSE("Set window icon '" << iconPath << "'");
-    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
-    SendMessage(_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+    // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the default icon size.
+    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
 
