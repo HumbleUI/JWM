@@ -1,12 +1,12 @@
 package org.jetbrains.jwm;
 
+import java.io.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
-import java.io.File;
 
 public class WindowWin32 extends Window {
     @ApiStatus.Internal
