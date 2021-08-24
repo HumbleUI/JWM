@@ -73,6 +73,7 @@ public class WindowWin32 extends Window {
         return this;
     }
 
+<<<<<<< HEAD
     
     @Override
     public Window setIcon(File icon){
@@ -81,6 +82,15 @@ public class WindowWin32 extends Window {
         return this;
     }
     
+=======
+    @Override
+    public Window setMouseCursor(MouseCursor cursor) {
+        assert _onUIThread();
+        _nSetMouseCursor(cursor.ordinal());
+        return this;
+    }
+
+>>>>>>> upstream/main
     @Override
     public Screen getScreen() {
         assert _onUIThread();
@@ -125,7 +135,11 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+<<<<<<< HEAD
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
+=======
+    @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
+>>>>>>> upstream/main
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();

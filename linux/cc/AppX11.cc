@@ -47,6 +47,55 @@ void jwm::AppX11::terminate() {
     wm.terminate();
 }
 
+const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
+    if (_screens.empty()) {
+        Display* display = getWindowManager().getDisplay();
+        XRRScreenResources* resources = XRRGetScreenResources(display, getWindowManager().getRootWindow());
+        RROutput primaryOutput = XRRGetOutputPrimary(display, getWindowManager().getRootWindow());
+        int count = resources->ncrtc;
+
+
+        // skip empty monitors
+        for (int i = 0; i < resources->ncrtc; ++i) {
+            XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
+            if (info->width == 0) {
+                count -= 1;
+            }
+            XRRFreeCrtcInfo(info);
+        } 
+
+        float dpi = jwm::app.getScale();
+
+        for (int i = 0; i < count; ++i) {
+            XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
+            // skip empty monitors
+            if (info->width != 0) {
+                bool isPrimary = false;
+                for (int o = 0; o < info->noutput; ++o) {
+                    RROutput output = info->outputs[o];
+                    if (output == primaryOutput) {
+                        isPrimary = true;
+                        break;
+                    }
+                }
+
+                auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
+
+                ScreenInfo myScreenInfo = {
+                    long(info->outputs[0]),
+                    bounds,
+                    isPrimary
+                };
+                _screens.push_back(myScreenInfo);
+            }
+
+            XRRFreeCrtcInfo(info);
+        }
+        XRRFreeScreenResources(resources);
+    }
+    return _screens;
+}
+
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit(JNIEnv* env, jclass jclass) {
@@ -77,55 +126,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
 
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
-    Display* display = jwm::app.getWindowManager().getDisplay();
-    XRRScreenResources* resources = XRRGetScreenResources(display, jwm::app.getWindowManager().getRootWindow());
-    RROutput primaryOutput = XRRGetOutputPrimary(display, jwm::app.getWindowManager().getRootWindow());
-    int count = resources->ncrtc;
-
-
-    // skip empty monitors
-    for (int i = 0; i < resources->ncrtc; ++i) {
-        XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
-        if (info->width == 0) {
-            count -= 1;
-        }
-        XRRFreeCrtcInfo(info);
+    auto& screens = jwm::app.getScreens();
+    jobjectArray array = env->NewObjectArray(screens.size(), jwm::classes::Screen::kCls, 0);    
+    float scale = jwm::app.getScale();
+    size_t index = 0;
+    for (auto& screen : screens) {
+        env->SetObjectArrayElement(array, index++, screen.asJavaObject(env));
     }
-
-
-    jobjectArray array = env->NewObjectArray(count, jwm::classes::Screen::kCls, 0);    
-
-    float dpi = jwm::app.getScale();
-
-    for (int i = 0; i < count; ++i) {
-        XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
-        // skip empty monitors
-        if (info->width != 0) {
-            bool isPrimary = false;
-            for (int o = 0; o < info->noutput; ++o) {
-                RROutput output = info->outputs[o];
-                if (output == primaryOutput) {
-                    isPrimary = true;
-                    break;
-                }
-            }
-
-            auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
-            auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
-            jwm::JNILocal<jobject> obj(env, jwm::classes::Screen::make(
-                env,
-                info->outputs[0],
-                isPrimary,
-                bounds,
-                workArea,
-                dpi
-            ));
-            env->SetObjectArrayElement(array, i, obj.get());
-        }
-
-        XRRFreeCrtcInfo(info);
-    }
-    XRRFreeScreenResources(resources);
 
     return array;
 }

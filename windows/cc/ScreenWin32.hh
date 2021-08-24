@@ -1,5 +1,6 @@
 #pragma once
 #include <PlatformWin32.hh>
+#include <impl/Library.hh>
 #include <jni.h>
 
 namespace jwm {
@@ -13,10 +14,8 @@ namespace jwm {
 
     private:
         HMONITOR hMonitor;
-        int x;
-        int y;
-        int width;
-        int height;
+        UIRect bounds;
+        UIRect workArea;
         float scale;
         bool isPrimary;
 

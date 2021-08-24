@@ -76,6 +76,12 @@ public class WindowMac extends Window {
         // TODO #95
         return this;
     }
+    
+    public Window setMouseCursor(MouseCursor cursor) {
+        assert _onUIThread();
+        // TODO: impl me!
+        return this;
+    }
 
     @Override
     public Screen getScreen() {

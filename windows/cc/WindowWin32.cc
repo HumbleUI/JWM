@@ -74,6 +74,48 @@ void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
+void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
+    JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
+
+    const wchar_t* cursorName = IDC_ARROW;
+
+    switch (cursor) {
+        case MouseCursor::ARROW:
+            cursorName = IDC_ARROW;
+            break;
+        case MouseCursor::CROSSHAIR:
+            cursorName = IDC_CROSS;
+            break;
+        case MouseCursor::HELP:
+            cursorName = IDC_HELP;
+            break;
+        case MouseCursor::POINTING_HAND:
+            cursorName = IDC_HAND;
+            break;
+        case MouseCursor::IBEAM:
+            cursorName = IDC_IBEAM;
+            break;
+        case MouseCursor::UPARROW:
+            cursorName = IDC_UPARROW;
+            break;
+        case MouseCursor::NOT_ALLOWED:
+            cursorName = IDC_NO;
+            break;
+        case MouseCursor::WAIT:
+            cursorName = IDC_WAIT;
+            break;
+        default:
+            break;
+    }
+
+    if (_hMouseCursor) {
+        DestroyCursor(_hMouseCursor);
+        _hMouseCursor = nullptr;
+    }
+
+    _hMouseCursor = LoadCursorW(nullptr, cursorName);
+    _setMouseCursorInternal();
+}
 
 void jwm::WindowWin32::show() {
     ShowWindow(_hWnd, SW_SHOWNA);
@@ -99,9 +141,21 @@ jwm::UIRect jwm::WindowWin32::getWindowRect() const {
 }
 
 jwm::UIRect jwm::WindowWin32::getContentRect() const {
-    RECT wRect;
-    GetClientRect(_hWnd, &wRect);
-    return UIRect{wRect.left, wRect.top, wRect.right, wRect.bottom};
+    RECT clientRect;
+    GetClientRect(_hWnd, &clientRect);
+    RECT windowRect;
+    GetWindowRect(_hWnd, &windowRect);
+
+    // Convert client area rect to screen space and
+    POINT corners[] = {POINT{clientRect.left, clientRect.top}, POINT{clientRect.right, clientRect.bottom}};
+    MapWindowPoints(getHWnd(), nullptr, corners, sizeof(corners)/sizeof(corners[0]));
+
+    POINT leftTop = corners[0];
+    POINT rightBottom = corners[1];
+
+    // Build rect with client area rect relative to the window rect to handle title bar
+    return UIRect{leftTop.x - windowRect.left, leftTop.y - windowRect.top,
+                  rightBottom.x - windowRect.left, rightBottom.y - windowRect.top};
 }
 
 void jwm::WindowWin32::setWindowPosition(int left, int top) {
@@ -260,6 +314,15 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
+        }
+
+        case WM_SETCURSOR: {
+            if (LOWORD(lParam) == HTCLIENT) {
+                _setMouseCursorInternal();
+                return true;
+            }
+
+            break;
         }
 
         case WM_LBUTTONDOWN:
@@ -594,14 +657,25 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     // Register window, so manager can process its update
     _windowManager._registerWindow(*this);
 
+    // Set active focus
+    SetFocus(_hWnd);
+
     return true;
 }
 
 void jwm::WindowWin32::_destroyInternal() {
     // Remove window from manager and destroy OS object
     _windowManager._unregisterWindow(*this);
-    DestroyWindow(_hWnd);
-    _hWnd = nullptr;
+
+    if (_hMouseCursor) {
+        DestroyCursor(_hMouseCursor);
+        _hMouseCursor = nullptr;
+    }
+
+    if (_hWnd) {
+        DestroyWindow(_hWnd);
+        _hWnd = nullptr;
+    }
 }
 
 void jwm::WindowWin32::_close() {
@@ -613,6 +687,10 @@ void jwm::WindowWin32::_close() {
         // Native clean-up
         _destroyInternal();
     }
+}
+
+void jwm::WindowWin32::_setMouseCursorInternal() {
+    SetCursor(_hMouseCursor);
 }
 
 void jwm::WindowWin32::_imeResetComposition() {
@@ -777,6 +855,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     jsize length = env->GetStringLength(iconPath);
     instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
+}
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
+        (JNIEnv* env, jobject obj, jint cursorId) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setMouseCursor(static_cast<jwm::MouseCursor>(cursorId));
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen

@@ -16,6 +16,10 @@ static LRESULT CALLBACK windowMessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 }
 
 bool jwm::WindowManagerWin32::init() {
+    // NOTE: We report all coords/sizes in pixels
+    // Scaling is handled manually by user application
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     if (!_registerWindowClass())
         return false;
     if (!_createHelperWindow())

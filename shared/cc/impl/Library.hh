@@ -16,6 +16,13 @@ namespace jwm {
         int32_t getWidth() const { return fRight - fLeft; }
         int32_t getHeight() const { return fBottom - fTop; }
 
+        bool isPointInside(int32_t x, int32_t y) const {
+            return x >= fLeft   &&
+                   y >= fTop    &&
+                   x <  fRight  &&
+                   y <  fBottom;
+        }
+
         static UIRect makeXYWH(int32_t left, int32_t top, int32_t width, int32_t height) {
             return { left, top, left + width, top + height };
         }

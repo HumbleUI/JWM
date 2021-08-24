@@ -56,6 +56,7 @@ public abstract class Window extends RefCounted {
 
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
+    public abstract Window setMouseCursor(MouseCursor cursor);
 
     public abstract Screen getScreen();
 

@@ -21,6 +21,17 @@ WindowX11::~WindowX11() {
     close();
 }
 
+void WindowX11::setTitle(const std::string& title) {
+    XChangeProperty(_windowManager.getDisplay(),
+                    _x11Window,
+                    _windowManager.getAtoms()._NET_WM_NAME,
+                    _windowManager.getAtoms().UTF8_STRING,
+                    8,
+                    PropModeReplace,
+                    reinterpret_cast<const unsigned char*>(title.c_str()),
+                    title.length());
+}
+
 void WindowX11::close() {
     if (_x11Window) {
         _windowManager.unregisterWindow(this);
@@ -191,6 +202,8 @@ bool WindowX11::init()
                                CWColormap | CWEventMask | CWCursor,
                                &_windowManager.getSWA()
     );
+
+    // tell X11 we want to handle close button
     XSetWMProtocols(_windowManager.getDisplay(),
                     _x11Window,
                     &_windowManager.getAtoms().WM_DELETE_WINDOW,
@@ -243,6 +256,21 @@ void WindowX11::resize(int width, int height) {
 
 void WindowX11::show() {
     XMapWindow(_windowManager.getDisplay(), _x11Window);
+}
+
+const ScreenInfo& WindowX11::getScreen() {
+    // in X11, there's no straightforward way to get screen of window.
+    // instead, we should do it manually using center point of the window and calculating which monitor this point
+    // belongs to.
+
+    int centerX = getLeft() + getWidth()  / 2;
+    int centerY = getTop()  + getHeight() / 2;
+    for (auto& screen : jwm::app.getScreens()) {
+        if (screen.bounds.isPointInside(centerX, centerY)) {
+            return screen;
+        }
+    }
+    return *jwm::app.getScreens().begin();
 }
 
 // JNI
@@ -309,9 +337,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetContent
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    auto bounds = UIRect::makeXYWH(0, 0, 0, 2880, 1800); // TODO https://github.com/JetBrains/JWM/issues/103
-    auto workArea = bounds; // TODO https://github.com/JetBrains/JWM/issues/119
-    return jwm::classes::Screen::make(env, true, bounds, workArea, instance->getScale()); 
+    return instance->getScreen().asJavaObject(env); 
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRequestFrame
@@ -335,4 +361,21 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nMinimize
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRestore
   (JNIEnv* env, jobject obj) {
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->restore();
+}
+
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    instance->close();
+}
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetTitle
+        (JNIEnv* env, jobject obj, jbyteArray title) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+
+    jbyte* bytes = env->GetByteArrayElements(title, nullptr);
+    std::string titleS = { bytes, bytes + env->GetArrayLength(title) };
+    env->ReleaseByteArrayElements(title, bytes, 0);
+
+    instance->setTitle(titleS);
 }

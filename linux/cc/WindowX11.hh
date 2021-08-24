@@ -6,6 +6,7 @@
 #include "Window.hh"
 #include "WindowManagerX11.hh"
 #include "ILayer.hh"
+#include "ScreenInfo.hh"
 
 namespace jwm {
     class WindowX11: public jwm::Window {
@@ -33,6 +34,7 @@ namespace jwm {
         bool isRedrawRequested() {
             return _isRedrawRequested;
         }
+        void setTitle(const std::string& title);
 
         void maximize();
         void minimize();
@@ -47,6 +49,8 @@ namespace jwm {
         }
         void _xSendEventToWM(Atom atom, long a, long b, long c, long d, long e) const;
         unsigned long _xGetWindowProperty(Atom property, Atom type, unsigned char** value) const;
+
+        const ScreenInfo& getScreen();
 
         /**
          * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter

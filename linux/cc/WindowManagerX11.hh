@@ -94,10 +94,12 @@ namespace jwm {
             
             // other atoms
             DEFINE_ATOM(_NET_WM_STATE);
+            DEFINE_ATOM(_NET_WM_NAME);
             DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_VERT);
             DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_HORZ);
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST_COUNTER);
             DEFINE_ATOM(WM_PROTOCOLS);
+            DEFINE_ATOM(UTF8_STRING);
             DEFINE_ATOM(CLIPBOARD);
             DEFINE_ATOM(JWM_CLIPBOARD);
             DEFINE_ATOM(INCR);

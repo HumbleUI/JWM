@@ -1,5 +1,6 @@
 #pragma once
 #include <Window.hh>
+#include <MouseCursor.hh>
 #include <PlatformWin32.hh>
 #include <ScreenWin32.hh>
 #include <impl/Library.hh>
@@ -51,6 +52,7 @@ namespace jwm {
         void setImeEnabled(bool enabled);
         void setTitle(const std::wstring& title);
         void setIcon(const std::wstring& iconPath);
+        void setMouseCursor(MouseCursor cursor);
         void show();
         void requestSwap();
         void requestFrame();
@@ -85,6 +87,7 @@ namespace jwm {
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
         void _destroyInternal();
         void _close();
+        void _setMouseCursorInternal();
         void _imeResetComposition();
         void _imeChangeCursorPos() const;
         void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
@@ -101,6 +104,7 @@ namespace jwm {
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = nullptr;
+        HCURSOR _hMouseCursor = nullptr;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
     };
