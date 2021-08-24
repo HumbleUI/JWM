@@ -73,6 +73,12 @@ public class WindowX11 extends Window {
     }
 
     @Override
+    public Window setIcon(File icon) {
+        // TODO #95
+        return this;
+    }
+
+    @Override
     public Screen getScreen() {
         assert _onUIThread();
         return _nGetScreen();
