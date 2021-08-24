@@ -200,6 +200,25 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetTitle
     NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
     env->ReleaseStringCritical(titleStr, chars);
     instance->fNSWindow.title = title;
+    [title release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetIcon
+  (JNIEnv* env, jobject obj, jstring pathStr) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    jsize len = env->GetStringLength(pathStr);
+    const jchar* chars = env->GetStringCritical(pathStr, nullptr);
+    NSString* path = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(pathStr, chars);
+
+    NSImage* image = [[NSImage alloc] initByReferencingFile:path];
+    [path release];
+
+    NSApplication* app = [NSApplication sharedApplication];
+    app.applicationIconImage = image;
+
+    [image release];
+    [app release];
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen

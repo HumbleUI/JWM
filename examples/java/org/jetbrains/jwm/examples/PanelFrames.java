@@ -35,7 +35,7 @@ public class PanelFrames extends Panel {
 
             // FPS
             int len = (int) ((width - Example.PADDING * 2) / scale);
-            if (times.length != len) {
+            if (len > 0 && times.length != len) {
                 times = new double[len];
                 timesIdx = 0;
             }

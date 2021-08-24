@@ -70,6 +70,7 @@ public class Example implements Consumer<Event> {
         window.setTitle("JWM Window #" + count);
         switch (Platform.CURRENT) {
             case WINDOWS -> window.setIcon(new File("examples/resources/windows.ico"));
+            case MACOS -> window.setIcon(new File("examples/resources/macos.icns"));
         }
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
@@ -97,6 +98,8 @@ public class Example implements Consumer<Event> {
         PADDING = (int) (10 * scale);
         int panelWidth = (contentRect.getWidth() - (COLS + 1) * PADDING) / COLS;
         int panelHeight = (contentRect.getHeight() - (ROWS + 1) * PADDING) / ROWS;
+        if (panelWidth <= 0 || panelHeight <= 0)
+            return;
 
         if (lastScale != scale) {
             FONT12.setSize(12 * scale);
