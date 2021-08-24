@@ -85,10 +85,16 @@ public class Example implements Consumer<Event> {
         if (closed)
             return;
 
+        UIRect contentRect = window.getContentRect();
+
+        // If content area empty no rendering must happen
+        if (contentRect.getWidth() <= 0 || contentRect.getHeight() <= 0)
+            return;
+
         float scale = window.getScreen().getScale();
         PADDING = (int) (10 * scale);
-        int panelWidth = (window.getContentRect().getWidth() - (COLS + 1) * PADDING) / COLS;
-        int panelHeight = (window.getContentRect().getHeight() - (ROWS + 1) * PADDING) / ROWS;
+        int panelWidth = (contentRect.getWidth() - (COLS + 1) * PADDING) / COLS;
+        int panelHeight = (contentRect.getHeight() - (ROWS + 1) * PADDING) / ROWS;
 
         if (lastScale != scale) {
             FONT12.setSize(12 * scale);
@@ -120,8 +126,8 @@ public class Example implements Consumer<Event> {
 
         // Colored bars
         try (var paint = new Paint()) {
-            int width = window.getContentRect().getWidth();
-            int height = window.getContentRect().getHeight();
+            int width = contentRect.getWidth();
+            int height = contentRect.getHeight();
             var barSize = 3 * scale;
 
             // left
