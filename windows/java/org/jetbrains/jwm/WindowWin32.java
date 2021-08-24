@@ -6,6 +6,7 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.jwm.impl.*;
+import java.io.File;
 
 public class WindowWin32 extends Window {
     @ApiStatus.Internal
@@ -72,6 +73,14 @@ public class WindowWin32 extends Window {
         return this;
     }
 
+    
+    @Override
+    public Window setIcon(File icon){
+        assert _onUIThread();
+        _nSetIcon(icon.getAbsolutePath().toString());
+        return this;
+    }
+    
     @Override
     public Window setMouseCursor(MouseCursor cursor) {
         assert _onUIThread();
@@ -123,6 +132,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+    @ApiStatus.Internal public native void _nSetIcon(String iconPath);
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

@@ -68,6 +68,12 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
     SetWindowTextW(_hWnd, title.c_str());
 }
 
+void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
+    JWM_VERBOSE("Set window icon '" << iconPath << "'");
+    // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the default icon size.
+    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
+    SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+}
 void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
     JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
 
@@ -842,6 +848,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
     env->ReleaseStringChars(title, titleStr);
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
+        (JNIEnv* env, jobject obj, jstring iconPath) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    const jchar* iconPathStr = env->GetStringChars(iconPath, nullptr);
+    jsize length = env->GetStringLength(iconPath);
+    instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
+    env->ReleaseStringChars(iconPath, iconPathStr);
+}
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));

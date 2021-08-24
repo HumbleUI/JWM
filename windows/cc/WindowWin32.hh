@@ -51,6 +51,7 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void setTitle(const std::wstring& title);
+        void setIcon(const std::wstring& iconPath);
         void setMouseCursor(MouseCursor cursor);
         void show();
         void requestSwap();
