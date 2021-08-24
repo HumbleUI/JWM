@@ -499,11 +499,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_IME_REQUEST:
             if (wParam == IMR_QUERYCHARPOSITION) {
-                // Query current cursor position
-                // If composition starts, Pos will be always 0
-                auto sectionStart = static_cast<int>(_compositionPos);
-                auto sectionEnd = sectionStart + 0;
-                auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
+                UIRect uiRect{};
+
+                // If no text client set, simply break
+                if (!_imeGetRectForMarkedRange(uiRect))
+                    break;
 
                 // Cursor upper left corner (doc requires baseline, but its enough)
                 POINT cursorPos;
@@ -707,9 +707,11 @@ void jwm::WindowWin32::_imeResetComposition() {
 }
 
 void jwm::WindowWin32::_imeChangeCursorPos() const {
-    auto sectionStart = static_cast<int>(_compositionPos);
-    auto sectionEnd = sectionStart + 0;
-    auto uiRect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
+    UIRect uiRect{};
+
+    // If no text client set, simply break
+    if (!_imeGetRectForMarkedRange(uiRect))
+        return;
 
     HIMC hImc = ImmGetContext(getHWnd());
 
@@ -761,6 +763,20 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
             selTo = end;
         }
     }
+}
+
+bool jwm::WindowWin32::_imeGetRectForMarkedRange(UIRect &rect) const {
+    if (this->fTextInputClient) {
+        // Query current cursor position
+        // If composition starts, Pos will be always 0
+        auto sectionStart = static_cast<int>(_compositionPos);
+        auto sectionEnd = sectionStart + 0;
+        rect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
+
+        return true;
+    }
+
+    return false;
 }
 
 std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {

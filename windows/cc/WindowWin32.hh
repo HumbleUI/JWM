@@ -91,6 +91,7 @@ namespace jwm {
         void _imeResetComposition();
         void _imeChangeCursorPos() const;
         void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
+        bool _imeGetRectForMarkedRange(UIRect& rect) const;
         std::wstring _imeGetCompositionString(HIMC hImc, DWORD compType) const;
 
     private:
