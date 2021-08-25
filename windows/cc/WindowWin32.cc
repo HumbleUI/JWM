@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <PlatformWin32.hh>
 #include <AppWin32.hh>
 #include <WindowWin32.hh>
@@ -75,12 +76,22 @@ void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
 
-void jwm::WindowWin32::setOpacity(int opacity) {
+void jwm::WindowWin32::setOpacity(float opacity) {
     JWM_VERBOSE("Set window opacity'" << opacity << "'");
-    LONG previousStyle = GetWindowLong(_hWnd, GWL_EXSTYLE);
-    LONG opacityEnabled = previousStyle |= WS_EX_LAYERED;
-    SetWindowLong(_hWnd, GWL_EXSTYLE, opacityEnabled);
-    SetLayeredWindowAttributes(_hWnd, RGB(0,0,0), opacity, LWA_ALPHA);
+    LONG_PTR previousStyle = GetWindowLongPtr(_hWnd, GWL_EXSTYLE);
+    float lower = 0.0;
+    float upper = 1.0;
+    float clamped = std::max(lower, std::min(opacity, upper));
+    if (clamped == 1.0)
+    {
+        LONG reset = previousStyle & ~WS_EX_LAYERED;
+        SetWindowLongPtr(_hWnd, GWL_EXSTYLE, reset);
+        return;
+    }
+    LONG_PTR opacityEnabled = previousStyle |= WS_EX_LAYERED;
+    SetWindowLongPtr(_hWnd, GWL_EXSTYLE, opacityEnabled);
+    int adjusted = static_cast<int>(round(clamped * 255));
+    SetLayeredWindowAttributes(_hWnd, RGB(0, 0, 0), adjusted, LWA_ALPHA);
 }
 
 void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
@@ -882,7 +893,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpacity
-        (JNIEnv* env, jobject obj,int opacity) {
+        (JNIEnv* env, jobject obj,float opacity) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setOpacity(opacity);
 }

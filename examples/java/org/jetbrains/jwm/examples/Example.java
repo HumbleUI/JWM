@@ -73,7 +73,7 @@ public class Example implements Consumer<Event> {
             case WINDOWS -> window.setIcon(new File("examples/resources/windows.ico"));
             case MACOS -> window.setIcon(new File("examples/resources/macos.icns"));
         }
-        window.setOpacity(200);
+        window.setOpacity(0.8f);
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
         window.requestFrame();

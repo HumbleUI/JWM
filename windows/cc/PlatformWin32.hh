@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cwctype>
 #include <windows.h>
 #include <winuser.h>
@@ -10,6 +9,9 @@
 
 #ifdef max
  #undef max
+#endif
+#ifdef min
+ #undef min
 #endif
 
 #ifndef JWM_WIN32_WINDOW_CLASS_NAME

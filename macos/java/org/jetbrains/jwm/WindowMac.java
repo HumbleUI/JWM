@@ -80,7 +80,7 @@ public class WindowMac extends Window {
     }
 
     @Override
-    public Window setOpacity(int opacity) {
+    public Window setOpacity(float opacity) {
         // TODO: impl me!
         return this;
     }
