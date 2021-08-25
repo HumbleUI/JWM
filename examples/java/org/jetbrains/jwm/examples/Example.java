@@ -69,6 +69,7 @@ public class Example implements Consumer<Event> {
         }
         window.setTitle("JWM Window #" + count);
         window.setIcon(new File("sample.ico"));
+        window.setOpacity(200);
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
         window.requestFrame();
