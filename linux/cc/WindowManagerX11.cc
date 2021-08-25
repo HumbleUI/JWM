@@ -12,6 +12,7 @@
 #include "MouseButtonX11.hh"
 #include "StringUTF16.hh"
 #include <algorithm>
+#include "Log.hh"
 
 using namespace jwm;
 
@@ -37,6 +38,7 @@ WindowManagerX11::WindowManagerX11():
             XIMStyles* styles;
             if (XGetIMValues(_im, XNQueryInputStyle, &styles, NULL)) {
                 // could not init IM
+                throw std::runtime_error("failed to init IM");
             }
         }
     }
@@ -75,51 +77,53 @@ WindowManagerX11::WindowManagerX11():
                     if (fbc == nullptr || fbcount <= 0) {
                         // giving up.
                         x11VisualInfo = nullptr;
-                        return;
+                        JWM_LOG("Failed to pick OpenGL-capable X11 VisualInfo; OpenGL is not available");
                     }
                 }
             }
         }
 
-        // pick the FB config/visual with the most samples per pixel
-        int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = std::numeric_limits<int>::max();
+        if (fbc) {
+            // pick the FB config/visual with the most samples per pixel
+            int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = std::numeric_limits<int>::max();
 
-        XVisualInfo* vi;
-        int i;
-        for (i = 0; i < fbcount; ++i) {
-            vi = glXGetVisualFromFBConfig(display, fbc[i]);
-            if (vi) {
-                int samp_buf, samples;
-                glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf);
-                glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLES, &samples);
+            XVisualInfo* vi;
+            int i;
+            for (i = 0; i < fbcount; ++i) {
+                vi = glXGetVisualFromFBConfig(display, fbc[i]);
+                if (vi) {
+                    int samp_buf, samples;
+                    glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf);
+                    glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLES, &samples);
 
-                if (best_fbc < 0 || samp_buf && samples > best_num_samp)
-                    best_fbc = i, best_num_samp = samples;
-                if (worst_fbc < 0 || !samp_buf || samples < worst_num_samp)
-                    worst_fbc = i, worst_num_samp = samples;
+                    if (best_fbc < 0 || samp_buf && samples > best_num_samp)
+                        best_fbc = i, best_num_samp = samples;
+                    if (worst_fbc < 0 || !samp_buf || samples < worst_num_samp)
+                        worst_fbc = i, worst_num_samp = samples;
+                }
+                XFree(vi);
             }
-            XFree(vi);
+
+            GLXFBConfig bestFbc = fbc[best_fbc];
+            XFree(fbc);
+
+            // get a visual
+            x11VisualInfo = glXGetVisualFromFBConfig(display, bestFbc);
         }
-
-        GLXFBConfig bestFbc = fbc[best_fbc];
-        XFree(fbc);
-
-        // get a visual
-        x11VisualInfo = glXGetVisualFromFBConfig(display, bestFbc);
     }
 
     // create swa
     {
-        x11SWA.colormap = XCreateColormap(display, screen->root, x11VisualInfo->visual, AllocNone);
+        x11SWA.colormap = XCreateColormap(display, screen->root, getX11Visual(), AllocNone);
         x11SWA.event_mask = ExposureMask
-                          | KeyPressMask
-                          | KeyReleaseMask
-                          | ButtonPressMask
-                          | ButtonReleaseMask
-                          | StructureNotifyMask
-                          | PointerMotionMask
-                          | PropertyChangeMask
-                          | StructureNotifyMask;
+                        | KeyPressMask
+                        | KeyReleaseMask
+                        | ButtonPressMask
+                        | ButtonReleaseMask
+                        | StructureNotifyMask
+                        | PointerMotionMask
+                        | PropertyChangeMask
+                        | StructureNotifyMask;
         x11SWA.override_redirect = true;
     }
 

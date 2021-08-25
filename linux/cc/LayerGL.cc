@@ -19,8 +19,13 @@ namespace jwm {
         virtual ~LayerGL() = default;
 
         void attach(WindowX11* window) {
+            if (window->_windowManager.getVisualInfo() == nullptr) {
+                throw std::runtime_error("layer not supported");             
+            }
+
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+
             if (_context == nullptr) {
                 _context = glXCreateContext(window->_windowManager.getDisplay(),
                                             window->_windowManager.getVisualInfo(),
@@ -82,9 +87,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerGL__1nMake
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
-    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
-    instance->attach(window);
+    try {
+        jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+        jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
+        instance->attach(window);
+    } catch (const std::exception& e) {
+        jwm::classes::Throwable::throwLayerNotSupportedException(env, "Failed to init OpenGL");
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure

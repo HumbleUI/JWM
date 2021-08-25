@@ -35,6 +35,19 @@ namespace jwm {
         XSetWindowAttributes& getSWA() { return x11SWA; }
         XIM getIM() const { return _im; }
 
+        int getX11VisualDepth() const {
+            if (x11VisualInfo) {
+                return x11VisualInfo->depth;
+            }
+            return DefaultDepth(display, 0);
+        }
+        Visual* getX11Visual() const {         
+            if (x11VisualInfo) {
+                return x11VisualInfo->visual;
+            }
+            return DefaultVisual(display, 0);
+        }
+
         void enqueueTask(const std::function<void()>& task);
 
         void _processXEvent(XEvent& ev);
@@ -51,6 +64,8 @@ namespace jwm {
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
+
+
 
         /**
          * Input Manager

@@ -196,9 +196,9 @@ bool WindowX11::init()
                                0, 0,
                                800, 500,
                                0,
-                               _windowManager.getVisualInfo()->depth,
+                               _windowManager.getX11VisualDepth(),
                                InputOutput,
-                               _windowManager.getVisualInfo()->visual,
+                               _windowManager.getX11Visual(),
                                CWColormap | CWEventMask | CWCursor,
                                &_windowManager.getSWA()
     );
