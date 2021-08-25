@@ -5,6 +5,9 @@
 #include <jni.h>
 
 namespace jwm {
+    extern NSArray* kCursorCache;
+    void initCursorCache();
+
     class WindowMac: public Window {
     public:
         WindowMac(JNIEnv* env): Window(env) {}

@@ -115,14 +115,14 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
         case MouseCursor::IBEAM:
             cursorName = IDC_IBEAM;
             break;
-        case MouseCursor::UPARROW:
-            cursorName = IDC_UPARROW;
-            break;
         case MouseCursor::NOT_ALLOWED:
             cursorName = IDC_NO;
             break;
         case MouseCursor::WAIT:
             cursorName = IDC_WAIT;
+            break;
+        case MouseCursor::WIN_UPARROW:
+            cursorName = IDC_UPARROW;
             break;
         default:
             break;

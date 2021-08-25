@@ -31,7 +31,11 @@ public abstract class Panel implements Consumer<Event> {
         lastScale = scale;
     }
 
-    public boolean testPointInside(int x, int y) {
-        return UIRect.makeXYWH(lastX, lastY, lastWidth, lastHeight).inside(x, y);
+    public boolean contains(int x, int y) {
+        return UIRect.makeXYWH(lastX, lastY, lastWidth, lastHeight).contains(x, y);
+    }
+
+    public String capitalize(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 }

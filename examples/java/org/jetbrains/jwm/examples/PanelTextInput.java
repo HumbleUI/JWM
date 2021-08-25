@@ -36,7 +36,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
         } else if (e instanceof EventMouseButton ee) {
             window.unmarkText();
         } else if (e instanceof EventMouseMove ee) {
-            boolean isInside = testPointInside(ee.getX(), ee.getY());
+            boolean isInside = contains(ee.getX(), ee.getY());
             if (!_wasInside && isInside)
                 window.setMouseCursor(MouseCursor.IBEAM);
             if (_wasInside && !isInside)

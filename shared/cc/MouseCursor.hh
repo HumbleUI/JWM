@@ -9,9 +9,9 @@ namespace jwm {
         HELP          = 2,
         POINTING_HAND = 3,
         IBEAM         = 4,
-        UPARROW       = 5,
-        NOT_ALLOWED   = 6,
-        WAIT          = 7
+        NOT_ALLOWED   = 5,
+        WAIT          = 6,
+        WIN_UPARROW   = 7
     };
 
     static const char* mouseCursorToStr(MouseCursor cursor) {
@@ -26,12 +26,12 @@ namespace jwm {
                 return "PointingHand";
             case MouseCursor::IBEAM:
                 return "I-beam";
-            case MouseCursor::UPARROW:
-                return "UpArrow";
             case MouseCursor::NOT_ALLOWED:
                 return "NotAllowed";
             case MouseCursor::WAIT:
                 return "Wait";
+            case MouseCursor::WIN_UPARROW:
+                return "UpArrow";
             default:
                 return "Unknown";
         }

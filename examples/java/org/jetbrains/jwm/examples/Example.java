@@ -23,9 +23,8 @@ public class Example implements Consumer<Event> {
     public PanelVSync panelVSync;
     public PanelAnimation panelAnimation;
     public PanelKeys panelKeys;
-    public PanelMouseButtons panelMouseButtons;
-    public PanelMouseScroll panelMouseScroll;
-    public PanelMousePosition panelMousePosition;
+    public PanelMouse panelMouse;
+    public PanelMouseCursors panelMouseCursors;
     public PanelFrames panelFrames;
     public PanelLayers panelLayers;
     public PanelScreens panelScreens;
@@ -46,9 +45,8 @@ public class Example implements Consumer<Event> {
         panelVSync = new PanelVSync();
         panelAnimation = new PanelAnimation();
         panelKeys = new PanelKeys();
-        panelMouseButtons = new PanelMouseButtons();
-        panelMouseScroll = new PanelMouseScroll();
-        panelMousePosition = new PanelMousePosition();
+        panelMouse = new PanelMouse();
+        panelMouseCursors = new PanelMouseCursors(window);
         panelFrames = new PanelFrames();
         panelLayers = new PanelLayers(window);
         panelScreens = new PanelScreens(window);
@@ -119,9 +117,8 @@ public class Example implements Consumer<Event> {
         panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
         
         // Second row
-        panelMouseButtons.paint (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelMouseScroll.paint  (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelMousePosition.paint(canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelLayers.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
@@ -170,9 +167,8 @@ public class Example implements Consumer<Event> {
     public void accept(Event e) {
         panelTextInput.accept(e);
         panelKeys.accept(e);
-        panelMouseButtons.accept(e);
-        panelMouseScroll.accept(e);
-        panelMousePosition.accept(e);
+        panelMouse.accept(e);
+        panelMouseCursors.accept(e);
         panelLayers.accept(e);
         panelScreens.accept(e);
 

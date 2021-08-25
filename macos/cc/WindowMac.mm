@@ -2,10 +2,46 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "MainView.hh"
+#include "MouseCursor.hh"
 #include <memory>
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
 #include "Util.hh"
+
+namespace jwm {
+NSArray* kCursorCache;
+
+NSCursor* cursorFromFile(NSString* name) {
+    NSString *base = @"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors";
+    NSString *path = [base stringByAppendingPathComponent:name];
+    NSString *file = [path stringByAppendingPathComponent:@"cursor.pdf"];
+    NSString *info = [path stringByAppendingPathComponent:@"info.plist"];
+    NSImage  *image = [[NSImage alloc] initByReferencingFile:file];
+    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:info];
+    NSPoint   hotspot = NSMakePoint([[dict valueForKey:@"hotx"] doubleValue],
+                                    [[dict valueForKey:@"hoty"] doubleValue]);
+    [dict release];
+    [info release];
+    [file release];
+    [path release];
+    return [[NSCursor alloc] initWithImage:image hotSpot:hotspot];
+}
+
+void initCursorCache() {
+    // must be in sync with MouseCursor.hh
+    kCursorCache = [NSArray arrayWithObjects:
+                    [NSCursor arrowCursor],        /* ARROW */         
+                    [NSCursor crosshairCursor],    /* CROSSHAIR */     
+                    cursorFromFile(@"help"),       /* HELP */          
+                    [NSCursor pointingHandCursor], /* POINTING_HAND */ 
+                    [NSCursor IBeamCursor],        /* IBEAM */         
+                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */   
+                    [NSCursor arrowCursor],        /* WAIT */          
+                    [NSCursor arrowCursor],        /* WIN_UPARROW */
+                    nil];
+    [kCursorCache retain];
+}
+}
 
 static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
     jwm::WindowMac* window = (jwm::WindowMac*) ctx;
@@ -219,6 +255,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetIcon
 
     [image release];
     [app release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetMouseCursor
+  (JNIEnv* env, jobject obj, jint cursorIdx) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSCursor* cursor = [jwm::kCursorCache objectAtIndex:cursorIdx];
+    [cursor set];
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen

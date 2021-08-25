@@ -8,7 +8,7 @@ public class PanelAnimation extends Panel {
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        var radius = Math.min(width / 2, height / 2);
+        var radius = Math.max(0, Math.min(width / 2 - Example.PADDING, height / 2 - Example.PADDING));
         
         try (var paint = new Paint()) {
             canvas.save();

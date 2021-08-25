@@ -36,6 +36,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     [pool release];
 
     jwm::initKeyTable();
+    jwm::initCursorCache();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nStart
