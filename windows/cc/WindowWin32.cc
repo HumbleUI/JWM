@@ -74,6 +74,15 @@ void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
+
+void jwm::WindowWin32::setOpacity(int opacity) {
+    JWM_VERBOSE("Set window opacity'" << opacity << "'");
+    LONG previousStyle = GetWindowLong(_hWnd, GWL_EXSTYLE);
+    LONG opacityEnabled = previousStyle |= WS_EX_LAYERED;
+    SetWindowLong(_hWnd, GWL_EXSTYLE, opacityEnabled);
+    SetLayeredWindowAttributes(_hWnd, RGB(0,0,0), opacity, LWA_ALPHA);
+}
+
 void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
     JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
 
@@ -871,6 +880,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     jsize length = env->GetStringLength(iconPath);
     instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
+}
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpacity
+        (JNIEnv* env, jobject obj,int opacity) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setOpacity(opacity);
 }
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
