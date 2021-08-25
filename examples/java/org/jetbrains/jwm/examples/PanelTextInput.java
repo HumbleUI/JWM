@@ -47,7 +47,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
             boolean modifier = ee.isModifierDown(Example.MODIFIER);
             if (Key.ENTER == key) {
                 text += "\n";
-            } else if (Key.BACK_SPACE == key) {
+            } else if (Key.BACKSPACE == key) {
                 if (lastMarked == null && text.length() > 0) {
                     try (var iter = BreakIterator.makeCharacterInstance();) {
                         iter.setText(text);

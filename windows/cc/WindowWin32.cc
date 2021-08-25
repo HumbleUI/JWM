@@ -586,7 +586,7 @@ int jwm::WindowWin32::_getModifiers() const {
         modifiers |= static_cast<int>(KeyModifier::ALT);
 
     if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & BUTTON_DOWN)
-        modifiers |= static_cast<int>(KeyModifier::WINDOWS);
+        modifiers |= static_cast<int>(KeyModifier::WIN_LOGO);
 
     return modifiers;
 }

@@ -131,16 +131,26 @@ int jwm::WindowManagerWin32::_createHelperWindow() {
 }
 
 void jwm::WindowManagerWin32::_initKeyTable() {
-    _keyTable[VK_RETURN] = Key::ENTER;
-    _keyTable[VK_BACK] = Key::BACK_SPACE;
-    _keyTable[VK_TAB] = Key::TAB;
-    _keyTable[VK_CANCEL] = Key::CANCEL;
-    _keyTable[VK_CLEAR] = Key::CLEAR;
+    // Modifiers
+    _keyTable[VK_CAPITAL] = Key::CAPS_LOCK;
     _keyTable[VK_SHIFT] = Key::SHIFT;
     _keyTable[VK_CONTROL] = Key::CONTROL;
     _keyTable[VK_MENU] = Key::ALT;
+    _keyTable[VK_LWIN] = Key::WIN_LOGO;
+    _keyTable[VK_RWIN] = Key::WIN_LOGO;
+    // LINUX_META
+    // LINUX_SUPER
+    // MAC_COMMAND
+    // MAC_OPTION
+    // MAC_FN
+
+    // Rest of the keys
+    _keyTable[VK_RETURN] = Key::ENTER;
+    _keyTable[VK_BACK] = Key::BACKSPACE;
+    _keyTable[VK_TAB] = Key::TAB;
+    _keyTable[VK_CANCEL] = Key::CANCEL;
+    _keyTable[VK_CLEAR] = Key::CLEAR;
     _keyTable[VK_PAUSE] = Key::PAUSE;
-    _keyTable[VK_CAPITAL] = Key::CAPS;
     _keyTable[VK_ESCAPE] = Key::ESCAPE;
     _keyTable[VK_SPACE] = Key::SPACE;
     _keyTable[VK_PRIOR] = Key::PAGE_UP;
@@ -201,23 +211,23 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_OEM_5] = Key::BACK_SLASH;
     _keyTable[VK_OEM_6] = Key::CLOSE_BRACKET;
 
-    _keyTable[VK_NUMPAD0] = Key::NUMPAD0;
-    _keyTable[VK_NUMPAD1] = Key::NUMPAD1;
-    _keyTable[VK_NUMPAD2] = Key::NUMPAD2;
-    _keyTable[VK_NUMPAD3] = Key::NUMPAD3;
-    _keyTable[VK_NUMPAD4] = Key::NUMPAD4;
-    _keyTable[VK_NUMPAD5] = Key::NUMPAD5;
-    _keyTable[VK_NUMPAD6] = Key::NUMPAD6;
-    _keyTable[VK_NUMPAD7] = Key::NUMPAD7;
-    _keyTable[VK_NUMPAD8] = Key::NUMPAD8;
-    _keyTable[VK_NUMPAD9] = Key::NUMPAD9;
+    _keyTable[VK_NUMPAD0] = Key::DIGIT0;
+    _keyTable[VK_NUMPAD1] = Key::DIGIT1;
+    _keyTable[VK_NUMPAD2] = Key::DIGIT2;
+    _keyTable[VK_NUMPAD3] = Key::DIGIT3;
+    _keyTable[VK_NUMPAD4] = Key::DIGIT4;
+    _keyTable[VK_NUMPAD5] = Key::DIGIT5;
+    _keyTable[VK_NUMPAD6] = Key::DIGIT6;
+    _keyTable[VK_NUMPAD7] = Key::DIGIT7;
+    _keyTable[VK_NUMPAD8] = Key::DIGIT8;
+    _keyTable[VK_NUMPAD9] = Key::DIGIT9;
 
     _keyTable[VK_MULTIPLY] = Key::MULTIPLY;
     _keyTable[VK_ADD] = Key::ADD;
     _keyTable[VK_SEPARATOR] = Key::SEPARATOR;
-    _keyTable[VK_SUBTRACT] = Key::SUBTRACT;
-    _keyTable[VK_DECIMAL] = Key::DECIMAL;
-    _keyTable[VK_DIVIDE] = Key::DIVIDE;
+    _keyTable[VK_SUBTRACT] = Key::MINUS;
+    _keyTable[VK_DECIMAL] = Key::PERIOD;
+    _keyTable[VK_DIVIDE] = Key::SLASH;
     _keyTable[VK_DELETE] = Key::DEL;
     _keyTable[VK_NUMLOCK] = Key::NUM_LOCK;
     _keyTable[VK_SCROLL] = Key::SCROLL_LOCK;
@@ -250,127 +260,13 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     _keyTable[VK_SNAPSHOT] = Key::PRINTSCREEN;
     _keyTable[VK_INSERT] = Key::INSERT;
     _keyTable[VK_HELP] = Key::HELP;
-    // _keyTable[VK_OEM_3] = Key::META;
     _keyTable[VK_OEM_3] = Key::BACK_QUOTE;
     _keyTable[VK_OEM_7] = Key::QUOTE;
-
-    // KP_UP,
-    // KP_DOWN,
-    // KP_LEFT,
-    // KP_RIGHT,
-    // DEAD_GRAVE,
-    // DEAD_ACUTE,
-    // DEAD_CIRCUMFLEX,
-    // DEAD_TILDE,
-    // DEAD_MACRON,
-    // DEAD_BREVE,
-    // DEAD_ABOVEDOT,
-    // DEAD_DIAERESIS,
-    // DEAD_ABOVERING,
-    // DEAD_DOUBLEACUTE,
-    // DEAD_CARON,
-    // DEAD_CEDILLA,
-    // DEAD_OGONEK,
-    // DEAD_IOTA,
-    // DEAD_VOICED_SOUND,
-    // DEAD_SEMIVOICED_SOUND,
-    // AMPERSAND,
-    // ASTERISK,
-    // QUOTEDBL,
-    // LESS,
-    // GREATER,
-    // BRACELEFT,
-    // BRACERIGHT,
-    //
-    // AT,
-    // COLON,
-    // CIRCUMFLEX,
-    // DOLLAR,
-    // EURO_SIGN,
-    // EXCLAMATION_MARK,
-    // INVERTED_EXCLAMATION_MARK,
-    // LEFT_PARENTHESIS,
-    // NUMBER_SIGN,
-    // PLUS,
-    // RIGHT_PARENTHESIS,
-    // UNDERSCORE,
-
-    _keyTable[VK_LWIN] = Key::WINDOWS;
-    _keyTable[VK_RWIN] = Key::WINDOWS;
-
-    // CONTEXT_MENU,
-    //
-    // FINAL,
-    // CONVERT,
-    // NONCONVERT,
-    // ACCEPT,
-    // MODECHANGE,
-    // KANA,
-    // KANJI,
-    // ALPHANUMERIC,
-    // KATAKANA,
-    // HIRAGANA,
-    // FULL_WIDTH,
-    // HALF_WIDTH,
-    // ROMAN_CHARACTERS,
-    // ALL_CANDIDATES,
-    // PREVIOUS_CANDIDATE,
-    // CODE_INPUT,
-    // JAPANESE_KATAKANA,
-    // JAPANESE_HIRAGANA,
-    // JAPANESE_ROMAN,
-    // KANA_LOCK,
-    // INPUT_METHOD_ON_OFF,
-    // CUT,
-    // COPY,
-    // PASTE,
-    // UNDO,
-    // AGAIN,
-    // FIND,
-    // PROPS,
-    // STOP,
-    // COMPOSE,
-    // ALT_GRAPH,
-    // BEGIN,
-
-    // Mobile and Embedded Specific Key Codes
-    // SOFTKEY_0,
-    // SOFTKEY_1,
-    // SOFTKEY_2,
-    // SOFTKEY_3,
-    // SOFTKEY_4,
-    // SOFTKEY_5,
-    // SOFTKEY_6,
-    // SOFTKEY_7,
-    // SOFTKEY_8,
-    // SOFTKEY_9,
-    // GAME_A,
-    // GAME_B,
-    // GAME_C,
-    // GAME_D,
-    // STAR,
-    // POUND,
-    // POWER,
-    // INFO,
-    // COLORED_KEY_0,
-    // COLORED_KEY_1,
-    // COLORED_KEY_2,
-    // COLORED_KEY_3,
-    // EJECT_TOGGLE,
-    // PLAY,
-    // RECORD,
-    // FAST_FWD,
-    // REWIND,
-    // TRACK_PREV,
-    // TRACK_NEXT,
-    // CHANNEL_UP,
-    // CHANNEL_DOWN,
-    // VOLUME_UP,
-    // VOLUME_DOWN,
-    // MUTE,
-    // COMMAND,
-    // FUNCTION,
-    // SHORTCUT
+    // Key::MENU
+    // Key::KANA
+    // Key::VOLUME_UP
+    // Key::VOLUME_DOWN
+    // Key::MUTE
 }
 
 void jwm::WindowManagerWin32::_initKeyIgnoreList() {

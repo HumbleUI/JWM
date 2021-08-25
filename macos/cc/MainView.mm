@@ -16,131 +16,147 @@ Key kKeyTable[128];
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
 
-    kKeyTable[kVK_ANSI_A] = Key::A;
-    kKeyTable[kVK_ANSI_S] = Key::S;
-    kKeyTable[kVK_ANSI_D] = Key::D;
-    kKeyTable[kVK_ANSI_F] = Key::F;
-    kKeyTable[kVK_ANSI_H] = Key::H;
-    kKeyTable[kVK_ANSI_G] = Key::G;
-    kKeyTable[kVK_ANSI_Z] = Key::Z;
-    kKeyTable[kVK_ANSI_X] = Key::X;
-    kKeyTable[kVK_ANSI_C] = Key::C;
-    kKeyTable[kVK_ANSI_V] = Key::V;
-    kKeyTable[kVK_ANSI_B] = Key::B;
-    kKeyTable[kVK_ANSI_Q] = Key::Q;
-    kKeyTable[kVK_ANSI_W] = Key::W;
-    kKeyTable[kVK_ANSI_E] = Key::E;
-    kKeyTable[kVK_ANSI_R] = Key::R;
-    kKeyTable[kVK_ANSI_Y] = Key::Y;
-    kKeyTable[kVK_ANSI_T] = Key::T;
+    kKeyTable[kVK_CapsLock] = Key::CAPS_LOCK;
+    kKeyTable[kVK_Shift] = Key::SHIFT;
+    kKeyTable[kVK_RightShift] = Key::SHIFT;
+    kKeyTable[kVK_Control] = Key::CONTROL;
+    kKeyTable[kVK_RightControl] = Key::CONTROL;
+    // Key::Alt
+    // Key::WIN_LOGO
+    // Key::LINUX_META
+    // Key::LINUX_SUPER
+    kKeyTable[kVK_Command] = Key::MAC_COMMAND;
+    kKeyTable[kVK_RightCommand] = Key::MAC_COMMAND;
+    kKeyTable[kVK_Option] = Key::MAC_OPTION;
+    kKeyTable[kVK_RightOption] = Key::MAC_OPTION;
+    kKeyTable[kVK_Function] = Key::MAC_FN;
+
+    kKeyTable[kVK_Return] = Key::ENTER;
+    kKeyTable[kVK_ANSI_KeypadEnter] = Key::ENTER;
+    kKeyTable[kVK_Delete] = Key::BACKSPACE;
+    kKeyTable[kVK_Tab] = Key::TAB;
+    // Key::CANCEL
+    kKeyTable[kVK_ANSI_KeypadClear] = Key::CLEAR;
+    // Key::PAUSE
+    kKeyTable[kVK_Escape] = Key::ESCAPE;
+    kKeyTable[kVK_Space] = Key::SPACE;
+    kKeyTable[kVK_PageUp] = Key::PAGE_UP;
+    kKeyTable[kVK_PageDown] = Key::PAGE_DOWN;
+    kKeyTable[kVK_End] = Key::END;
+    kKeyTable[kVK_Home] = Key::HOME;
+    kKeyTable[kVK_LeftArrow] = Key::LEFT;
+    kKeyTable[kVK_UpArrow] = Key::UP;
+    kKeyTable[kVK_RightArrow] = Key::RIGHT;
+    kKeyTable[kVK_DownArrow] = Key::DOWN;
+    kKeyTable[kVK_ANSI_Comma] = Key::COMMA;
+    kKeyTable[kVK_ANSI_Minus] = Key::MINUS;
+    kKeyTable[kVK_ANSI_Period] = Key::PERIOD;
+    kKeyTable[kVK_ANSI_Slash] = Key::SLASH;
+    kKeyTable[kVK_ANSI_0] = Key::DIGIT0;
     kKeyTable[kVK_ANSI_1] = Key::DIGIT1;
     kKeyTable[kVK_ANSI_2] = Key::DIGIT2;
     kKeyTable[kVK_ANSI_3] = Key::DIGIT3;
     kKeyTable[kVK_ANSI_4] = Key::DIGIT4;
-    kKeyTable[kVK_ANSI_6] = Key::DIGIT6;
     kKeyTable[kVK_ANSI_5] = Key::DIGIT5;
-    kKeyTable[kVK_ANSI_Equal] = Key::EQUALS;
-    kKeyTable[kVK_ANSI_9] = Key::DIGIT9;
+    kKeyTable[kVK_ANSI_6] = Key::DIGIT6;
     kKeyTable[kVK_ANSI_7] = Key::DIGIT7;
-    kKeyTable[kVK_ANSI_Minus] = Key::MINUS;
     kKeyTable[kVK_ANSI_8] = Key::DIGIT8;
-    kKeyTable[kVK_ANSI_0] = Key::DIGIT0;
-    kKeyTable[kVK_ANSI_RightBracket] = Key::CLOSE_BRACKET;
-    kKeyTable[kVK_ANSI_O] = Key::O;
-    kKeyTable[kVK_ANSI_U] = Key::U;
-    kKeyTable[kVK_ANSI_LeftBracket] = Key::OPEN_BRACKET;
-    kKeyTable[kVK_ANSI_I] = Key::I;
-    kKeyTable[kVK_ANSI_P] = Key::P;
-    kKeyTable[kVK_ANSI_L] = Key::L;
-    kKeyTable[kVK_ANSI_J] = Key::J;
-    kKeyTable[kVK_ANSI_Quote] = Key::QUOTE;
-    kKeyTable[kVK_ANSI_K] = Key::K;
+    kKeyTable[kVK_ANSI_9] = Key::DIGIT9;
     kKeyTable[kVK_ANSI_Semicolon] = Key::SEMICOLON;
-    kKeyTable[kVK_ANSI_Backslash] = Key::BACK_SLASH;
-    kKeyTable[kVK_ANSI_Comma] = Key::COMMA;
-    kKeyTable[kVK_ANSI_Slash] = Key::SLASH;
-    kKeyTable[kVK_ANSI_N] = Key::N;
+    kKeyTable[kVK_ANSI_Equal] = Key::EQUALS;
+    kKeyTable[kVK_ANSI_KeypadEquals] = Key::EQUALS;
+    kKeyTable[kVK_ANSI_A] = Key::A;
+    kKeyTable[kVK_ANSI_B] = Key::B;
+    kKeyTable[kVK_ANSI_C] = Key::C;
+    kKeyTable[kVK_ANSI_D] = Key::D;
+    kKeyTable[kVK_ANSI_E] = Key::E;
+    kKeyTable[kVK_ANSI_F] = Key::F;
+    kKeyTable[kVK_ANSI_G] = Key::G;
+    kKeyTable[kVK_ANSI_H] = Key::H;
+    kKeyTable[kVK_ANSI_I] = Key::I;
+    kKeyTable[kVK_ANSI_J] = Key::J;
+    kKeyTable[kVK_ANSI_K] = Key::K;
+    kKeyTable[kVK_ANSI_L] = Key::L;
     kKeyTable[kVK_ANSI_M] = Key::M;
-    kKeyTable[kVK_ANSI_Period] = Key::PERIOD;
-    kKeyTable[kVK_ANSI_Grave] = Key::BACK_QUOTE;
-    kKeyTable[kVK_ANSI_KeypadDecimal] = Key::DECIMAL;
+    kKeyTable[kVK_ANSI_N] = Key::N;
+    kKeyTable[kVK_ANSI_O] = Key::O;
+    kKeyTable[kVK_ANSI_P] = Key::P;
+    kKeyTable[kVK_ANSI_Q] = Key::Q;
+    kKeyTable[kVK_ANSI_R] = Key::R;
+    kKeyTable[kVK_ANSI_S] = Key::S;
+    kKeyTable[kVK_ANSI_T] = Key::T;
+    kKeyTable[kVK_ANSI_U] = Key::U;
+    kKeyTable[kVK_ANSI_V] = Key::V;
+    kKeyTable[kVK_ANSI_W] = Key::W;
+    kKeyTable[kVK_ANSI_X] = Key::X;
+    kKeyTable[kVK_ANSI_Y] = Key::Y;
+    kKeyTable[kVK_ANSI_Z] = Key::Z;
+    kKeyTable[kVK_ANSI_LeftBracket] = Key::OPEN_BRACKET;
+    kKeyTable[kVK_ANSI_Backslash] = Key::BACK_SLASH;
+    kKeyTable[kVK_ANSI_RightBracket] = Key::CLOSE_BRACKET;
+    kKeyTable[kVK_ANSI_Keypad0] = Key::DIGIT0;
+    kKeyTable[kVK_ANSI_Keypad1] = Key::DIGIT1;
+    kKeyTable[kVK_ANSI_Keypad2] = Key::DIGIT2;
+    kKeyTable[kVK_ANSI_Keypad3] = Key::DIGIT3;
+    kKeyTable[kVK_ANSI_Keypad4] = Key::DIGIT4;
+    kKeyTable[kVK_ANSI_Keypad5] = Key::DIGIT5;
+    kKeyTable[kVK_ANSI_Keypad6] = Key::DIGIT6;
+    kKeyTable[kVK_ANSI_Keypad7] = Key::DIGIT7;
+    kKeyTable[kVK_ANSI_Keypad8] = Key::DIGIT8;
+    kKeyTable[kVK_ANSI_Keypad9] = Key::DIGIT9;
     kKeyTable[kVK_ANSI_KeypadMultiply] = Key::MULTIPLY;
     kKeyTable[kVK_ANSI_KeypadPlus] = Key::ADD;
-    kKeyTable[kVK_ANSI_KeypadClear] = Key::CLEAR; // ?
-    kKeyTable[kVK_ANSI_KeypadDivide] = Key::DIVIDE;
-    kKeyTable[kVK_ANSI_KeypadEnter] = Key::ENTER; // ?
-    kKeyTable[kVK_ANSI_KeypadMinus] = Key::SUBTRACT;
-    kKeyTable[kVK_ANSI_KeypadEquals] = Key::EQUALS; // ?
-    kKeyTable[kVK_ANSI_Keypad0] = Key::NUMPAD0;
-    kKeyTable[kVK_ANSI_Keypad1] = Key::NUMPAD1;
-    kKeyTable[kVK_ANSI_Keypad2] = Key::NUMPAD2;
-    kKeyTable[kVK_ANSI_Keypad3] = Key::NUMPAD3;
-    kKeyTable[kVK_ANSI_Keypad4] = Key::NUMPAD4;
-    kKeyTable[kVK_ANSI_Keypad5] = Key::NUMPAD5;
-    kKeyTable[kVK_ANSI_Keypad6] = Key::NUMPAD6;
-    kKeyTable[kVK_ANSI_Keypad7] = Key::NUMPAD7;
-    kKeyTable[kVK_ANSI_Keypad8] = Key::NUMPAD8;
-    kKeyTable[kVK_ANSI_Keypad9] = Key::NUMPAD9;
-
-    /* keycodes for keys that are independent of keyboard layout*/
-    kKeyTable[kVK_Return] = Key::ENTER;
-    kKeyTable[kVK_Tab] = Key::TAB;
-    kKeyTable[kVK_Space] = Key::SPACE;
-    kKeyTable[kVK_Delete] = Key::BACK_SPACE;
-    kKeyTable[kVK_Escape] = Key::ESCAPE;
-    kKeyTable[kVK_Command] = Key::META; // ?
-    kKeyTable[kVK_Shift] = Key::SHIFT;
-    kKeyTable[kVK_CapsLock] = Key::CAPS;
-    kKeyTable[kVK_Option] = Key::ALT;
-    kKeyTable[kVK_Control] = Key::CONTROL;
-    kKeyTable[kVK_RightCommand] = Key::META; // ?
-    kKeyTable[kVK_RightShift] = Key::SHIFT; // ?
-    kKeyTable[kVK_RightOption] = Key::ALT; // ?
-    kKeyTable[kVK_RightControl] = Key::CONTROL; // ?
-    // kKeyTable[kVK_Function] = Key::;
-    kKeyTable[kVK_F17] = Key::F17;
-    kKeyTable[kVK_VolumeUp] = Key::VOLUME_UP;
-    kKeyTable[kVK_VolumeDown] = Key::VOLUME_DOWN;
-    kKeyTable[kVK_Mute] = Key::MUTE;
-    kKeyTable[kVK_F18] = Key::F18;
-    kKeyTable[kVK_F19] = Key::F19;
-    kKeyTable[kVK_F20] = Key::F20;
+    // Key::SEPARATOR
+    kKeyTable[kVK_ANSI_KeypadMinus] = Key::MINUS;
+    kKeyTable[kVK_ANSI_KeypadDecimal] = Key::PERIOD;
+    kKeyTable[kVK_ANSI_KeypadDivide] = Key::SLASH;
+    kKeyTable[kVK_ForwardDelete] = Key::DEL;
+    // Key::NUM_LOCK
+    // Key::SCROLL_LOCK
+    kKeyTable[kVK_F1] = Key::F1;
+    kKeyTable[kVK_F2] = Key::F2;
+    kKeyTable[kVK_F3] = Key::F3;
+    kKeyTable[kVK_F4] = Key::F4;
     kKeyTable[kVK_F5] = Key::F5;
     kKeyTable[kVK_F6] = Key::F6;
     kKeyTable[kVK_F7] = Key::F7;
-    kKeyTable[kVK_F3] = Key::F3;
     kKeyTable[kVK_F8] = Key::F8;
     kKeyTable[kVK_F9] = Key::F9;
-    kKeyTable[kVK_F11] = Key::F11;
-    kKeyTable[kVK_F13] = Key::F13;
-    kKeyTable[kVK_F16] = Key::F16;
-    kKeyTable[kVK_F14] = Key::F14;
     kKeyTable[kVK_F10] = Key::F10;
+    kKeyTable[kVK_F11] = Key::F11;
     kKeyTable[kVK_F12] = Key::F12;
+    kKeyTable[kVK_F13] = Key::F13;
+    kKeyTable[kVK_F14] = Key::F14;
     kKeyTable[kVK_F15] = Key::F15;
+    kKeyTable[kVK_F16] = Key::F16;
+    kKeyTable[kVK_F17] = Key::F17;
+    kKeyTable[kVK_F18] = Key::F18;
+    kKeyTable[kVK_F19] = Key::F19;
+    kKeyTable[kVK_F20] = Key::F20;
+    // Key::F21
+    // Key::F22
+    // Key::F23
+    // Key::F24
+    // Key::PRINTSCREEN
+    // Key::INSERT
     kKeyTable[kVK_Help] = Key::HELP;
-    kKeyTable[kVK_Home] = Key::HOME;
-    kKeyTable[kVK_PageUp] = Key::PAGE_UP;
-    kKeyTable[kVK_ForwardDelete] = Key::DEL;
-    kKeyTable[kVK_F4] = Key::F4;
-    kKeyTable[kVK_End] = Key::END;
-    kKeyTable[kVK_F2] = Key::F2;
-    kKeyTable[kVK_PageDown] = Key::PAGE_DOWN;
-    kKeyTable[kVK_F1] = Key::F1;
-    kKeyTable[kVK_LeftArrow] = Key::LEFT;
-    kKeyTable[kVK_RightArrow] = Key::RIGHT;
-    kKeyTable[kVK_DownArrow] = Key::DOWN;
-    kKeyTable[kVK_UpArrow] = Key::UP;
+    kKeyTable[kVK_ANSI_Grave] = Key::BACK_QUOTE;
+    kKeyTable[kVK_ANSI_Quote] = Key::QUOTE;
+    // Key::MENU
 
     /* ISO keyboards only*/
-    // kKeyTable[kVK_ISO_Section] = Key::;
+    // kKeyTable[kVK_ISO_Section] = Key::
 
     /* JIS keyboards only*/
-    // kKeyTable[kVK_JIS_Yen] = Key::;
-    // kKeyTable[kVK_JIS_Underscore] = Key::;
-    // kKeyTable[kVK_JIS_KeypadComma] = Key::;
-    // kKeyTable[kVK_JIS_Eisu] = Key::;
+    // kKeyTable[kVK_JIS_Yen] = Key::
+    // kKeyTable[kVK_JIS_Underscore] = Key::
+    // kKeyTable[kVK_JIS_KeypadComma] = Key::
+    // kKeyTable[kVK_JIS_Eisu] = Key::
     kKeyTable[kVK_JIS_Kana] = Key::KANA;
+
+    kKeyTable[kVK_VolumeUp] = Key::VOLUME_UP;
+    kKeyTable[kVK_VolumeDown] = Key::VOLUME_DOWN;
+    kKeyTable[kVK_Mute] = Key::MUTE;
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -150,13 +166,13 @@ jint modifierMask(NSEventModifierFlags flags) {
     if ((flags & NSEventModifierFlagControl) != 0)
         mask |= static_cast<int>(KeyModifier::CONTROL);
     if ((flags & NSEventModifierFlagOption) != 0)
-        mask |= static_cast<int>(KeyModifier::ALT);
+        mask |= static_cast<int>(KeyModifier::MAC_OPTION);
     if ((flags & NSEventModifierFlagCommand) != 0)
-        mask |= static_cast<int>(KeyModifier::COMMAND);
+        mask |= static_cast<int>(KeyModifier::MAC_COMMAND);
     if ((flags & NSEventModifierFlagFunction) != 0)
-        mask |= static_cast<int>(KeyModifier::FUNCTION);
+        mask |= static_cast<int>(KeyModifier::MAC_FN);
     if ((flags & NSEventModifierFlagCapsLock) != 0)
-        mask |= static_cast<int>(KeyModifier::CAPS);
+        mask |= static_cast<int>(KeyModifier::CAPS_LOCK);
     return mask;
 }
 
@@ -353,42 +369,42 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     }
 
     if ((fLastFlags & NSEventModifierFlagOption) == 0 && (flags & NSEventModifierFlagOption) != 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::ALT, (jboolean) true, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_OPTION, (jboolean) true, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagOption) != 0 && (flags & NSEventModifierFlagOption) == 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::ALT, (jboolean) false, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_OPTION, (jboolean) false, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagCommand) == 0 && (flags & NSEventModifierFlagCommand) != 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::COMMAND, (jboolean) true, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_COMMAND, (jboolean) true, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagCommand) != 0 && (flags & NSEventModifierFlagCommand) == 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::COMMAND, (jboolean) false, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_COMMAND, (jboolean) false, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagFunction) == 0 && (flags & NSEventModifierFlagFunction) != 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::FUNCTION, (jboolean) true, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_FN, (jboolean) true, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagFunction) != 0 && (flags & NSEventModifierFlagFunction) == 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::FUNCTION, (jboolean) false, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::MAC_FN, (jboolean) false, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagCapsLock) == 0 && (flags & NSEventModifierFlagCapsLock) != 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::CAPS, (jboolean) true, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::CAPS_LOCK, (jboolean) true, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 
     if ((fLastFlags & NSEventModifierFlagCapsLock) != 0 && (flags & NSEventModifierFlagCapsLock) == 0) {
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::CAPS, (jboolean) false, modifierMask));
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, jwm::Key::CAPS_LOCK, (jboolean) false, modifierMask));
         fWindow->dispatch(eventObj.get());
     }
 

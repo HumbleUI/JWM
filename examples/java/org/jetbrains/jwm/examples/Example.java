@@ -13,7 +13,7 @@ import java.io.File;
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
     public static int ROWS = 3, COLS = 4;
-    public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
+    public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
     public static Font FONT12 = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public static Font FONT24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public static Font FONT48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
