@@ -74,7 +74,8 @@ public class WindowMac extends Window {
 
     @Override
     public Window setIcon(File icon) {
-        // TODO #95
+        assert _onUIThread();
+        _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
 
@@ -132,6 +133,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+    @ApiStatus.Internal public native void _nSetIcon(String path);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();

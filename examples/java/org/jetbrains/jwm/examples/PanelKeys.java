@@ -8,23 +8,28 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelKeys extends Panel {
-    public List<Key> keys = Collections.synchronizedList(new ArrayList<Key>());
+    public List<String> keys = Collections.synchronizedList(new ArrayList<String>());
 
     @Override
     public void accept(Event e) {
         if (e instanceof EventKey ee) {
             var key = ee.getKey();
+            var text = key.getName();
+            if (ee.getLocation() != KeyLocation.DEFAULT) {
+                var location = ee.getLocation().toString();
+                text = location.substring(0, 1).toUpperCase() + location.substring(1) + " " + text;
+            }
             if (ee.isPressed() == true) {
-                if (!keys.contains(key))
-                    keys.add(key);
+                if (!keys.contains(text))
+                    keys.add(text);
             } else
-                keys.remove(key);
+                keys.remove(text);
         }
     }
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        var lines = keys.stream().map((key) -> TextLine.make(key.getName(), Example.FONT24)).collect(Collectors.toList());
+        var lines = keys.stream().map((text) -> TextLine.make(text, Example.FONT24)).collect(Collectors.toList());
         try (var paint = new Paint();) {
             var capHeight = Example.FONT24.getMetrics().getCapHeight();
 

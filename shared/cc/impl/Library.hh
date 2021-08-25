@@ -2,6 +2,7 @@
 #include <jni.h>
 #include <cstdint>
 #include "Key.hh"
+#include "KeyLocation.hh"
 #include "MouseButton.hh"
 #include "Types.hh"
 #include "Window.hh"
@@ -86,7 +87,7 @@ namespace jwm {
         namespace EventKey {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint jmodifiers);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint jmodifiers, KeyLocation location = KeyLocation::DEFAULT);
         }
 
         namespace EventMouseButton {

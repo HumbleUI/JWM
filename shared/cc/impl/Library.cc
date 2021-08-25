@@ -229,14 +229,14 @@ namespace jwm {
 
                 // kCtor = EventKey::<init>(Key key, boolean isPressed, int modifiers)
                 {
-                    kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
+                    kCtor = env->GetMethodID(kCls, "<init>", "(IZII)V");
                     Throwable::exceptionThrown(env);
                     assert(kCtor);
                 }
             }
 
-            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(keyCode), isPressed, modifiers);
+            jobject make(JNIEnv* env, Key keyCode, jboolean isPressed, jint modifiers, KeyLocation location) {
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(keyCode), isPressed, modifiers, static_cast<int>(location));
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

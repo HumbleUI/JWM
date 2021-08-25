@@ -13,7 +13,7 @@ import java.io.File;
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
     public static int ROWS = 3, COLS = 4;
-    public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.COMMAND : KeyModifier.CONTROL;
+    public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
     public static Font FONT12 = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public static Font FONT24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
     public static Font FONT48 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.BOLD), 48);
@@ -68,7 +68,11 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
         window.setTitle("JWM Window #" + count);
-        window.setIcon(new File("sample.ico"));
+
+        switch (Platform.CURRENT) {
+            case WINDOWS -> window.setIcon(new File("examples/resources/windows.ico"));
+            case MACOS -> window.setIcon(new File("examples/resources/macos.icns"));
+        }
         window.setOpacity(200);
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
@@ -96,6 +100,8 @@ public class Example implements Consumer<Event> {
         PADDING = (int) (10 * scale);
         int panelWidth = (contentRect.getWidth() - (COLS + 1) * PADDING) / COLS;
         int panelHeight = (contentRect.getHeight() - (ROWS + 1) * PADDING) / ROWS;
+        if (panelWidth <= 0 || panelHeight <= 0)
+            return;
 
         if (lastScale != scale) {
             FONT12.setSize(12 * scale);
