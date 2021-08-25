@@ -57,6 +57,13 @@ public abstract class Window extends RefCounted {
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
     public abstract Window setMouseCursor(MouseCursor cursor);
+    
+    /**
+    *  Sets window opacity (0.0 - 1.0)
+    *  If the opacity is outside the range, it will be rounded to 0.0 to 1.0.
+     */
+    @NotNull @Contract("-> this")
+    public abstract Window setOpacity(float opacity);
 
     public abstract Screen getScreen();
 

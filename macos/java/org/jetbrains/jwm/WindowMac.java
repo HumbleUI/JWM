@@ -78,6 +78,12 @@ public class WindowMac extends Window {
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
+
+    @Override
+    public Window setOpacity(float opacity) {
+        // TODO: impl me!
+        return this;
+    }
     
     public Window setMouseCursor(MouseCursor cursor) {
         assert _onUIThread();

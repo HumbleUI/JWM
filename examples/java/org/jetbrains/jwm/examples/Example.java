@@ -68,10 +68,12 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
         window.setTitle("JWM Window #" + count);
+
         switch (Platform.CURRENT) {
             case WINDOWS -> window.setIcon(new File("examples/resources/windows.ico"));
             case MACOS -> window.setIcon(new File("examples/resources/macos.icns"));
         }
+        window.setOpacity(0.8f);
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
         window.requestFrame();

@@ -89,6 +89,12 @@ public class WindowX11 extends Window {
     }
 
     @Override
+    public Window setOpacity(float opacity) {
+        // TODO: impl me!
+        return this;
+    }
+
+    @Override
     public Screen getScreen() {
         assert _onUIThread();
         return _nGetScreen();

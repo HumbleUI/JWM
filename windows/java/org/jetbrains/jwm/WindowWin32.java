@@ -80,6 +80,13 @@ public class WindowWin32 extends Window {
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
+
+    @Override
+    public Window setOpacity(float opacity) {
+        assert _onUIThread();
+        _nSetOpacity(opacity);
+        return this;
+    }
     
     @Override
     public Window setMouseCursor(MouseCursor cursor) {
@@ -133,6 +140,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
+    @ApiStatus.Internal public native void _nSetOpacity(float opacity);
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
