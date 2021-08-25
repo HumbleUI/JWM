@@ -7,6 +7,7 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
+#include "Log.hh"
 #include "MainView.hh"
 #include <OpenGL/gl.h>
 #include "WindowMac.hh"
@@ -22,7 +23,7 @@ public:
     LayerGL() = default;
     ~LayerGL() = default;
 
-    void attach(WindowMac* window) {
+    void attach(JNIEnv* env, WindowMac* window) {
         fWindow = jwm::ref(window);
 
         // set up pixel format
@@ -56,6 +57,8 @@ public:
 
         fPixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
         if (nil == fPixelFormat) {
+            JWM_LOG("Failed to initialize NSOpenGLPixelFormat");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to initialize NSOpenGLPixelFormat");
             return;
         }
 
@@ -64,6 +67,8 @@ public:
         if (nil == fGLContext) {
             [fPixelFormat release];
             fPixelFormat = nil;
+            JWM_LOG("Failed to initialize NSOpenGLContext");
+            classes::Throwable::throwLayerNotSupportedException(env, "Failed to initialize NSOpenGLContext");
             return;
         }
 
@@ -117,7 +122,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowMac* window = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, windowObj));
-    instance->attach(window);
+    instance->attach(env, window);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
