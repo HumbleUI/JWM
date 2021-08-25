@@ -77,6 +77,12 @@ public class WindowMac extends Window {
         // TODO #95
         return this;
     }
+
+    @Override
+    public Window setOpacity(int opacity) {
+        // TODO: impl me!
+        return this;
+    }
     
     public Window setMouseCursor(MouseCursor cursor) {
         assert _onUIThread();
