@@ -12,9 +12,11 @@
 
 namespace jwm {
 Key kKeyTable[128];
+KeyLocation kKeyLocations[128];
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
+    std::fill(kKeyLocations, kKeyLocations + 128, KeyLocation::DEFAULT);
 
     kKeyTable[kVK_CapsLock] = Key::CAPS_LOCK;
     kKeyTable[kVK_Shift] = Key::SHIFT;
@@ -157,6 +159,30 @@ void initKeyTable() {
     kKeyTable[kVK_VolumeUp] = Key::VOLUME_UP;
     kKeyTable[kVK_VolumeDown] = Key::VOLUME_DOWN;
     kKeyTable[kVK_Mute] = Key::MUTE;
+
+    // Locations
+    kKeyLocations[kVK_RightShift] = KeyLocation::RIGHT;
+    kKeyLocations[kVK_RightControl] = KeyLocation::RIGHT;
+    kKeyLocations[kVK_RightCommand] = KeyLocation::RIGHT;
+    kKeyLocations[kVK_RightOption] = KeyLocation::RIGHT;
+    kKeyLocations[kVK_ANSI_KeypadEnter] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadClear] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadEquals] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad0] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad1] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad2] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad3] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad4] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad5] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad6] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad7] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad8] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_Keypad9] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadMultiply] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadPlus] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadMinus] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadDecimal] = KeyLocation::KEYPAD;
+    kKeyLocations[kVK_ANSI_KeypadDivide] = KeyLocation::KEYPAD;
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -329,7 +355,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     unsigned short keyCode = [event keyCode];
     jwm::Key key = keyCode < 128 ? jwm::kKeyTable[keyCode] : jwm::Key::UNDEFINED;
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, key, (jboolean) true, modifierMask));
+    jwm::KeyLocation location = keyCode < 128 ? jwm::kKeyLocations[keyCode] : jwm::KeyLocation::DEFAULT;
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, key, (jboolean) true, modifierMask, location));
     fWindow->dispatch(eventObj.get());
 
     [self interpretKeyEvents:@[event]];
@@ -340,7 +367,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     unsigned short keyCode = [event keyCode];
     jwm::Key key = keyCode < 128 ? jwm::kKeyTable[keyCode] : jwm::Key::UNDEFINED;
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, key, (jboolean) false, modifierMask));
+    jwm::KeyLocation location = keyCode < 128 ? jwm::kKeyLocations[keyCode] : jwm::KeyLocation::DEFAULT;
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, key, (jboolean) false, modifierMask, location));
     fWindow->dispatch(eventObj.get());
 }
 

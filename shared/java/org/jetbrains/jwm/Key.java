@@ -172,10 +172,6 @@ public enum Key {
         return (_mask & KeyType.DIGIT) != 0;
     }
 
-    public boolean isKeypadKey() {
-        return (_mask & KeyType.KEYPAD) != 0;
-    }
-
     /**
      * Space, tab and enter
      */

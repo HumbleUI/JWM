@@ -9,11 +9,13 @@ public class EventKey implements Event {
     @ApiStatus.Internal public final Key _key;
     @ApiStatus.Internal public final boolean _isPressed;
     @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers;
+    @ApiStatus.Internal public final KeyLocation _location;
 
-    public EventKey(int keyCode, boolean isPressed, int modifiers) {
+    public EventKey(int keyCode, boolean isPressed, int modifiers, int keyLocation) {
         _key = Key.makeFromInt(keyCode);
         _isPressed = isPressed;
         _modifiers = modifiers;
+        _location = KeyLocation.makeFromInt(keyLocation);
     }
 
     public boolean isModifierDown(KeyModifier modifier) {
