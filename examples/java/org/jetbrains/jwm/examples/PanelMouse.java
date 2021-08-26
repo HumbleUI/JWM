@@ -94,7 +94,7 @@ public class PanelMouse extends Panel {
         try (var paint = new Paint();) {
             
 
-            var padding = (int) 5 * scale;
+            var padding = (int) 8 * scale;
             int y = Example.PADDING;
             for (var button: MouseButton._values) {
                 try (var line = TextLine.make(capitalize(button.toString()), Example.FONT12); ) {
@@ -107,7 +107,7 @@ public class PanelMouse extends Panel {
                     paint.setColor(pressed ? 0xFFFFFFFF : 0x40FFFFFF);
                     canvas.drawTextLine(line, Example.PADDING + padding, y + capHeight + padding, paint);
 
-                    y += capHeight + 3 * padding;
+                    y += capHeight + 2 * padding + 1 * scale;
                 }
             }
         }

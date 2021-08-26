@@ -98,7 +98,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
         var capHeight = Example.FONT12.getMetrics().getCapHeight();
-        var padding = (int) 5 * scale;
+        var padding = (int) 8 * scale;
         lastInputHeight = (int) (height - capHeight - 3 * padding);
 
         // keys

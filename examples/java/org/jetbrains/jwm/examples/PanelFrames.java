@@ -30,15 +30,36 @@ public class PanelFrames extends Panel {
             paint.setColor(0xFFFFFFFF);
             var metrics = Example.FONT12.getMetrics();
 
+            // FPS graph
+            canvas.save();
+            canvas.translate(Example.PADDING, height - Example.PADDING - 32 * scale);
+
+            paint.setColor(0x4033cc33);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, width - Example.PADDING * 2, 32 * scale, 4 * scale, 4 * scale, 0, 0), paint);
+            paint.setColor(0xFF33CC33);
+            for (int i = 0; i < times.length; ++i) {
+                var idx = (timesIdx + i) % times.length;
+                canvas.drawRect(Rect.makeXYWH(i * scale,
+                                              Math.min(height, (32 - (float) times[idx]) * scale),
+                                              1 * scale,
+                                              (float) (times[idx] * scale)),
+                                paint);
+            }
+
+            paint.setColor(0x20000000);
+            canvas.drawRect(Rect.makeXYWH(0, (32 - 17) * scale, times.length * scale, 1 * scale), paint);
+            canvas.drawRect(Rect.makeXYWH(0, (32 - 8) * scale, times.length * scale, 1 * scale), paint);
+            canvas.restore();
+
             // Paint counters
             canvas.save();
+            paint.setColor(0xFFFFFFFF);
             canvas.translate(Example.PADDING, Example.PADDING - metrics.getAscent());
             for (var entry: counters.entrySet()) {
                 canvas.drawString(entry.getKey() + ": " + entry.getValue(), 0, 0, Example.FONT12, paint);
                 canvas.translate(0, metrics.getHeight());
             }
 
-            // FPS
             int len = (int) ((width - Example.PADDING * 2) / scale);
             if (len > 0 && times.length != len) {
                 times = new double[len];
@@ -78,23 +99,6 @@ public class PanelFrames extends Panel {
                 canvas.drawTextLine(line, width - line.getWidth() - 2 * Example.PADDING, capHeight + 2 * Example.PADDING, paint);
                 vsyncColor = !vsyncColor;
             }
-
-            // FPS graph
-            canvas.save();
-            canvas.translate(Example.PADDING, height - Example.PADDING - 32 * scale);
-
-            paint.setColor(0x4033cc33);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, width - Example.PADDING * 2, 32 * scale, 4 * scale, 4 * scale, 0, 0), paint);
-            paint.setColor(0xFF33CC33);
-            for (int i = 0; i < times.length; ++i) {
-                var idx = (timesIdx + i) % times.length;
-                canvas.drawRect(Rect.makeXYWH(i * scale, (32 - (float) times[idx]) * scale, 1 * scale, (float) (times[idx] * scale)), paint);
-            }
-
-            paint.setColor(0x20000000);
-            canvas.drawRect(Rect.makeXYWH(0, (32 - 17) * scale, times.length * scale, 1 * scale), paint);
-            canvas.drawRect(Rect.makeXYWH(0, (32 - 8) * scale, times.length * scale, 1 * scale), paint);
-            canvas.restore();
         }
     }
 }

@@ -49,7 +49,7 @@ public class PanelMouseCursors extends Panel {
              var bg = new Paint().setColor(0x40000000);)
         {
             var capHeight = (int) Example.FONT12.getMetrics().getCapHeight();
-            var padding = (int) (5 * scale);
+            var padding = (int) (8 * scale);
             var x = Example.PADDING;
             var y = Example.PADDING;
             rects.clear();
@@ -70,7 +70,7 @@ public class PanelMouseCursors extends Panel {
                         canvas.drawTextLine(line, x + padding, y + padding + capHeight, fg);
                     }
                     
-                    y += capHeight + 2 * padding;
+                    y += capHeight + 2 * padding + 1;
                 }
             }
         }

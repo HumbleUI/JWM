@@ -93,20 +93,21 @@ public class PanelLayers extends Panel {
             }
 
             try (var shortcut = TextLine.make(Platform.CURRENT == Platform.MACOS ? "⌘ L" : "Ctrl L", Example.FONT12);) {
-                var padding = (int) 5 * scale;
+                var padding = (int) 8 * scale;
+                var capHeight = metrics.getCapHeight();
                 paint.setColor(0x40000000);
                 canvas.drawRRect(RRect.makeXYWH(Example.PADDING,
-                                                height - Example.PADDING - padding * 2 - shortcut.getHeight(),
+                                                height - Example.PADDING - padding * 2 - capHeight,
                                                 shortcut.getWidth() + padding * 2,
-                                                shortcut.getHeight() + padding * 2, 4 * scale), paint);
+                                                capHeight + padding * 2, 4 * scale), paint);
                 paint.setColor(0xFFFFFFFF);
                 canvas.drawTextLine(shortcut,
                                     Example.PADDING + padding,
-                                    height - Example.PADDING - padding - metrics.getDescent(),
+                                    height - Example.PADDING - padding,
                                     paint);
                 canvas.drawString("Toggle Layer",
-                                  Example.PADDING + padding * 2 + Example.PADDING + shortcut.getWidth(),
-                                  height - Example.PADDING - padding - metrics.getDescent(),
+                                  Example.PADDING + padding * 3 + shortcut.getWidth(),
+                                  height - Example.PADDING - padding,
                                   Example.FONT12,
                                   paint);
             }

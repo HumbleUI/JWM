@@ -90,20 +90,21 @@ public class PanelScreens extends Panel {
              var three = TextLine.make(Platform.CURRENT == Platform.MACOS ? "⌘ 3" : "Ctrl 3", Example.FONT12);)
         {
             var metrics = Example.FONT12.getMetrics();
-            var padding = (int) 5 * scale;
+            var capHeight = metrics.getCapHeight();
+            var padding = (int) 8 * scale;
             canvas.save();
-            canvas.translate(Example.PADDING, height - Example.PADDING - padding * 2 - one.getHeight());
+            canvas.translate(Example.PADDING, height - Example.PADDING - padding * 2 - capHeight);
             
-            canvas.drawRRect(RRect.makeXYWH(0, 0, one.getWidth() + padding * 2, one.getHeight() + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(one, padding, padding - metrics.getAscent(), fg);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, one.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
+            canvas.drawTextLine(one, padding, padding + capHeight, fg);
             canvas.translate(padding * 2 + Example.PADDING + one.getWidth(), 0);
 
-            canvas.drawRRect(RRect.makeXYWH(0, 0, two.getWidth() + padding * 2, two.getHeight() + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(two, padding, padding - metrics.getAscent(), fg);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, two.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
+            canvas.drawTextLine(two, padding, padding + capHeight, fg);
             canvas.translate(padding * 2 + Example.PADDING + two.getWidth(), 0);
 
-            canvas.drawRRect(RRect.makeXYWH(0, 0, three.getWidth() + padding * 2, three.getHeight() + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(three, padding, padding - metrics.getAscent(), fg);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, three.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
+            canvas.drawTextLine(three, padding, padding + capHeight, fg);
             canvas.translate(padding * 2 + Example.PADDING + three.getWidth(), 0);
 
             canvas.restore();
