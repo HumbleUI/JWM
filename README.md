@@ -88,6 +88,10 @@ Alpha. Expect API breakages.
 | EventWindowCloseRequest | ✅   | ✅   | ✅   |
 | EventWindowMove         | ✅   | [#116](https://github.com/jetbrains/jwm/issues/116) | ✅   |
 | EventWindowResize       | ✅   | ✅   | ✅   |
+| EventWindowMinimize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
+| EventWindowMaximize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
+| EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
+| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
 | EventWindowScreenChange | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
@@ -102,7 +106,7 @@ Alpha. Expect API breakages.
 | isPrimary               | ✅      | ✅    | ✅  |
 | bounds                  | ✅      | ✅    | ✅  |
 | scale                   | ✅      | ✅    | ✅  |
-| workArea                | ✅      | ✅ | [#119](https://github.com/jetbrains/jwm/issues/119) |
+| workArea                | ✅      | ✅    | [#119](https://github.com/jetbrains/jwm/issues/119) |
 | colorSpace              | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) |
 
 ### Clipboard
