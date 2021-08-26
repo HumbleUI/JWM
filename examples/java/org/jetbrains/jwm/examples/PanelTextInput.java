@@ -8,7 +8,6 @@ import org.jetbrains.skija.*;
 public class PanelTextInput extends Panel implements TextInputClient {
     public List<String> keys = Collections.synchronizedList(new ArrayList<String>());
     
-    public final Window window;
     public String text = "";
     public EventTextInputMarked lastMarked = null;
     public int lastInputHeight = 0;
@@ -18,16 +17,17 @@ public class PanelTextInput extends Panel implements TextInputClient {
     public boolean _wasInside = false;
 
     public PanelTextInput(Window window) {
-        this.window = window;
+        super(window);
         this.drawBG = false;
         window.setTextInputEnabled(true);
         window.setTextInputClient(this);
         timerTask = new TimerTask() {
             public void run() {
                 cursorDraw = !cursorDraw;
+                App.runOnUIThread(() -> { if (!window._closed) window.requestFrame(); });
             }
         };
-        timer.schedule(timerTask, 0, 700);
+        timer.schedule(timerTask, 0, 500);
     }
 
     @Override
@@ -35,10 +35,13 @@ public class PanelTextInput extends Panel implements TextInputClient {
         if (e instanceof EventTextInput ee) {
             text += ee.getText();
             lastMarked = null;
+            window.requestFrame();
         } else if (e instanceof EventTextInputMarked ee) {
             lastMarked = ee;
+            window.requestFrame();
         } else if (e instanceof EventMouseButton ee) {
             window.unmarkText();
+            window.requestFrame();
         } else if (e instanceof EventMouseMove ee) {
             boolean isInside = contains(ee.getX(), ee.getY());
             if (!_wasInside && isInside)
@@ -88,6 +91,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
                     }
                 }
             }
+            window.requestFrame();
         }
     }
 

@@ -11,6 +11,9 @@ public abstract class Window extends RefCounted {
     public MouseCursor _lastCursor = MouseCursor.ARROW;
 
     @ApiStatus.Internal
+    public boolean _closed = false;
+
+    @ApiStatus.Internal
     public Window(long ptr) {
         super(ptr);
     }
@@ -109,6 +112,7 @@ public abstract class Window extends RefCounted {
     @Override
     public void close() {
         assert _onUIThread();
+        _closed = true;
         setEventListener(null);
         App._windows.remove(this);
         super.close();

@@ -5,9 +5,14 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public abstract class Panel implements Consumer<Event> {
+    public final Window window;
     public int lastWidth = 0, lastHeight = 0, lastX = 0, lastY = 0;
     public float lastScale = 1f;
     public boolean drawBG = true;
+
+    public Panel(Window window) {
+        this.window = window;
+    } 
 
     public abstract void paintImpl(Canvas canvas, int width, int height, float scale);
 

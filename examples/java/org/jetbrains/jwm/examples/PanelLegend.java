@@ -4,6 +4,10 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelLegend extends Panel {
+    public PanelLegend(Window window) {
+        super(window);
+    }
+
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
         var modifier = Platform.CURRENT == Platform.MACOS ? "⌘ " : "Ctrl ";

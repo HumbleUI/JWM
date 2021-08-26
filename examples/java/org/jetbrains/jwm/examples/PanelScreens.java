@@ -10,11 +10,10 @@ public class PanelScreens extends Panel {
     public Paint stroke = new Paint().setMode(PaintMode.STROKE).setColor(0x80FFFFFF);
     public Paint fill = new Paint().setColor(0x20FFFFFF);
     public Paint white = new Paint().setColor(0xFFFFFFFF);
-    public Window window;
     public int screenIdx = -1;
 
     public PanelScreens(Window window) {
-        this.window = window;
+        super(window);
     }
 
     @Override
@@ -40,8 +39,10 @@ public class PanelScreens extends Panel {
             }
         } if (e instanceof EventWindowResize ee) {
             lastResize = ee;
+            window.requestFrame();
         } else if (e instanceof EventWindowMove ee) {
             lastMove = ee;
+            window.requestFrame();
         }
     }
 

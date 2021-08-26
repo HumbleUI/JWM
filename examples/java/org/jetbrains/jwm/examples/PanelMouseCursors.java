@@ -8,13 +8,12 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelMouseCursors extends Panel {
-    public Window window;
     public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
     public Map<UIRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
 
     public PanelMouseCursors(Window window) {
-        this.window = window;
+        super(window);
     }
 
     @Override
@@ -29,10 +28,15 @@ public class PanelMouseCursors extends Panel {
 
                 for (var rect: rects.keySet()) {
                     if (rect.contains(relX, relY)) {
-                        window.setMouseCursor(rects.get(rect));
+                        var cursor = rects.get(rect);
+                        if (window._lastCursor != cursor)
+                            window.requestFrame();
+                        window.setMouseCursor(cursor);
                         return;
                     }
                 }
+                if (window._lastCursor != MouseCursor.ARROW)
+                    window.requestFrame();
                 window.setMouseCursor(MouseCursor.ARROW);
             }
         }

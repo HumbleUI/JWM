@@ -6,6 +6,10 @@ import org.jetbrains.skija.*;
 public class PanelAnimation extends Panel {
     public int angle = 0;
 
+    public PanelAnimation(Window window) {
+        super(window);
+    }
+
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
         var radius = Math.max(0, Math.min(width / 2 - Example.PADDING, height / 2 - Example.PADDING));

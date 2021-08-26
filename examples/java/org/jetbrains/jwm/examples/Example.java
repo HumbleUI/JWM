@@ -20,19 +20,17 @@ public class Example implements Consumer<Event> {
 
     public float lastScale = 1f;
     public PanelTextInput panelTextInput;
-    public PanelAnimation panelAnimation;
     public PanelMouse panelMouse;
-    public PanelMouseCursors panelMouseCursors;
-    public PanelFrames panelFrames;
-    public PanelLayers panelLayers;
     public PanelScreens panelScreens;
+    public PanelAnimation panelAnimation;
+    public PanelMouseCursors panelMouseCursors;
+    public PanelLayers panelLayers;
+    public PanelFrames panelFrames;
     public PanelLegend panelLegend;
 
     public Window window;
-    public static Timer timer = new Timer(true);
-    public TimerTask timerTask;
 
-    public boolean paused = false;
+    public boolean paused = true;
     public boolean closed = false;
 
     public Example() {
@@ -40,13 +38,13 @@ public class Example implements Consumer<Event> {
         window.setEventListener(this);
 
         panelTextInput = new PanelTextInput(window);
-        panelAnimation = new PanelAnimation();
-        panelMouse = new PanelMouse();
-        panelMouseCursors = new PanelMouseCursors(window);
-        panelFrames = new PanelFrames();
-        panelLayers = new PanelLayers(window);
+        panelMouse = new PanelMouse(window);
         panelScreens = new PanelScreens(window);
-        panelLegend = new PanelLegend();
+        panelAnimation = new PanelAnimation(window);
+        panelMouseCursors = new PanelMouseCursors(window);
+        panelLayers = new PanelLayers(window);
+        panelFrames = new PanelFrames(window);
+        panelLegend = new PanelLegend(window);
 
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
@@ -71,13 +69,6 @@ public class Example implements Consumer<Event> {
         window.setMouseCursor(MouseCursor.ARROW);
         window.show();
         window.requestFrame();
-
-        timerTask = new TimerTask() {
-            public void run() {
-                App.runOnUIThread(() -> { paint("Timer"); });
-            }
-        };
-        timer.schedule(timerTask, 10, 1000);
     }
 
     public void paint(String reason) {
@@ -161,9 +152,9 @@ public class Example implements Consumer<Event> {
     public void accept(Event e) {
         panelTextInput.accept(e);
         panelMouse.accept(e);
+        panelScreens.accept(e);
         panelMouseCursors.accept(e);
         panelLayers.accept(e);
-        panelScreens.accept(e);
 
         float scale = window.getScreen().getScale();
         if (e instanceof EventKey eventKey) {
@@ -194,7 +185,6 @@ public class Example implements Consumer<Event> {
                 window.requestFrame();
         } else if (e instanceof EventWindowCloseRequest) {
             closed = true;
-            timerTask.cancel();
             window.close();
             if (App._windows.size() == 0)
                 App.terminate();

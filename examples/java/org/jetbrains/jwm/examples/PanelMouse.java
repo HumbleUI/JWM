@@ -11,13 +11,24 @@ public class PanelMouse extends Panel {
     public EventMouseMove lastMouseMove = null;
     public Point scroll = new Point(0, 0);
     public List<MouseButton> buttons = Collections.synchronizedList(new ArrayList<MouseButton>());
+    public boolean lastInside = false;
+
+    public PanelMouse(Window window) {
+        super(window);
+    }
 
     @Override
     public void accept(Event e) {
         if (e instanceof EventMouseMove ee) {
             lastMouseMove = ee;
+            var inside = contains(ee.getX(), ee.getY());
+            if (inside || lastInside) {
+                lastInside = inside;
+                window.requestFrame();
+            }
         } else if (e instanceof EventMouseScroll ee) {
             scroll = scroll.offset(ee.getDeltaX() * lastScale, ee.getDeltaY() * lastScale);
+            window.requestFrame();
         } else if (e instanceof EventMouseButton ee) {
             var button = ee.getButton();
             if (ee.isPressed() == true) {
@@ -25,6 +36,7 @@ public class PanelMouse extends Panel {
                     buttons.add(button);
             } else
                 buttons.remove(button);
+            window.requestFrame();
         }
     }
 
@@ -33,7 +45,7 @@ public class PanelMouse extends Panel {
         var capHeight = Example.FONT12.getMetrics().getCapHeight();
 
         // position
-        if (lastMouseMove != null) {
+        if (lastInside && lastMouseMove != null) {
             try (var paint = new Paint().setColor(0x40FFFFFF)) {
                 var x = lastMouseMove.getX() - lastX;
                 var y = lastMouseMove.getY() - lastY;

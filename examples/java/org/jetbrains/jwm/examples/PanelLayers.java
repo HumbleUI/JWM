@@ -6,11 +6,10 @@ import org.jetbrains.skija.*;
 public class PanelLayers extends Panel {
     public String[] layers;
     public int layerIdx = 0;
-    public Window window;
     public SkijaLayer layer;
 
     public PanelLayers(Window window) {
-        this.window = window;
+        super(window);
 
         if (Platform.CURRENT == Platform.MACOS)
             layers = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };

@@ -16,6 +16,10 @@ public class PanelFrames extends Panel {
     public double[] times = new double[180];
     public int timesIdx = 0;
 
+    public PanelFrames(Window window) {
+        super(window);
+    }
+
     public void bumpCounter(String reason) {
         counters.merge(reason, 1, Integer::sum);
     }
