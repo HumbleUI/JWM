@@ -254,8 +254,12 @@ void WindowX11::resize(int width, int height) {
 }
 
 
-void WindowX11::show() {
-    XMapWindow(_windowManager.getDisplay(), _x11Window);
+void WindowX11::setVisible(bool isVisible) {
+    if (isVisible) {
+        XMapWindow(_windowManager.getDisplay(), _x11Window);
+    } else {
+        XUnmapWindow(_windowManager.getDisplay(), _x11Window);
+    }
 }
 
 const ScreenInfo& WindowX11::getScreen() {
@@ -284,10 +288,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
     return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nShow
-  (JNIEnv* env, jobject obj) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetVisible
+  (JNIEnv* env, jobject obj, jboolean isVisible) {
       
-    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->show();
+    reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->setVisible(isVisible);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetWindowRect

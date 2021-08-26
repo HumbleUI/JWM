@@ -37,8 +37,6 @@ public abstract class Window extends RefCounted {
 
     public abstract void unmarkText();
 
-    public abstract void show();
-
     public abstract UIRect getWindowRect();
 
     public abstract UIRect getContentRect();
@@ -72,6 +70,9 @@ public abstract class Window extends RefCounted {
         }
         return this;
     }
+
+    @NotNull @Contract("-> this")
+    public abstract Window setVisible(boolean isVisible);
 
     @ApiStatus.Internal
     public abstract void _nSetMouseCursor(int cursorIdx);
