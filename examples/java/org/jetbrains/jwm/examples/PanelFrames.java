@@ -9,6 +9,7 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelFrames extends Panel {
+    public boolean vsyncColor = false;
     public Map<String, Integer> counters = new ConcurrentHashMap<>();
 
     public long t0 = System.nanoTime();
@@ -58,6 +59,21 @@ public class PanelFrames extends Panel {
             String fps = String.format("%.01f", (frames / time * 1000));
             canvas.drawString("FPS: " + fps, 0, 0, Example.FONT12, paint);
             canvas.restore();
+
+            // VSync
+            try (var line = TextLine.make("VSYNC", Example.FONT24); ) {
+                var capHeight = Example.FONT24.getMetrics().getCapHeight();
+                paint.setColor(0xFFE0E0E0);
+                canvas.drawRRect(RRect.makeXYWH(width - line.getWidth() - 3 * Example.PADDING,
+                                                Example.PADDING,
+                                                line.getWidth() + 2 * Example.PADDING,
+                                                capHeight + 2 * Example.PADDING,
+                                                4 * scale), paint);
+                
+                paint.setColor(vsyncColor ? 0xFFEF8784 : 0xFFA1FCFE);
+                canvas.drawTextLine(line, width - line.getWidth() - 2 * Example.PADDING, capHeight + 2 * Example.PADDING, paint);
+                vsyncColor = !vsyncColor;
+            }
 
             // FPS graph
             canvas.save();

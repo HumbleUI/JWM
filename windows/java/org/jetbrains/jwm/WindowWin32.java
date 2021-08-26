@@ -88,12 +88,8 @@ public class WindowWin32 extends Window {
         return this;
     }
     
-    @Override
-    public Window setMouseCursor(MouseCursor cursor) {
-        assert _onUIThread();
-        _nSetMouseCursor(cursor.ordinal());
-        return this;
-    }
+    @ApiStatus.Internal @Override
+    public native void _nSetMouseCursor(int cursorIdx);
 
     @Override
     public Screen getScreen() {

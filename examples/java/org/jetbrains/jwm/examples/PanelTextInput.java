@@ -6,9 +6,12 @@ import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelTextInput extends Panel implements TextInputClient {
+    public List<String> keys = Collections.synchronizedList(new ArrayList<String>());
+    
     public final Window window;
     public String text = "";
     public EventTextInputMarked lastMarked = null;
+    public int lastInputHeight = 0;
     public boolean cursorDraw = true;
     public TimerTask timerTask;
     public static Timer timer = new Timer(true);
@@ -16,6 +19,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
 
     public PanelTextInput(Window window) {
         this.window = window;
+        this.drawBG = false;
         window.setTextInputEnabled(true);
         window.setTextInputClient(this);
         timerTask = new TimerTask() {
@@ -42,45 +46,82 @@ public class PanelTextInput extends Panel implements TextInputClient {
             if (_wasInside && !isInside)
                 window.setMouseCursor(MouseCursor.ARROW);
             _wasInside = isInside;
-        } else if (e instanceof EventKey ee && ee.isPressed()) {
+        } else if (e instanceof EventKey ee) {
             Key key = ee.getKey();
-            boolean modifier = ee.isModifierDown(Example.MODIFIER);
-            if (Key.ENTER == key) {
-                text += "\n";
-            } else if (Key.BACKSPACE == key) {
-                if (lastMarked == null && text.length() > 0) {
-                    try (var iter = BreakIterator.makeCharacterInstance();) {
-                        iter.setText(text);
-                        text = text.substring(0, iter.preceding(text.length()));
+            KeyLocation loc = ee.getLocation();
+
+            var keyText = loc == KeyLocation.DEFAULT ? key.getName() : capitalize(loc.toString()) + " " + key.getName();
+            if (ee.isPressed() && !keys.contains(keyText))
+                keys.add(keyText);
+            else if (!ee.isPressed())
+                keys.remove(keyText);
+
+            if (ee.isPressed()) {
+                switch (key) {
+                    case ENTER -> text += "\n";
+                    case BACKSPACE -> {
+                        if (lastMarked == null && text.length() > 0) {
+                            try (var iter = BreakIterator.makeCharacterInstance();) {
+                                iter.setText(text);
+                                text = text.substring(0, iter.preceding(text.length()));
+                            }
+                        }
                     }
                 }
-            } else if (Key.C == key && modifier) {
-                Clipboard.set(ClipboardEntry.makePlainText(text));
-            } else if (Key.V == key && modifier) {
-                window.unmarkText();
-                ClipboardEntry entry = Clipboard.get(ClipboardFormat.TEXT);
-                if (entry != null)
-                    text = entry.getString();
-            } else if (Key.F == key && modifier) {
-                ClipboardFormat[] formats = Clipboard.getFormats();
-                if (formats != null)
-                    for (ClipboardFormat format: formats)
-                        System.out.println(format.getFormatId());
+
+                if (ee.isModifierDown(Example.MODIFIER)) {
+                    switch (key) {
+                        case C ->
+                            Clipboard.set(ClipboardEntry.makePlainText(text));
+                        case V -> {
+                            window.unmarkText();
+                            ClipboardEntry entry = Clipboard.get(ClipboardFormat.TEXT);
+                            if (entry != null)
+                                text = entry.getString();
+                        }
+                        case F -> {
+                            ClipboardFormat[] formats = Clipboard.getFormats();
+                            if (formats != null)
+                                for (ClipboardFormat format: formats)
+                                    System.out.println(format.getFormatId());
+                        }
+                    }
+                }
             }
         }
     }
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        try (var paint = new Paint()) {
+        var capHeight = Example.FONT12.getMetrics().getCapHeight();
+        var padding = (int) 5 * scale;
+        lastInputHeight = (int) (height - capHeight - 3 * padding);
+
+        // keys
+        try (var bg = new Paint().setColor(0x40000000);
+             var fg = new Paint().setColor(0xFFFFFFFF); )
+        {
+            var x = 0;
+            var y = lastInputHeight + padding;
+            for (var key: keys) {
+                try (var line = TextLine.make(key, Example.FONT12); ) {
+                    canvas.drawRRect(RRect.makeXYWH(x, y, line.getWidth() + 2 * padding, capHeight + 2 * padding, 4 * scale), bg);
+                    canvas.drawTextLine(line, x + padding, y + capHeight + padding, fg);
+                    x += line.getWidth() + 3 * padding;
+                }
+            }
+        }
+
+        // text input
+        try (var paint = new Paint(); ) {
             canvas.save();
             paint.setColor(0xFFFFFFFF);
-            canvas.drawRRect(RRect.makeXYWH(0, 0, width, height, 4 * scale), paint);
+            canvas.drawRRect(RRect.makeXYWH(0, 0, width, lastInputHeight, 4 * scale), paint);
 
             Font font = Example.FONT24;
             FontMetrics metrics = font.getMetrics();
 
-            var y = height - Example.PADDING - metrics.getDescent();
+            var y = lastInputHeight - Example.PADDING - metrics.getDescent();
             var lines = text.split("\n", -1);
             var i = lines.length - 1;
 
@@ -131,14 +172,13 @@ public class PanelTextInput extends Panel implements TextInputClient {
 
     @Override
     public UIRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
-        // System.out.println("TextInputClient::getRectForMarkedRange " + selectionStart + ".." + selectionEnd);
         Font font = Example.FONT24;
         FontMetrics metrics = font.getMetrics();
 
         var lines = text.split("\n", -1);
         try (var line = TextLine.make(lines[lines.length - 1], font);) {
             var left = lastX + Example.PADDING + line.getWidth();
-            var top = lastY + lastHeight - Example.PADDING - metrics.getHeight();
+            var top = lastY + lastInputHeight - Example.PADDING - metrics.getHeight();
 
             if (lastMarked != null) {
                 try (var marked = TextLine.make(lastMarked.getText(), font)) {

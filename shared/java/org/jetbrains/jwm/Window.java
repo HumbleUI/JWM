@@ -8,6 +8,9 @@ import java.io.File;
 
 public abstract class Window extends RefCounted {
     @ApiStatus.Internal
+    public MouseCursor _lastCursor = MouseCursor.ARROW;
+
+    @ApiStatus.Internal
     public Window(long ptr) {
         super(ptr);
     }
@@ -56,8 +59,21 @@ public abstract class Window extends RefCounted {
 
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
-    public abstract Window setMouseCursor(MouseCursor cursor);
-    
+
+    @NotNull @Contract("-> this")
+    public Window setMouseCursor(MouseCursor cursor) {
+        assert _onUIThread();
+        if (cursor != _lastCursor) {
+            _lastCursor = cursor;
+            _nSetMouseCursor(cursor.ordinal());
+        }
+        return this;
+    }
+
+    @ApiStatus.Internal
+    public abstract void _nSetMouseCursor(int cursorIdx);
+
+
     /**
     *  Sets window opacity (0.0 - 1.0)
     *  If the opacity is outside the range, it will be rounded to 0.0 to 1.0.

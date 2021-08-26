@@ -75,11 +75,9 @@ public class WindowX11 extends Window {
         return this;
     }
 
-    @Override
-    public Window setMouseCursor(MouseCursor cursor) {
-        assert _onUIThread();
-        // TODO: impl me!
-        return this;
+    @ApiStatus.Internal @Override
+    public void _nSetMouseCursor(int cursorIdx) {
+        // TODO #99
     }
 
     @Override

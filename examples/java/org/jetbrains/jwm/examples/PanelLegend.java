@@ -12,7 +12,8 @@ public class PanelLegend extends Panel {
              var fg = new Paint().setColor(0xFFFFFFFF);
              var pause = TextLine.make(modifier + "P", Example.FONT12);
              var open = TextLine.make(modifier + "N", Example.FONT12);
-             var close = TextLine.make(modifier + "W", Example.FONT12);)
+             var close = TextLine.make(modifier + "W", Example.FONT12);
+             var formats = TextLine.make(modifier + "F", Example.FONT12);)
         {
             var metrics = Example.FONT12.getMetrics();
 
@@ -33,6 +34,11 @@ public class PanelLegend extends Panel {
             canvas.drawTextLine(close, padding, padding - metrics.getAscent(), fg);
             canvas.drawString("Close Window", padding * 2 + Example.PADDING + close.getWidth(), padding - metrics.getAscent(), Example.FONT12, fg);
             canvas.translate(0, padding * 2 + Example.PADDING + close.getHeight());
+
+            canvas.drawRRect(RRect.makeXYWH(0, 0, padding * 2 + formats.getWidth(), padding * 2 + formats.getHeight(), 4 * scale), bg);
+            canvas.drawTextLine(formats, padding, padding - metrics.getAscent(), fg);
+            canvas.drawString("Clipboard formats", padding * 2 + Example.PADDING + formats.getWidth(), padding - metrics.getAscent(), Example.FONT12, fg);
+            canvas.translate(0, padding * 2 + Example.PADDING + formats.getHeight());
        }
     }
 }

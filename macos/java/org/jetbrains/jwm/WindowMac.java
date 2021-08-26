@@ -85,12 +85,8 @@ public class WindowMac extends Window {
         return this;
     }
     
-    @Override
-    public Window setMouseCursor(MouseCursor cursor) {
-        assert _onUIThread();
-        _nSetMouseCursor(cursor.ordinal());
-        return this;
-    }
+    @ApiStatus.Internal @Override
+    public native void _nSetMouseCursor(int cursorIdx);
 
     @Override
     public Screen getScreen() {
@@ -135,7 +131,6 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String path);
-    @ApiStatus.Internal public native void _nSetMouseCursor(int cursor);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();

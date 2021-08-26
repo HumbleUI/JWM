@@ -10,7 +10,8 @@ import org.jetbrains.skija.*;
 public class PanelMouseCursors extends Panel {
     public Window window;
     public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
-    public Map<MouseCursor, UIRect> rects = new HashMap<>();
+    public Map<UIRect, MouseCursor> rects = new HashMap<>();
+    public boolean lastInside = false;
 
     public PanelMouseCursors(Window window) {
         this.window = window;
@@ -20,13 +21,19 @@ public class PanelMouseCursors extends Panel {
     public void accept(Event e) {
         if (e instanceof EventMouseMove ee) {
             lastMove = ee;
-            
-            var relX = lastMove.getX() - lastX;
-            var relY = lastMove.getY() - lastY;
+            var inside = contains(ee.getX(), ee.getY());
+            if (inside || lastInside) {
+                lastInside = inside;
+                var relX = lastMove.getX() - lastX;
+                var relY = lastMove.getY() - lastY;
 
-            for (var entry: rects.entrySet()) {
-                if (entry.getValue().contains(relX, relY))
-                    window.setMouseCursor(entry.getKey());
+                for (var rect: rects.keySet()) {
+                    if (rect.contains(relX, relY)) {
+                        window.setMouseCursor(rects.get(rect));
+                        return;
+                    }
+                }
+                window.setMouseCursor(MouseCursor.ARROW);
             }
         }
     }
@@ -51,9 +58,9 @@ public class PanelMouseCursors extends Panel {
                     var relX = lastMove.getX() - lastX;
                     var relY = lastMove.getY() - lastY;
                     var bounds = UIRect.makeXYWH(x, y, (int) line.getWidth() + 2 * padding, capHeight + 2 * padding);
-                    rects.put(cursor, bounds);
+                    rects.put(bounds, cursor);
                     if (bounds.contains(relX, relY)) {
-                        canvas.drawRect(Rect.makeLTRB(bounds.getLeft(), bounds.getTop(), bounds.getRight(), bounds.getBottom()), bg);
+                        canvas.drawRRect(RRect.makeLTRB(bounds.getLeft(), bounds.getTop(), bounds.getRight(), bounds.getBottom(), 4 * scale), bg);
                         canvas.drawTextLine(line, x + padding, y + padding + capHeight, hl);
                     } else {
                         canvas.drawTextLine(line, x + padding, y + padding + capHeight, fg);

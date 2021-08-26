@@ -12,7 +12,7 @@ import java.io.File;
 
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
-    public static int ROWS = 3, COLS = 4;
+    public static int ROWS = 3, COLS = 3;
     public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
     public static Font FONT12 = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public static Font FONT24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
@@ -20,9 +20,7 @@ public class Example implements Consumer<Event> {
 
     public float lastScale = 1f;
     public PanelTextInput panelTextInput;
-    public PanelVSync panelVSync;
     public PanelAnimation panelAnimation;
-    public PanelKeys panelKeys;
     public PanelMouse panelMouse;
     public PanelMouseCursors panelMouseCursors;
     public PanelFrames panelFrames;
@@ -42,9 +40,7 @@ public class Example implements Consumer<Event> {
         window.setEventListener(this);
 
         panelTextInput = new PanelTextInput(window);
-        panelVSync = new PanelVSync();
         panelAnimation = new PanelAnimation();
-        panelKeys = new PanelKeys();
         panelMouse = new PanelMouse();
         panelMouseCursors = new PanelMouseCursors(window);
         panelFrames = new PanelFrames();
@@ -112,21 +108,19 @@ public class Example implements Consumer<Event> {
         int canvasCount = canvas.save();
 
         // First row
-        panelKeys.paint         (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth * 2 + PADDING, panelHeight, scale);
-        panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth * 2 + PADDING, panelHeight, scale);
+        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
         
         // Second row
-        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelLayers.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
-        panelVSync.paint        (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
-        panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
+        panelLayers.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
         panelFrames.bumpCounter(reason);
-        panelFrames.paint       (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
-        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
+        panelFrames.paint       (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
+        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
 
         // Colored bars
         try (var paint = new Paint()) {
@@ -166,7 +160,6 @@ public class Example implements Consumer<Event> {
     @Override
     public void accept(Event e) {
         panelTextInput.accept(e);
-        panelKeys.accept(e);
         panelMouse.accept(e);
         panelMouseCursors.accept(e);
         panelLayers.accept(e);
@@ -210,11 +203,6 @@ public class Example implements Consumer<Event> {
 
     public static void main(String[] args) {
         App.init();
-
-        System.out.println("Screens:");
-        for (Screen screen: App.getScreens())
-            System.out.println("  " + screen);
-
         new Example();
         App.start();
     }
