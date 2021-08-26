@@ -64,7 +64,6 @@ public class Example implements Consumer<Event> {
         switch (Platform.CURRENT) {
             case WINDOWS -> {
                 window.setIcon(new File("examples/resources/windows.ico"));
-                window.setOpacity(0.8f);
             }
             case MACOS -> {
                 window.setIcon(new File("examples/resources/macos.icns"));
@@ -175,6 +174,8 @@ public class Example implements Consumer<Event> {
                         window.setVisible(false);
                     case W ->
                         accept(EventWindowCloseRequest.INSTANCE);
+                    case O ->
+                        window.setOpacity(window.getOpacity() == 1f ? 0.5f : 1f);
                     case UP ->
                         window.maximize();
                     case DOWN ->

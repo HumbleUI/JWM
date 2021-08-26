@@ -14,6 +14,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("N", "New Window");
         shortcuts.put("W", "Close Window");
         shortcuts.put("F", "Clipboard formats");
+        shortcuts.put("O", "Opacity");
         shortcuts.put("1", "Minimize");
         shortcuts.put("2", "Maximize");
         shortcuts.put("3", "Restore");
@@ -24,7 +25,7 @@ public class PanelLegend extends Panel {
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        var modifier = Platform.CURRENT == Platform.MACOS ? "⌘ " : "^ ";
+        var modifier = Platform.CURRENT == Platform.MACOS ? "⌘ " : "Ctrl ";
         var padding = (int) 8 * scale;
 
         try (var bg = new Paint().setColor(0x40000000);
@@ -50,12 +51,8 @@ public class PanelLegend extends Panel {
                 try (var line = TextLine.make(value, Example.FONT12);) {
                     canvas.drawTextLine(line, x + bgWidth + padding, y + padding + capHeight, fg);
                 }
-                    
+                
                 y += padding * 2 + capHeight + 1 * scale;
-                if (y + padding * 3 + capHeight > height) {
-                    x += width / 2 - Example.PADDING / 2;
-                    y = Example.PADDING;
-                }
             }
         }
     }

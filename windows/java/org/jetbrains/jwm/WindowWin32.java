@@ -78,7 +78,8 @@ public class WindowWin32 extends Window {
     @Override
     public Window setVisible(boolean value) {
         assert _onUIThread();
-        _nShow();
+        _nSetVisible(value);
+        return this;
     }
 
     @Override
