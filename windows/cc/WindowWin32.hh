@@ -53,6 +53,7 @@ namespace jwm {
         void setTitle(const std::wstring& title);
         void setIcon(const std::wstring& iconPath);
         void setOpacity(float opacity);
+        float getOpacity();
         void setMouseCursor(MouseCursor cursor);
         void show();
         void maximize();

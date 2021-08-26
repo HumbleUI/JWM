@@ -85,6 +85,8 @@ public abstract class Window extends RefCounted {
     @NotNull @Contract("-> this")
     public abstract Window setOpacity(float opacity);
 
+    public abstract float getOpacity();
+
     public abstract Screen getScreen();
 
     public abstract void requestFrame();
