@@ -10,7 +10,7 @@ public class PanelScreens extends Panel {
     public Paint stroke = new Paint().setMode(PaintMode.STROKE).setColor(0x80FFFFFF);
     public Paint fill = new Paint().setColor(0x20FFFFFF);
     public Paint white = new Paint().setColor(0xFFFFFFFF);
-    public int screenIdx = -1;
+    public int idx = 0;
 
     public PanelScreens(Window window) {
         super(window);
@@ -22,19 +22,39 @@ public class PanelScreens extends Panel {
         if (e instanceof EventKey eventKey) {
             if (eventKey.isPressed() == true && eventKey.isModifierDown(Example.MODIFIER)) {
                 switch (eventKey.getKey()) {
-                    case DIGIT1 -> {
-                        Screen[] screens = App.getScreens();
-                        screenIdx = (screenIdx + 1) % screens.length;
-                        UIRect bounds = screens[screenIdx].getBounds();
-                        window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2,
-                                                 bounds.getTop() + bounds.getHeight() / 2);
-                        window.setWindowSize(bounds.getWidth() / 2,
-                                             bounds.getHeight() / 2);
-                    }
+                    case DIGIT1 ->
+                        window.minimize();
                     case DIGIT2 ->
-                        window.setWindowSize((int) (600 * scale), (int) (500 * scale));
+                        window.maximize();
                     case DIGIT3 ->
-                        window.setContentSize((int) (600 * scale), (int) (500 * scale));
+                        window.restore();
+                    case DIGIT4 -> {
+                        window.setVisible(false);
+                    }
+                    case DIGIT5 -> {
+                        Screen[] screens = App.getScreens();
+                        idx = (idx + 1) % (screens.length * 5);
+                        UIRect bounds = screens[idx / 5].getWorkArea();
+                        switch (idx % 5) {
+                            case 0 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 4, bounds.getTop() + bounds.getHeight() / 4);
+                            case 1 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop());
+                            case 2 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop());
+                            case 3 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop() + bounds.getHeight() / 2);
+                            case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
+                        }
+                    }
+                    case DIGIT6 -> {
+                        UIRect bounds = window.getScreen().getWorkArea();
+                        int width  = (int) (((int) ((bounds.getWidth() / 2) / scale)) * scale);
+                        int height = (int) (((int) ((bounds.getHeight() / 2) / scale)) * scale);
+                        System.out.println("width = " + width + ", height = " + height);
+                        System.out.println(window.getWindowRect().getWidth() + " " + window.getWindowRect().getHeight());
+                        if (window.getWindowRect().getWidth() != width || window.getWindowRect().getHeight() != height) {
+                            window.setWindowSize(width, height);
+                        } else {
+                            window.setContentSize(width, height);
+                        }
+                    }
                 }
             }
         } if (e instanceof EventWindowResize ee) {
@@ -79,35 +99,13 @@ public class PanelScreens extends Panel {
         drawRect(canvas, window.getContentRectAbsolute());
         stroke.setColor(0x80CC3333);
         drawRect(canvas, UIRect.makeXYWH(lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight()));
-
         canvas.restore();
 
-        // Shortcuts
-        try (var bg    = new Paint().setColor(0x40000000);
-             var fg    = new Paint().setColor(0xFFFFFFFF);
-             var one   = TextLine.make(Platform.CURRENT == Platform.MACOS ? "⌘ 1" : "Ctrl 1", Example.FONT12);
-             var two   = TextLine.make(Platform.CURRENT == Platform.MACOS ? "⌘ 2" : "Ctrl 2", Example.FONT12);
-             var three = TextLine.make(Platform.CURRENT == Platform.MACOS ? "⌘ 3" : "Ctrl 3", Example.FONT12);)
-        {
-            var metrics = Example.FONT12.getMetrics();
-            var capHeight = metrics.getCapHeight();
-            var padding = (int) 8 * scale;
-            canvas.save();
-            canvas.translate(Example.PADDING, height - Example.PADDING - padding * 2 - capHeight);
-            
-            canvas.drawRRect(RRect.makeXYWH(0, 0, one.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(one, padding, padding + capHeight, fg);
-            canvas.translate(padding * 2 + Example.PADDING + one.getWidth(), 0);
-
-            canvas.drawRRect(RRect.makeXYWH(0, 0, two.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(two, padding, padding + capHeight, fg);
-            canvas.translate(padding * 2 + Example.PADDING + two.getWidth(), 0);
-
-            canvas.drawRRect(RRect.makeXYWH(0, 0, three.getWidth() + padding * 2, capHeight + padding * 2, 4 * scale), bg);
-            canvas.drawTextLine(three, padding, padding + capHeight, fg);
-            canvas.translate(padding * 2 + Example.PADDING + three.getWidth(), 0);
-
-            canvas.restore();
-        }
+        var contentRect = window.getContentRect();
+        var capHeight = Example.FONT12.getMetrics().getCapHeight();
+        var padding = (int) 8 * scale;
+        canvas.drawString("Position: " + windowRect.getLeft() + ", " + windowRect.getTop(), Example.PADDING, Example.PADDING + capHeight, Example.FONT12, white);
+        canvas.drawString("Window size: " + windowRect.getWidth() + ", " + windowRect.getHeight(), Example.PADDING, Example.PADDING + capHeight * 2 + padding, Example.FONT12, white);
+        canvas.drawString("Content size: " + contentRect.getWidth() + ", " + contentRect.getHeight(), Example.PADDING, Example.PADDING + capHeight * 3 + padding * 2, Example.FONT12, white);
     }
 }

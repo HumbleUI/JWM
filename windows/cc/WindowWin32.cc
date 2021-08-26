@@ -42,7 +42,7 @@ void jwm::WindowWin32::recreate() {
     _destroyInternal();
     _createInternal(x, y, width, height, caption);
 
-    show();
+    setVisible(true);
     removeFlag(Flag::IgnoreMessages);
 }
 
@@ -151,9 +151,13 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
     _setMouseCursorInternal();
 }
 
-void jwm::WindowWin32::show() {
-    JWM_VERBOSE("Show window 0x" << this);
-    ShowWindow(_hWnd, SW_SHOWNA);
+void jwm::WindowWin32::setVisible(bool value) {
+    JWM_VERBOSE("Set visible = " << value << " for window 0x" << this);
+    if (value) {
+        ShowWindow(_hWnd, SW_SHOWNA);
+    } else {
+        // TODO #96
+    }
 }
 
 void jwm::WindowWin32::maximize() {
@@ -881,10 +885,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nUnmarkTe
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nShow
-        (JNIEnv* env, jobject obj) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
+        (JNIEnv* env, jobject obj, jboolean value) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->show();
+    instance->setVisible(value);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect

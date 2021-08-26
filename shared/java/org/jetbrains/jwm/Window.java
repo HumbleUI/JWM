@@ -71,16 +71,18 @@ public abstract class Window extends RefCounted {
         return this;
     }
 
-    @NotNull @Contract("-> this")
-    public abstract Window setVisible(boolean isVisible);
-
     @ApiStatus.Internal
     public abstract void _nSetMouseCursor(int cursorIdx);
 
+    @NotNull @Contract("-> this")
+    public abstract Window setVisible(boolean isVisible);
 
     /**
-    *  Sets window opacity (0.0 - 1.0)
-    *  If the opacity is outside the range, it will be rounded to 0.0 to 1.0.
+     * Sets window opacity (0.0 - 1.0). If the opacity is outside the range,
+     * it will be clamped to 0.0 to 1.0.
+     * 
+     * @param opacity  0f for fully transparent, 1f for fully opaque
+     * @return this
      */
     @NotNull @Contract("-> this")
     public abstract Window setOpacity(float opacity);

@@ -104,14 +104,22 @@ bool jwm::WindowMac::init() {
     return true;
 }
 
-void jwm::WindowMac::show() {
-    [fNSWindow orderFront:nil];
-    [NSApp activateIgnoringOtherApps:YES];
-    [fNSWindow makeKeyAndOrderFront:NSApp];
+void jwm::WindowMac::setVisible(bool value) {
+    if (value && fDisplayLink == 0) {
+        [fNSWindow orderFront:nil];
+        [NSApp activateIgnoringOtherApps:YES];
+        [fNSWindow makeKeyAndOrderFront:NSApp];
 
-    CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
-    CVDisplayLinkSetOutputCallback(fDisplayLink, &displayLinkCallback, this);
-    ref(); // keep this alive during CVDisplayLink callback
+        CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);
+        CVDisplayLinkSetOutputCallback(fDisplayLink, &displayLinkCallback, this);
+        ref(); // keep this alive during CVDisplayLink callback
+    } else if (!value && fDisplayLink != 0) {
+        [fNSWindow orderOut:fNSWindow];
+        CVDisplayLinkStop(fDisplayLink);
+        CVDisplayLinkRelease(fDisplayLink);
+        fDisplayLink = 0;
+        unref();
+    }
 }
 
 void jwm::WindowMac::reconfigure() {
@@ -131,10 +139,16 @@ void jwm::WindowMac::requestFrame() {
         CVDisplayLinkStart(fDisplayLink);
 }
 
+bool jwm::WindowMac::isMaximized() {
+    return NSEqualRects(fNSWindow.screen.visibleFrame, fNSWindow.frame);
+}
+
 void jwm::WindowMac::close() {
-    CVDisplayLinkStop(fDisplayLink);
-    CVDisplayLinkRelease(fDisplayLink);
-    unref(); // from show()
+    if (fDisplayLink != 0) {
+        CVDisplayLinkStop(fDisplayLink);
+        CVDisplayLinkRelease(fDisplayLink);
+        unref(); // from setVisible()
+    }
 }
 
 // JNI
@@ -148,10 +162,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nShow
-  (JNIEnv* env, jobject obj) {
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetVisible
+  (JNIEnv* env, jobject obj, jboolean value) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    instance->show();
+    instance->setVisible(value);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWindowRect
@@ -274,6 +288,40 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRequestFra
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMaximize
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    if (!instance->isMaximized()) {
+        instance->fRestoreFrame = nsWindow.frame;
+        [nsWindow setFrame:nsWindow.screen.visibleFrame display:YES];
+        instance->dispatch(jwm::classes::EventWindowMaximize::kInstance);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMinimize
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    if (!instance->fNSWindow.miniaturized) {
+        [instance->fNSWindow miniaturize:nil];
+        instance->dispatch(jwm::classes::EventWindowMinimize::kInstance);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRestore
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    if (nsWindow.miniaturized) {
+        [nsWindow deminiaturize:nil];
+        instance->dispatch(jwm::classes::EventWindowRestore::kInstance);
+    } else if (instance->isMaximized() && !NSEqualRects(NSZeroRect, instance->fRestoreFrame)) {
+        [nsWindow setFrame:instance->fRestoreFrame display:YES];
+        instance->fRestoreFrame = NSZeroRect;
+        instance->dispatch(jwm::classes::EventWindowRestore::kInstance);
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nClose

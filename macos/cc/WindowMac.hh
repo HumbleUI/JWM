@@ -13,14 +13,16 @@ namespace jwm {
         WindowMac(JNIEnv* env): Window(env) {}
         ~WindowMac() override;
         bool init();
-        void show();
+        void setVisible(bool value);
         void reconfigure();
         float getScale() const;
         void requestFrame();
+        bool isMaximized();
         void close();
 
         NSWindow* fNSWindow = nullptr;
         NSPoint fLastPosition = {0, 0};
+        NSRect fRestoreFrame = NSZeroRect;
         CVDisplayLinkRef fDisplayLink = 0;
         volatile bool fFrameRequested = false;
         volatile bool fFrameScheduled = false;

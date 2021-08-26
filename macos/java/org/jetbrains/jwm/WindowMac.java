@@ -19,12 +19,6 @@ public class WindowMac extends Window {
     }
 
     @Override
-    public void show() {
-        assert _onUIThread();
-        _nShow();
-    }
-
-    @Override
     public void unmarkText() {
         assert _onUIThread();
         // TODO: impl me!
@@ -79,19 +73,26 @@ public class WindowMac extends Window {
         return this;
     }
 
+    
+    @ApiStatus.Internal @Override
+    public native void _nSetMouseCursor(int cursorIdx);
+
     @Override
-    public Window setOpacity(float opacity) {
-        // TODO: impl me!
+    public Window setVisible(boolean value) {
+        assert _onUIThread();
+        _nSetVisible(value);
         return this;
     }
 
     @Override
-    public float getOpacity() {
+    public Window setOpacity(float opacity) {
         throw new UnsupportedOperationException("impl me!");
     }
-    
-    @ApiStatus.Internal @Override
-    public native void _nSetMouseCursor(int cursorIdx);
+
+    @Override
+    public float getOpacity() {
+        return 1f;
+    }
 
     @Override
     public Screen getScreen() {
@@ -106,17 +107,20 @@ public class WindowMac extends Window {
     }
 
     public Window maximize() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nMaximize();
         return this;
     }
 
     public Window minimize() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nMinimize();
         return this;
     }
 
     public Window restore() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nRestore();
         return this;
     }
 
@@ -128,7 +132,6 @@ public class WindowMac extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nShow();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
     @ApiStatus.Internal public native boolean _nSetWindowPosition(int left, int top);
@@ -136,7 +139,11 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String path);
+    @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
+    @ApiStatus.Internal public native void _nMinimize();
+    @ApiStatus.Internal public native void _nMaximize();
+    @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nClose();
 }

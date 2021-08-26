@@ -55,7 +55,7 @@ namespace jwm {
         void setOpacity(float opacity);
         float getOpacity();
         void setMouseCursor(MouseCursor cursor);
-        void show();
+        void setVisible(bool value);
         void maximize();
         void minimize();
         void restore();

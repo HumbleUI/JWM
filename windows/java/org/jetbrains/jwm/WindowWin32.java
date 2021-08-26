@@ -27,12 +27,6 @@ public class WindowWin32 extends Window {
         _nUnmarkText();
     }
 
-    @Override
-    public void show() {
-        assert _onUIThread();
-        _nShow();
-    }
-
     @Override 
     public UIRect getWindowRect() {
         assert _onUIThread();
@@ -79,6 +73,12 @@ public class WindowWin32 extends Window {
         assert _onUIThread();
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
+    }
+
+    @Override
+    public Window setVisible(boolean value) {
+        assert _onUIThread();
+        _nShow();
     }
 
     @Override
@@ -134,7 +134,6 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetTextInputEnabled(boolean enabled);
     @ApiStatus.Internal public native void _nUnmarkText();
-    @ApiStatus.Internal public native void _nShow();
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
@@ -142,6 +141,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
+    @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native void _nSetOpacity(float opacity);
     @ApiStatus.Internal public native float _nGetOpacity();
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);

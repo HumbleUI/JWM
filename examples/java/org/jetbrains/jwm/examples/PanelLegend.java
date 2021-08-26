@@ -1,50 +1,62 @@
 package org.jetbrains.jwm.examples;
 
+import java.util.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
 public class PanelLegend extends Panel {
+    public Map<String, String> shortcuts = new TreeMap<>();
+
     public PanelLegend(Window window) {
         super(window);
+        shortcuts.put("L", "Toggle Layer");
+        shortcuts.put("P", "Pause");
+        shortcuts.put("N", "New Window");
+        shortcuts.put("W", "Close Window");
+        shortcuts.put("F", "Clipboard formats");
+        shortcuts.put("1", "Minimize");
+        shortcuts.put("2", "Maximize");
+        shortcuts.put("3", "Restore");
+        shortcuts.put("4", "Hide");
+        shortcuts.put("5", "Set position");
+        shortcuts.put("6", "Set size");
     }
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
-        var modifier = Platform.CURRENT == Platform.MACOS ? "⌘ " : "Ctrl ";
+        var modifier = Platform.CURRENT == Platform.MACOS ? "⌘ " : "^ ";
         var padding = (int) 8 * scale;
+
         try (var bg = new Paint().setColor(0x40000000);
-             var fg = new Paint().setColor(0xFFFFFFFF);
-             var pause = TextLine.make(modifier + "P", Example.FONT12);
-             var open = TextLine.make(modifier + "N", Example.FONT12);
-             var close = TextLine.make(modifier + "W", Example.FONT12);
-             var formats = TextLine.make(modifier + "F", Example.FONT12);)
+             var fg = new Paint().setColor(0xFFFFFFFF);)
         {
             var metrics = Example.FONT12.getMetrics();
             var capHeight = metrics.getCapHeight();
-            var col2 = close.getWidth() + 3 * padding;
+            float bgWidth = 0;
+            try (var line = TextLine.make(modifier + "W", Example.FONT12);) {
+                bgWidth = line.getWidth() + 2 * padding;
+            }
+            float bgHeight = capHeight + padding * 2;
+            float x = Example.PADDING;
+            float y = Example.PADDING;
 
-            canvas.save();
-            canvas.translate(Example.PADDING, Example.PADDING);
-            
-            canvas.drawRRect(RRect.makeXYWH(0, 0, padding * 2 + pause.getWidth(), padding * 2 + capHeight, 4 * scale), bg);
-            canvas.drawTextLine(pause, padding, padding + capHeight, fg);
-            canvas.drawString("Pause", col2, padding + capHeight, Example.FONT12, fg);
-            canvas.translate(0, padding * 3 + capHeight);
+            for (var key: shortcuts.keySet()) {
+                try (var line = TextLine.make(modifier + key, Example.FONT12);) {
+                    canvas.drawRRect(RRect.makeXYWH(x, y, bgWidth, bgHeight, 4 * scale), bg);
+                    canvas.drawTextLine(line, x + (bgWidth - line.getWidth()) / 2, y + padding + capHeight, fg);
+                }
 
-            canvas.drawRRect(RRect.makeXYWH(0, 0, padding * 2 + open.getWidth(), padding * 2 + capHeight, 4 * scale), bg);
-            canvas.drawTextLine(open, padding, padding + capHeight, fg);
-            canvas.drawString("New Window", col2, padding + capHeight, Example.FONT12, fg);
-            canvas.translate(0, padding * 3 + capHeight);
-
-            canvas.drawRRect(RRect.makeXYWH(0, 0, padding * 2 + close.getWidth(), padding * 2 + capHeight, 4 * scale), bg);
-            canvas.drawTextLine(close, padding, padding + capHeight, fg);
-            canvas.drawString("Close Window", col2, padding + capHeight, Example.FONT12, fg);
-            canvas.translate(0, padding * 3 + capHeight);
-
-            canvas.drawRRect(RRect.makeXYWH(0, 0, padding * 2 + formats.getWidth(), padding * 2 + capHeight, 4 * scale), bg);
-            canvas.drawTextLine(formats, padding, padding + capHeight, fg);
-            canvas.drawString("Clipboard formats", col2, padding + capHeight, Example.FONT12, fg);
-            canvas.translate(0, padding * 3 + capHeight);
-       }
+                var value = shortcuts.get(key);
+                try (var line = TextLine.make(value, Example.FONT12);) {
+                    canvas.drawTextLine(line, x + bgWidth + padding, y + padding + capHeight, fg);
+                }
+                    
+                y += padding * 2 + capHeight + 1 * scale;
+                if (y + padding * 3 + capHeight > height) {
+                    x += width / 2 - Example.PADDING / 2;
+                    y = Example.PADDING;
+                }
+            }
+        }
     }
 }

@@ -58,18 +58,21 @@ Alpha. Expect API breakages.
 | getScreen           | ✅   | ✅   | ✅   |
 | requestFrame        | ✅   | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
-| minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |  ✅   |
-| maximize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |  ✅   |
-| restore             | [#96](https://github.com/jetbrains/jwm/issues/96)  | [#96](https://github.com/jetbrains/jwm/issues/96)  |  ✅   |
+| minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
+| maximize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
+| restore             | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
 | setTitle            | ✅   | ✅   | ✅   |
-| setIcon             | ✅   | ➖   | [#95](https://github.com/jetbrains/jwm/issues/95)  |
-| Set system cursor   | ✅   | [#99](https://github.com/jetbrains/jwm/issues/99)  | [#99](https://github.com/jetbrains/jwm/issues/99)  |
+| setIcon             | ✅   | ✅   | [#95](https://github.com/jetbrains/jwm/issues/95)  |
+| Set system cursor   | ✅   | ✅   | [#99](https://github.com/jetbrains/jwm/issues/99)  |
 | Remove decorations  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
-| Transparency        | ❌   | ❌   | ❌   |
+| Transparency        | ✅   | ❌   | ❌   |
 | Toggle Fullscreen   | ❌   | ❌   | ❌   |
+| setMinimumSize      | ❌   | ❌   | ❌   |
+| setMaximumSize      | ❌   | ❌   | ❌   |
+| setResizable        | ❌   | ❌   | ❌   |
 
 ### Events
 

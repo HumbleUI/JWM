@@ -8,7 +8,7 @@ import java.util.stream.*;
 import org.jetbrains.jwm.*;
 import org.jetbrains.skija.*;
 
-public class PanelFrames extends Panel {
+public class PanelRendering extends Panel {
     public boolean vsyncColor = false;
     public Map<String, Integer> counters = new ConcurrentHashMap<>();
 
@@ -16,12 +16,79 @@ public class PanelFrames extends Panel {
     public double[] times = new double[180];
     public int timesIdx = 0;
 
-    public PanelFrames(Window window) {
+    public String[] layers;
+    public int layerIdx = 0;
+    public SkijaLayer layer;
+
+    public PanelRendering(Window window) {
         super(window);
+
+        if (Platform.CURRENT == Platform.MACOS)
+            layers = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };
+        else if (Platform.CURRENT == Platform.WINDOWS)
+            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
+        else
+            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
+        
+        changeLayer();
     }
 
     public void bumpCounter(String reason) {
         counters.merge(reason, 1, Integer::sum);
+    }
+
+    public void changeLayer() {
+        if (layer != null) {
+            layer.close();
+            layer = null;
+        }
+
+        int attemptsCount = layers.length;
+
+        while (layer == null && attemptsCount > 0) {
+            String className = "org.jetbrains.jwm.examples." + layers[layerIdx];
+
+            try {
+                layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+                layer.attach(window);
+            } catch (Exception e) {
+                System.err.println("Failed to create class " + className);
+                e.printStackTrace();
+                layer = null;
+
+                nextLayerIdx();
+            }
+
+            attemptsCount -= 1;
+        }
+
+        if (layer == null)
+            throw new RuntimeException("No available layer to create");
+
+        layer.reconfigure();
+        layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
+    }
+
+    @Override
+    public void accept(Event e) {
+        if (e instanceof EventWindowScreenChange) {
+            layer.reconfigure();
+            accept(new EventWindowResize(window.getWindowRect().getWidth(),
+                                         window.getWindowRect().getHeight(),
+                                         window.getContentRect().getWidth(),
+                                         window.getContentRect().getHeight()));
+        } else if (e instanceof EventWindowResize ee) {
+            layer.resize(ee.getContentWidth(), ee.getContentHeight());
+        } else if (e instanceof EventKey ee && ee.isPressed()) {
+            Key key = ee.getKey();
+            boolean modifier = ee.isModifierDown(Example.MODIFIER);
+            if (Key.L == key && modifier) {
+                nextLayerIdx();
+                changeLayer();
+            }
+        } else if (e instanceof EventWindowCloseRequest) {
+            layer.close();
+        }
     }
 
     @Override
@@ -51,10 +118,22 @@ public class PanelFrames extends Panel {
             canvas.drawRect(Rect.makeXYWH(0, (32 - 8) * scale, times.length * scale, 1 * scale), paint);
             canvas.restore();
 
-            // Paint counters
             canvas.save();
             paint.setColor(0xFFFFFFFF);
-            canvas.translate(Example.PADDING, Example.PADDING - metrics.getAscent());
+
+            // Layers
+            try (var shevron = TextLine.make("> ", Example.FONT12);) {
+                
+                canvas.translate(Example.PADDING, Example.PADDING - metrics.getAscent());
+                for (int i = 0; i < layers.length; ++i) {
+                    if (i == layerIdx)
+                        canvas.drawTextLine(shevron, 0, 0, paint);
+                    canvas.drawString(layers[i], shevron.getWidth(), 0, Example.FONT12, paint);
+                    canvas.translate(0, metrics.getHeight());
+                }
+            }
+
+            // Paint counters
             for (var entry: counters.entrySet()) {
                 canvas.drawString(entry.getKey() + ": " + entry.getValue(), 0, 0, Example.FONT12, paint);
                 canvas.translate(0, metrics.getHeight());
@@ -83,7 +162,6 @@ public class PanelFrames extends Panel {
             }
             String fps = String.format("%.01f", (frames / time * 1000));
             canvas.drawString("FPS: " + fps, 0, 0, Example.FONT12, paint);
-            canvas.restore();
 
             // VSync
             try (var line = TextLine.make("VSYNC", Example.FONT24); ) {
@@ -99,6 +177,13 @@ public class PanelFrames extends Panel {
                 canvas.drawTextLine(line, width - line.getWidth() - 2 * Example.PADDING, capHeight + 2 * Example.PADDING, paint);
                 vsyncColor = !vsyncColor;
             }
+
+            canvas.restore();
         }
+    }
+
+    private int nextLayerIdx() {
+        layerIdx = (layerIdx + 1) % layers.length;
+        return layerIdx;
     }
 }

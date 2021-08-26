@@ -12,7 +12,7 @@ import java.io.File;
 
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
-    public static int ROWS = 3, COLS = 3;
+    public static int COLS = 4, ROWS = 3;
     public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
     public static Font FONT12 = new Font(FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, "↑".codePointAt(0)), 12);
     public static Font FONT24 = new Font(FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL), 24);
@@ -20,13 +20,13 @@ public class Example implements Consumer<Event> {
 
     public float lastScale = 1f;
     public PanelTextInput panelTextInput;
-    public PanelMouse panelMouse;
     public PanelScreens panelScreens;
+    public PanelLegend panelLegend;
+    public PanelMouse panelMouse;
     public PanelAnimation panelAnimation;
     public PanelMouseCursors panelMouseCursors;
-    public PanelLayers panelLayers;
-    public PanelFrames panelFrames;
-    public PanelLegend panelLegend;
+    public PanelRendering panelRendering;
+    public PanelEvents panelEvents;
 
     public Window window;
 
@@ -38,13 +38,13 @@ public class Example implements Consumer<Event> {
         window.setEventListener(this);
 
         panelTextInput = new PanelTextInput(window);
-        panelMouse = new PanelMouse(window);
         panelScreens = new PanelScreens(window);
+        panelLegend = new PanelLegend(window);
+        panelMouse = new PanelMouse(window);
         panelAnimation = new PanelAnimation(window);
         panelMouseCursors = new PanelMouseCursors(window);
-        panelLayers = new PanelLayers(window);
-        panelFrames = new PanelFrames(window);
-        panelLegend = new PanelLegend(window);
+        panelRendering = new PanelRendering(window);
+        panelEvents = new PanelEvents(window);
 
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
@@ -62,11 +62,14 @@ public class Example implements Consumer<Event> {
         window.setTitle("JWM Window #" + count);
 
         switch (Platform.CURRENT) {
-            case WINDOWS -> window.setIcon(new File("examples/resources/windows.ico"));
-            case MACOS -> window.setIcon(new File("examples/resources/macos.icns"));
+            case WINDOWS -> {
+                window.setIcon(new File("examples/resources/windows.ico"));
+                window.setOpacity(0.8f);
+            }
+            case MACOS -> {
+                window.setIcon(new File("examples/resources/macos.icns"));
+            }
         }
-        window.setOpacity(0.8f);
-        window.setMouseCursor(MouseCursor.ARROW);
         window.setVisible(true);
         window.requestFrame();
     }
@@ -94,24 +97,24 @@ public class Example implements Consumer<Event> {
             FONT48.setSize(48 * scale);
         }
 
-        var canvas = panelLayers.layer.beforePaint();
+        var canvas = panelRendering.layer.beforePaint();
         canvas.clear(0xFF264653);
         int canvasCount = canvas.save();
 
         // First row
-        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth * 2 + PADDING, panelHeight, scale);
-        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        
+        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight * 3 + PADDING * 2, scale);
+
         // Second row
         panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelRendering.bumpCounter(reason);
+        panelRendering.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
-        panelLayers.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
-        panelFrames.bumpCounter(reason);
-        panelFrames.paint       (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
-        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
+        panelEvents.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth * 3 + PADDING * 2, panelHeight, scale);
 
         // Colored bars
         try (var paint = new Paint()) {
@@ -145,16 +148,17 @@ public class Example implements Consumer<Event> {
         }
         canvas.restoreToCount(canvasCount);
 
-        panelLayers.layer.afterPaint();
+        panelRendering.layer.afterPaint();
     }
 
     @Override
     public void accept(Event e) {
         panelTextInput.accept(e);
-        panelMouse.accept(e);
         panelScreens.accept(e);
+        panelMouse.accept(e);
         panelMouseCursors.accept(e);
-        panelLayers.accept(e);
+        panelRendering.accept(e);
+        panelEvents.accept(e);
 
         float scale = window.getScreen().getScale();
         if (e instanceof EventKey eventKey) {
