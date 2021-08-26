@@ -94,7 +94,7 @@ public class WindowX11 extends Window {
 
     @Override
     public float getOpacity(){
-        throw UnsupportedOperationException("impl me!");
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override

@@ -87,7 +87,7 @@ public class WindowMac extends Window {
 
     @Override
     public float getOpacity() {
-        throw UnsupportedOperationException("impl me!");
+        throw new UnsupportedOperationException("impl me!");
     }
     
     @ApiStatus.Internal @Override
