@@ -15,9 +15,10 @@ public class WindowX11 extends Window {
     }
 
     @Override
-    public void show() {
+    public Window setVisible(boolean isVisible) {
         assert _onUIThread();
-        _nShow();
+        _nSetVisible(isVisible);
+        return this;
     }
 
     @Override
@@ -135,7 +136,7 @@ public class WindowX11 extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nShow();
+    @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native UIRect _nGetWindowRect();
     @ApiStatus.Internal public native UIRect _nGetContentRect();
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);

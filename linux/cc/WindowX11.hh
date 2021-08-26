@@ -15,7 +15,7 @@ namespace jwm {
         ~WindowX11() override;
 
         void getPosition(int& posX, int& posY);
-        void show();
+        void setVisible(bool isVisible);
         void close();
         bool init();
         int getLeft();

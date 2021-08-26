@@ -67,7 +67,7 @@ public class Example implements Consumer<Event> {
         }
         window.setOpacity(0.8f);
         window.setMouseCursor(MouseCursor.ARROW);
-        window.show();
+        window.setVisible(true);
         window.requestFrame();
     }
 
@@ -167,6 +167,8 @@ public class Example implements Consumer<Event> {
                     }
                     case N ->
                         new Example();
+                    case H ->
+                        window.setVisible(false);
                     case W ->
                         accept(EventWindowCloseRequest.INSTANCE);
                     case UP ->

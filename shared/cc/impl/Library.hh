@@ -124,6 +124,14 @@ namespace jwm {
             extern jobject kInstance;
         }
 
+        namespace EventWindowMaximize {
+            extern jobject kInstance;
+        }
+
+        namespace EventWindowMinimize {
+            extern jobject kInstance;
+        }
+
         namespace EventWindowMove {
             extern jclass kCls;
             extern jmethodID kCtor;
@@ -134,6 +142,10 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jint windowWidth, jint windowHeight, jint contentWidth, jint contentHeight);
+        }
+
+        namespace EventWindowRestore {
+            extern jobject kInstance;
         }
         
         namespace Screen {
