@@ -190,7 +190,7 @@ Prerequisites:
 
 - Shared: Git, CMake, Ninja, C++ compiler, JDK 11+, $JAVA_HOME, Python 3
 - Windows 10: Microsoft Visual C++ (MSVC), x64 Native Tools Command Prompt for VS
-- Ubuntu 20.04: `libxcomposite-dev libxrandr-dev libgl1-mesa-dev libxi-dev`
+- Ubuntu 20.04: `libxcomposite-dev libxrandr-dev libgl1-mesa-dev libxi-dev libxcursor-dev`
 
 Run:
 

@@ -7,6 +7,8 @@
 #include "AppX11.hh"
 #include <X11/extensions/sync.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/cursorfont.h>
 #include <X11/Xatom.h>
 #include "KeyX11.hh"
 #include "MouseButtonX11.hh"
@@ -26,6 +28,7 @@ int WindowManagerX11::_xerrorhandler(Display* dsp, XErrorEvent* error) {
 WindowManagerX11::WindowManagerX11():
     display(XOpenDisplay(nullptr)),
     _atoms(display) {
+
     XSetErrorHandler(_xerrorhandler);
     screen = DefaultScreenOfDisplay(display);
 
@@ -137,6 +140,33 @@ WindowManagerX11::WindowManagerX11():
                 _xi2IterateDevices();
             }
         }
+    }
+
+    // load system cursors
+    {
+        const char* themeName = XcursorGetTheme(display);
+        int defaultSize = themeName != nullptr ? XcursorGetDefaultSize(display) : 0;
+        auto loadCursor = [&](const char* name, unsigned alternativeId) {
+            if (themeName) {
+                auto image = XcursorLibraryLoadImage(name, themeName, defaultSize);
+                if (image) {
+                    auto cursor = XcursorImageLoadCursor(display, image);
+                    XcursorImageDestroy(image);
+                    return cursor;
+                } 
+            }
+
+            // fallback to non-theme cursor
+            return XCreateFontCursor(display, alternativeId);
+        };
+        
+        _cursors[static_cast<int>(jwm::MouseCursor::ARROW         )] = loadCursor("default"     , XC_left_ptr );
+        _cursors[static_cast<int>(jwm::MouseCursor::CROSSHAIR     )] = loadCursor("crosshair"   , XC_left_ptr );
+        _cursors[static_cast<int>(jwm::MouseCursor::HELP          )] = loadCursor("help"        , XC_left_ptr );
+        _cursors[static_cast<int>(jwm::MouseCursor::POINTING_HAND )] = loadCursor("pointer"     , XC_hand2    );
+        _cursors[static_cast<int>(jwm::MouseCursor::IBEAM         )] = loadCursor("text"        , XC_xterm    );
+        _cursors[static_cast<int>(jwm::MouseCursor::NOT_ALLOWED   )] = loadCursor("not-allowed" , XC_left_ptr );
+        _cursors[static_cast<int>(jwm::MouseCursor::WAIT          )] = loadCursor("watch"       , XC_left_ptr );
     }
 }
 

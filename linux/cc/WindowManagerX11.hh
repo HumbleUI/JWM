@@ -11,6 +11,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include "MouseCursor.hh"
 
 namespace jwm {
     class WindowX11;
@@ -71,6 +72,8 @@ namespace jwm {
          * Input Manager
          */
         XIM _im;
+
+        Cursor _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
 
         std::mutex _taskQueueLock;
         std::condition_variable _taskQueueNotify;

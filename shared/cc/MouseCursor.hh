@@ -11,7 +11,10 @@ namespace jwm {
         IBEAM         = 4,
         NOT_ALLOWED   = 5,
         WAIT          = 6,
-        WIN_UPARROW   = 7
+        WIN_UPARROW   = 7,
+
+        // total enum count; keep this at the end
+        COUNT,
     };
 
     static const char* mouseCursorToStr(MouseCursor cursor) {

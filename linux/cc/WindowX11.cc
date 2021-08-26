@@ -277,6 +277,14 @@ const ScreenInfo& WindowX11::getScreen() {
     return *jwm::app.getScreens().begin();
 }
 
+void jwm::WindowX11::setCursor(jwm::MouseCursor cursor) {
+    if (auto x11Cursor = _windowManager._cursors[static_cast<int>(cursor)]) {
+        XDefineCursor(_windowManager.display, _x11Window, x11Cursor);
+    } else {
+        XUndefineCursor(_windowManager.display, _x11Window);
+    }
+}
+
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
@@ -382,4 +390,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetTitle
     env->ReleaseByteArrayElements(title, bytes, 0);
 
     instance->setTitle(titleS);
+}
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetMouseCursor
+        (JNIEnv* env, jobject obj, jint idx) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+
+    instance->setCursor(static_cast<jwm::MouseCursor>(idx));
 }

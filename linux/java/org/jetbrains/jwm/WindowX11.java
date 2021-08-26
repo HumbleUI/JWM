@@ -76,11 +76,6 @@ public class WindowX11 extends Window {
         return this;
     }
 
-    @ApiStatus.Internal @Override
-    public void _nSetMouseCursor(int cursorIdx) {
-        // TODO #99
-    }
-
     @Override
     public Window setIcon(File icon) {
         // TODO #95
@@ -136,6 +131,7 @@ public class WindowX11 extends Window {
     @ApiStatus.Internal public native UIRect _nGetContentRect();
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
+    @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

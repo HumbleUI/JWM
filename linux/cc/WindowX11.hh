@@ -43,7 +43,7 @@ namespace jwm {
         XIC getIC() const {
             return _ic;
         }
-
+        void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayer* layer) {
             _layer = layer;
         }

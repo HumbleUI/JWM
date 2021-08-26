@@ -37,5 +37,5 @@ target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc ${
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
 
-target_link_libraries(jwm PRIVATE X11::X11 X11::Xrandr X11::Xi)
+target_link_libraries(jwm PRIVATE X11::X11 X11::Xrandr X11::Xcursor X11::Xi)
 target_link_libraries(jwm PRIVATE OpenGL::GL)
