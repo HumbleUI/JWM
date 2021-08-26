@@ -93,6 +93,11 @@ public class WindowX11 extends Window {
     }
 
     @Override
+    public float getOpacity(){
+        throw UnsupportedOperationException("impl me!");
+    }
+
+    @Override
     public Screen getScreen() {
         assert _onUIThread();
         return _nGetScreen();

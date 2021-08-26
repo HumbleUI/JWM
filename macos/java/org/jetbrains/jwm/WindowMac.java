@@ -84,6 +84,11 @@ public class WindowMac extends Window {
         // TODO: impl me!
         return this;
     }
+
+    @Override
+    public float getOpacity() {
+        throw UnsupportedOperationException("impl me!");
+    }
     
     @ApiStatus.Internal @Override
     public native void _nSetMouseCursor(int cursorIdx);

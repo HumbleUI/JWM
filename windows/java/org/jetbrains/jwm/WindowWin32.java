@@ -88,8 +88,11 @@ public class WindowWin32 extends Window {
         return this;
     }
     
-    @ApiStatus.Internal @Override
-    public native void _nSetMouseCursor(int cursorIdx);
+    @Override
+    public float getOpacity() {
+        assert _onUIThread();
+        return _nGetOpacity();
+    }
 
     @Override
     public Screen getScreen() {
@@ -137,6 +140,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
     @ApiStatus.Internal public native void _nSetOpacity(float opacity);
+    @ApiStatus.Internal public native float _nGetOpacity();
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

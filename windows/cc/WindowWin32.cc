@@ -94,6 +94,20 @@ void jwm::WindowWin32::setOpacity(float opacity) {
     SetLayeredWindowAttributes(_hWnd, RGB(0, 0, 0), adjusted, LWA_ALPHA);
 }
 
+float jwm::WindowWin32::getOpacity() {
+    BYTE alpha;
+    DWORD flags = LWA_ALPHA;
+    BOOL hasOpacity = GetLayeredWindowAttributes(_hWnd, nullptr, &alpha, &flags);
+    // GetLayeredWindowAttributes can be invoked iff the application 
+    // has previously called SetLayeredWindowAttributes on the window. 
+    // Otherwise it returns false as failure.
+    if (!hasOpacity)
+    {
+        return 1.0;
+    }
+    return static_cast<float>(alpha / 255.0);
+}
+
 void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
     JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
 
@@ -896,6 +910,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpaci
         (JNIEnv* env, jobject obj,float opacity) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setOpacity(opacity);
+}
+extern "C" JNIEXPORT float JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetOpacity
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getOpacity();
 }
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
