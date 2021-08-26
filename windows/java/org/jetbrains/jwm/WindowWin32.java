@@ -88,9 +88,6 @@ public class WindowWin32 extends Window {
         return this;
     }
     
-    @ApiStatus.Internal @Override
-    public native void _nSetMouseCursor(int cursorIdx);
-
     @Override
     public Screen getScreen() {
         assert _onUIThread();
@@ -104,17 +101,20 @@ public class WindowWin32 extends Window {
     }
 
     public Window maximize() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nMaximize();
         return this;
     }
 
     public Window minimize() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nMinimize();
         return this;
     }
 
     public Window restore() {
-        // TODO https://github.com/JetBrains/JWM/issues/96
+        assert _onUIThread();
+        _nRestore();
         return this;
     }
 
@@ -140,5 +140,8 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
+    @ApiStatus.Internal public native void _nMaximize();
+    @ApiStatus.Internal public native void _nMinimize();
+    @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nClose();
 }

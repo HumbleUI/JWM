@@ -357,6 +357,30 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowMaximize {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowMaximize");
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowMaximize;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
+        namespace EventWindowMinimize {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowMinimize");
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowMinimize;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
         namespace EventWindowMove {
             jclass kCls;
             jmethodID kCtor;
@@ -390,6 +414,18 @@ namespace jwm {
             jobject make(JNIEnv* env, jint windowWidth, jint windowHeight, jint contentWidth, jint contentHeight) {
                 jobject res = env->NewObject(kCls, kCtor, windowWidth, windowHeight, contentWidth, contentHeight);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventWindowRestore {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                jclass cls = env->FindClass("org/jetbrains/jwm/EventWindowRestore");
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lorg/jetbrains/jwm/EventWindowRestore;");
+                jobject instance = env->GetStaticObjectField(cls, field);
+                kInstance = env->NewGlobalRef(instance);
             }
         }
     
@@ -498,8 +534,11 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_impl_Library__1nAfterLo
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
     jwm::classes::EventWindowCloseRequest::onLoad(env);
+    jwm::classes::EventWindowMaximize::onLoad(env);
+    jwm::classes::EventWindowMinimize::onLoad(env);
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventWindowResize::onLoad(env);
+    jwm::classes::EventWindowRestore::onLoad(env);
     jwm::classes::Screen::onLoad(env);
     jwm::classes::TextInputClient::onLoad(env);
     jwm::classes::UIRect::onLoad(env);

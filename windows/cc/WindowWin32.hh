@@ -55,6 +55,9 @@ namespace jwm {
         void setOpacity(float opacity);
         void setMouseCursor(MouseCursor cursor);
         void show();
+        void maximize();
+        void minimize();
+        void restore();
         void requestSwap();
         void requestFrame();
         UIRect getWindowRect() const;
@@ -107,6 +110,8 @@ namespace jwm {
 
         HWND _hWnd = nullptr;
         HCURSOR _hMouseCursor = nullptr;
+        bool _minimized = false;
+        bool _maximized = false;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
     };

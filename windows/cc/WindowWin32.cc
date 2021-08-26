@@ -138,7 +138,23 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
 }
 
 void jwm::WindowWin32::show() {
+    JWM_VERBOSE("Show window 0x" << this);
     ShowWindow(_hWnd, SW_SHOWNA);
+}
+
+void jwm::WindowWin32::maximize() {
+    JWM_VERBOSE("Maximize window 0x" << this);
+    ShowWindow(_hWnd, SW_MAXIMIZE);
+}
+
+void jwm::WindowWin32::minimize() {
+    JWM_VERBOSE("Minimize window 0x" << this);
+    ShowWindow(_hWnd, SW_MAXIMIZE);
+}
+
+void jwm::WindowWin32::restore() {
+    JWM_VERBOSE("Restore window 0x" << this);
+    ShowWindow(_hWnd, SW_RESTORE);
 }
 
 void jwm::WindowWin32::requestSwap() {
@@ -253,9 +269,23 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int contentWidth = LOWORD(lParam);
             int contentHeight = HIWORD(lParam);
 
-            JWM_VERBOSE("Size event "
+            bool minimized = wParam == SIZE_MINIMIZED;
+            bool maximized = wParam == SIZE_MAXIMIZED;
+            bool restored = wParam == SIZE_RESTORED && (_maximized || _minimized);
+
+            _maximized = maximized;
+            _minimized = minimized;
+
+            JWM_VERBOSE("Size event (min="<< minimized << ", max="<< maximized << ", res=" << restored << ") "
                         << "window w=" << windowWidth << " h=" << windowHeight << " "
                         << "content w=" << contentWidth << " h=" << contentHeight);
+
+            if (minimized)
+                dispatch(classes::EventWindowMinimize::kInstance);
+            if (maximized)
+                dispatch(classes::EventWindowMaximize::kInstance);
+            if (restored)
+                dispatch(classes::EventWindowRestore::kInstance);
 
             JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, windowWidth, windowHeight,
                                                                                       contentWidth, contentHeight));
@@ -914,6 +944,24 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRequestF
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMaximize
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->maximize();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMinimize
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->minimize();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRestore
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->restore();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
