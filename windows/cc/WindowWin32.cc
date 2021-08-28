@@ -434,6 +434,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             auto& table = _windowManager.getKeyTable();
             auto& ignoreList = _windowManager.getKeyIgnoreList();
 
+            // Ignore system keys (unknown on java side)
             if (ignoreList.find(keycode) != ignoreList.end())
                 break;
 
@@ -453,6 +454,13 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else {
                 jsize len = 0;
                 jchar text[2];
+                int modifiers = _getModifiers();
+
+                if (modifiers & static_cast<int>(KeyModifier::CONTROL)) {
+                    // If ctrl is holden, do not send text input
+                    _highSurrogate = 0;
+                    break;
+                }
 
                 if (LOW_SURROGATE_L <= wParam && wParam <= LOW_SURROGATE_U) {
                     if (_highSurrogate) {
@@ -464,10 +472,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     break;
                 }
 
+                _highSurrogate = 0;
+
                 text[len] = static_cast<wchar_t>(wParam);
                 len += 1;
-
-                _highSurrogate = 0;
 
                 JNILocal<jstring> jtext(env, env->NewString(text, len));
                 JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
