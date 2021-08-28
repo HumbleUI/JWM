@@ -60,7 +60,6 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
         window.setTitle("JWM Window #" + count);
-        System.out.println(window.getCurrentTheme());
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
