@@ -284,8 +284,8 @@ void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
 }
 
 void jwm::WindowManagerWin32::_dispatchFrameEvents() {
-    // NOTE: now request is process.
-    // If user request new frame in this method,
+    // NOTE: now request is processed.
+    // If user requests new frame in this method,
     // we will catch it and will handle in the new processing iteration
     _requestFrame = false;
 

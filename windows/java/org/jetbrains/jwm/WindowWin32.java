@@ -76,10 +76,10 @@ public class WindowWin32 extends Window {
     }
 
     @Override
-    public Window setVisible(boolean value) {
-        assert _onUIThread();
-        _nSetVisible(value);
-        return this;
+    public Window setVisible(boolean isVisible) {
+       assert _onUIThread();
+       _nSetVisible(isVisible);
+       return this;
     }
 
     @Override
@@ -142,7 +142,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
-    @ApiStatus.Internal public native void _nSetVisible(boolean value);
+    @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetOpacity(float opacity);
     @ApiStatus.Internal public native float _nGetOpacity();
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);

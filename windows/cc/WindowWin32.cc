@@ -152,12 +152,8 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
 }
 
 void jwm::WindowWin32::setVisible(bool value) {
-    JWM_VERBOSE("Set visible = " << value << " for window 0x" << this);
-    if (value) {
-        ShowWindow(_hWnd, SW_SHOWNA);
-    } else {
-        // TODO #96
-    }
+    JWM_VERBOSE("Set visible=" << value << " for window 0x" << this);
+    ShowWindow(_hWnd, value? SW_SHOWNA: SW_HIDE);
 }
 
 void jwm::WindowWin32::maximize() {
@@ -167,7 +163,7 @@ void jwm::WindowWin32::maximize() {
 
 void jwm::WindowWin32::minimize() {
     JWM_VERBOSE("Minimize window 0x" << this);
-    ShowWindow(_hWnd, SW_MAXIMIZE);
+    ShowWindow(_hWnd, SW_MINIMIZE);
 }
 
 void jwm::WindowWin32::restore() {
@@ -885,12 +881,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nUnmarkTe
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
-        (JNIEnv* env, jobject obj, jboolean value) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->setVisible(value);
-}
-
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
@@ -940,6 +930,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
+        (JNIEnv* env, jobject obj, jboolean isVisible) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setVisible(isVisible);
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpacity
         (JNIEnv* env, jobject obj,float opacity) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
