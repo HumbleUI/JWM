@@ -4,6 +4,7 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <Key.hh>
+#include <KeyLocation.hh>
 #include <KeyModifier.hh>
 #include <MouseButton.hh>
 #include <Log.hh>
@@ -428,11 +429,17 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_KEYUP:
         case WM_SYSKEYUP:
         case WM_IME_KEYUP: {
-            bool isPressed = !(HIWORD(lParam) & KF_UP);
+            WORD flags = HIWORD(lParam);
+            bool isPressed = !(flags & KF_UP);
+            bool isExtended = flags & KF_EXTENDED;
             int keycode = (int) wParam;
+            int scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
+            auto& locations = _windowManager.getKeyLocations();
             auto& ignoreList = _windowManager.getKeyIgnoreList();
+
+            JWM_VERBOSE("Keycode=" << keycode << " scancode=" << scancode);
 
             // Ignore system keys (unknown on java side)
             if (ignoreList.find(keycode) != ignoreList.end())
@@ -440,8 +447,16 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             auto mapping = table.find(keycode);
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
+            KeyLocation location = KeyLocation::DEFAULT;
 
-            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers));
+            // Right/numpad keys location handling
+            if (isExtended || scancode == MapVirtualKeyW(VK_RSHIFT, MAPVK_VK_TO_VSC)) {
+                auto locationMapping = locations.find(keycode);
+                if (locationMapping != locations.end())
+                    location = locationMapping->second;
+            }
+
+            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers, location));
             dispatch(eventKey.get());
             break;
         }
