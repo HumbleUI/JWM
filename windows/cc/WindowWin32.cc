@@ -8,6 +8,8 @@
 #include <MouseButton.hh>
 #include <Log.hh>
 #include <memory>
+#include "ThemeHelper.hh"
+#include "ThemeHelperWin32.hh"
 
 jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
         : Window(env), _windowManager(windowManagerWin32) {
@@ -62,6 +64,11 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
         ImmAssociateContext(getHWnd(), nullptr);
         JWM_VERBOSE("Disable ime text input");
     }
+}
+
+jwm::Theme jwm::WindowWin32::getCurrentTheme() {
+    jwm::ThemeHelperWin32 themeHelper;
+    return themeHelper.getCurrentTheme();
 }
 
 void jwm::WindowWin32::setTitle(const std::wstring& title) {
@@ -921,6 +928,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetConte
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
+}
+
+extern "C" JNIEXPORT int JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetCurrentTheme
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::Theme theme = instance->getCurrentTheme();
+    return static_cast<int>(theme);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle

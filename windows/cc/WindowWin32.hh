@@ -11,7 +11,8 @@
 #include <vector>
 #include <string>
 #include <jni.h>
-
+#include "ThemeHelper.hh"
+#include "ThemeHelperWin32.hh"
 namespace jwm {
     class WindowWin32 final: public Window {
     public:
@@ -50,7 +51,8 @@ namespace jwm {
         void recreate();
         void unmarkText();
         void setImeEnabled(bool enabled);
-        void setTitle(const std::wstring& title);
+        Theme getCurrentTheme();
+        void setTitle(const std::wstring &title);
         void setIcon(const std::wstring& iconPath);
         void setOpacity(float opacity);
         float getOpacity();
