@@ -41,6 +41,8 @@ public abstract class Window extends RefCounted {
 
     public abstract UIRect getContentRect();
 
+    public abstract Theme getCurrentTheme();
+
     public UIRect getContentRectAbsolute() {
         UIRect windowRect = getWindowRect();
         return getContentRect().offset(windowRect._left, windowRect._top);
