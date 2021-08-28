@@ -2,7 +2,7 @@ package org.jetbrains.jwm;
 
 import org.jetbrains.annotations.*;
 
-// must be kept in sync with KeyLocation.hh
+// must be kept in sync with ThemeHelper.hh
 public enum Theme {
     LIGHT,
     DARK;
