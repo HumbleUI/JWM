@@ -34,6 +34,11 @@ public class WindowX11 extends Window {
         // TODO: impl me!
     }
 
+    @Override
+    public Theme getCurrentTheme(){
+        throw new UnsupportedOperationException();
+    }
+
     @Override 
     public UIRect getWindowRect() {
         assert _onUIThread();
