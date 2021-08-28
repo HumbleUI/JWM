@@ -15,7 +15,6 @@ namespace jwm {
     void setTheme(Theme theme);
 
   private:
-    // maybe static is better?
     bool _isDarkModeSupported();
 
   };
