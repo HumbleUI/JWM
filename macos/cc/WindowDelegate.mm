@@ -50,7 +50,6 @@
 }
 
 - (BOOL)windowShouldClose:(NSWindow*)sender {
-    std::cout << "windowShouldClose" << std::endl;
     fWindow->dispatch(jwm::classes::EventWindowCloseRequest::kInstance);
     return FALSE;
 }
