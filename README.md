@@ -58,9 +58,9 @@ Alpha. Expect API breakages.
 | getScreen           | ✅   | ✅   | ✅   |
 | requestFrame        | ✅   | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
-| minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
-| maximize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
-| restore             | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
+| minimize            | ✅   | ✅  |  ✅   |
+| maximize            | ✅   | ✅  |  ✅   |
+| restore             | ✅   | ✅  |  ✅   |
 | setTitle            | ✅   | ✅   | ✅   |
 | setIcon             | ✅   | ✅   | [#95](https://github.com/jetbrains/jwm/issues/95)  |
 | Set system cursor   | ✅   | ✅   | [#99](https://github.com/jetbrains/jwm/issues/99)  |
@@ -91,7 +91,7 @@ Alpha. Expect API breakages.
 | EventWindowMinimize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
 | EventWindowMaximize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
 | EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
-| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
+| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140) | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
 | EventWindowScreenChange | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
