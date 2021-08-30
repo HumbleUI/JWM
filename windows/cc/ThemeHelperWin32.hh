@@ -16,6 +16,6 @@ namespace jwm {
 
   private:
     bool _isDarkModeSupported();
-
+    bool _isHicontrast();
   };
 }

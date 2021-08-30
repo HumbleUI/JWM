@@ -38,6 +38,9 @@ void jwm::ThemeHelperWin32::setTheme(jwm::Theme theme) {
 
 // check if OS is Windows 10 and build version >= 17763
 bool jwm::ThemeHelperWin32::_isDarkModeSupported() {
+  if(_isHicontrast()){
+    return false;
+  }
   HMODULE hMod;
   jwm::RtlGetVersion_FUNC func;
   hMod = LoadLibrary(TEXT("ntdll.dll"));
@@ -64,4 +67,18 @@ bool jwm::ThemeHelperWin32::_isDarkModeSupported() {
   }
   JWM_VERBOSE("ntdll.dll not found");
   return false;
+}
+
+bool jwm::ThemeHelperWin32::_isHicontrast() {
+  HIGHCONTRASTA highContrast;
+  highContrast.cbSize = sizeof(HIGHCONTRASTA);
+  highContrast.dwFlags = 0;
+  highContrast.lpszDefaultScheme = nullptr;
+  bool isOk = SystemParametersInfoA(SPI_GETHIGHCONTRAST, 0, &highContrast, 0);
+  if(!isOk){
+    JWM_VERBOSE("Failed to get SystemParametersInfoA for high contrast");
+    return false;
+  }
+  JWM_VERBOSE("is HighContrast? '" <<  ((HCF_HIGHCONTRASTON & highContrast.dwFlags)==1) << "'");
+  return (HCF_HIGHCONTRASTON & highContrast.dwFlags) == 1;
 }
