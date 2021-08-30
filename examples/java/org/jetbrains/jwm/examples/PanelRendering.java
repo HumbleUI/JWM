@@ -16,9 +16,15 @@ public class PanelRendering extends Panel {
     public double[] times = new double[180];
     public int timesIdx = 0;
 
+    public Map<String, String> layersStatus = new HashMap<>();
     public String[] layers;
     public int layerIdx = 0;
     public SkijaLayer layer;
+
+    // Layer status displayed on the right side from the layer name
+    public static final String CHECKED = "+";
+    public static final String FAILED = "x";
+    public static final String UNKNOWN = "?";
 
     public PanelRendering(Window window) {
         super(window);
@@ -29,7 +35,10 @@ public class PanelRendering extends Panel {
             layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
         else
             layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
-        
+
+        for (var layerName: layers)
+            layersStatus.put(layerName, UNKNOWN);
+
         changeLayer();
     }
 
@@ -46,25 +55,26 @@ public class PanelRendering extends Panel {
         int attemptsCount = layers.length;
 
         while (layer == null && attemptsCount > 0) {
-            String className = "org.jetbrains.jwm.examples." + layers[layerIdx];
+            attemptsCount -= 1;
+            String layerName = layers[layerIdx];
+            String className = "org.jetbrains.jwm.examples." + layerName;
 
             try {
                 layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
                 layer.attach(window);
             } catch (Exception e) {
-                System.err.println("Failed to create class " + className);
+                System.err.println("Failed to create layer " + className);
                 e.printStackTrace();
                 layer = null;
-
+                layersStatus.put(layerName, FAILED); // Update layer status
                 nextLayerIdx();
             }
-
-            attemptsCount -= 1;
         }
 
         if (layer == null)
             throw new RuntimeException("No available layer to create");
 
+        layersStatus.put(layers[layerIdx], CHECKED); // Mark layer as checked
         layer.reconfigure();
         layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
@@ -121,17 +131,32 @@ public class PanelRendering extends Panel {
             canvas.save();
             paint.setColor(0xFFFFFFFF);
 
-            // Layers
+            // Layers (also paint layer status on the right side)
             try (var shevron = TextLine.make("> ", Example.FONT12);) {
                 
                 canvas.translate(Example.PADDING, Example.PADDING - metrics.getAscent());
                 for (int i = 0; i < layers.length; ++i) {
                     if (i == layerIdx)
                         canvas.drawTextLine(shevron, 0, 0, paint);
-                    canvas.drawString(layers[i], shevron.getWidth(), 0, Example.FONT12, paint);
+
+                    String status = layersStatus.get(layers[i]);
+                    String displayString = layers[i] + " " + layersStatus.get(layers[i]);
+
+                    switch (status) {
+                        case FAILED ->
+                            paint.setColor(0xFFFF5252);
+                        case UNKNOWN ->
+                            paint.setColor(0xFFFEC942);
+                        default ->
+                            paint.setColor(0xFF74DD1B);
+                    }
+
+                    canvas.drawString(displayString, shevron.getWidth(), 0, Example.FONT12, paint);
                     canvas.translate(0, metrics.getHeight());
                 }
             }
+
+            paint.setColor(0xFFFFFFFF);
 
             // Paint counters
             for (var entry: counters.entrySet()) {

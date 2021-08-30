@@ -88,7 +88,8 @@ public class Library {
                 }
             }
         }
-        System.out.println("Loading " + file);
+        if ("true".equals(System.getenv("JWM_VERBOSE")))
+            System.out.println("Loading " + file);
         return file;
     }
 

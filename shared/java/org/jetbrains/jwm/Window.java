@@ -75,9 +75,6 @@ public abstract class Window extends RefCounted {
         return this;
     }
 
-    @ApiStatus.Internal
-    public abstract void _nSetMouseCursor(int cursorIdx);
-
     @NotNull @Contract("-> this")
     public abstract Window setVisible(boolean isVisible);
 
@@ -133,4 +130,5 @@ public abstract class Window extends RefCounted {
 
     @ApiStatus.Internal public native void _nSetEventListener(Consumer<Event> eventListener);
     @ApiStatus.Internal public native void _nSetTextInputClient(TextInputClient client);
+    @ApiStatus.Internal public abstract void _nSetMouseCursor(int cursorIdx);
 }

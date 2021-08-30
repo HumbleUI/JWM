@@ -4,6 +4,7 @@
 #include <WindowWin32.hh>
 #include <WindowManagerWin32.hh>
 #include <Key.hh>
+#include <KeyLocation.hh>
 #include <KeyModifier.hh>
 #include <MouseButton.hh>
 #include <Log.hh>
@@ -164,12 +165,8 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
 }
 
 void jwm::WindowWin32::setVisible(bool value) {
-    JWM_VERBOSE("Set visible = " << value << " for window 0x" << this);
-    if (value) {
-        ShowWindow(_hWnd, SW_SHOWNA);
-    } else {
-        // TODO #96
-    }
+    JWM_VERBOSE("Set visible=" << value << " for window 0x" << this);
+    ShowWindow(_hWnd, value? SW_SHOWNA: SW_HIDE);
 }
 
 void jwm::WindowWin32::maximize() {
@@ -179,7 +176,7 @@ void jwm::WindowWin32::maximize() {
 
 void jwm::WindowWin32::minimize() {
     JWM_VERBOSE("Minimize window 0x" << this);
-    ShowWindow(_hWnd, SW_MAXIMIZE);
+    ShowWindow(_hWnd, SW_MINIMIZE);
 }
 
 void jwm::WindowWin32::restore() {
@@ -444,19 +441,34 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_KEYUP:
         case WM_SYSKEYUP:
         case WM_IME_KEYUP: {
-            bool isPressed = !(HIWORD(lParam) & KF_UP);
+            WORD flags = HIWORD(lParam);
+            bool isPressed = !(flags & KF_UP);
+            bool isExtended = flags & KF_EXTENDED;
             int keycode = (int) wParam;
+            int scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
+            auto& locations = _windowManager.getKeyLocations();
             auto& ignoreList = _windowManager.getKeyIgnoreList();
 
+            JWM_VERBOSE("Keycode=" << keycode << " scancode=" << scancode);
+
+            // Ignore system keys (unknown on java side)
             if (ignoreList.find(keycode) != ignoreList.end())
                 break;
 
             auto mapping = table.find(keycode);
             Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
+            KeyLocation location = KeyLocation::DEFAULT;
 
-            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers));
+            // Right/numpad keys location handling
+            if (isExtended || scancode == MapVirtualKeyW(VK_RSHIFT, MAPVK_VK_TO_VSC)) {
+                auto locationMapping = locations.find(keycode);
+                if (locationMapping != locations.end())
+                    location = locationMapping->second;
+            }
+
+            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers, location));
             dispatch(eventKey.get());
             break;
         }
@@ -469,6 +481,13 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else {
                 jsize len = 0;
                 jchar text[2];
+                int modifiers = _getModifiers();
+
+                if (modifiers & static_cast<int>(KeyModifier::CONTROL)) {
+                    // If ctrl is holden, do not send text input
+                    _highSurrogate = 0;
+                    break;
+                }
 
                 if (LOW_SURROGATE_L <= wParam && wParam <= LOW_SURROGATE_U) {
                     if (_highSurrogate) {
@@ -480,10 +499,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     break;
                 }
 
+                _highSurrogate = 0;
+
                 text[len] = static_cast<wchar_t>(wParam);
                 len += 1;
-
-                _highSurrogate = 0;
 
                 JNILocal<jstring> jtext(env, env->NewString(text, len));
                 JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
@@ -897,12 +916,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nUnmarkTe
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
-        (JNIEnv* env, jobject obj, jboolean value) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    instance->setVisible(value);
-}
-
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
@@ -966,6 +979,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
+        (JNIEnv* env, jobject obj, jboolean isVisible) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setVisible(isVisible);
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpacity
         (JNIEnv* env, jobject obj,float opacity) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));

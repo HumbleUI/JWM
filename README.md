@@ -23,6 +23,64 @@ Primary goals:
 
 Motto: **“Electron for JVM, without Chrome and JS”**
 
+## Comparison to other UI/window libraries
+
+Traditionally, Java UIs struggled with high-quality OS integration. JWM plans to bring it to modern standards by implementing those integrations from scratch in modern low-level OS-native APIs. Prior art:
+
+AWT:
+
+- Bullet-proof, works everywhere
+- Event loop is two-threaded (lags in UI)
+- Dated font management, color management, dpi management
+- No vsync
+
+JavaFX:
+
+- Fixed threading model
+- Performance is [sometimes great, sometimes terrible](https://github.com/tonsky/java-graphics-benchmark/)
+- Even more limited fonts/color/graphics API
+- VSync is weird in multi-monitor case
+- No real extensibility
+
+[Winit](https://github.com/rust-windowing/winit):
+
+- Tried at JetBrains
+- Complicated event loop model (tries to unify desktop + web + mobile)
+- https://github.com/rust-windowing/winit/blob/master/FEATURES.md
+
+GLFW via LWJGL, SDL2:
+
+- Game-oriented
+- Bad window management
+- No OS integration
+- Create one window and go full-screen is the main use-case
+
+Electron:
+
+- Seems great, will use as inspiration
+- https://www.electronjs.org/docs
+
+## Dependency
+
+Repository URL:
+
+```
+https://packages.jetbrains.team/maven/p/jwm/maven
+```
+
+Artifacts:
+
+Platform    | groupId             | artifactId        | version
+------------|---------------------|-------------------|----------
+macOS Intel | `org.jetbrains.jwm` | `jwm-macos-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-x64%2Fmaven-metadata.xml&query=//release)
+macOS M1    | `org.jetbrains.jwm` | `jwm-macos-arm64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-arm64%2Fmaven-metadata.xml&query=//release)
+Linux       | `org.jetbrains.jwm` | `jwm-linux-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-linux-x64%2Fmaven-metadata.xml&query=//release)
+Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-windows-x64%2Fmaven-metadata.xml&query=//release)
+
+## Getting started
+
+See [Getting Started](https://github.com/JetBrains/JWM/blob/main/docs/Getting%20Started.md)
+
 ## Status
 
 Alpha. Expect API breakages.
@@ -58,9 +116,9 @@ Alpha. Expect API breakages.
 | getScreen           | ✅   | ✅   | ✅   |
 | requestFrame        | ✅   | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
 | close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
-| minimize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
-| maximize            | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
-| restore             | [#96](https://github.com/jetbrains/jwm/issues/96)  | ✅  |  ✅   |
+| minimize            | ✅   | ✅  |  ✅   |
+| maximize            | ✅   | ✅  |  ✅   |
+| restore             | ✅   | ✅  |  ✅   |
 | setTitle            | ✅   | ✅   | ✅   |
 | setIcon             | ✅   | ✅   | [#95](https://github.com/jetbrains/jwm/issues/95)  |
 | Set system cursor   | ✅   | ✅   | [#99](https://github.com/jetbrains/jwm/issues/99)  |
@@ -91,12 +149,11 @@ Alpha. Expect API breakages.
 | EventWindowMinimize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
 | EventWindowMaximize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
 | EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
-| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
+| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140) | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
 | EventWindowScreenChange | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
 | Theme Changed           | ❌   | ❌   | ❌   |
-
 
 ### Screen
 
@@ -137,60 +194,6 @@ Alpha. Expect API breakages.
 | Run on GraalVM | ❌      | ❌    | ❌  |
 | App package    | ❌      | ❌    | ❌  |
 
-## Prior art
-
-Traditionally, Java UIs struggled with high-quality OS integration. JWM plans to bring it to modern standards by implementing those integrations from scratch in modern low-level OS-native APIs. Prior art:
-
-AWT:
-
-- Bullet-proof, works everywhere
-- Event loop is two-threaded (lags in UI)
-- Dated font management, color management, dpi management
-- No vsync
-
-JavaFX:
-
-- Fixed threading model
-- Performance is [sometimes great, sometimes terrible](https://github.com/tonsky/java-graphics-benchmark/)
-- Even more limited fonts/color/graphics API
-- VSync is weird in multi-monitor case
-- No real extensibility
-
-[Winit](https://github.com/rust-windowing/winit):
-
-- Tried at JetBrains
-- Complicated event loop model (tries to unify desktop + web + mobile)
-- https://github.com/rust-windowing/winit/blob/master/FEATURES.md
-
-GLFW via LWJGL, SDL2:
-
-- Game-oriented
-- Bad window management
-- No OS integration
-- Create one window and go full-screen is the main use-case
-
-Electron:
-
-- Seems great, will use as inspiration
-- https://www.electronjs.org/docs
-
-## Using
-
-Repository URL:
-
-```
-https://packages.jetbrains.team/maven/p/jwm/maven
-```
-
-Artifacts:
-
-Platform    | groupId             | artifactId        | version
-------------|---------------------|-------------------|----------
-macOS Intel | `org.jetbrains.jwm` | `jwm-macos-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-x64%2Fmaven-metadata.xml&query=//release)
-macOS M1    | `org.jetbrains.jwm` | `jwm-macos-arm64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-arm64%2Fmaven-metadata.xml&query=//release)
-Linux       | `org.jetbrains.jwm` | `jwm-linux-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-linux-x64%2Fmaven-metadata.xml&query=//release)
-Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-windows-x64%2Fmaven-metadata.xml&query=//release)
-
 ## Building from source
 
 Prerequisites:
@@ -217,11 +220,15 @@ Run examples without building (use version from the table above):
 ./script/run.py --jwm-version <version>
 ```
 
+# Contributing
+
+PRs & issue reports are welcome!
+
+Please read [Conventions](https://github.com/JetBrains/JWM/blob/main/docs/Conventions.md) first.
+
 # Authors
 
 - [Nikita Prokopov](https://github.com/tonsky)
 - [Egor Orachyov](https://github.com/EgorOrachyov)
 - [Alexey Titov](https://github.com/Alex2772)
 - [Pavel Sergeev](https://github.com/SergeevPavel)
-
-PRs & issue reports are welcome!

@@ -26,6 +26,7 @@ bool jwm::WindowManagerWin32::init() {
         return false;
 
     _initKeyTable();
+    _initKeyLocations();
     _initKeyIgnoreList();
 
     return true;
@@ -269,6 +270,35 @@ void jwm::WindowManagerWin32::_initKeyTable() {
     // Key::MUTE
 }
 
+void jwm::WindowManagerWin32::_initKeyLocations() {
+    _keyLocations[VK_CONTROL] = KeyLocation::RIGHT;
+    _keyLocations[VK_MENU] = KeyLocation::RIGHT;
+    _keyLocations[VK_SHIFT] = KeyLocation::RIGHT;
+    _keyLocations[VK_RWIN] = KeyLocation::RIGHT;
+    _keyLocations[VK_RSHIFT] = KeyLocation::RIGHT;
+    _keyLocations[VK_RMENU] = KeyLocation::RIGHT;
+
+    _keyLocations[VK_NUMPAD0] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD1] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD2] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD3] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD4] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD5] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD6] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD7] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD8] = KeyLocation::KEYPAD;
+    _keyLocations[VK_NUMPAD9] = KeyLocation::KEYPAD;
+
+    _keyLocations[VK_ADD] = KeyLocation::KEYPAD;
+    _keyLocations[VK_SEPARATOR] = KeyLocation::KEYPAD;
+    _keyLocations[VK_SUBTRACT] = KeyLocation::KEYPAD;
+    _keyLocations[VK_MULTIPLY] = KeyLocation::KEYPAD;
+    _keyLocations[VK_DIVIDE] = KeyLocation::KEYPAD;
+    _keyLocations[VK_RETURN] = KeyLocation::KEYPAD;
+
+    _keyLocations[VK_NUMLOCK] = KeyLocation::KEYPAD;
+}
+
 void jwm::WindowManagerWin32::_initKeyIgnoreList() {
     _keyIgnoreList.emplace(VK_PROCESSKEY);
 }
@@ -284,8 +314,8 @@ void jwm::WindowManagerWin32::_unregisterWindow(class WindowWin32& window) {
 }
 
 void jwm::WindowManagerWin32::_dispatchFrameEvents() {
-    // NOTE: now request is process.
-    // If user request new frame in this method,
+    // NOTE: now request is processed.
+    // If user requests new frame in this method,
     // we will catch it and will handle in the new processing iteration
     _requestFrame = false;
 

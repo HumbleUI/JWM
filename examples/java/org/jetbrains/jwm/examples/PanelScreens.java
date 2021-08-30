@@ -47,8 +47,6 @@ public class PanelScreens extends Panel {
                         UIRect bounds = window.getScreen().getWorkArea();
                         int width  = (int) (((int) ((bounds.getWidth() / 2) / scale)) * scale);
                         int height = (int) (((int) ((bounds.getHeight() / 2) / scale)) * scale);
-                        System.out.println("width = " + width + ", height = " + height);
-                        System.out.println(window.getWindowRect().getWidth() + " " + window.getWindowRect().getHeight());
                         if (window.getWindowRect().getWidth() != width || window.getWindowRect().getHeight() != height) {
                             window.setWindowSize(width, height);
                         } else {
