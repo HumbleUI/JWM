@@ -41,8 +41,18 @@ public abstract class Window extends RefCounted {
 
     public abstract UIRect getContentRect();
 
-    public abstract Theme setTheme(Theme theme);
 
+    /**
+     * try to set theme. 
+     * If theme is successfully updated, this method returns updated theme.    
+     */
+    public abstract Theme setTheme(Theme theme);
+    
+    /**
+     * get current OS theme.
+     * 
+     * - In Windows, if dark mode is not supported, this method always returns Theme.LIGHT.
+     */ 
     public abstract Theme getCurrentTheme();
 
     public UIRect getContentRectAbsolute() {

@@ -47,14 +47,14 @@ jwm::Theme jwm::ThemeHelperWin32::setTheme(jwm::Theme theme)
     return getCurrentTheme();
   }
   bool isOk = _setThemeInternal(_hWnd, theme, isDarkMode);
+  // It would be better to reset window theme if this fails.
   return isOk ? theme : getCurrentTheme();
 }
 
-// This function sets window's title bar dark/light.
 bool jwm::ThemeHelperWin32::_setThemeInternal(HWND hWnd, Theme theme, bool isDarkMode)
 {
   HMODULE hMod;
-  hMod = GetModuleHandleA("user32.dll");
+  hMod = LoadLibrary(TEXT("user32.dll"));
   if (!hMod)
   {
     JWM_VERBOSE("Failed to get module handle for user32.dll");
@@ -80,7 +80,6 @@ bool jwm::ThemeHelperWin32::_setThemeInternal(HWND hWnd, Theme theme, bool isDar
   return status != FALSE;
 }
 
-// check if OS is Windows 10 and build version >= 17763.
 bool jwm::ThemeHelperWin32::_isDarkModeSupported()
 {
   if (_isHicontrast())
@@ -117,7 +116,6 @@ bool jwm::ThemeHelperWin32::_isDarkModeSupported()
   JWM_VERBOSE("ntdll.dll not found");
   return false;
 }
-
 bool jwm::ThemeHelperWin32::_isHicontrast()
 {
   HIGHCONTRASTA highContrast;

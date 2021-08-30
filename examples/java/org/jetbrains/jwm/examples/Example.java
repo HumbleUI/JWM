@@ -9,6 +9,7 @@ import java.util.function.*;
 import java.util.stream.*;
 import java.io.File;
 
+
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
     public static int COLS = 4, ROWS = 3;
