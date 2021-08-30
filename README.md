@@ -226,6 +226,10 @@ PRs & issue reports are welcome!
 
 Please read [Conventions](https://github.com/JetBrains/JWM/blob/main/docs/Conventions.md) first.
 
+If you are looking where to start, there’s a label: [Good first issue](https://github.com/JetBrains/JWM/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+Issues labeled “[Design](https://github.com/JetBrains/JWM/issues?q=is%3Aissue+is%3Aopen+label%3ADesign)” and “[Not sure](https://github.com/JetBrains/JWM/issues?q=is%3Aissue+is%3Aopen+label%3A%22Not+sure%22)” require prior discussion—leave a comment with your ideas!
+
 # Authors
 
 - [Nikita Prokopov](https://github.com/tonsky)
