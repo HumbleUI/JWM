@@ -33,7 +33,11 @@ public class WindowX11 extends Window {
         assert _onUIThread();
         // TODO: impl me!
     }
-
+    @Override
+    public Theme setTheme(Theme theme) {
+        // TODO: Impl me!
+        return theme;
+    }
     @Override
     public Theme getCurrentTheme(){
         throw new UnsupportedOperationException();

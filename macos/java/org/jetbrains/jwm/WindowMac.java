@@ -23,6 +23,12 @@ public class WindowMac extends Window {
         assert _onUIThread();
         // TODO: impl me!
     }
+    
+    @Override
+    public Theme setTheme(Theme theme) {
+        // TODO: Impl me!
+        return theme;
+    }
 
     @Override
     public Theme getCurrentTheme(){
