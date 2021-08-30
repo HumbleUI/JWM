@@ -23,6 +23,8 @@ Primary goals:
 
 Motto: **“Electron for JVM, without Chrome and JS”**
 
+![](extras/screenshot.png)
+
 ## Comparison to other UI/window libraries
 
 Traditionally, Java UIs struggled with high-quality OS integration. JWM plans to bring it to modern standards by implementing those integrations from scratch in modern low-level OS-native APIs. Prior art:
