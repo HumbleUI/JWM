@@ -317,7 +317,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetWind
 extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetContentRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO https://github.com/JetBrains/JWM/issues/109
+    // TODO https://github.com/HumbleUI/JWM/issues/109
     return jwm::classes::UIRect::toJavaXYWH(
       env,
       0,
@@ -336,7 +336,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetWindowP
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetWindowSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO https://github.com/JetBrains/JWM/issues/109
+    // TODO https://github.com/HumbleUI/JWM/issues/109
     instance->resize(width, height);
 }
 
