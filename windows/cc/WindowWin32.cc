@@ -66,8 +66,13 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
     }
 }
 
+jwm::Theme jwm::WindowWin32::setTheme(jwm::Theme theme) {
+    jwm::ThemeHelperWin32 themeHelper(_hWnd);
+    return themeHelper.setTheme(theme);
+}
+
 jwm::Theme jwm::WindowWin32::getCurrentTheme() {
-    jwm::ThemeHelperWin32 themeHelper;
+    jwm::ThemeHelperWin32 themeHelper(_hWnd);
     return themeHelper.getCurrentTheme();
 }
 
@@ -928,6 +933,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetConte
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
+}
+
+extern "C" JNIEXPORT int JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTheme
+        (JNIEnv* env, jobject obj,int theme) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jwm::Theme result = instance->setTheme(static_cast<jwm::Theme>(theme));
+    return static_cast<int>(result);
 }
 
 extern "C" JNIEXPORT int JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetCurrentTheme

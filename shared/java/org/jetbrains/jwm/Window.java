@@ -41,6 +41,8 @@ public abstract class Window extends RefCounted {
 
     public abstract UIRect getContentRect();
 
+    public abstract Theme setTheme(Theme theme);
+
     public abstract Theme getCurrentTheme();
 
     public UIRect getContentRectAbsolute() {

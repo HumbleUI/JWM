@@ -59,6 +59,13 @@ public class WindowWin32 extends Window {
         _nSetContentSize(width, height);
         return this;
     }
+
+    @Override
+    public Theme setTheme(Theme theme) {
+        assert _onUIThread();
+        int nTheme = _nSetTheme(theme.ordinal());
+        return Theme.makeFromInt(nTheme);
+    }
     
     @Override
     public Theme getCurrentTheme() {
@@ -147,6 +154,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
+    @ApiStatus.Internal public native int _nSetTheme(int theme);
     @ApiStatus.Internal public native int _nGetCurrentTheme();
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);

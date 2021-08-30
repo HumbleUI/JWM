@@ -51,6 +51,7 @@ namespace jwm {
         void recreate();
         void unmarkText();
         void setImeEnabled(bool enabled);
+        Theme setTheme(Theme theme);
         Theme getCurrentTheme();
         void setTitle(const std::wstring &title);
         void setIcon(const std::wstring& iconPath);

@@ -10,6 +10,6 @@ namespace jwm {
   class ThemeHelper {
     public:
       Theme getCurrentTheme();
-      void setTheme(Theme theme);
+      Theme setTheme(Theme theme);
   };
 }
