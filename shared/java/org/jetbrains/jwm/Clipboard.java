@@ -12,7 +12,7 @@ public class Clipboard {
     public static Map<String, ClipboardFormat> _formats = Collections.synchronizedMap(new HashMap<String, ClipboardFormat>());
 
     /**
-     * <p>Sets the system clipboard content.</p>
+     * <p>Set the system clipboard content.</p>
      *
      * <p>Previse clipboard content is cleared automatically.</p>
      * <p>If provided entries list is emtpy, then this function is equivalent to clear call.</p>
@@ -27,7 +27,7 @@ public class Clipboard {
     }
 
     /**
-     * <p>Gets the system clipboard content.</p>
+     * <p>Get the system clipboard content.</p>
      *
      * <p>Clipboard content returned as an entry with specified format and serialized byte data.</p>
      * <p>Uses provided formats list to extract preferred clipboard data. First format has
@@ -47,7 +47,7 @@ public class Clipboard {
     }
 
     /**
-     * <p>Returns list of currently available clipboard data formats.</p>
+     * <p>Get list of currently available clipboard data formats.</p>
      *
      * <p>If there is no data in the system clipboard, this function returns null.</p>
      * <p>If there is in the system clipboard some data in formats, which are not
@@ -62,13 +62,23 @@ public class Clipboard {
         return _nGetFormats();
     }
 
+    /**
+     * <p>Clear system clipboard content.</p>
+     */
     public static void clear() {
         assert _onUIThread();
         _nClear();
     }
 
     /**
-     * For user defined formats registration
+     * <p>Register custom user-defined clipboard format.</p>
+     *
+     * <p>Registers global system-wide clipboard format, which can be used across different applications.</p>
+     * <p>If format with the same string formatId already registered, then returns existing clipboard format instance.</p>
+     * <p>If format with provided string formatId cannot be used as id, throws exception. </p>
+     *
+     * @param formatId  Clipboard format string id
+     * @return          Clipboard format instance
      */
     @NotNull @SneakyThrows
     public static ClipboardFormat registerFormat(String formatId) {
@@ -76,9 +86,6 @@ public class Clipboard {
         return _registerFormatInternal(formatId, true);
     }
 
-    /**
-     * For predefined (external) formats registration
-     */
     @ApiStatus.Internal @NotNull @SneakyThrows
     public static ClipboardFormat _registerPredefinedFormat(String formatId) {
         return _registerFormatInternal(formatId, false);
