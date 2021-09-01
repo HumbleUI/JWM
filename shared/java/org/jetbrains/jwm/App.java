@@ -16,8 +16,10 @@ public class App {
     public static long _uiThreadId;
 
     /**
-     * Call this before you do anything else
-     * TODO: make idempotent
+     * <p>Initialize global JWM application instance.</p>
+     *
+     * <p>This method must be the first method called in the JWM library.</p>
+     * <p>After this method call, library API can be safely accessed for creating windows and querying system info.</p>
      */
     public static void init() {
         Library.load();
@@ -27,6 +29,12 @@ public class App {
         Log.setLogger(System.out::println);
     }
 
+    /**
+     * <p>Make new native platform-specific window.</p>
+     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     *
+     * @return          new window instance
+     */
     @NotNull @SneakyThrows
     public static Window makeWindow() {
         assert _onUIThread();
@@ -46,31 +54,56 @@ public class App {
     }
 
     /**
-     * Will block until you call {@link #terminate()}
+     * <p>Start application primary event loop.</p>
+     *
+     * <p>Will block current thread until you call {@link #terminate()}</p>
+     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     *
+     * @return          status code; 0 on success, otherwise error
      */
     public static int start() {
         assert _onUIThread();
         return _nStart();
     }
 
+    /**
+     * <p>Request application terminate.</p>
+     * <p>This request causes application terminate and causes control return from {@link #start()} method.</p>
+     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     */
     public static void terminate() {
         assert _onUIThread();
         _nTerminate();
     }
 
+    /**
+     * <p>Enqueue callback function to run on application UI thread.</p>
+     * <p>This is the only method, which cann be access from any thread if other is not specified.</p>
+     * <p>Use this method to access UI thread and safely perform user-specific work and access JWM API.</p>
+     *
+     * @param callback  function for execution on UI thread
+     */
+    public static void runOnUIThread(Runnable callback) {
+        _nRunOnUIThread(callback);
+    }
+
+    /**
+     * <p>Get desktop environment screens configurations.</p>
+     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     *
+     * @return          list of desktop screens
+     */
     public static Screen[] getScreens() {
         assert _onUIThread();
         return _nGetScreens();
     }
 
-    public static void runOnUIThread(Runnable callback) {
-        // TODO: we need to create concurrent queue in Java side
-        // and then in jni fetch objects from queue in order to
-        // avoid any concurrency issues in CC. +It will allow us to
-        // write all MT code only once in java shared and cc shared!!!!
-        _nRunOnUIThread(callback);
-    }
-
+    /**
+     * <p>Get desktop environment primary screen info.</p>
+     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     *
+     * @return          primary desktop screen
+     */
     public static Screen getPrimaryScreen() {
         assert _onUIThread();
         for (Screen s: getScreens())

@@ -9,6 +9,8 @@ public class ClipboardFormat {
     /**
      * <p>Represents a plain string.</p>
      * <p>Uses system built-in format and encoding for proper text transfer.</p>
+     * <p>On Windows uses utf-16 for unicode text encoding.</p>
+     * <p>On Linux/macOS uses utf-8 for unicode text encoding.</p>
      */
     public static ClipboardFormat TEXT = Clipboard._registerPredefinedFormat("text/plain");
 
@@ -30,11 +32,29 @@ public class ClipboardFormat {
      */
     public static ClipboardFormat URL = Clipboard._registerPredefinedFormat("text/url");
 
+    /**
+     * <p>Note: not supported yet.</p>
+     */
     public static ClipboardFormat WIN_BITMAP = Clipboard._registerPredefinedFormat("win/bitmap");
+
+    /**
+     * <p>Note: not supported yet.</p>
+     */
     public static ClipboardFormat WIN_TIFF = Clipboard._registerPredefinedFormat("win/tiff");
 
+    /**
+     * <p>Note: not supported yet.</p>
+     */
     public static ClipboardFormat MAC_PNG = Clipboard._registerPredefinedFormat("mac/png");
+
+    /**
+     * <p>Note: not supported yet.</p>
+     */
     public static ClipboardFormat MAC_PDF = Clipboard._registerPredefinedFormat("mac/pdf");
+
+    /**
+     * <p>Note: not supported yet.</p>
+     */
     public static ClipboardFormat MAC_COLOR = Clipboard._registerPredefinedFormat("mac/color");
 
     @ApiStatus.Internal public final String _formatId;

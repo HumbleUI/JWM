@@ -155,7 +155,7 @@ public void accept(Event e) {
 
 Simple key handling (e.g. for program shortcuts) via `EventKey`.
 Simple text input via `EventTextInput`.
-Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/JetBrains/JWM/blob/main/examples/java/org/jetbrains/jwm/examples/PanelTextInput.java) for hints how to handle IME input.
+Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/HumbleUI/JWM/blob/main/examples/java/org/jetbrains/jwm/examples/PanelTextInput.java) for hints how to handle IME input.
 
 ```java
 @Override
@@ -266,4 +266,4 @@ public void paint() {
 }
 ```
 
-For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [examples](https://github.com/JetBrains/JWM/tree/main/examples/java/org/jetbrains/jwm/examples) folder.
+For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [examples](https://github.com/HumbleUI/JWM/tree/main/examples/java/org/jetbrains/jwm/examples) folder.

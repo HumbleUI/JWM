@@ -23,6 +23,8 @@ Primary goals:
 
 Motto: **“Electron for JVM, without Chrome and JS”**
 
+![](extras/screenshot.png)
+
 ## Comparison to other UI/window libraries
 
 Traditionally, Java UIs struggled with high-quality OS integration. JWM plans to bring it to modern standards by implementing those integrations from scratch in modern low-level OS-native APIs. Prior art:
@@ -79,7 +81,7 @@ Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.s
 
 ## Getting started
 
-See [Getting Started](https://github.com/JetBrains/JWM/blob/main/docs/Getting%20Started.md)
+See [Getting Started](https://github.com/HumbleUI/JWM/blob/main/docs/Getting%20Started.md)
 
 ## Status
 
@@ -90,11 +92,11 @@ Alpha. Expect API breakages.
 |                   | Windows | macOS | X11 |
 |-------------------|---------|-------|-----|
 | init              | ✅   | ✅   | ✅   |
-| makeWindow        | ✅   | [#121](https://github.com/jetbrains/jwm/issues/121)   | ✅   |
+| makeWindow        | ✅   | [#121](https://github.com/HumbleUI/JWM/issues/121)   | ✅   |
 | start             | ✅   | ✅   | ✅   |
 | getScreens        | ✅   | ✅   | ✅   |
 | getPrimaryScreen  | ✅   | ✅   | ✅   |
-| runOnUIThread     | ✅   | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
+| runOnUIThread     | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
 | terminate         | ✅   | ✅   | ✅   |
 | Show notification | ❌   | ❌   | ❌   |
 | System Theme      | ❌   | ❌   | ❌   |
@@ -108,21 +110,21 @@ Alpha. Expect API breakages.
 | setTextInputEnabled | ✅   | ❌   | ❌   |
 | unmarkText          | ✅   | ❌   | ❌   |
 | show                | ✅   | ✅   | ✅   |
-| getWindowRect       | ✅   | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) |
+| getWindowRect       | ✅   | ✅   | [#109](https://github.com/HumbleUI/JWM/issues/109) |
 | getContentRect      | ✅   | ✅   | ✅   |
 | setWindowPosition   | ✅   | ✅   | ✅   |
-| setWindowSize       | ✅   | ✅   | [#109](https://github.com/jetbrains/jwm/issues/109) |
+| setWindowSize       | ✅   | ✅   | [#109](https://github.com/HumbleUI/JWM/issues/109) |
 | setContentSize      | ✅   | ✅   | ✅   |
 | getScreen           | ✅   | ✅   | ✅   |
-| requestFrame        | ✅   | ✅   | [#113](https://github.com/jetbrains/jwm/issues/113) |
-| close               | ✅   | [#107](https://github.com/jetbrains/jwm/issues/107) | ✅   |
+| requestFrame        | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
+| close               | ✅   | [#107](https://github.com/HumbleUI/JWM/issues/107) | ✅   |
 | minimize            | ✅   | ✅  |  ✅   |
 | maximize            | ✅   | ✅  |  ✅   |
 | restore             | ✅   | ✅  |  ✅   |
 | setTitle            | ✅   | ✅   | ✅   |
-| setIcon             | ✅   | ✅   | [#95](https://github.com/jetbrains/jwm/issues/95)  |
-| Set system cursor   | ✅   | ✅   | [#99](https://github.com/jetbrains/jwm/issues/99)  |
-| Remove decorations  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  | [#75](https://github.com/jetbrains/jwm/issues/75)  |
+| setIcon             | ✅   | ✅   | [#95](https://github.com/HumbleUI/JWM/issues/95)  |
+| Set system cursor   | ✅   | ✅   | [#99](https://github.com/HumbleUI/JWM/issues/99)  |
+| Remove decorations  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
@@ -137,20 +139,20 @@ Alpha. Expect API breakages.
 |                         | Windows | macOS | X11 |
 |-------------------------|---------|-------|-----|
 | EventFrame              | ✅   | ✅   | ✅   |
-| EventKey                | [#30](https://github.com/jetbrains/jwm/issues/30)  | [#30](https://github.com/jetbrains/jwm/issues/30) [#87](https://github.com/jetbrains/jwm/issues/87) | [#30](https://github.com/jetbrains/jwm/issues/30)  |
+| EventKey                | [#30](https://github.com/HumbleUI/JWM/issues/30)  | [#30](https://github.com/HumbleUI/JWM/issues/30) [#87](https://github.com/HumbleUI/JWM/issues/87) | [#30](https://github.com/HumbleUI/JWM/issues/30)  |
 | EventMouseButton        | ✅   | ✅   | ✅   |
 | EventMouseMove          | ✅   | ✅   | ✅   |
-| EventMouseScroll        | [#115](https://github.com/jetbrains/jwm/issues/115) | ✅   | [#115](https://github.com/jetbrains/jwm/issues/115) |
-| EventTextInput          | ✅   | [#105](https://github.com/jetbrains/jwm/issues/105) | ✅   |
+| EventMouseScroll        | [#115](https://github.com/HumbleUI/JWM/issues/115) | ✅   | [#115](https://github.com/HumbleUI/JWM/issues/115) |
+| EventTextInput          | ✅   | [#105](https://github.com/HumbleUI/JWM/issues/105) | ✅   |
 | EventTextInputMarked    | ✅   | ✅   | ✅   |
 | EventWindowCloseRequest | ✅   | ✅   | ✅   |
-| EventWindowMove         | ✅   | [#116](https://github.com/jetbrains/jwm/issues/116) | ✅   |
+| EventWindowMove         | ✅   | [#116](https://github.com/HumbleUI/JWM/issues/116) | ✅   |
 | EventWindowResize       | ✅   | ✅   | ✅   |
-| EventWindowMinimize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
-| EventWindowMaximize     | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
-| EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/JetBrains/JWM/issues/96)   |
-| EventWindowVisible      | [#140](https://github.com/JetBrains/JWM/issues/140) | [#140](https://github.com/JetBrains/JWM/issues/140)   | [#140](https://github.com/JetBrains/JWM/issues/140)   |
-| EventWindowScreenChange | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) | [#117](https://github.com/jetbrains/jwm/issues/117) |
+| EventWindowMinimize     | ✅   | ✅   | [#96](https://github.com/HumbleUI/JWM/issues/96)   |
+| EventWindowMaximize     | ✅   | ✅   | [#96](https://github.com/HumbleUI/JWM/issues/96)   |
+| EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/HumbleUI/JWM/issues/96)   |
+| EventWindowVisible      | [#140](https://github.com/HumbleUI/JWM/issues/140) | [#140](https://github.com/HumbleUI/JWM/issues/140)   | [#140](https://github.com/HumbleUI/JWM/issues/140)   |
+| EventWindowScreenChange | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
 | Theme Changed           | ❌   | ❌   | ❌   |
@@ -163,24 +165,24 @@ Alpha. Expect API breakages.
 | isPrimary               | ✅      | ✅    | ✅  |
 | bounds                  | ✅      | ✅    | ✅  |
 | scale                   | ✅      | ✅    | ✅  |
-| workArea                | ✅      | ✅    | [#119](https://github.com/jetbrains/jwm/issues/119) |
-| colorSpace              | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) | [#122](https://github.com/jetbrains/jwm/issues/122) |
+| workArea                | ✅      | ✅    | [#119](https://github.com/HumbleUI/JWM/issues/119) |
+| colorSpace              | [#122](https://github.com/HumbleUI/JWM/issues/122) | [#122](https://github.com/HumbleUI/JWM/issues/122) | [#122](https://github.com/HumbleUI/JWM/issues/122) |
 
 ### Clipboard
 
 |                | Windows | macOS | X11 |
 |----------------|---------|-------|-----|
-| set            | ✅      | [#51](https://github.com/jetbrains/jwm/issues/51)   | ✅  |
-| get            | ✅      | [#51](https://github.com/jetbrains/jwm/issues/51)   | ✅  |
-| getFormats     | ✅      | [#51](https://github.com/jetbrains/jwm/issues/51)   | ✅  |
-| clear          | ✅      | [#51](https://github.com/jetbrains/jwm/issues/51)   | ✅  |
-| registerFormat | ✅      | [#51](https://github.com/jetbrains/jwm/issues/51)   | ✅  |
+| set            | ✅      | [#51](https://github.com/HumbleUI/JWM/issues/51)   | ✅  |
+| get            | ✅      | [#51](https://github.com/HumbleUI/JWM/issues/51)   | ✅  |
+| getFormats     | ✅      | [#51](https://github.com/HumbleUI/JWM/issues/51)   | ✅  |
+| clear          | ✅      | [#51](https://github.com/HumbleUI/JWM/issues/51)   | ✅  |
+| registerFormat | ✅      | [#51](https://github.com/HumbleUI/JWM/issues/51)   | ✅  |
 
 ### Layers
 
 |            | Windows | macOS | X11 |
 |------------|---------|-------|-----|
-| Raster     | ✅      | [#81](https://github.com/jetbrains/jwm/issues/81)   | ✅  |
+| Raster     | ✅      | [#81](https://github.com/HumbleUI/JWM/issues/81)   | ✅  |
 | OpenGL     | ✅      | ✅    | ✅  |
 | DirectX 11 | ❌      | ➖    | ➖  |
 | DirectX 12 | ✅      | ➖    | ➖  |
@@ -224,7 +226,11 @@ Run examples without building (use version from the table above):
 
 PRs & issue reports are welcome!
 
-Please read [Conventions](https://github.com/JetBrains/JWM/blob/main/docs/Conventions.md) first.
+Please read [Conventions](https://github.com/HumbleUI/JWM/blob/main/docs/Conventions.md) first.
+
+If you are looking where to start, there’s a label: [Good first issue](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+Issues labeled “[Design](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+is%3Aopen+label%3ADesign)” and “[Not sure](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+is%3Aopen+label%3A%22Not+sure%22)” require prior discussion—leave a comment with your ideas!
 
 # Authors
 
@@ -232,3 +238,7 @@ Please read [Conventions](https://github.com/JetBrains/JWM/blob/main/docs/Conven
 - [Egor Orachyov](https://github.com/EgorOrachyov)
 - [Alexey Titov](https://github.com/Alex2772)
 - [Pavel Sergeev](https://github.com/SergeevPavel)
+
+Initial development sponsored by:
+
+- [JetBrains](https://jetbrains.com/)
