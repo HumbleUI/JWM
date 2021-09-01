@@ -13,7 +13,6 @@ namespace jwm {
         SIZE_T cbData;
     } WINDOWCOMPOSITIONATTRIBDATA;
 
-    typedef NTSTATUS(WINAPI *RtlGetVersion_FUNC)(OSVERSIONINFOW *);
     typedef bool(WINAPI *ShouldAppsUseDarkMode)();
     typedef bool(WINAPI *SetWindowCompositionAttribute)(
         HWND, WINDOWCOMPOSITIONATTRIBDATA *);
@@ -21,17 +20,18 @@ namespace jwm {
     class ThemeHelperWin32 final : public ThemeHelper {
        public:
            ThemeHelperWin32(HWND hWnd) { _hWnd = hWnd; };
+           ThemeHelperWin32() = default;
            ~ThemeHelperWin32() = default;
            Theme getCurrentTheme();
            Theme setTheme(Theme theme);
+            // If screen is high contrast mode, disable dark mode.
+           bool isHighContrast();
 
        private:
            HWND _hWnd;
            bool _checkOSVersion();
            // check if OS is Windows 10 and build version >= 17763.
            bool _isDarkModeSupported();
-           // If screen is high contrast mode, disable dark mode.
-           bool _isHicontrast();
            // This function sets window's title bar light/dark.
            bool _setThemeInternal(HWND hWnd, Theme theme, bool isDarkMode);
     };

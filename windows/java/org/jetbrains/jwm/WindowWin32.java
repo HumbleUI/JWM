@@ -66,12 +66,28 @@ public class WindowWin32 extends Window {
         int nTheme = _nSetTheme(theme.ordinal());
         return Theme.makeFromInt(nTheme);
     }
+
+    @Override
+    public AppearancePreference getAppearancePreference() {
+        assert _onUIThread();
+        boolean isHighContrast = isHighContrast();
+        // boolean isInverted = isInverted();
+        Theme theme = getCurrentTheme();
+        // AppearancePreference preference;
+        throw new UnsupportedOperationException();
+    }
     
     @Override
     public Theme getCurrentTheme() {
         assert _onUIThread();
         int nTheme = _nGetCurrentTheme();
         return Theme.makeFromInt(nTheme);
+    }
+
+    @Override
+    public boolean isHighContrast() {
+        assert _onUIThread();
+        return _nIsHighContrast();
     }
 
     @Override
@@ -156,6 +172,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native int _nSetTheme(int theme);
     @ApiStatus.Internal public native int _nGetCurrentTheme();
+    @ApiStatus.Internal public native boolean _nIsHighContrast();
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);

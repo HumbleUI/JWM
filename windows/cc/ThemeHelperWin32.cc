@@ -4,10 +4,9 @@
 #include <VersionHelpers.h>
 #include <WinUser.h>
 #include <stdio.h>
-
 #include <Log.hh>
 #include <PlatformWin32.hh>
-
+#include "SystemWin32.hh"
 #include "ThemeHelper.hh"
 
 jwm::Theme jwm::ThemeHelperWin32::getCurrentTheme() {
@@ -82,40 +81,21 @@ bool jwm::ThemeHelperWin32::_setThemeInternal(HWND hWnd, Theme theme,
 
 // strict version check
 bool jwm::ThemeHelperWin32::_checkOSVersion() {
-    HMODULE hMod;
-    jwm::RtlGetVersion_FUNC func;
-    hMod = LoadLibrary(TEXT("ntdll.dll"));
-    if (hMod) {
-        func = (jwm::RtlGetVersion_FUNC)GetProcAddress(hMod, "RtlGetVersion");
-        if (func == 0) {
-            JWM_VERBOSE("Failed to load RtlGetVersion function from ntdll.dll");
-            FreeLibrary(hMod);
-            return false;
-        }
-        NTSTATUS status;
-        OSVERSIONINFOW _osVersionInfo;
-        OSVERSIONINFOW *_osVersionInfoPtr = &_osVersionInfo;
-        ZeroMemory(_osVersionInfoPtr, sizeof(*_osVersionInfoPtr));
-        _osVersionInfoPtr->dwOSVersionInfoSize = sizeof(*_osVersionInfoPtr);
-        status = func(&_osVersionInfo);
-        FreeLibrary(hMod);
-        if (status != 0) {
-            JWM_VERBOSE("Failed to get osVersionInfo");
-            return false;
-        }
-        JWM_VERBOSE("get os version: '" << _osVersionInfo.dwMajorVersion << "."
-                                        << _osVersionInfo.dwMinorVersion << "-"
-                                        << _osVersionInfo.dwBuildNumber << "'");
-        return _osVersionInfo.dwMajorVersion == 10 &&
-               _osVersionInfo.dwMinorVersion == 0 &&
-               _osVersionInfo.dwBuildNumber >= 17763;
+    OSVERSIONINFOW osVersionInfo;
+    try {
+      osVersionInfo = jwm::SystemWin32::getOSVersion();
+    } catch (...){
+        // swallow
+        return false;
     }
-    JWM_VERBOSE("ntdll.dll not found");
-    return false;
+
+    return osVersionInfo.dwMajorVersion == 10 &&
+           osVersionInfo.dwMinorVersion == 0 &&
+           osVersionInfo.dwBuildNumber >= 17763;
 }
 
 bool jwm::ThemeHelperWin32::_isDarkModeSupported() {
-    if (_isHicontrast()) {
+    if (isHighContrast()) {
         return false;
     }
     // NOTE: skip strict OS version check since JWM currently(Sep.2021) targets
@@ -123,7 +103,7 @@ bool jwm::ThemeHelperWin32::_isDarkModeSupported() {
     // dark mode.
     return IsWindows10OrGreater();
 }
-bool jwm::ThemeHelperWin32::_isHicontrast() {
+bool jwm::ThemeHelperWin32::isHighContrast() {
     HIGHCONTRASTA highContrast;
     highContrast.cbSize = sizeof(HIGHCONTRASTA);
     highContrast.dwFlags = 0;

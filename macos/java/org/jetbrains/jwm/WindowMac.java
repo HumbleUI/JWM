@@ -31,10 +31,20 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public AppearancePreference getAppearancePreference() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Theme getCurrentTheme(){
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean isHighContrast(){
+        throw new UnsupportedOperationException();
+    }
+    
     @Override 
     public UIRect getWindowRect() {
         assert _onUIThread();

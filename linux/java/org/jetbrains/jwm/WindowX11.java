@@ -38,8 +38,20 @@ public class WindowX11 extends Window {
         // TODO: Impl me!
         return theme;
     }
+
+    @Override
+    public AppearancePreference getAppearancePreference() {
+        throw new UnsupportedOperationException();
+    }
+
+
     @Override
     public Theme getCurrentTheme(){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isHighContrast(){
         throw new UnsupportedOperationException();
     }
 

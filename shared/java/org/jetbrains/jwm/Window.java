@@ -109,6 +109,12 @@ public abstract class Window extends RefCounted {
      * @return        updated theme/current theme   
      */
     public abstract Theme setTheme(Theme theme);
+
+
+    /**
+     * get AppearancePreference.
+     */
+     public abstract AppearancePreference getAppearancePreference();
     
     /**
      * get current OS theme.
@@ -116,6 +122,11 @@ public abstract class Window extends RefCounted {
      * In Windows, if dark mode is not supported, this method always returns Theme.LIGHT.
      */ 
     public abstract Theme getCurrentTheme();
+
+    /**
+     * get if OS currently uses high contrast mode
+     */
+    public abstract boolean isHighContrast();
 
     /**
      * <p>Get window content position and size on the screen as UI rect.</p>

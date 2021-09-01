@@ -67,14 +67,16 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
     }
 }
 
+bool jwm::WindowWin32::isHighContrast() {
+    return _themeHelper.isHighContrast();
+}
+
 jwm::Theme jwm::WindowWin32::setTheme(jwm::Theme theme) {
-    jwm::ThemeHelperWin32 themeHelper(_hWnd);
-    return themeHelper.setTheme(theme);
+    return _themeHelper.setTheme(theme);
 }
 
 jwm::Theme jwm::WindowWin32::getCurrentTheme() {
-    jwm::ThemeHelperWin32 themeHelper(_hWnd);
-    return themeHelper.getCurrentTheme();
+    return _themeHelper.getCurrentTheme();
 }
 
 void jwm::WindowWin32::setTitle(const std::wstring& title) {
@@ -749,6 +751,7 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
         JWM_LOG("Failed to init WindowWin32");
         return false;
     }
+    _themeHelper = ThemeHelperWin32(_hWnd);
 
     // Set this as property to reference from message callbacks
     SetPropW(_hWnd, L"JWM", this);
@@ -960,6 +963,12 @@ extern "C" JNIEXPORT int JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetCurren
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     jwm::Theme theme = instance->getCurrentTheme();
     return static_cast<int>(theme);
+}
+
+extern "C" JNIEXPORT bool JNICALL Java_org_jetbrains_jwm_WindowWin32__1nIsHighContrast
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->isHighContrast();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle

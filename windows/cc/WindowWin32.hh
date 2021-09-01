@@ -51,6 +51,7 @@ namespace jwm {
         void recreate();
         void unmarkText();
         void setImeEnabled(bool enabled);
+        bool isHighContrast();
         Theme setTheme(Theme theme);
         Theme getCurrentTheme();
         void setTitle(const std::wstring &title);
@@ -113,6 +114,7 @@ namespace jwm {
         class WindowManagerWin32& _windowManager;
 
         HWND _hWnd = nullptr;
+        ThemeHelperWin32 _themeHelper;
         HCURSOR _hMouseCursor = nullptr;
         bool _minimized = false;
         bool _maximized = false;
