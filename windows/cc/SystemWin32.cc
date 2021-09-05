@@ -9,13 +9,13 @@
 
 OSVERSIONINFOW jwm::SystemWin32::getOSVersion() {
     HMODULE hMod;
-    jwm::SystemWin32::RtlGetVersion_FUNC fn;
+    jwm::SystemWin32::FnRtlGetVersion fn;
     hMod = LoadLibrary(TEXT("ntdll.dll"));
     if (!hMod) {
         JWM_VERBOSE("ntdll.dll not found");
         throw "LibNotFound";
     }
-    fn = (jwm::SystemWin32::RtlGetVersion_FUNC)GetProcAddress(hMod, "RtlGetVersion");
+    fn = (jwm::SystemWin32::FnRtlGetVersion)GetProcAddress(hMod, "RtlGetVersion");
     if (fn == 0) {
         JWM_VERBOSE("Failed to load RtlGetVersion function from ntdll.dll");
         FreeLibrary(hMod);

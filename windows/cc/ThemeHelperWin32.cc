@@ -19,9 +19,9 @@ jwm::Theme jwm::ThemeHelperWin32::getCurrentTheme() {
         JWM_VERBOSE("uxtheme.dll not found.");
         return jwm::Theme::Light;
     }
-    jwm::ShouldAppsUseDarkMode hFunc;
+    jwm::FnShouldAppsUseDarkMode hFunc;
     hFunc =
-        (ShouldAppsUseDarkMode)GetProcAddress(hUxTheme, MAKEINTRESOURCEA(132));
+        (FnShouldAppsUseDarkMode)GetProcAddress(hUxTheme, MAKEINTRESOURCEA(132));
     if (hFunc == nullptr) {
         JWM_VERBOSE("shouldAppsUseDarkMode not found.");
         FreeLibrary(hUxTheme);
@@ -58,8 +58,8 @@ bool jwm::ThemeHelperWin32::_setThemeInternal(HWND hWnd, Theme theme,
         return false;
     }
 
-    jwm::SetWindowCompositionAttribute fn;
-    fn = (jwm::SetWindowCompositionAttribute)GetProcAddress(
+    jwm::FnSetWindowCompositionAttribute fn;
+    fn = (jwm::FnSetWindowCompositionAttribute)GetProcAddress(
         hMod, "SetWindowCompositionAttribute");
     if (!fn) {
         JWM_VERBOSE(

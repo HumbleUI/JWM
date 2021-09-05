@@ -13,8 +13,8 @@ namespace jwm {
         SIZE_T cbData;
     } WINDOWCOMPOSITIONATTRIBDATA;
 
-    typedef bool(WINAPI *ShouldAppsUseDarkMode)();
-    typedef bool(WINAPI *SetWindowCompositionAttribute)(
+    typedef bool(WINAPI *FnShouldAppsUseDarkMode)();
+    typedef bool(WINAPI *FnSetWindowCompositionAttribute)(
         HWND, WINDOWCOMPOSITIONATTRIBDATA *);
 
     class ThemeHelperWin32 final : public ThemeHelper {
