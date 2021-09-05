@@ -71,10 +71,9 @@ public class WindowWin32 extends Window {
     public AppearancePreference getAppearancePreference() {
         assert _onUIThread();
         boolean isHighContrast = isHighContrast();
-        // boolean isInverted = isInverted();
         Theme theme = getCurrentTheme();
-        // AppearancePreference preference;
-        throw new UnsupportedOperationException();
+        return new AppearancePreference(theme,isHighContrast);
+        
     }
     
     @Override
