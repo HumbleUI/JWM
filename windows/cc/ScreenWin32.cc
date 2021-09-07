@@ -17,14 +17,14 @@ jwm::ScreenWin32 jwm::ScreenWin32::fromHMonitor(HMONITOR monitor) {
     auto& area = monitorInfo.rcMonitor;
 
     // Bounds
-    screen.bounds.fTop = area.left;
+    screen.bounds.fLeft = area.left;
     screen.bounds.fTop = area.top;
     screen.bounds.fRight = area.right;
     screen.bounds.fBottom = area.bottom;
 
     // Work area
     auto& workArea = monitorInfo.rcWork;
-    screen.workArea.fTop = workArea.left;
+    screen.workArea.fLeft = workArea.left;
     screen.workArea.fTop = workArea.top;
     screen.workArea.fRight = workArea.right;
     screen.workArea.fBottom = workArea.bottom;
