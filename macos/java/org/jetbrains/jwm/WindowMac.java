@@ -95,6 +95,11 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public boolean isHighContrast(){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Screen getScreen() {
         assert _onUIThread();
         return _nGetScreen();

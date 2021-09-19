@@ -88,11 +88,17 @@ public class WindowWin32 extends Window {
         _nSetOpacity(opacity);
         return this;
     }
-    
+
     @Override
     public float getOpacity() {
         assert _onUIThread();
         return _nGetOpacity();
+    }
+
+    @Override
+    public boolean isHighContrast() {
+        assert _onUIThread();
+        return _nIsHighContrast();
     }
 
     @Override
@@ -145,6 +151,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetOpacity(float opacity);
     @ApiStatus.Internal public native float _nGetOpacity();
+    @ApiStatus.Internal public native boolean _nIsHighContrast();
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

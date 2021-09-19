@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 #include <jni.h>
+#include "ThemeHelper.hh"
+#include "ThemeHelperWin32.hh"
 
 namespace jwm {
     class WindowWin32 final: public Window {
@@ -54,6 +56,7 @@ namespace jwm {
         void setIcon(const std::wstring& iconPath);
         void setOpacity(float opacity);
         float getOpacity();
+        bool isHighContrast();
         void setMouseCursor(MouseCursor cursor);
         void setVisible(bool value);
         void maximize();
@@ -113,6 +116,7 @@ namespace jwm {
         HCURSOR _hMouseCursor = nullptr;
         bool _minimized = false;
         bool _maximized = false;
+        ThemeHelperWin32 _themeHelper;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
     };
