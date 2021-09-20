@@ -4,10 +4,22 @@ __pycache__
 
 # project meta data folder
 .idea
+.bsp
 
 # clion build directories
-/*build*
+/*build
 /macos/cmake-build-debug
 
 # jvm crash logs
 hs_err_*.log
+
+
+project/project
+
+.bloop
+
+libjwm_x64.so
+libjwm_x64.dylib
+libjwm_arm64.dylib
+jwm_x64.dll
+jwm.version

@@ -1,0 +1,6 @@
+# metrics
+
+```sh
+sbt
+> run
+```

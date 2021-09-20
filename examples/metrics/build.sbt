@@ -2,7 +2,13 @@ import Dependencies._
 resolvers += "jetbrain skija" at "https://packages.jetbrains.team/maven/p/skija/maven"
 
 ThisBuild / organization := "org.jetbrains"
+javaOptions ++= Seq(
+  "enablesystemassertions",
+  "-enableassertions",
+  "-Xcheck:jni",
+  "-Dfile.encoding=UTF-8",
 
+)
 name := "metrics"
 version :="0.1.0-SNAPSHOT"
 

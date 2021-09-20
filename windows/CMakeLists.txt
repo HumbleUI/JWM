@@ -28,43 +28,43 @@ endif()
 set(JWM_SHARED ${CMAKE_CURRENT_LIST_DIR}/../shared)
 
 # Shared sources
-file(GLOB JWM_SHARED_SOURCES_CXX ${JWM_SHARED}/cc/*.cc)
-file(GLOB JWM_SHARED_SOURCES_CXX_IMPL ${JWM_SHARED}/cc/impl/*.cc)
+file(GLOB JWM_SHARED_SOURCES_CXX ${JWM_SHARED}/src/main/cc/*.cc)
+file(GLOB JWM_SHARED_SOURCES_CXX_IMPL ${JWM_SHARED}/src/main/cc/impl/*.cc)
 
 # Windows related stuff
 set(JWM_WINDOWS_SOURCES_CXX
-    cc/AppWin32.cc
-    cc/AppWin32.hh
-    cc/ClipboardWin32.cc
-    cc/ClipboardWin32.hh
-    cc/ContextWGL.cc
-    cc/ContextWGL.hh
-    cc/LayerD3D12.cc
-    cc/LayerD3D12.hh
-    cc/LayerRaster.cc
-    cc/LayerRaster.hh
-    cc/LayerWGL.cc
-    cc/LayerWGL.hh
-    cc/PlatformWin32.hh
-    cc/ScreenWin32.cc
-    cc/ScreenWin32.hh
-    cc/WindowManagerWin32.cc
-    cc/WindowManagerWin32.hh
-    cc/WindowWin32.cc
-    cc/WindowWin32.hh)
+    src/main/cc/AppWin32.cc
+    src/main/cc/AppWin32.hh
+    src/main/cc/ClipboardWin32.cc
+    src/main/cc/ClipboardWin32.hh
+    src/main/cc/ContextWGL.cc
+    src/main/cc/ContextWGL.hh
+    src/main/cc/LayerD3D12.cc
+    src/main/cc/LayerD3D12.hh
+    src/main/cc/LayerRaster.cc
+    src/main/cc/LayerRaster.hh
+    src/main/cc/LayerWGL.cc
+    src/main/cc/LayerWGL.hh
+    src/main/cc/PlatformWin32.hh
+    src/main/cc/ScreenWin32.cc
+    src/main/cc/ScreenWin32.hh
+    src/main/cc/WindowManagerWin32.cc
+    src/main/cc/WindowManagerWin32.hh
+    src/main/cc/WindowWin32.cc
+    src/main/cc/WindowWin32.hh)
 
 # D3D12 Related stuff
 set(JWM_DX12_SOURCES_CXX
-    cc/D3D12/DX12CommandQueue.cc
-    cc/D3D12/DX12CommandQueue.hh
-    cc/D3D12/DX12Common.cc
-    cc/D3D12/DX12Common.hh
-    cc/D3D12/DX12Device.cc
-    cc/D3D12/DX12Device.hh
-    cc/D3D12/DX12Fence.cc
-    cc/D3D12/DX12Fence.hh
-    cc/D3D12/DX12SwapChain.cc
-    cc/D3D12/DX12SwapChain.hh)
+    src/main/cc/D3D12/DX12CommandQueue.cc
+    src/main/cc/D3D12/DX12CommandQueue.hh
+    src/main/cc/D3D12/DX12Common.cc
+    src/main/cc/D3D12/DX12Common.hh
+    src/main/cc/D3D12/DX12Device.cc
+    src/main/cc/D3D12/DX12Device.hh
+    src/main/cc/D3D12/DX12Fence.cc
+    src/main/cc/D3D12/DX12Fence.hh
+    src/main/cc/D3D12/DX12SwapChain.cc
+    src/main/cc/D3D12/DX12SwapChain.hh)
 
 add_library(jwm SHARED
     ${JWM_SHARED_SOURCES_CXX}
@@ -72,8 +72,8 @@ add_library(jwm SHARED
     ${JWM_WINDOWS_SOURCES_CXX}
     ${JWM_DX12_SOURCES_CXX})
 
-target_include_directories(jwm PRIVATE ${JWM_SHARED}/cc)
-target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cc)
+target_include_directories(jwm PRIVATE ${JWM_SHARED}/src/main/cc)
+target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/main/cc)
 target_include_directories(jwm PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
 
 target_link_libraries(jwm PRIVATE "shcore")
