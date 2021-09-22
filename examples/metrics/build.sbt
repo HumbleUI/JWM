@@ -25,7 +25,7 @@ maintainer := "john doe"
 packageSummary := "example jwm application"
 packageDescription := """example jwm application."""
 
-enablePlugins(JavaAppPackaging, WindowsPlugin)
+enablePlugins(JavaAppPackaging /*WindowsPlugin*/)
 
 wixProductId := java.util.UUID.randomUUID().toString
 wixProductUpgradeId := java.util.UUID.randomUUID().toString
@@ -42,14 +42,7 @@ lazy val packageApp = taskKey[Unit]("package application via jpackage")
 packageApp := {
   system match {
     case OS.Linux =>
-      Pack.packageLinuxAppCmd(
-        name.value,
-        organization.value,
-        version.value,
-        None,
-        false,
-        baseDirectory.value
-      )
+      (Debian / packageBin).value
     case OS.Mac => ???
     case OS.Windows =>
       Def.task {
