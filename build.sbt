@@ -19,6 +19,7 @@ Compile / javacOptions ++= Seq(
 // release stuffs
 publishMavenStyle := true
 Test / publishArtifact := false
+Compile / packageDoc / publishArtifact := false
 publishTo := Some(
   "space maven" at "https://packages.jetbrains.team/maven/p/jwm/maven"
 )
@@ -109,7 +110,7 @@ lazy val root = project
     },
     publish / skip := true
   )
-  .aggregate(windows, linux, macos)
+  .aggregate(shared,windows, linux, macos)
 lazy val shared = project
   .in(file("shared"))
   .settings(
