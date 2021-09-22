@@ -9,7 +9,7 @@ object BuildNative {
 
   def getArch(): String = {
     System.getProperty("os.arch").toLowerCase match {
-      case "arm64" => "arm64"
+      case "arm64" | "aarch64" => "arm64"
       case "amd64" | "x86_64" => "x64"
     }
   }
