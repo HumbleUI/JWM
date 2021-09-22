@@ -5,6 +5,9 @@ To setup sbt(simple build tool), install coursier cli and run setup command.
 This will automatically install Java, sbt and other useful tools.
 
 linux & macos
+
+Note: If you are M1 mac user, install sbt from github.com/sbt/sbt/releases
+
 ```sh
 curl -fLo cs https://git.io/coursier-cli-"$(uname | tr LD ld)"
 chmod +x cs
@@ -29,10 +32,40 @@ bitsadmin /transfer cs-cli https://git.io/coursier-cli-windows-exe "%cd%\cs.exe"
 For more details, visit https://get-coursier.io/
 
 
-Now, enter sbt shell and run
 
 ```sh
-sbt packArtifact run
+# make sure c/c++ build tools exist
+clang --version
+ninja --version
+vim version.sbt
+```
+
+```diff
+- ThisBuild / version := Deploy.revision()
++ ThisBuild / version := "0.0.0-SNAPSHOT"
+```
+
+Now, enter sbt shell and run
+
+
+```sh
+sbt packArtifact publishLocal
+# setup jdk 16 for example application
+cs java --jvm:openjdk:1.16.0-1 --setup
+source ~/.bashrc
+cd examples/metrics
+vim project/Dependencies.scala
+```
+
+```diff
+object Dependencies {
+  val skijaVersion = "0.93.1"
+-  val jwmVersion = "0.1.x"
++  val jwmVersion = "0.0.0-SNAPSHOT"
+```
+
+```sh
+sbt run
 ```
 
 ## local debug
