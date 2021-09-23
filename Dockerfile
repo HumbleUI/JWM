@@ -1,7 +1,5 @@
 FROM ubuntu:20.04
-
 WORKDIR /root
-
 RUN apt-get update -y && apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN add-apt-repository -y ppa:openjdk-r/ppa
