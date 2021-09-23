@@ -26,11 +26,11 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: tonsky/jwm 
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: tonsky/jwm:latest
           labels: ${{ steps.meta.outputs.labels }}
-
