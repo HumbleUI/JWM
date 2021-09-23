@@ -2,6 +2,8 @@ name: Rebuild Linux Docker image
 
 on:
   push:
+    branches:
+      - main
     paths:
       - Dockerfile
 
