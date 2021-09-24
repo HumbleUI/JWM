@@ -217,43 +217,43 @@ void jwm::LayerWGL::_releaseInternal() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerGL__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerGL__1nMake
         (JNIEnv* env, jclass jclass) {
     jwm::LayerWGL* instance = new jwm::LayerWGL();
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nAttach
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
         (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(window);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nReconfigure
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
 //    jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
 //    instance->reconfigure();
 //    instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nResize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nResize
         (JNIEnv* env, jobject obj, jint width, jint height) {
     jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nMakeCurrent
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nMakeCurrent
         (JNIEnv* env, jobject obj) {
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nSwapBuffers
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
     jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestSwap();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerGL__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::LayerWGL* instance = reinterpret_cast<jwm::LayerWGL*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();

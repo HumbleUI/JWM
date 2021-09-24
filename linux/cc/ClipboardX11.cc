@@ -99,27 +99,27 @@ namespace jwm {
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nSet
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Clipboard__1nSet
         (JNIEnv* env, jclass jclass, jobjectArray entries) {
     return jwm::ClipboardX11::inst().set(env, entries);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Clipboard__1nGet
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_Clipboard__1nGet
         (JNIEnv* env, jclass jclass, jobjectArray formats) {
     return jwm::ClipboardX11::inst().get(env, formats);
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_Clipboard__1nGetFormats
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_Clipboard__1nGetFormats
         (JNIEnv* env, jclass jclass) {
     return jwm::ClipboardX11::inst().getFormats(env);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nClear
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Clipboard__1nClear
         (JNIEnv* env, jclass jclass) {
 
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_Clipboard__1nRegisterFormat
+extern "C" JNIEXPORT jboolean JNICALL Java_io_github_humbleui_jwm_Clipboard__1nRegisterFormat
         (JNIEnv* env, jclass jclass, jstring formatId) {
    return true;
 }

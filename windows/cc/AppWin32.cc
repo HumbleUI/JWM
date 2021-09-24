@@ -65,22 +65,22 @@ LRESULT jwm::AppWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
         (JNIEnv* env, jclass jclass) {
     jwm::AppWin32::getInstance().init(env);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nStart
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_App__1nStart
         (JNIEnv* env, jclass jclass) {
     return jwm::AppWin32::getInstance().start();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nTerminate
         (JNIEnv* env, jclass jclass) {
     jwm::AppWin32::getInstance().terminate();
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens
         (JNIEnv* env, jclass jclass) {
     auto& app = jwm::AppWin32::getInstance();
     auto& screens = app.getScreens();
@@ -100,7 +100,7 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScree
     return array;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThread
         (JNIEnv* env, jclass cls, jobject callback) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jobject callbackRef = env->NewGlobalRef(callback);

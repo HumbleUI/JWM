@@ -183,84 +183,84 @@ void jwm::LayerD3D12::_releaseInternal() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nMake
         (JNIEnv* env, jclass jclass) {
     jwm::LayerD3D12* instance = new jwm::LayerD3D12();
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nAttach
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nAttach
         (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowWin32* window = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(window);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nReconfigure
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nReconfigure
         (JNIEnv* env, jobject obj, jint width, jint height) {
 //    jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
 //    instance->reconfigure();
 //    instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nResize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nResize
         (JNIEnv* env, jobject obj, jint width, jint height) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nSwapBuffers
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestSwap();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetAdapterPtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetAdapterPtr
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->getAdapterPtr());
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetDevicePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetDevicePtr
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->getDevicePtr());
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetQueuePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetQueuePtr
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->getQueuePtr());
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetFormat
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetFormat
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     jwm::DX12SwapChain& swapChain = instance->getSwapChain();
     return static_cast<jint>(swapChain.getFormat());
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetSampleCount
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetSampleCount
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     jwm::DX12SwapChain& swapChain = instance->getSwapChain();
     return static_cast<jint>(swapChain.getSamplesCount());
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nGetLevelCount
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nGetLevelCount
         (JNIEnv* env, jobject obj) {
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));
     jwm::DX12SwapChain& swapChain = instance->getSwapChain();
     return static_cast<jint>(swapChain.getLevelsCount());
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerD3D12__1nNextDrawableTexturePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerD3D12__1nNextDrawableTexturePtr
         (JNIEnv* env, jobject obj) {
     using namespace Microsoft::WRL;
     jwm::LayerD3D12* instance = reinterpret_cast<jwm::LayerD3D12*>(jwm::classes::Native::fromJava(env, obj));

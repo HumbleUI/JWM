@@ -1,5 +1,5 @@
 import java.util.function.Consumer;
-import org.jetbrains.jwm.*;
+import io.github.humbleui.jwm.*;
 
 public class GettingStarted {
     public static void main(String[] args) {

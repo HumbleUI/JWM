@@ -112,56 +112,56 @@ public:
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nMake
   (JNIEnv* env, jclass jclass) {
     jwm::LayerMetal* instance = new jwm::LayerMetal();
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nAttach
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowMac* window = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(env, window);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nReconfigure
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nReconfigure
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     instance->reconfigure();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nResize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nResize
   (JNIEnv* env, jobject obj, jint width, jint height) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nSwapBuffers
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nSwapBuffers
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     instance->swapBuffers();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerMetal__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nClose
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nGetDevicePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nGetDevicePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fDevice);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nGetQueuePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nGetQueuePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->fQueue);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerMetal__1nNextDrawableTexturePtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nNextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
     id<CAMetalDrawable> currentDrawable = [instance->fMetalLayer nextDrawable];

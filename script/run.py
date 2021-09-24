@@ -10,7 +10,8 @@ def main():
   args = parser.parse_args()
 
   if not args.jwm_version:
-    build.main()
+    build.build_native()
+    build.build_java()
 
   if args.skija_dir:
     skija_dir = os.path.abspath(args.skija_dir)
@@ -26,9 +27,8 @@ def main():
     ]
   else:
     compile_classpath += [
-      'shared/target/classes',
-      common.system + '/build',
-      common.system + '/target/classes',
+      'target/classes',
+      common.system + '/build'
     ]
   if args.skija_dir:
     compile_classpath += [
@@ -42,11 +42,11 @@ def main():
       common.fetch_maven('org.jetbrains.skija', 'skija-shared', args.skija_version, repo=common.space_skija),
       common.fetch_maven('org.jetbrains.skija', skija_native, args.skija_version, repo=common.space_skija),
     ]
-  sources = glob.glob('examples/java/org/jetbrains/jwm/examples/*.java') + glob.glob('examples/java/org/jetbrains/jwm/examples/' + common.system + '/*.java')
-  common.javac(compile_classpath, sources, 'examples/target/classes', release='16')
+  sources = glob.glob('examples/java/**/*.java', recursive=True)
+  common.javac(compile_classpath, sources, 'target/classes', release='16')
 
   # run
-  run_classpath = compile_classpath + ['examples/target/classes']
+  run_classpath = compile_classpath + ['target/classes']
   subprocess.check_call([
     'java',
     '--class-path', common.classpath_separator.join(run_classpath)]
@@ -56,7 +56,7 @@ def main():
     '-enablesystemassertions',
     '-Dfile.encoding=UTF-8',
     '-Xcheck:jni',
-    'org.jetbrains.jwm.examples.' + args.example
+    'io.github.humbleui.jwm.examples.' + args.example
   ])
 
   return 0

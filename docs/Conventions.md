@@ -24,7 +24,7 @@ Some common dictionary:
 
 - Use `*.cc` and `*.hh` for C++ files
 - All C++ code in `jwm` namespace
-- All public Java code in `org.jetbrains.jwm` namespace, implementation in `org.jetbrains.jwm.impl`
+- All public Java code in `io.github.humbleui.jwm` namespace, implementation in `io.github.humbleui.jwm.impl`
 - No inner classes
 
 # Visibility

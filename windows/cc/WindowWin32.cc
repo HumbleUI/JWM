@@ -882,7 +882,7 @@ std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compTyp
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMake
         (JNIEnv* env, jclass jclass) {
     std::unique_ptr<jwm::WindowWin32> instance(new jwm::WindowWin32(env, jwm::AppWin32::getInstance().getWindowManager()));
     if (instance->init())
@@ -891,52 +891,52 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMake
         return 0;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTextInputEnabled
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTextInputEnabled
         (JNIEnv* env, jobject obj, jboolean enabled) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setImeEnabled(enabled);
     return obj;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nUnmarkText
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nUnmarkText
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetWindowRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetWindowRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     jwm::UIRect rect = instance->getWindowRect();
     return jwm::classes::UIRect::toJava(env, rect);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetContentRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetContentRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     jwm::UIRect rect = instance->getContentRect();
     return jwm::classes::UIRect::toJava(env, rect);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowPosition
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowPosition
         (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setWindowPosition(left, top);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetWindowSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setWindowSize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetContentSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetContentSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTitle
         (JNIEnv* env, jobject obj, jstring title) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     const jchar* titleStr = env->GetStringChars(title, nullptr);
@@ -945,7 +945,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetTitle
     env->ReleaseStringChars(title, titleStr);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIcon
         (JNIEnv* env, jobject obj, jstring iconPath) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     const jchar* iconPathStr = env->GetStringChars(iconPath, nullptr);
@@ -954,60 +954,60 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetIcon
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetVisible
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetVisible
         (JNIEnv* env, jobject obj, jboolean isVisible) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setVisible(isVisible);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetOpacity
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetOpacity
         (JNIEnv* env, jobject obj,float opacity) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setOpacity(opacity);
 }
-extern "C" JNIEXPORT float JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetOpacity
+extern "C" JNIEXPORT float JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetOpacity
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getOpacity();
 }
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nSetMouseCursor
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setMouseCursor(static_cast<jwm::MouseCursor>(cursorId));
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowWin32__1nGetScreen
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetScreen
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     jwm::ScreenWin32 screen = instance->getScreen();
     return screen.toJni(env);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRequestFrame
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nRequestFrame
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMaximize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMaximize
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->maximize();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nMinimize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMinimize
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->minimize();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nRestore
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nRestore
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->restore();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowWin32__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();

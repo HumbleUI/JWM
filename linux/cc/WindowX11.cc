@@ -287,7 +287,7 @@ void jwm::WindowX11::setCursor(jwm::MouseCursor cursor) {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowX11__1nMake
   (JNIEnv* env, jclass jclass) {
     std::unique_ptr<WindowX11> instance = std::make_unique<WindowX11>(env, jwm::app.getWindowManager());
     if (instance->init()) {
@@ -296,13 +296,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowX11__1nMake
     return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetVisible
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetVisible
   (JNIEnv* env, jobject obj, jboolean isVisible) {
       
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->setVisible(isVisible);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetWindowRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     return jwm::classes::UIRect::toJavaXYWH(
@@ -314,7 +314,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetWind
     );
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetContentRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetContentRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     // TODO https://github.com/HumbleUI/JWM/issues/109
@@ -327,61 +327,61 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetCont
     );
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetWindowPosition
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetWindowPosition
         (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->move(left, top);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetWindowSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetWindowSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     // TODO https://github.com/HumbleUI/JWM/issues/109
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetContentSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetContentSize
         (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowX11__1nGetScreen
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScreen().asJavaObject(env); 
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRequestFrame
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nRequestFrame
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestRedraw();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nMaximize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nMaximize
   (JNIEnv* env, jobject obj) {
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->maximize();
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nMinimize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nMinimize
   (JNIEnv* env, jobject obj) {
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->minimize();
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nRestore
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nRestore
   (JNIEnv* env, jobject obj) {
     reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj))->restore();
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetTitle
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTitle
         (JNIEnv* env, jobject obj, jbyteArray title) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
 
@@ -391,7 +391,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetTitle
 
     instance->setTitle(titleS);
 }
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowX11__1nSetMouseCursor
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint idx) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
 
