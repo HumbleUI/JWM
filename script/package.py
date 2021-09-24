@@ -13,7 +13,6 @@ def main():
   os.makedirs("target/maven/META-INF/maven/io.github.humbleui.jwm/jwm", exist_ok=True)
 
   rev = re.fullmatch("refs/[^/]+/([^/]+)", args.ref).group(1)
-  print('Packaging jwm-' + rev + ".jar")
 
   with open("deploy/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml", "r") as f:
     contents = f.read()
@@ -29,6 +28,7 @@ def main():
     f.write(rev)
 
   # jwm-*.jar
+  print('Packaging jwm-' + rev + ".jar")
   subprocess.check_call(["jar",
     "--create",
     "--file", "target/jwm-" + rev + ".jar",
@@ -37,23 +37,17 @@ def main():
   ])
 
   # jwm-*-sources.jar
+  print('Packaging jwm-' + rev + "-sources.jar")
+
   lombok = common.deps()[0]
-  print('Delomboking java')
-  subprocess.check_call([
-    "java",
-    "-jar",
-    lombok,
+  subprocess.check_call(["java",
+    "-jar", lombok,
     "delombok",
-    "linux/java",
-    "macos/java",
-    "shared/java",
-    "windows/java",
-    "--classpath",
-    common.classpath_separator.join(common.deps()),
+    "linux/java", "macos/java", "shared/java", "windows/java",
+    "--classpath", common.classpath_separator.join(common.deps()),
     "-d", "target/delomboked/io/github/humbleui/jwm"
   ])
 
-  print('Packaging jwm-' + rev + "-sources.jar")
   subprocess.check_call(["jar",
     "--create",
     "--file", "target/jwm-" + rev + "-sources.jar",
@@ -61,7 +55,24 @@ def main():
     "-C", "target/maven", "META-INF"
   ])
 
+  # jwm-*-javadoc.jar
+  print('Packaging jwm-' + rev + "-javadoc.jar")
+
+  sources = glob.glob("target/delomboked/**/*.java", recursive=True)
+  subprocess.check_call(["javadoc",
+    "--class-path", common.classpath_separator.join(common.deps()),
+    "-d", "docs/apidocs",
+    "-quiet",
+    "-Xdoclint:all,-missing"]
+    + sources)
+
+  subprocess.check_call(["jar",
+    "--create",
+    "--file", "target/jwm-" + rev + "-javadoc.jar",
+    "-C", "docs/apidocs", ".",
+  ])
+
   return 0
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   sys.exit(main())

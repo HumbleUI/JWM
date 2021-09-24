@@ -2,6 +2,9 @@ target
 build
 __pycache__
 
+# javadoc
+docs/apidocs
+
 # project meta data folder
 .idea
 
