@@ -232,13 +232,16 @@ If you are looking where to start, there’s a label: [Good first issue](https:/
 
 Issues labeled “[Design](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+is%3Aopen+label%3ADesign)” and “[Not sure](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+is%3Aopen+label%3A%22Not+sure%22)” require prior discussion—leave a comment with your ideas!
 
-# Authors
+# Contributors
 
 - [Nikita Prokopov](https://github.com/tonsky)
 - [Egor Orachyov](https://github.com/EgorOrachyov)
 - [Alexey Titov](https://github.com/Alex2772)
 - [Pavel Sergeev](https://github.com/SergeevPavel)
+- [110416](https://github.com/i10416)
 
-Initial development sponsored by:
+Development sponsored by:
 
 - [JetBrains](https://jetbrains.com/)
+- [Roam Research](https://roamresearch.com/)
+- [Clojurists Together](https://www.clojuriststogether.org/)

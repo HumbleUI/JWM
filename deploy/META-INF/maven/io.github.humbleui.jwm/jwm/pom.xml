@@ -1,13 +1,61 @@
-<project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>io.github.humbleui.jwm</groupId>
     <artifactId>jwm</artifactId>
     <version>${version}</version>
+    <packaging>jar</packaging>
+
+    <name>io.github.humbleui.jwm:jwm</name>
+    <description>Cross-platform window management and OS integration library for Java</description>
+    <url>https://github.com/humbleui/jwm</url>
+    
+    <licenses>
+      <license>
+        <name>The Apache Software License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Nikita Prokopov</name>
+            <url>https://github.com/tonsky</url>
+            <timezone>Europe/Berlin</timezone>
+        </developer>
+        <developer>
+            <name>Egor Orachyov</name>
+            <url>https://github.com/EgorOrachyov</url>
+        </developer>
+        <developer>
+            <name>Alexey Titov</name>
+            <url>https://github.com/Alex2772</url>
+        </developer>
+        <developer>
+            <name>Pavel Sergeev</name>
+            <url>https://github.com/SergeevPavel</url>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>110416</name>
+        </contributor>
+    </contributors>
+
+    <scm>
+        <connection>scm:git:git://github.com/humbleui/jwm.git</connection>
+        <developerConnection>scm:git:ssh://github.com:humbleui/jwm.git</developerConnection>
+        <url>http://github.com/humbleui/jwm/tree/master</url>
+    </scm>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -16,10 +64,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>space-maven</id>
-            <url>https://packages.jetbrains.team/maven/p/jwm/maven</url>
-        </repository>
-    </distributionManagement>
 </project>
