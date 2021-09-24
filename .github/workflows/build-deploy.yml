@@ -78,6 +78,14 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: jars
-          path: 'target/*.jar'
-      - if: startsWith(${{ github.ref }}, 'refs/tags/')
-        run: python3 ./script/deploy.py --ref ${{ github.ref }}
+          path: |
+            target/*.jar
+            target/maven/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml
+      - name: Deploy to Maven Central
+        run: |
+          echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+          python3 ./script/deploy.py --ref ${{ github.ref }}
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+        # if: startsWith(${{ github.ref }}, 'refs/tags/')
+        
