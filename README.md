@@ -64,20 +64,11 @@ Electron:
 
 ## Dependency
 
-Repository URL:
-
-```
-https://packages.jetbrains.team/maven/p/jwm/maven
-```
-
-Artifacts:
-
-Platform    | groupId             | artifactId        | version
-------------|---------------------|-------------------|----------
-macOS Intel | `org.jetbrains.jwm` | `jwm-macos-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-x64%2Fmaven-metadata.xml&query=//release)
-macOS M1    | `org.jetbrains.jwm` | `jwm-macos-arm64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-arm64%2Fmaven-metadata.xml&query=//release)
-Linux       | `org.jetbrains.jwm` | `jwm-linux-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-linux-x64%2Fmaven-metadata.xml&query=//release)
-Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-windows-x64%2Fmaven-metadata.xml&query=//release)
+Key        | Value
+-----------|-----------------------
+groupId    | io.github.humbleui.jwm
+artifactId | jwm
+version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)</version>
 
 ## Getting started
 

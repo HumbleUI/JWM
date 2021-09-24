@@ -22,8 +22,7 @@ def main():
   compile_classpath = common.deps()
   if args.jwm_version:
     compile_classpath += [
-      common.fetch_maven('org.jetbrains.jwm', 'jwm-shared', args.jwm_version, repo=common.space_jwm),
-      common.fetch_maven('org.jetbrains.jwm', 'jwm-' + common.system + '-' + common.arch, args.jwm_version, repo=common.space_jwm),
+      common.fetch_maven('io.humbleui.jwm', 'jwm', args.jwm_version)
     ]
   else:
     compile_classpath += [
