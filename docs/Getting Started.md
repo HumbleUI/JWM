@@ -4,28 +4,19 @@
 
 First, add the latest version of JWM specific to your platform to the dependencies:
 
-Repository URL:
-
-```
-https://packages.jetbrains.team/maven/p/jwm/maven
-```
-
-Artifacts:
-
-Platform    | groupId             | artifactId        | version
-------------|---------------------|-------------------|----------
-macOS Intel | `org.jetbrains.jwm` | `jwm-macos-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-x64%2Fmaven-metadata.xml&query=//release)
-macOS M1    | `org.jetbrains.jwm` | `jwm-macos-arm64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-macos-arm64%2Fmaven-metadata.xml&query=//release)
-Linux       | `org.jetbrains.jwm` | `jwm-linux-x64`   | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-linux-x64%2Fmaven-metadata.xml&query=//release)
-Windows     | `org.jetbrains.jwm` | `jwm-windows-x64` | ![version](https://img.shields.io/badge/dynamic/xml?style=flat-square&label=latest&color=success&url=https%3A%2F%2Fpackages.jetbrains.team%2Fmaven%2Fp%2Fjwm%2Fmaven%2Forg%2Fjetbrains%2Fjwm%2Fjwm-windows-x64%2Fmaven-metadata.xml&query=//release)
+Key        | Value
+-----------|-----------------------
+groupId    | io.github.humbleui.jwm
+artifactId | jwm
+version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)</version>
 
 E.g. for Maven it’ll look like this:
 
 ```xml
 <dependency>
-    <groupId>org.jetbrains.jwm</groupId>
-    <artifactId>jwm-macos-arm64</artifactId>
-    <version>0.1.274</version>
+    <groupId>io.github.humbleui.jwm</groupId>
+    <artifactId>jwm</artifactId>
+    <version>0.2.4</version>
 </dependency>
 ```
 
@@ -155,7 +146,7 @@ public void accept(Event e) {
 
 Simple key handling (e.g. for program shortcuts) via `EventKey`.
 Simple text input via `EventTextInput`.
-Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/HumbleUI/JWM/blob/main/examples/java/org/jetbrains/jwm/examples/PanelTextInput.java) for hints how to handle IME input.
+Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/HumbleUI/JWM/blob/main/examples/java/PanelTextInput.java) for hints how to handle IME input.
 
 ```java
 @Override
@@ -266,4 +257,4 @@ public void paint() {
 }
 ```
 
-For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [examples](https://github.com/HumbleUI/JWM/tree/main/examples/java/org/jetbrains/jwm/examples) folder.
+For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [examples](https://github.com/HumbleUI/JWM/tree/main/examples/java/) folder.

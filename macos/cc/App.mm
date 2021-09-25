@@ -5,7 +5,7 @@
 #include "MainView.hh"
 #include "Util.hh"
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
     // we only run on systems that support at least Core Profile 3.2
@@ -39,19 +39,19 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit
     jwm::initCursorCache();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_org_jetbrains_jwm_App__1nStart
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_App__1nStart
   (JNIEnv* env, jclass jclass) {
     [NSApp run];
     return EXIT_SUCCESS;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nTerminate
   (JNIEnv* env, jclass jclass) {
     [NSApp stop:nil];
     [NSApp terminate:nil];
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens
   (JNIEnv* env, jclass jclass) {
     NSArray* screens = [NSScreen screens];
     jobjectArray res = env->NewObjectArray([screens count], jwm::classes::Screen::kCls, 0);
@@ -63,7 +63,7 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScree
     return res;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThread
   (JNIEnv* env, jclass cls, jobject callback) {
     JavaVM* javaVM;
     env->GetJavaVM(&javaVM);

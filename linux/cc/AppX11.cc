@@ -98,15 +98,15 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nInit(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit(JNIEnv* env, jclass jclass) {
     jwm::app.init(env);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nStart(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart(JNIEnv* env, jclass jclass) {
     jwm::app.start();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nTerminate(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nTerminate(JNIEnv* env, jclass jclass) {
     jwm::app.terminate();
 }
 
@@ -115,7 +115,7 @@ extern"C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThread
         (JNIEnv* env, jclass cls, jobject callback) {
     jobject callbackRef = env->NewGlobalRef(callback);
     jwm::app.getWindowManager().enqueueTask([callbackRef] {
@@ -125,7 +125,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_App__1nRunOnUIThread
 }
 
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
     auto& screens = jwm::app.getScreens();
     jobjectArray array = env->NewObjectArray(screens.size(), jwm::classes::Screen::kCls, 0);    
     float scale = jwm::app.getScale();

@@ -13,7 +13,7 @@ void jwm::Window::dispatch(jobject event) {
       jwm::classes::Consumer::accept(fEnv, fEventListener, event);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetEventListener
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Window__1nSetEventListener
   (JNIEnv* env, jobject obj, jobject listener) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
     if (instance->fEventListener)
@@ -21,7 +21,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetEventListe
     instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Window__1nSetTextInputClient
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Window__1nSetTextInputClient
   (JNIEnv* env, jobject obj, jobject client) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
     if (instance->fTextInputClient)

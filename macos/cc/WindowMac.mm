@@ -153,7 +153,7 @@ void jwm::WindowMac::close() {
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowMac__1nMake
   (JNIEnv* env, jclass jclass) {
     std::unique_ptr<jwm::WindowMac> instance(new jwm::WindowMac(env));
     if (instance->init())
@@ -162,13 +162,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_WindowMac__1nMake
       return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetVisible
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetVisible
   (JNIEnv* env, jobject obj, jboolean value) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->setVisible(value);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWindowRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -184,7 +184,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetWind
     );
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetContentRect
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetContentRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -200,7 +200,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetCont
     );
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowPosition
+extern "C" JNIEXPORT jboolean JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetWindowPosition
   (JNIEnv* env, jobject obj, int left, int top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -220,7 +220,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWin
     return false;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetWindowSize
   (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -233,7 +233,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetWindowS
     [nsWindow setFrame:frame display:YES];
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContentSize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetContentSize
   (JNIEnv* env, jobject obj, int width, int height) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -242,7 +242,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetContent
     [nsWindow setContentSize:size];
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetTitle
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitle
   (JNIEnv* env, jobject obj, jstring titleStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     jsize len = env->GetStringLength(titleStr);
@@ -253,7 +253,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetTitle
     [title release];
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetIcon
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
   (JNIEnv* env, jobject obj, jstring pathStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     jsize len = env->GetStringLength(pathStr);
@@ -271,26 +271,26 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetIcon
     [app release];
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nSetMouseCursor
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor
   (JNIEnv* env, jobject obj, jint cursorIdx) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSCursor* cursor = [jwm::kCursorCache objectAtIndex:cursorIdx];
     [cursor set];
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_WindowMac__1nGetScreen
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     return jwm::screenFromNSScreen(env, [instance->fNSWindow screen]);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRequestFrame
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nRequestFrame
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMaximize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nMaximize
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -301,7 +301,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMaximize
     }
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMinimize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nMinimize
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     if (!instance->fNSWindow.miniaturized) {
@@ -310,7 +310,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nMinimize
     }
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRestore
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nRestore
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
@@ -324,7 +324,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nRestore
     }
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_WindowMac__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nClose
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();

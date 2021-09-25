@@ -74,49 +74,49 @@ namespace jwm {
 }
 
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster__1nMake
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nMake
         (JNIEnv* env, jclass jclass) {
     jwm::LayerRaster* instance = new jwm::LayerRaster;
     return reinterpret_cast<jlong>(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nAttach
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nAttach
         (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(window);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nReconfigure
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nReconfigure
         (JNIEnv* env, jobject obj) {
     
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nResize
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nResize
         (JNIEnv* env, jobject obj, jint width, jint height) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     instance->resize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nSwapBuffers
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nSwapBuffers
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     instance->swapBuffers();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_LayerRaster__1nClose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nClose
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster__1nGetPixelsPtr
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nGetPixelsPtr
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     return reinterpret_cast<jlong>(instance->getPixelsPtr());
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_jwm_LayerRaster__1nGetRowBytes
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nGetRowBytes
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     return static_cast<jint>(instance->getRowBytes());

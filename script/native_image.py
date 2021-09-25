@@ -8,7 +8,7 @@ def main():
    ["jar",
     "--create",
     "--file", "target/jwm.jar",
-    "--main-class", "org.jetbrains.jwm.examples.Example",
+    "--main-class", "io.github.humbleui.jwm.examples.Example",
     "-C", "macos/target/classes", ".",
     "-C", "shared/target/classes", ".",
     "-C", "examples/target/classes", ".",

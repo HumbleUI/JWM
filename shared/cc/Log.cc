@@ -122,13 +122,13 @@ void jwm::LogBuilder::commit() {
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nSetVerbose
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Log__1nSetVerbose
     (JNIEnv* env, jclass jclass, jboolean enabled) {
     jwm::Log& log = jwm::Log::getInstance();
     log.setVerbose(enabled);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Log__1nSetListener
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Log__1nSetListener
         (JNIEnv* env, jclass jclass, jobject listener) {
     jwm::Log& log = jwm::Log::getInstance();
     log.enable(listener != nullptr);

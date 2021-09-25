@@ -332,35 +332,35 @@ bool jwm::ClipboardWin32::_getDefaultFormatName(UINT nativeId, std::wstring &for
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nSet
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Clipboard__1nSet
         (JNIEnv* env, jclass jclass, jobjectArray entries) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jwm::ClipboardWin32& clipboard = app.getClipboard();
     clipboard.set(entries);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_org_jetbrains_jwm_Clipboard__1nGet
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_Clipboard__1nGet
         (JNIEnv* env, jclass jclass, jobjectArray formats) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jwm::ClipboardWin32& clipboard = app.getClipboard();
     return clipboard.get(formats);
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL Java_org_jetbrains_jwm_Clipboard__1nGetFormats
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_Clipboard__1nGetFormats
         (JNIEnv* env, jclass jclass) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jwm::ClipboardWin32& clipboard = app.getClipboard();
     return clipboard.getFormats();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_jetbrains_jwm_Clipboard__1nClear
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Clipboard__1nClear
         (JNIEnv* env, jclass jclass) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jwm::ClipboardWin32& clipboard = app.getClipboard();
     clipboard.clear();
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_org_jetbrains_jwm_Clipboard__1nRegisterFormat
+extern "C" JNIEXPORT jboolean JNICALL Java_io_github_humbleui_jwm_Clipboard__1nRegisterFormat
         (JNIEnv* env, jclass jclass, jstring formatId) {
     jwm::AppWin32& app = jwm::AppWin32::getInstance();
     jwm::ClipboardWin32& clipboard = app.getClipboard();

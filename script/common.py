@@ -8,9 +8,7 @@ parser.add_argument('--arch', default=arch)
 arch = args.arch
 system = {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows'}[platform.system()]
 classpath_separator = ';' if system == 'windows' else ':'
-mvn = "mvn.cmd" if system == "windows" else "mvn"
 space_skija = 'https://packages.jetbrains.team/maven/p/skija/maven'
-space_jwm = 'https://packages.jetbrains.team/maven/p/jwm/maven'
 
 def fetch(url, file):
   if not os.path.exists(file):
