@@ -109,10 +109,6 @@ float jwm::WindowWin32::getOpacity() {
     return static_cast<float>(alpha / 255.0);
 }
 
-bool jwm::WindowWin32::isHighContrast() {
-    return _themeHelper.isHighContrast();
-}
-
 void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
     JWM_VERBOSE("Set window cursor '" << mouseCursorToStr(cursor) << "'");
 
@@ -742,7 +738,6 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
         return false;
     }
 
-    _themeHelper = ThemeHelperWin32(_hWnd);
 
     // Set this as property to reference from message callbacks
     SetPropW(_hWnd, L"JWM", this);
@@ -976,11 +971,7 @@ extern "C" JNIEXPORT float JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGe
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getOpacity();
 }
-extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nIsHighContrast
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    return instance->isHighContrast();
-}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));

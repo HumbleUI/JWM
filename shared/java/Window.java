@@ -233,11 +233,6 @@ public abstract class Window extends RefCounted {
     public abstract float getOpacity();
 
     /**
-     * <p>check whether OS currently uses high contrast mode.</p>
-     */
-    public abstract boolean isHighContrast();
-
-    /**
      * <p>Get window screen, where currently this window is located.</p>
      *
      * @return          screen object where this window located

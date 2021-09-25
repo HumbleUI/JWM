@@ -1,7 +1,7 @@
 #pragma once
 
 namespace jwm {
-    class ThemeHelper {
+    class Theme {
        public:
            bool isHighContrast();
     };

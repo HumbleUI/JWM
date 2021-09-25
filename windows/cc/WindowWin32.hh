@@ -11,8 +11,6 @@
 #include <vector>
 #include <string>
 #include <jni.h>
-#include "ThemeHelper.hh"
-#include "ThemeHelperWin32.hh"
 
 namespace jwm {
     class WindowWin32 final: public Window {
@@ -116,7 +114,6 @@ namespace jwm {
         HCURSOR _hMouseCursor = nullptr;
         bool _minimized = false;
         bool _maximized = false;
-        ThemeHelperWin32 _themeHelper;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
     };
