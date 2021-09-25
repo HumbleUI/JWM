@@ -738,7 +738,6 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
         return false;
     }
 
-
     // Set this as property to reference from message callbacks
     SetPropW(_hWnd, L"JWM", this);
 
@@ -971,7 +970,6 @@ extern "C" JNIEXPORT float JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGe
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getOpacity();
 }
-
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint cursorId) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));

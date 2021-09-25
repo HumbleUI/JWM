@@ -28,7 +28,7 @@ namespace jwm {
         JNIEnv* getJniEnv() const { return _jniEnv; }
         ThemeWin32& getTheme() { return _theme; }
 
-       private:
+    private:
         std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
         ClipboardWin32 _clipboard;
