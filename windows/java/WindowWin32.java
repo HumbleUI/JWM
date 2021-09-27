@@ -132,6 +132,12 @@ public class WindowWin32 extends Window {
         super.close();
     }
 
+    public Window winSetParent(long hwnd) {
+        assert _onUIThread();
+        _nWinSetParent(hwnd);
+        return this;
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetTextInputEnabled(boolean enabled);
     @ApiStatus.Internal public native void _nUnmarkText();
@@ -152,4 +158,5 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nClose();
+    @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }
