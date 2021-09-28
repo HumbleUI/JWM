@@ -1,0 +1,128 @@
+[
+{
+  "name":"io.github.humbleui.jwm.Clipboard",
+  "methods":[{"name":"_registerPredefinedFormat","parameterTypes":["java.lang.String"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.ClipboardEntry",
+  "fields":[
+    {"name":"_data"}, 
+    {"name":"_format"}
+  ],
+  "methods":[{"name":"make","parameterTypes":["io.github.humbleui.jwm.ClipboardFormat","byte[]"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.ClipboardFormat",
+  "fields":[{"name":"_formatId"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventFrame",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventKey",
+  "methods":[{"name":"<init>","parameterTypes":["int","boolean","int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventMouseButton",
+  "methods":[{"name":"<init>","parameterTypes":["int","boolean","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventMouseMove",
+  "methods":[{"name":"<init>","parameterTypes":["int","int","int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventMouseScroll",
+  "methods":[{"name":"<init>","parameterTypes":["float","float","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventTextInput",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventTextInputMarked",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowCloseRequest",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowMaximize",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowMinimize",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowMove",
+  "methods":[{"name":"<init>","parameterTypes":["int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowResize",
+  "methods":[{"name":"<init>","parameterTypes":["int","int","int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowRestore",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.EventWindowScreenChange",
+  "fields":[{"name":"INSTANCE"}]}
+,
+{
+  "name":"io.github.humbleui.jwm.LayerNotSupportedException"}
+,
+{
+  "name":"io.github.humbleui.jwm.Screen",
+  "methods":[{"name":"<init>","parameterTypes":["long","boolean","io.github.humbleui.jwm.UIRect","io.github.humbleui.jwm.UIRect","float"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.TextInputClient",
+  "methods":[{"name":"getRectForMarkedRange","parameterTypes":["int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.UIRect",
+  "fields":[
+    {"name":"_bottom"}, 
+    {"name":"_left"}, 
+    {"name":"_right"}, 
+    {"name":"_top"}
+  ],
+  "methods":[{"name":"<init>","parameterTypes":["int","int","int","int"] }]}
+,
+{
+  "name":"io.github.humbleui.jwm.impl.Native",
+  "fields":[{"name":"_ptr"}]}
+,
+{
+  "name":"java.lang.ClassLoader",
+  "methods":[
+    {"name":"getPlatformClassLoader","parameterTypes":[] }, 
+    {"name":"loadClass","parameterTypes":["java.lang.String"] }
+  ]}
+,
+{
+  "name":"java.lang.Runnable",
+  "methods":[{"name":"run","parameterTypes":[] }]}
+,
+{
+  "name":"java.lang.RuntimeException"}
+,
+{
+  "name":"java.lang.Throwable",
+  "methods":[{"name":"printStackTrace","parameterTypes":[] }]}
+,
+{
+  "name":"java.util.function.Consumer",
+  "methods":[{"name":"accept","parameterTypes":["java.lang.Object"] }]}
+,
+{
+  "name":"jdk.internal.loader.ClassLoaders$PlatformClassLoader"}
+,
+{
+  "name":"org.graalvm.nativebridge.jni.JNIExceptionWrapperEntryPoints",
+  "methods":[{"name":"getClassName","parameterTypes":["java.lang.Class"] }]}
+
+]

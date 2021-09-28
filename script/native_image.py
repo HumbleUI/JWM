@@ -9,22 +9,20 @@ def main():
     "--create",
     "--file", "target/jwm.jar",
     "--main-class", "io.github.humbleui.jwm.examples.Example",
-    "-C", "macos/target/classes", ".",
-    "-C", "shared/target/classes", ".",
-    "-C", "examples/target/classes", ".",
-    "-C", "/Users/prokopov/ws/skija/shared/target/classes", ".",])
-  shutil.copy('macos/build/libjwm_x64.dylib', 'target')
-  shutil.copy('/Users/prokopov/ws/skija/native/build/libskija_x64.dylib', 'target')
+    "-C", "target/classes", ".",
+    # Copy native-image config to JAR:
+    # https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/#embedding-a-configuration-file
+    "-C", "deploy", "."])
+  shutil.copy('windows/build/jwm_x64.dll', 'target')
+  #shutil.copy('/Users/prokopov/ws/skija/native/build/libskija_x64.dylib', 'target')
 
   os.chdir('target')
   # https://github.com/cubuspl42/JavaFX-Graal-HelloWorld
   # https://github.com/maxum2610/HelloJFX-GraalSVM
   subprocess.check_call([
-    '/Library/Java/JavaVirtualMachines/graalvm-ce-java16-21.1.0/Contents/Home/bin/native-image',
-    '--server-shutdown-all',
+    'C:\\GraalVM\\graalvm-ce-java17-21.3.0-dev\\bin\\native-image.cmd',
     '--no-fallback',
     '--report-unsupported-elements-at-runtime',
-    '--enable-all-security-services',
     '--allow-incomplete-classpath',
     '-H:+JNI',
     '-jar', 'jwm.jar'
