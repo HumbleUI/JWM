@@ -1,0 +1,8 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\Qjwm.version\\E"}, 
+    {"pattern":"\\Qjwm_x64.dll\\E"}
+  ]},
+  "bundles":[]
+}
