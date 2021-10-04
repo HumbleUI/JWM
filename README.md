@@ -90,7 +90,13 @@ Alpha. Expect API breakages.
 | runOnUIThread     | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
 | terminate         | ✅   | ✅   | ✅   |
 | Show notification | ❌   | ❌   | ❌   |
-| System Theme      | ❌   | ❌   | ❌   |
+
+### Theme
+|                   | Windows | macOS | X11 |
+|-------------------|---------|-------|-----|
+| isHighContrast    | ✅      | ✅    | ➖  |
+| isDark            | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
+| isInvereted       | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
 
 ### Window
 

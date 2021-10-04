@@ -5,7 +5,6 @@
 #include <D3D12/DX12Common.hh>
 #include <ContextWGL.hh>
 #include <ScreenWin32.hh>
-#include <ThemeWin32.hh>
 #include <jni.h>
 
 namespace jwm {
@@ -26,13 +25,11 @@ namespace jwm {
         ContextWGL& getContextWGL() { return _wglContext; }
         DX12Common& getDx12Common() { return _dx12common; }
         JNIEnv* getJniEnv() const { return _jniEnv; }
-        ThemeWin32& getTheme() { return _theme; }
 
     private:
         std::vector<ScreenWin32> _screens;
         WindowManagerWin32 _windowManager;
         ClipboardWin32 _clipboard;
-        ThemeWin32 _theme;
         ContextWGL _wglContext;
         DX12Common _dx12common;
         JNIEnv* _jniEnv;
