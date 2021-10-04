@@ -64,10 +64,10 @@ public class Example implements Consumer<Event> {
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
-                window.setIcon(new File("examples/resources/windows.ico"));
+                window.setIcon(new File("examples/dashboard/resources/windows.ico"));
             }
             case MACOS -> {
-                window.setIcon(new File("examples/resources/macos.icns"));
+                window.setIcon(new File("examples/dashboard/resources/macos.icns"));
             }
         }
         window.setVisible(true);

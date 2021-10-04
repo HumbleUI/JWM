@@ -97,6 +97,13 @@ lazy val example = project
         MergeStrategy.discard
       case other =>
         MergeStrategy.defaultMergeStrategy(other)
+    },
+    fork := system == OS.Mac,
+    javaOptions ++= {
+      system match {
+        case OS.Mac => Seq("-XstartOnFirstThread")
+        case _ => Seq()
+      }
     }
   ).enablePlugins(NativeImagePlugin)
 
