@@ -45,6 +45,7 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/LayerRaster.hh
     cc/LayerWGL.cc
     cc/LayerWGL.hh
+    cc/ThemeWin32.cc
     cc/PlatformWin32.hh
     cc/ScreenWin32.cc
     cc/ScreenWin32.hh
