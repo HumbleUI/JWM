@@ -22,7 +22,7 @@ def main():
   compile_classpath = common.deps()
   if args.jwm_version:
     compile_classpath += [
-      common.fetch_maven('io.humbleui.jwm', 'jwm', args.jwm_version)
+      common.fetch_maven('io.github.humbleui.jwm', 'jwm', args.jwm_version)
     ]
   else:
     compile_classpath += [

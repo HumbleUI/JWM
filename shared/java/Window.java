@@ -286,6 +286,7 @@ public abstract class Window extends RefCounted {
         assert _onUIThread();
         _closed = true;
         setEventListener(null);
+        setTextInputClient(null);
         App._windows.remove(this);
         super.close();
     }
