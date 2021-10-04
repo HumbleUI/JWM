@@ -23,3 +23,9 @@ extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_Theme__1nIsHighCon
     JWM_VERBOSE("is HighContrast? '" << result << "'");
     return result;
 }
+
+
+extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_Theme__1nIsDark
+  (JNIEnv* env, jclass jclass) {
+    return false;
+}
