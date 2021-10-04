@@ -88,12 +88,13 @@ public class WindowWin32 extends Window {
         _nSetOpacity(opacity);
         return this;
     }
-    
+
     @Override
     public float getOpacity() {
         assert _onUIThread();
         return _nGetOpacity();
     }
+
 
     @Override
     public Screen getScreen() {
