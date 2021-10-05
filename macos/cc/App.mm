@@ -5,6 +5,36 @@
 #include "MainView.hh"
 #include "Util.hh"
 
+// http://trac.wxwidgets.org/ticket/13557
+// here we subclass NSApplication, for the purpose of being able to override sendEvent
+@interface JWMNSApplication: NSApplication {
+}
+
+- (id)init;
+
+- (void)sendEvent:(NSEvent *)anEvent;
+
+@end
+
+@implementation JWMNSApplication
+
+- (id)init {
+    self = [super init];
+    return self;
+}
+
+// This is needed because otherwise we don't receive any key-up events for command-key combinations (an AppKit bug, apparently)
+- (void)sendEvent:(NSEvent *)anEvent {
+    if ([anEvent type] == NSEventTypeKeyUp && ([anEvent modifierFlags] & NSEventModifierFlagCommand))
+        [[self keyWindow] sendEvent:anEvent];
+    else
+        [super sendEvent:anEvent];    
+}
+
+@end
+
+// JNI
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
   (JNIEnv* env, jclass jclass) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
@@ -12,7 +42,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
     return EXIT_FAILURE;
 #endif
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    [NSApplication sharedApplication];
+    [JWMNSApplication sharedApplication];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
