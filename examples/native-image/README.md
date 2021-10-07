@@ -23,6 +23,21 @@
 ## run example application
 
 ```sh
+// at jwm dir
+./script/build.py
+./script/package.py --ref refs/tag/x.y.z-SNAPSHOT --publish-local
+cd examples/native-image
+vim project/Dependencies.scala
+```
+
+```diff
+object Dependencies {
+  val skijaVersion = "0.93.1"
+  // ...
++   val jwmVersion = "x.y.z-SNAPSHOT"
+```
+
+```sh
 sbt run
 ```
 ## build graal native image
