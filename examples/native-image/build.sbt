@@ -88,7 +88,7 @@ lazy val example = project
   .in(file("."))
   .settings(srcSettings)
   .settings(
-     libraryDependencies ++= Dependencies.deps,
+    libraryDependencies ++= Dependencies.deps,
     assembly / mainClass := Some("io.github.humbleui.jwm.examples.Example"),
     Compile / mainClass := Some("io.github.humbleui.jwm.examples.Example"),
     nativeImageJvmIndex := "jabba",

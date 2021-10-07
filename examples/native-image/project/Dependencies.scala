@@ -1,5 +1,5 @@
 import sbt._
-
+import Utils._
 object Dependencies {
   val skijaVersion = "0.93.1"
   // If you want to use local snapshot version, 
@@ -13,12 +13,12 @@ object Dependencies {
     "io.github.humbleui.jwm" % "jwm" % jwmVersion
   ) ++ platformDeps
 
-  private def platformDeps = System.getProperty("os.name").toLowerCase match {
-    case win if win.contains("win") =>
+  private def platformDeps = Utils.system match {
+    case OS.Windows =>
       Seq("org.jetbrains.skija" % "skija-windows" % skijaVersion)
-    case linux if linux.contains("linux") =>
+    case OS.Linux =>
       Seq("org.jetbrains.skija" % "skija-linux" % skijaVersion)
-    case macos if macos.contains("mac") =>
+    case OS.Mac =>
       Seq(
         "org.jetbrains.skija" % "skija-macos-x64" % skijaVersion,
         "org.jetbrains.skija" % "skija-macos-arm64" % skijaVersion
