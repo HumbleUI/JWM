@@ -1,11 +1,14 @@
 #! /usr/bin/env python3
 import argparse, build, clean, common, glob, os, platform, re, subprocess, sys
+import shutil
 
 def main():
   os.chdir(os.path.dirname(__file__) + '/..')
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--ref', required=True)
+  parser.add_argument('--publish-local', action='store_true')
+  
   (args, _) = parser.parse_known_args()
 
   # Update poms
@@ -71,6 +74,17 @@ def main():
     "--file", "target/jwm-" + rev + "-javadoc.jar",
     "-C", "docs/apidocs", ".",
   ])
+  print("finish packaging")
+
+  if args.publish_local == True:
+    local_repo = os.path.expanduser(f"~/.m2/repository/io/github/humbleui/jwm/jwm/{rev}")
+    print(f"publishing jwm-{rev} at {local_repo}")
+    os.makedirs(local_repo, exist_ok=True)
+    shutil.copyfile("target/maven/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml",os.path.join(local_repo,f"jwm-{rev}.pom"))
+    shutil.copyfile(f"target/jwm-{rev}.jar",os.path.join(local_repo,  f"jwm-{rev}.jar"))
+    shutil.copyfile(f"target/jwm-{rev}-javadoc.jar",os.path.join(local_repo ,  f"jwm-{rev}-javadoc.jar"))
+    shutil.copyfile(f"target/jwm-{rev}-sources.jar",os.path.join(local_repo ,f"jwm-{rev}-sources.jar"))
+    print(f"finish publishing")
 
   return 0
 
