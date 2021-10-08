@@ -41,11 +41,11 @@ def main():
       common.fetch_maven('org.jetbrains.skija', 'skija-shared', args.skija_version, repo=common.space_skija),
       common.fetch_maven('org.jetbrains.skija', skija_native, args.skija_version, repo=common.space_skija),
     ]
-  sources = glob.glob('examples/java/**/*.java', recursive=True)
-  common.javac(compile_classpath, sources, 'examples/target/classes', release='16')
+  sources = glob.glob('examples/dashboard/java/**/*.java', recursive=True)
+  common.javac(compile_classpath, sources, 'examples/dashboard/target/classes', release='16')
   print(compile_classpath)
   # run
-  run_classpath = compile_classpath + ['examples/target/classes']
+  run_classpath = compile_classpath + ['examples/dashboard/target/classes']
   subprocess.check_call([
     'java',
     '--class-path', common.classpath_separator.join(run_classpath)]

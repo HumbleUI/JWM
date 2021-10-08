@@ -136,7 +136,7 @@ Alpha. Expect API breakages.
 |                         | Windows | macOS | X11 |
 |-------------------------|---------|-------|-----|
 | EventFrame              | ✅   | ✅   | ✅   |
-| EventKey                | [#30](https://github.com/HumbleUI/JWM/issues/30)  | [#30](https://github.com/HumbleUI/JWM/issues/30) [#87](https://github.com/HumbleUI/JWM/issues/87) | [#30](https://github.com/HumbleUI/JWM/issues/30)  |
+| EventKey                | ✅   | ✅   | ✅   |
 | EventMouseButton        | ✅   | ✅   | ✅   |
 | EventMouseMove          | ✅   | ✅   | ✅   |
 | EventMouseScroll        | [#115](https://github.com/HumbleUI/JWM/issues/115) | ✅   | [#115](https://github.com/HumbleUI/JWM/issues/115) |

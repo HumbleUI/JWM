@@ -38,17 +38,15 @@ public class App {
     @NotNull @SneakyThrows
     public static Window makeWindow() {
         assert _onUIThread();
-        Class cls;
-        if (Platform.CURRENT == Platform.WINDOWS) {
-            cls = App.class.forName("io.github.humbleui.jwm.WindowWin32");
-        } else if (Platform.CURRENT == Platform.MACOS) {
-            cls = App.class.forName("io.github.humbleui.jwm.WindowMac");
-        } else if (Platform.CURRENT == Platform.X11) {
-            cls = App.class.forName("io.github.humbleui.jwm.WindowX11");
-        } else
+        Window window;
+        if (Platform.CURRENT == Platform.WINDOWS)
+            window = new WindowWin32();
+        else if (Platform.CURRENT == Platform.MACOS)
+            window = new WindowMac();
+        else if (Platform.CURRENT == Platform.X11)
+            window = new WindowX11();
+        else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
-        Constructor<Window> ctor = cls.getDeclaredConstructor();
-        Window window = ctor.newInstance();;
         _windows.add(window);
         return window;
     }

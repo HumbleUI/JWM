@@ -26,7 +26,6 @@ public class Example implements Consumer<Event> {
     public PanelMouseCursors panelMouseCursors;
     public PanelRendering panelRendering;
     public PanelEvents panelEvents;
-    public PanelTheme panelTheme;
 
     public Window window;
 
@@ -45,7 +44,6 @@ public class Example implements Consumer<Event> {
         panelMouseCursors = new PanelMouseCursors(window);
         panelRendering = new PanelRendering(window);
         panelEvents = new PanelEvents(window);
-        panelTheme = new PanelTheme(window);
 
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
@@ -64,10 +62,10 @@ public class Example implements Consumer<Event> {
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
-                window.setIcon(new File("examples/resources/windows.ico"));
+                window.setIcon(new File("src/main/resources/windows.ico"));
             }
             case MACOS -> {
-                window.setIcon(new File("examples/resources/macos.icns"));
+                window.setIcon(new File("src/main/resources/macos.icns"));
             }
         }
         window.setVisible(true);
@@ -114,8 +112,7 @@ public class Example implements Consumer<Event> {
         panelRendering.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
-        panelEvents.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth * 2 + PADDING, panelHeight, scale);
-        panelTheme.paint        (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 2, panelWidth, panelHeight, scale);
+        panelEvents.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth * 3 + PADDING * 2, panelHeight, scale);
 
         // Colored bars
         try (var paint = new Paint()) {

@@ -2,7 +2,7 @@
 import common, glob, os, platform, subprocess, sys
 
 def main():
-  os.chdir(os.path.dirname(__file__) + '/../examples/resources')
+  os.chdir(os.path.dirname(__file__) + '/../examples/dashboard/resources')
   # macos only
   subprocess.check_call(["iconutil", "-c", "icns", "macos.iconset"])
   # windows, requires imagemagick
