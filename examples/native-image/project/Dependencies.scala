@@ -3,8 +3,8 @@ import Utils._
 object Dependencies {
   val skijaVersion = "0.93.1"
   // If you want to use local snapshot version, 
-  // run `./script/package.py --ref refs/tag/<jwmVersion> --publish-local` at jwm directory in advance
-   val jwmVersion = "0.2.4-SNAPSHOT"
+  // run `./script/publish_local.py --version <jwmVersion>` at jwm directory in advance
+   val jwmVersion = "0.0.0-SNAPSHOT"
   //val jwmversion = "0.2.4"
   val deps = Seq(
     "org.jetbrains" % "annotations" % "20.1.0",

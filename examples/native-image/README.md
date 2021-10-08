@@ -25,7 +25,7 @@
 ```sh
 // at jwm dir
 ./script/build.py
-./script/package.py --ref refs/tag/x.y.z-SNAPSHOT --publish-local
+./script/publish_local.py --version x.y.z-SNAPSHOT
 cd examples/native-image
 vim project/Dependencies.scala
 ```
