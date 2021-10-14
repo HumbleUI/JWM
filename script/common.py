@@ -1,13 +1,21 @@
 #! /usr/bin/env python3
 import argparse, os, pathlib, platform, subprocess, sys, urllib.request
 
-arch = {'AMD64': 'x64', 'x86_64': 'x64', 'arm64': 'arm64'}[platform.machine()]
-parser = argparse.ArgumentParser()
-parser.add_argument('--arch', default=arch)
-(args, _) = parser.parse_known_args()
-arch = args.arch
+# system info
+detected_arch = {'AMD64': 'x64', 'x86_64': 'x64', 'arm64': 'arm64'}[platform.machine()]
 system = {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows'}[platform.system()]
 classpath_separator = ';' if system == 'windows' else ':'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--arch', default=detected_arch)
+(args, _) = parser.parse_known_args()
+arch = args.arch
+
+# project settings
+basedir = os.path.abspath(os.path.dirname(__file__) + '/..')
+javasources =  [os.path.join(basedir,path)  for path in ["linux/java", "macos/java", "shared/java", "windows/java"]]
+
+# dependencies settings
 space_skija = 'https://packages.jetbrains.team/maven/p/skija/maven'
 
 def fetch(url, file):
