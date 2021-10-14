@@ -25,16 +25,8 @@
 ```sh
 // at jwm dir
 ./script/build.py
-./script/publish_local.py --version x.y.z-SNAPSHOT
+./script/publish_local.py
 cd examples/native-image
-vim project/Dependencies.scala
-```
-
-```diff
-object Dependencies {
-  val skijaVersion = "0.93.1"
-  // ...
-+   val jwmVersion = "x.y.z-SNAPSHOT"
 ```
 
 ```sh

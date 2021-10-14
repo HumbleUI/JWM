@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import argparse, common, glob, os, re, subprocess, sys
-from build import native_artifacts
 from typing import List
 from contextlib import contextmanager 
 
