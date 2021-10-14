@@ -1,9 +1,21 @@
 #! /usr/bin/env python3
 import argparse, common, glob, os, platform, subprocess, sys
 
-target_native = {'macos': 'libjwm_' + common.arch + '.dylib',
-                 'linux': 'libjwm_' + common.arch + '.so',
-                 'windows': 'jwm_' + common.arch + '.dll'}[common.system]
+native_artifacts = {
+  'macos': {
+    'x64': 'libjwm_x64.dylib',
+    'arm64': 'libjwm_arm64.dylib'
+  },
+  'linux': {
+    'x64': 'libjwm_x64.so'
+  },
+  'windows': {
+    'x64': 'jwm_x64.dll'
+  }
+}
+
+target_native = native_artifacts[common.system][common.arch]
+target_native_dir = os.path.join(*[common.basedir,common.system,"build"])
 
 def build_native():
   print('Building ' + target_native + '...')
