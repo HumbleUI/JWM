@@ -257,4 +257,4 @@ public void paint() {
 }
 ```
 
-For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [examples](https://github.com/HumbleUI/JWM/tree/main/examples/java/) folder.
+For details on [Skija](https://github.com/jetbrains/skija) integration, consult `SkijaLayer*.java` in [dashboard example](https://github.com/HumbleUI/JWM/tree/main/examples/dashboard/java) sources.
