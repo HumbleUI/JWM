@@ -14,6 +14,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("N", "New Window");
         shortcuts.put("W", "Close Window");
         shortcuts.put("F", "Clipboard formats");
+        shortcuts.put("Z", "Toggle Z-order");
         shortcuts.put("O", "Opacity");
         shortcuts.put("1", "Minimize");
         shortcuts.put("2", "Maximize");

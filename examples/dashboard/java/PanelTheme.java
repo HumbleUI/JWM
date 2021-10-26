@@ -10,6 +10,15 @@ public class PanelTheme extends Panel {
     }
 
     @Override
+    public void accept(Event e) {
+        if (e instanceof EventKey ee && ee.isPressed() && ee.getKey() == Key.Z && ee.isModifierDown(Example.MODIFIER)) {
+            ZOrder zOrder = window.getZOrder();
+            ZOrder next = zOrder._values[(zOrder.ordinal() + 1) % zOrder._values.length];
+            window.setZOrder(next);
+        }
+    }
+
+    @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {    
         try (var paint = new Paint()) {
             paint.setColor(0xFFFFFFFF);
@@ -21,6 +30,9 @@ public class PanelTheme extends Panel {
 
             canvas.drawString("isInverted", Example.PADDING, Example.PADDING * 6, Example.FONT12, paint);
             canvas.drawString("" + Theme.isInverted(), width / 2 + Example.PADDING / 2, Example.PADDING * 6, Example.FONT12, paint);
+
+            canvas.drawString("zOrder", Example.PADDING, Example.PADDING * 8, Example.FONT12, paint);
+            canvas.drawString("" + window.getZOrder(), width / 2 + Example.PADDING / 2, Example.PADDING * 8, Example.FONT12, paint);            
         }
     }
 }
