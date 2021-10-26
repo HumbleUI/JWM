@@ -1,12 +1,8 @@
 #! /usr/bin/env python3
 import argparse, common, glob, os, platform, subprocess, sys
 
-target_native = {'macos': 'libjwm_' + common.arch + '.dylib',
-                 'linux': 'libjwm_' + common.arch + '.so',
-                 'windows': 'jwm_' + common.arch + '.dll'}[common.system]
-
 def build_native():
-  print('Building ' + target_native + '...')
+  print('Building ' + common.target_native_lib + '...')
   subprocess.check_call([
     "cmake",
     "-DCMAKE_BUILD_TYPE=Release",
