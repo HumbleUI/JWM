@@ -3,7 +3,7 @@ import argparse, common, glob, os, re, subprocess, sys
 from typing import List
 from contextlib import contextmanager 
 
-def parse_version(args:object)->str:
+def parse_version(args: object) -> str:
   """
   Parse version from commandline arguments. Arguments should contain --ref or --version
   
@@ -14,26 +14,24 @@ def parse_version(args:object)->str:
   Returns:
     version (str)
   """
-
-  if hasattr(args,'ref') and args.ref is not None:
+  if hasattr(args, 'ref') and args.ref is not None:
     return parse_refs(args)
-  if hasattr(args,'version') and args.version is not None:
+  if hasattr(args, 'version') and args.version is not None:
     return args.version
   raise ValueError("""
     --ref or --version argument should be provided.\n
     Examples:
-      python main.py --ref refs/tag/x.y.z\n
-      python main.py --version x.y.z
+      python package.py --ref refs/tag/x.y.z\n
+      python package.py --version x.y.z
     """)
 
-def parse_refs(args:object)->str:
+def parse_refs(args: object) -> str:
   return re.fullmatch("refs/[^/]+/([^/]+)", args.ref).group(1)
-
 
 @contextmanager
 def use_pom(
   rev: str="0.0.0-SNAPSHOT",
-  pom_src:str = os.path.join(common.basedir,"deploy/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml"))-> None:
+  pom_src:str = os.path.join(common.basedir, "deploy/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml")) -> None:
   """
   return versioned pom in block.
 
@@ -58,10 +56,10 @@ def use_pom(
       pass
 
 def package_jar(
-  outjar:str,
-  classes:str = os.path.join(common.basedir,"target/classes"),
-  jarCmdArgs :List[str]=[]
-  )->str:
+  outjar: str,
+  classes: str = os.path.join(common.basedir,"target/classes"),
+  jarCmdArgs: List[str] = []
+  ) -> str:
   """
   Args:
     outjar (str): absolute path to output jar file.
@@ -71,16 +69,16 @@ def package_jar(
     outjar (str): path to output jar file.
   """
   assert os.path.isabs(outjar), "outjar must be absolute path"
-  print(f"Packaging {outjar}")
+  print(f"Packaging {os.path.basename(outjar)}")
   targetmaven = os.path.join(common.basedir,"target/maven")
   subprocess.check_call(["jar",
     "--create",
     "--file", outjar,
     "-C", classes, ".",
     "-C", targetmaven, "META-INF",
-  ]+jarCmdArgs)
+    "-C", common.target_native_dir, common.target_native_lib
+  ] + jarCmdArgs)
   return outjar
-
 
 def package(rev:str, jarCmdArgs :List[str]=[])->tuple[str,str,str]:
   """
@@ -91,7 +89,6 @@ def package(rev:str, jarCmdArgs :List[str]=[])->tuple[str,str,str]:
   Returns:
     outjarpath,sourcejar_path,javadoc_path (tuple[str,str,str]): Absolute paths to generated files. 
   """
-  
   # Update poms
   jwmtarget = os.path.join(common.basedir,"target/maven/META-INF/maven/io.github.humbleui.jwm/jwm")
   with use_pom(rev) as pom:

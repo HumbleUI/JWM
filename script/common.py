@@ -14,6 +14,10 @@ arch = args.arch
 # project settings
 basedir = os.path.abspath(os.path.dirname(__file__) + '/..')
 javasources =  [os.path.join(basedir,path)  for path in ["linux/java", "macos/java", "shared/java", "windows/java"]]
+target_native_dir = os.path.join(*[basedir, system, "build"])
+target_native_lib = {'macos':   'libjwm_' + arch + '.dylib',
+                     'linux':   'libjwm_' + arch + '.so',
+                     'windows': 'jwm_'    + arch + '.dll'}[system]
 
 # dependencies settings
 space_skija = 'https://packages.jetbrains.team/maven/p/skija/maven'
