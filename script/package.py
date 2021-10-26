@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import argparse, common, glob, os, re, subprocess, sys
-from typing import List
+from typing import List, Tuple
 from contextlib import contextmanager 
 
 def parse_version(args: object) -> str:
@@ -75,19 +75,19 @@ def package_jar(
     "--create",
     "--file", outjar,
     "-C", classes, ".",
-    "-C", targetmaven, "META-INF",
-    "-C", common.target_native_dir, common.target_native_lib
-  ] + jarCmdArgs)
+    "-C", targetmaven, "META-INF"]
+    + (["-C", common.target_native_dir, common.target_native_lib] if os.path.exists(common.target_native_dir + "/" + common.target_native_lib) else [])
+    + jarCmdArgs)
   return outjar
 
-def package(rev:str, jarCmdArgs :List[str]=[])->tuple[str,str,str]:
+def package(rev: str, jarCmdArgs: List[str] = []) -> Tuple[str,str,str]:
   """
   Args:
     rev (str): Version number for jar, sourcejar, javadoc and pom.
     jarCmdArgs (List[str]): additional arguments passed to `jar --create` command.
   
   Returns:
-    outjarpath,sourcejar_path,javadoc_path (tuple[str,str,str]): Absolute paths to generated files. 
+    outjarpath, sourcejar_path, javadoc_path(Tuple[str, str, str]): Absolute paths to generated files. 
   """
   # Update poms
   jwmtarget = os.path.join(common.basedir,"target/maven/META-INF/maven/io.github.humbleui.jwm/jwm")
@@ -108,7 +108,7 @@ def package(rev:str, jarCmdArgs :List[str]=[])->tuple[str,str,str]:
     f.write(rev)
 
   # jwm-*.jar
-  outjar = package_jar(os.path.join(common.basedir,f"target/jwm-{rev}.jar"),targetclasses,jarCmdArgs=jarCmdArgs)
+  outjar = package_jar(os.path.join(common.basedir,f"target/jwm-{rev}.jar"), targetclasses, jarCmdArgs = jarCmdArgs)
 
   # jwm-*-sources.jar
   print(f"Packaging jwm-{rev}-sources.jar")
