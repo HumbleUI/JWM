@@ -85,6 +85,8 @@ namespace jwm {
         DWORD _getWindowStyle() const;
         DWORD _getWindowExStyle() const;
         UINT _getWheelScrollLines() const;
+        UINT _getWheelScrollChars() const;
+        float _getScale() const;
         int _getModifiers() const;
         int _getMouseButtons() const;
         int _getNextCallbackID();
