@@ -344,10 +344,20 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)scrollWheel:(NSEvent *)event {
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseScroll::make(fWindow->fEnv,
-                                                                                   [event scrollingDeltaX],
-                                                                                   [event scrollingDeltaY],
-                                                                                   modifierMask));
+    CGFloat deltaX;
+    CGFloat deltaY;
+    if ([event hasPreciseScrollingDeltas]) {
+        deltaX = [event scrollingDeltaX];
+        deltaY = [event scrollingDeltaY];
+    } else {
+        // https://github.com/chromium/chromium/blob/2dc93b871d2b02f895ada7f1a6fbb642cb6ec9da/ui/events/cocoa/events_mac.mm#L138-L157
+        deltaX = [event deltaX] * 40.0;
+        deltaY = [event deltaY] * 40.0;
+    }
+    CGFloat scale = fWindow->getScale();
+    deltaX *= scale;
+    deltaY *= scale;
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseScroll::make(fWindow->fEnv, deltaX, deltaY, 0, 0, 0, modifierMask));
     fWindow->dispatch(eventObj.get());
 }
 

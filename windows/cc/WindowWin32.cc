@@ -364,7 +364,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, scrollValue, modifiers));
+            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, scrollValue, 0.0f, 0.0f, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
         }
@@ -376,7 +376,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int modifiers = _getModifiers();
 
             // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, modifiers));
+            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, 0.0f, 0.0f, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
         }

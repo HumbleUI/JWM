@@ -27,7 +27,7 @@ public class PanelMouse extends Panel {
                 window.requestFrame();
             }
         } else if (e instanceof EventMouseScroll ee) {
-            scroll = scroll.offset(ee.getDeltaX() * lastScale, ee.getDeltaY() * lastScale);
+            scroll = scroll.offset(ee.getDeltaX(), ee.getDeltaY());
             window.requestFrame();
         } else if (e instanceof EventMouseButton ee) {
             var button = ee.getButton();

@@ -325,6 +325,9 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                     app.getJniEnv(),
                                     -dX,
                                     -dY,
+                                    0.0f,
+                                    0.0f,
+                                    0.0f,
                                     jwm::KeyX11::getModifiers()
                                 )
                             );
