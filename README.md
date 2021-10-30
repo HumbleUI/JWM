@@ -96,7 +96,7 @@ Alpha. Expect API breakages.
 |-------------------|---------|-------|-----|
 | isHighContrast    | ✅      | ✅    | ➖  |
 | isDark            | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
-| isInvereted       | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
+| isInverted       | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
 
 ### Window
 
