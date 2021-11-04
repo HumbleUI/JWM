@@ -19,9 +19,6 @@ target_native_lib = {'macos':   'libjwm_' + arch + '.dylib',
                      'linux':   'libjwm_' + arch + '.so',
                      'windows': 'jwm_'    + arch + '.dll'}[system]
 
-# dependencies settings
-space_skija = 'https://packages.jetbrains.team/maven/p/skija/maven'
-
 def fetch(url, file):
   if not os.path.exists(file):
     print('Downloading', url)

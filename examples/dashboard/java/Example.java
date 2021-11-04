@@ -1,7 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 import java.util.*;
 import java.util.concurrent.*;

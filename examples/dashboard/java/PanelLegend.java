@@ -2,7 +2,7 @@ package io.github.humbleui.jwm.examples;
 
 import java.util.*;
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class PanelLegend extends Panel {
     public Map<String, String> shortcuts = new TreeMap<>();

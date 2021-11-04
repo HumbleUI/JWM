@@ -1,7 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.LayerGL;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class SkijaLayerGL extends LayerGL implements SkijaLayer {
     public DirectContext _directContext;

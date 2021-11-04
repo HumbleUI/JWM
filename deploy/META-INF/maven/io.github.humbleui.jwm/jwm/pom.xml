@@ -46,7 +46,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/humbleui/jwm.git</connection>
-        <developerConnection>scm:git:ssh://github.com:humbleui/jwm.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/humbleui/jwm.git</developerConnection>
         <url>http://github.com/humbleui/jwm/tree/master</url>
     </scm>
 

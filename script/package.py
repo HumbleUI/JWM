@@ -31,7 +31,7 @@ def parse_refs(args: object) -> str:
 @contextmanager
 def use_pom(
   rev: str="0.0.0-SNAPSHOT",
-  pom_src:str = os.path.join(common.basedir, "deploy/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml")) -> None:
+  pom_src: str = os.path.join(common.basedir, "deploy/META-INF/maven/io.github.humbleui.jwm/jwm/pom.xml")) -> None:
   """
   return versioned pom in block.
 
@@ -90,7 +90,7 @@ def package(rev: str, jarCmdArgs: List[str] = []) -> Tuple[str,str,str]:
     outjarpath, sourcejar_path, javadoc_path(Tuple[str, str, str]): Absolute paths to generated files. 
   """
   # Update poms
-  jwmtarget = os.path.join(common.basedir,"target/maven/META-INF/maven/io.github.humbleui.jwm/jwm")
+  jwmtarget = os.path.join(common.basedir, "target/maven/META-INF/maven/io.github.humbleui.jwm/jwm")
   with use_pom(rev) as pom:
     os.makedirs(jwmtarget, exist_ok=True)
     with open(os.path.join(jwmtarget,"pom.xml"), "w") as f:
@@ -102,7 +102,7 @@ def package(rev: str, jarCmdArgs: List[str] = []) -> Tuple[str,str,str]:
       f.write(contents.replace("${version}", rev))
   
   targetclasses =os.path.join(common.basedir,"target/classes")
-  os.makedirs(targetclasses, exist_ok=True)
+  os.makedirs(targetclasses, exist_ok = True)
 
   with open(os.path.join(targetclasses,"jwm.version"), 'w') as f:
     f.write(rev)
@@ -146,7 +146,7 @@ def package(rev: str, jarCmdArgs: List[str] = []) -> Tuple[str,str,str]:
     "-C", "docs/apidocs", ".",
   ])
 
-  return (outjar,sourcejar,javadoc)
+  return (outjar, sourcejar, javadoc)
 
 def main() -> int:
   os.chdir(common.basedir)

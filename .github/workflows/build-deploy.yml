@@ -63,7 +63,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build_linux,build_windows,build_macos]
+    needs: [build_linux, build_windows, build_macos]
     steps:
       - uses: actions/checkout@v2
       - run: |

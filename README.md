@@ -68,7 +68,7 @@ Key        | Value
 -----------|-----------------------
 groupId    | io.github.humbleui.jwm
 artifactId | jwm
-version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)</version>
+version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)
 
 ## Getting started
 

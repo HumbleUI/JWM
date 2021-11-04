@@ -1,7 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.LayerRaster;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class SkijaLayerRaster extends LayerRaster implements SkijaLayer {
     public Surface _surface;

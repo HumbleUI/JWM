@@ -5,7 +5,7 @@ import java.util.function.*;
 import java.util.stream.*;
 
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class PanelMouse extends Panel {
     public EventMouseMove lastMouseMove = null;

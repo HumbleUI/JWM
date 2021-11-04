@@ -5,7 +5,6 @@ import Utils._
 import Dependencies._
 import scala.sys.process._
 
-resolvers += "jetbrain skija" at "https://packages.jetbrains.team/maven/p/skija/maven"
 val mavenLocal = "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository"
 resolvers += mavenLocal
 // general

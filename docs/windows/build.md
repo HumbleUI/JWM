@@ -1,7 +1,7 @@
 ## Building from source (and run example app) on Windows
 
 ```sh
-git clone git@github.com:JetBrains/JWM.git
+git clone git@github.com:HumbleUI/JWM.git
 cd JWM
 ```
 

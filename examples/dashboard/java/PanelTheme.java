@@ -1,7 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class PanelTheme extends Panel {
 

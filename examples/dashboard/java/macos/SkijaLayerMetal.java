@@ -2,7 +2,7 @@ package io.github.humbleui.jwm.examples.macos;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.examples.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class SkijaLayerMetal extends LayerMetal implements SkijaLayer {
     public DirectContext _directContext;
