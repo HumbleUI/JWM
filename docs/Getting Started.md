@@ -16,7 +16,7 @@ E.g. for Maven it’ll look like this:
 <dependency>
     <groupId>io.github.humbleui.jwm</groupId>
     <artifactId>jwm</artifactId>
-    <version>0.2.4</version>
+    <version>0.2.6</version>
 </dependency>
 ```
 
