@@ -1,4 +1,3 @@
-
 package io.github.humbleui.jwm;
 
 import lombok.*;

@@ -1,7 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -160,6 +160,7 @@ public class Example implements Consumer<Event> {
         panelMouseCursors.accept(e);
         panelRendering.accept(e);
         panelEvents.accept(e);
+        panelTheme.accept(e);
 
         float scale = window.getScreen().getScale();
         if (e instanceof EventKey eventKey) {

@@ -5,15 +5,15 @@ import Utils._
 import Dependencies._
 import scala.sys.process._
 
-resolvers += "jetbrain skija" at "https://packages.jetbrains.team/maven/p/skija/maven"
-
+val mavenLocal = "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository"
+resolvers += mavenLocal
 // general
 name := "example"
 version := "0.0.0"
 ThisBuild / organization := "io.github.humbleui.jwm.examples.jwm"
 
 // package stuff
-maintainer := "john doe"
+maintainer := "io.github.HumbleUI"
 packageSummary := "example jwm application"
 packageDescription := """example jwm application."""
 enablePlugins(JavaAppPackaging, WindowsPlugin)
@@ -76,9 +76,16 @@ genIconIfNotExists := {
     case _ => ()
   }
 }
+// use sources from sibling directory
+lazy val srcSettings = Seq(
+    Compile / javaSource := baseDirectory.value / ".." / "dashboard" / "java",
+    Compile / resourceDirectory := baseDirectory.value / ".." / "dashboard" / "resources"
+)
+
 
 lazy val example = project
   .in(file("."))
+  .settings(srcSettings)
   .settings(
     libraryDependencies ++= Dependencies.deps,
     assembly / mainClass := Some("io.github.humbleui.jwm.examples.Example"),

@@ -127,6 +127,19 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public ZOrder getZOrder() {
+        assert _onUIThread();
+        return ZOrder.NORMAL;
+    }
+
+    @Override
+    public Window setZOrder(ZOrder order) {
+        assert _onUIThread();
+        // TODO implement
+        return this;
+    }
+
+    @Override
     public void close() {
         assert _onUIThread();
         _nClose();

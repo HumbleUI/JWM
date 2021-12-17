@@ -254,6 +254,9 @@ void jwm::WindowWin32::close() {
 }
 
 LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    // https://github.com/chromium/chromium/blob/72ceeed2ebcd505b8d8205ed7354e862b871995e/ui/events/blink/web_input_event_builders_win.cc#L331
+    static const float kScrollbarPixelsPerLine = 100.0f / 3.0f;
+
     if (testFlag(Flag::IgnoreMessages))
         return DefWindowProcW(_hWnd, uMsg, wParam, lParam);
 
@@ -358,25 +361,32 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOUSEWHEEL: {
-            auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto scrollScale = static_cast<float>(_getWheelScrollLines());
-            auto scrollValue = scrollScale * static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
             int modifiers = _getModifiers();
-
-            // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, scrollValue, modifiers));
-            dispatch(eventMouseScroll.get());
+            auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
+            auto ticks = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto linesPerTick = _getWheelScrollLines();
+            // assume page scroll
+            // https://github.com/mozilla/gecko-dev/blob/da97cbad6c9f00fc596253feb5964a8adbb45d9e/widget/windows/WinMouseScrollHandler.cpp#L891-L903
+            if (linesPerTick > WHEEL_DELTA) {
+                float sign = ticks > 0 ? 1 : ticks < 0 ? -1 : 0;
+                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, getContentRect().getHeight() * sign, 0.0f, 0.0f, sign, modifiers));
+                dispatch(eventMouseScroll.get());
+            } else {
+                auto lines = ticks * static_cast<float>(_getWheelScrollLines());
+                auto scale = _getScale();
+                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, lines * kScrollbarPixelsPerLine * scale, 0.0f, lines, 0.0f, modifiers));
+                dispatch(eventMouseScroll.get());
+            }
             return 0;
         }
 
         case WM_MOUSEHWHEEL: {
             auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto scrollScale = static_cast<float>(_getWheelScrollLines());
-            auto scrollValue = scrollScale * static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto ticks = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto chars = ticks * static_cast<float>(_getWheelScrollChars());
+            auto scale = _getScale();
             int modifiers = _getModifiers();
-
-            // NOTE: scroll direction may differ from macOS or Linux
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, -scrollValue, 0.0f, modifiers));
+            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, chars * kScrollbarPixelsPerLine * scale, 0.0f, chars, 0.0f, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
         }
@@ -658,6 +668,21 @@ UINT jwm::WindowWin32::_getWheelScrollLines() const {
     UINT numLines;
     SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, &numLines, 0);
     return numLines;
+}
+
+UINT jwm::WindowWin32::_getWheelScrollChars() const {
+    UINT numLines;
+    SystemParametersInfoW(SPI_GETWHEELSCROLLCHARS, 0, &numLines, 0);
+    return numLines;
+}
+
+float jwm::WindowWin32::_getScale() const {
+    HMONITOR hMonitor = MonitorFromWindow(_hWnd, MONITOR_DEFAULTTOPRIMARY);
+    DEVICE_SCALE_FACTOR scaleFactor;
+    GetScaleFactorForMonitor(hMonitor, &scaleFactor);
+    if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
+        scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
+    return (float) scaleFactor / 100.0f;
 }
 
 int jwm::WindowWin32::_getModifiers() const {

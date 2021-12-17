@@ -2,7 +2,7 @@ package io.github.humbleui.jwm.examples.windows;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.examples.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class SkijaLayerD3D12 extends LayerD3D12 implements SkijaLayer {
     public DirectContext _directContext;

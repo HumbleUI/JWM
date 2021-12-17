@@ -5,7 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('example', nargs='?', default='Example')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.92.22')
+  parser.add_argument('--skija-version', default='0.96.0')
   parser.add_argument('--skija-dir', default=None)
   args = parser.parse_args()
 
@@ -38,13 +38,16 @@ def main():
   else:
     skija_native = 'skija-' + common.system + (('-' + common.arch) if 'macos' == common.system else '')
     compile_classpath += [
-      common.fetch_maven('org.jetbrains.skija', 'skija-shared', args.skija_version, repo=common.space_skija),
-      common.fetch_maven('org.jetbrains.skija', skija_native, args.skija_version, repo=common.space_skija),
+      common.fetch_maven('io.github.humbleui.skija', 'skija-shared', args.skija_version),
+      common.fetch_maven('io.github.humbleui.skija', skija_native, args.skija_version),
     ]
   sources = glob.glob('examples/dashboard/java/**/*.java', recursive=True)
   common.javac(compile_classpath, sources, 'examples/dashboard/target/classes', release='16')
-  print(compile_classpath)
+  
   # run
+  
+  
+  
   run_classpath = compile_classpath + ['examples/dashboard/target/classes']
   subprocess.check_call([
     'java',

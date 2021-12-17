@@ -76,7 +76,7 @@ public class App {
 
     /**
      * <p>Enqueue callback function to run on application UI thread.</p>
-     * <p>This is the only method, which cann be access from any thread if other is not specified.</p>
+     * <p>This is the only method, which can be access from any thread if other is not specified.</p>
      * <p>Use this method to access UI thread and safely perform user-specific work and access JWM API.</p>
      *
      * @param callback  function for execution on UI thread

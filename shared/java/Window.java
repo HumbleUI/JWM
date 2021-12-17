@@ -278,6 +278,18 @@ public abstract class Window extends RefCounted {
     public abstract Window restore();
 
     /**
+     * @return  current Z order
+     */
+    public abstract ZOrder getZOrder();
+
+    /**
+     * <p>Makes window float always on top.</p>
+     * 
+     * @return  this
+     */
+    public abstract Window setZOrder(ZOrder order);
+
+    /**
      * <p>Close window and release its internal resources.</p>
      * <p>Must be last window object method call. After this method window is in released state.</p>
      */

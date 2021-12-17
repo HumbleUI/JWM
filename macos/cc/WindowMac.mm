@@ -1,5 +1,6 @@
 #include <iostream>
 #include <jni.h>
+#include <sstream>
 #include "impl/Library.hh"
 #include "MainView.hh"
 #include "MouseCursor.hh"
@@ -7,6 +8,7 @@
 #include "WindowMac.hh"
 #include "WindowDelegate.hh"
 #include "Util.hh"
+#include "ZOrder.hh"
 
 namespace jwm {
 NSArray* kCursorCache;
@@ -323,6 +325,64 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nResto
     }
 }
 
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetZOrder
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    NSWindowLevel level = [nsWindow level];
+
+    if (level <= NSNormalWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::NORMAL);
+    else if (level <= NSFloatingWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::FLOATING);
+    else if (level <= NSModalPanelWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::MODAL_PANEL);
+    else if (level <= NSMainMenuWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::MAIN_MENU);
+    else if (level <= NSStatusWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::STATUS);
+    else if (level <= NSPopUpMenuWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::POP_UP_MENU);
+    else if (level <= NSScreenSaverWindowLevel)
+        return static_cast<jint>(jwm::ZOrder::SCREEN_SAVER);
+    else {
+        std::ostringstream oss;
+        oss << "Unexpected NSWindowLevel: " << level;
+        jwm::classes::Throwable::throwRuntimeException(env, oss.str().c_str());
+        return -1;
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetZOrder
+  (JNIEnv* env, jobject obj, jint order) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    NSWindowLevel level;
+    switch (static_cast<jwm::ZOrder>(order)) {
+        case jwm::ZOrder::NORMAL:
+            level = NSNormalWindowLevel;
+            break;
+        case jwm::ZOrder::FLOATING:
+            level = NSFloatingWindowLevel;
+            break;
+        case jwm::ZOrder::MODAL_PANEL:
+            level = NSModalPanelWindowLevel;
+            break;
+        case jwm::ZOrder::MAIN_MENU:
+            level = NSMainMenuWindowLevel;
+            break;
+        case jwm::ZOrder::STATUS:
+            level = NSStatusWindowLevel;
+            break;
+        case jwm::ZOrder::POP_UP_MENU:
+            level = NSPopUpMenuWindowLevel;
+            break;
+        case jwm::ZOrder::SCREEN_SAVER:
+            level = NSScreenSaverWindowLevel;
+            break;
+    }
+    nsWindow.level = level;
+}
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nClose
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));

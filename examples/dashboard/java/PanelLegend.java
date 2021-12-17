@@ -2,7 +2,7 @@ package io.github.humbleui.jwm.examples;
 
 import java.util.*;
 import io.github.humbleui.jwm.*;
-import org.jetbrains.skija.*;
+import io.github.humbleui.skija.*;
 
 public class PanelLegend extends Panel {
     public Map<String, String> shortcuts = new TreeMap<>();
@@ -14,6 +14,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("N", "New Window");
         shortcuts.put("W", "Close Window");
         shortcuts.put("F", "Clipboard formats");
+        shortcuts.put("Z", "Toggle Z-order");
         shortcuts.put("O", "Opacity");
         shortcuts.put("1", "Minimize");
         shortcuts.put("2", "Maximize");

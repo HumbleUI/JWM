@@ -23,6 +23,13 @@
 ## run example application
 
 ```sh
+// at jwm dir
+./script/build.py
+./script/publish_local.py
+cd examples/native-image
+```
+
+```sh
 sbt run
 ```
 ## build graal native image

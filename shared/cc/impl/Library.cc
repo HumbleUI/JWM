@@ -287,12 +287,12 @@ namespace jwm {
                 jclass cls = env->FindClass("io/github/humbleui/jwm/EventMouseScroll");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(FFI)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(FFFFFI)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jfloat dx, jfloat dy, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, dx, dy, modifiers);
+            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, deltaX, deltaY, deltaChars, deltaLines, deltaPages, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

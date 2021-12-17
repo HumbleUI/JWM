@@ -105,7 +105,7 @@ namespace jwm {
         namespace EventMouseScroll {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jfloat dx, jfloat dy, jint modifiers = 0);
+            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint modifiers);
         }
 
         namespace EventTextInput {

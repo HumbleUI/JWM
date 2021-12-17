@@ -106,21 +106,37 @@ public class WindowMac extends Window {
         _nRequestFrame();
     }
 
+    @Override
     public Window maximize() {
         assert _onUIThread();
         _nMaximize();
         return this;
     }
 
+    @Override
     public Window minimize() {
         assert _onUIThread();
         _nMinimize();
         return this;
     }
 
+    @Override
     public Window restore() {
         assert _onUIThread();
         _nRestore();
+        return this;
+    }
+
+    @Override
+    public ZOrder getZOrder() {
+        assert _onUIThread();
+        return ZOrder._values[_nGetZOrder()];
+    }
+
+    @Override
+    public Window setZOrder(ZOrder order) {
+        assert _onUIThread();
+        _nSetZOrder(order.ordinal());
         return this;
     }
 
@@ -145,5 +161,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nRestore();
+    @ApiStatus.Internal public native int _nGetZOrder();
+    @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
     @ApiStatus.Internal public native void _nClose();
 }
