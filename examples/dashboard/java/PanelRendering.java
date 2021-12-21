@@ -7,6 +7,7 @@ import java.util.stream.*;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelRendering extends Panel {
     public boolean vsyncColor = false;

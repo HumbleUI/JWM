@@ -66,9 +66,9 @@ Electron:
 
 Key        | Value
 -----------|-----------------------
-groupId    | io.github.humbleui.jwm
+groupId    | io.github.humbleui
 artifactId | jwm
-version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)
+version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui/jwm)
 
 ## Getting started
 

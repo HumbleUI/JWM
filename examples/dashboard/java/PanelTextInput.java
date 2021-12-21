@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelTextInput extends Panel implements TextInputClient {
     public List<String> keys = Collections.synchronizedList(new ArrayList<String>());

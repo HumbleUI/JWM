@@ -3,6 +3,7 @@ package io.github.humbleui.jwm.examples;
 import java.util.function.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelScreens extends Panel {
     public EventWindowResize lastResize = new EventWindowResize(0, 0, 0, 0);

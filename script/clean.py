@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
-import common, os, shutil, sys
+import build_utils, common, os, sys
 
 def main():
-  os.chdir(os.path.dirname(__file__) + '/..')
-  shutil.rmtree('target', ignore_errors = True)
-  shutil.rmtree(common.system + '/build', ignore_errors = True)
-  shutil.rmtree('examples/target', ignore_errors = True)
+  os.chdir(common.basedir)
+  build_utils.rmdir("target")
+  build_utils.rmdir(build_utils.system + "/build")
+  build_utils.rmdir("examples/dashboard/target")
   return 0
 
 if __name__ == '__main__':

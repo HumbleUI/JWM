@@ -6,15 +6,15 @@ First, add the latest version of JWM specific to your platform to the dependenci
 
 Key        | Value
 -----------|-----------------------
-groupId    | io.github.humbleui.jwm
+groupId    | io.github.humbleui
 artifactId | jwm
-version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui.jwm/jwm)</version>
+version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui/jwm)</version>
 
 E.g. for Maven it’ll look like this:
 
 ```xml
 <dependency>
-    <groupId>io.github.humbleui.jwm</groupId>
+    <groupId>io.github.humbleui</groupId>
     <artifactId>jwm</artifactId>
     <version>0.2.6</version>
 </dependency>

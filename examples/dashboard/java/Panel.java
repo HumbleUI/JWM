@@ -3,6 +3,7 @@ package io.github.humbleui.jwm.examples;
 import java.util.function.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public abstract class Panel implements Consumer<Event> {
     public final Window window;

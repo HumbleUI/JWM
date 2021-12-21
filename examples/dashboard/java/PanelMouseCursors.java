@@ -6,6 +6,7 @@ import java.util.stream.*;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelMouseCursors extends Panel {
     public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
