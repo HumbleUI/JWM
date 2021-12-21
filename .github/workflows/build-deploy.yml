@@ -74,7 +74,7 @@ jobs:
         with:
           name: native
           path: target/classes
-      - run: python3 script/package.py --ref ${{ github.ref }}
+      - run: python3 script/package.py --only java --ref ${{ github.ref }}
       - uses: actions/upload-artifact@v2
         with:
           name: jars
@@ -85,7 +85,7 @@ jobs:
         name: Deploy to Maven Central
         run: |
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
-          python3 script/release.py --ref ${{ github.ref }}
+          python3 script/release.py --only java --ref ${{ github.ref }}
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
