@@ -10,7 +10,7 @@ import io.github.humbleui.types.*;
 
 public class PanelMouseCursors extends Panel {
     public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
-    public Map<UIRect, MouseCursor> rects = new HashMap<>();
+    public Map<IRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
 
     public PanelMouseCursors(Window window) {
@@ -62,7 +62,7 @@ public class PanelMouseCursors extends Panel {
                     }
                     var relX = lastMove.getX() - lastX;
                     var relY = lastMove.getY() - lastY;
-                    var bounds = UIRect.makeXYWH(x, y, (int) line.getWidth() + 2 * padding, capHeight + 2 * padding);
+                    var bounds = IRect.makeXYWH(x, y, (int) line.getWidth() + 2 * padding, capHeight + 2 * padding);
                     rects.put(bounds, cursor);
                     if (bounds.contains(relX, relY)) {
                         canvas.drawRRect(RRect.makeLTRB(bounds.getLeft(), bounds.getTop(), bounds.getRight(), bounds.getBottom(), 4 * scale), bg);

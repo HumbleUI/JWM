@@ -62,8 +62,8 @@ namespace jwm {
         void restore();
         void requestSwap();
         void requestFrame();
-        UIRect getWindowRect() const;
-        UIRect getContentRect() const;
+        IRect getWindowRect() const;
+        IRect getContentRect() const;
         void setWindowPosition(int left, int top);
         void setWindowSize(int width, int height);
         void setContentSize(int width, int height);
@@ -99,7 +99,7 @@ namespace jwm {
         void _imeResetComposition();
         void _imeChangeCursorPos() const;
         void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
-        bool _imeGetRectForMarkedRange(UIRect& rect) const;
+        bool _imeGetRectForMarkedRange(IRect& rect) const;
         std::wstring _imeGetCompositionString(HIMC hImc, DWORD compType) const;
 
     private:

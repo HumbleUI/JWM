@@ -14,8 +14,8 @@ namespace jwm {
 
     private:
         HMONITOR hMonitor;
-        UIRect bounds;
-        UIRect workArea;
+        IRect bounds;
+        IRect workArea;
         float scale;
         bool isPrimary;
 

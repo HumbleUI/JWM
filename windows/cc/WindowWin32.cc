@@ -32,7 +32,7 @@ bool jwm::WindowWin32::init() {
 void jwm::WindowWin32::recreate() {
     const wchar_t* caption = JWM_WIN32_WINDOW_DEFAULT_NAME;
 
-    UIRect rect = getWindowRect();
+    IRect rect = getWindowRect();
     int x = rect.fLeft;
     int y = rect.fTop;
     int width = rect.getWidth();
@@ -185,13 +185,13 @@ void jwm::WindowWin32::requestFrame() {
     }
 }
 
-jwm::UIRect jwm::WindowWin32::getWindowRect() const {
+jwm::IRect jwm::WindowWin32::getWindowRect() const {
     RECT rect;
     GetWindowRect(_hWnd, &rect);
-    return UIRect{rect.left, rect.top, rect.right, rect.bottom};
+    return IRect{rect.left, rect.top, rect.right, rect.bottom};
 }
 
-jwm::UIRect jwm::WindowWin32::getContentRect() const {
+jwm::IRect jwm::WindowWin32::getContentRect() const {
     RECT clientRect;
     GetClientRect(_hWnd, &clientRect);
     RECT windowRect;
@@ -205,7 +205,7 @@ jwm::UIRect jwm::WindowWin32::getContentRect() const {
     POINT rightBottom = corners[1];
 
     // Build rect with client area rect relative to the window rect to handle title bar
-    return UIRect{leftTop.x - windowRect.left, leftTop.y - windowRect.top,
+    return IRect{leftTop.x - windowRect.left, leftTop.y - windowRect.top,
                   rightBottom.x - windowRect.left, rightBottom.y - windowRect.top};
 }
 
@@ -281,7 +281,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
 
         case WM_SIZE: {
-            UIRect rect = getWindowRect();
+            IRect rect = getWindowRect();
             int windowWidth = rect.getWidth();
             int windowHeight = rect.getHeight();
             int contentWidth = LOWORD(lParam);
@@ -312,7 +312,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOVE: {
-            UIRect rect = getWindowRect();
+            IRect rect = getWindowRect();
             int windowLeft= rect.fLeft;
             int windowTop = rect.fTop;
 
@@ -596,16 +596,16 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_IME_REQUEST:
             if (wParam == IMR_QUERYCHARPOSITION) {
-                UIRect uiRect{};
+                IRect IRect{};
 
                 // If no text client set, simply break
-                if (!_imeGetRectForMarkedRange(uiRect))
+                if (!_imeGetRectForMarkedRange(IRect))
                     break;
 
                 // Cursor upper left corner (doc requires baseline, but its enough)
                 POINT cursorPos;
-                cursorPos.x = uiRect.fLeft;
-                cursorPos.y = uiRect.fTop;
+                cursorPos.x = IRect.fLeft;
+                cursorPos.y = IRect.fTop;
                 ClientToScreen(getHWnd(), &cursorPos);
 
                 // Area of the window (interpreted as document area (where we can place ime window))
@@ -616,7 +616,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 // its content will be read after this proc function returns
                 auto* imeCharPos = reinterpret_cast<IMECHARPOSITION*>(lParam);
                 imeCharPos->dwCharPos = _compositionPos;
-                imeCharPos->cLineHeight = uiRect.fBottom - uiRect.fTop;
+                imeCharPos->cLineHeight = IRect.fBottom - IRect.fTop;
                 imeCharPos->pt = cursorPos;
                 imeCharPos->rcDocument = documentArea;
                 return true;
@@ -819,10 +819,10 @@ void jwm::WindowWin32::_imeResetComposition() {
 }
 
 void jwm::WindowWin32::_imeChangeCursorPos() const {
-    UIRect uiRect{};
+    IRect IRect{};
 
     // If no text client set, simply break
-    if (!_imeGetRectForMarkedRange(uiRect))
+    if (!_imeGetRectForMarkedRange(IRect))
         return;
 
     HIMC hImc = ImmGetContext(getHWnd());
@@ -832,18 +832,18 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
 
     COMPOSITIONFORM compositionform;
     compositionform.dwStyle = CFS_FORCE_POSITION;
-    compositionform.ptCurrentPos.x = uiRect.fLeft;
-    compositionform.ptCurrentPos.y = uiRect.fBottom;
+    compositionform.ptCurrentPos.x = IRect.fLeft;
+    compositionform.ptCurrentPos.y = IRect.fBottom;
 
     CANDIDATEFORM candidateform;
     candidateform.dwIndex = 0;
     candidateform.dwStyle = CFS_EXCLUDE;
-    candidateform.ptCurrentPos.x = uiRect.fLeft;;
-    candidateform.ptCurrentPos.y = uiRect.fTop;
-    candidateform.rcArea.left = uiRect.fLeft;
-    candidateform.rcArea.top = uiRect.fTop;
-    candidateform.rcArea.right = uiRect.fRight;
-    candidateform.rcArea.bottom = uiRect.fBottom;
+    candidateform.ptCurrentPos.x = IRect.fLeft;;
+    candidateform.ptCurrentPos.y = IRect.fTop;
+    candidateform.rcArea.left = IRect.fLeft;
+    candidateform.rcArea.top = IRect.fTop;
+    candidateform.rcArea.right = IRect.fRight;
+    candidateform.rcArea.bottom = IRect.fBottom;
 
     ImmSetCompositionWindow(hImc, &compositionform);
     ImmSetCandidateWindow(hImc, &candidateform);
@@ -877,7 +877,7 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
     }
 }
 
-bool jwm::WindowWin32::_imeGetRectForMarkedRange(UIRect &rect) const {
+bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
     if (this->fTextInputClient) {
         // Query current cursor position
         // If composition starts, Pos will be always 0
@@ -932,15 +932,15 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nUnm
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetWindowRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::UIRect rect = instance->getWindowRect();
-    return jwm::classes::UIRect::toJava(env, rect);
+    jwm::IRect rect = instance->getWindowRect();
+    return jwm::classes::IRect::toJava(env, rect);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetContentRect
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::UIRect rect = instance->getContentRect();
-    return jwm::classes::UIRect::toJava(env, rect);
+    jwm::IRect rect = instance->getContentRect();
+    return jwm::classes::IRect::toJava(env, rect);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowPosition

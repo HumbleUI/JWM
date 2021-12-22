@@ -103,7 +103,7 @@ This will create a window that occupies the left side of the screen and is 800 p
 
 ```
 Screen screen = App.getPrimaryScreen();
-UIRect workArea = screen.getWorkArea();
+IRect workArea = screen.getWorkArea();
 window.setWindowPosition(workArea.getLeft(), workArea.getTop());
 float scale = screen.getScale();
 window.setWindowSize(800 * scale, workArea.getHeight());
@@ -225,7 +225,7 @@ Now, we need to handle `EventWindowScreenChange` and `EventWindowResize` and tel
 public void accept(Event e) {
     if (e instanceof EventWindowScreenChange) {
         layer.reconfigure();
-        UIRect contentRect = window.getContentRect();
+        IRect contentRect = window.getContentRect();
         layer.resize(contentRect.getWidth(), contentRect.getHeight());
         paint();
     } else if (e instanceof EventWindowResize ee) {

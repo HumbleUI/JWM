@@ -176,7 +176,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
     }
 
     @Override
-    public UIRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
+    public IRect getRectForMarkedRange(int selectionStart, int selectionEnd) {
         Font font = Example.FONT24;
         FontMetrics metrics = font.getMetrics();
 
@@ -189,13 +189,13 @@ public class PanelTextInput extends Panel implements TextInputClient {
                 try (var marked = TextLine.make(lastMarked.getText(), font)) {
                     var start = marked.getCoordAtOffset(selectionStart);
                     var end = marked.getCoordAtOffset(selectionEnd);
-                    return UIRect.makeXYWH((int) (left + start),
+                    return IRect.makeXYWH((int) (left + start),
                                            (int) top,
                                            (int) (end - start),
                                            (int) metrics.getHeight());
                 }
             } else
-                return UIRect.makeXYWH((int) left, (int) top, 0, (int) metrics.getHeight());
+                return IRect.makeXYWH((int) left, (int) top, 0, (int) metrics.getHeight());
         }
     }
 }

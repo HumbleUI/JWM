@@ -51,7 +51,7 @@ public class Example implements Consumer<Event> {
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
         Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
-        UIRect bounds = screen.getWorkArea();
+        IRect bounds = screen.getWorkArea();
 
         window.setWindowSize(bounds.getWidth() / 2, bounds.getHeight() / 2);
         switch (count % 5) {
@@ -79,7 +79,7 @@ public class Example implements Consumer<Event> {
         if (closed)
             return;
 
-        UIRect contentRect = window.getContentRect();
+        IRect contentRect = window.getContentRect();
 
         // If content area empty no rendering must happen
         if (contentRect.getWidth() <= 0 || contentRect.getHeight() <= 0)

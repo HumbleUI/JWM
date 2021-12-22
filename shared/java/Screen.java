@@ -1,7 +1,8 @@
 package io.github.humbleui.jwm;
 
-import org.jetbrains.annotations.*;
+import io.github.humbleui.types.*;
 import lombok.*;
+import org.jetbrains.annotations.*;
 
 @Data
 public class Screen {
@@ -19,12 +20,12 @@ public class Screen {
     /**
      * <p>Screen bounds in pixels in the global screen space coordinates.</p>
      */
-    public final UIRect _bounds;
+    public final IRect _bounds;
 
     /**
      * <p>Area in absolute pixels of the screen excluding dock/menubar</p>
      */
-    public final UIRect _workArea;
+    public final IRect _workArea;
 
     /**
      * <p>UI and text elements scale for display on this screen</p>

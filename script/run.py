@@ -6,6 +6,7 @@ def main():
   parser.add_argument('--jwm-version', default=None)
   parser.add_argument('--skija-version', default='0.98.0')
   parser.add_argument('--skija-dir', default=None)
+  parser.add_argument('--types-dir', default=None)
   args = parser.parse_args()
 
   if not args.jwm_version:

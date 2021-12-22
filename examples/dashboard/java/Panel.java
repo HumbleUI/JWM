@@ -41,7 +41,7 @@ public abstract class Panel implements Consumer<Event> {
     }
 
     public boolean contains(int x, int y) {
-        return UIRect.makeXYWH(lastX, lastY, lastWidth, lastHeight).contains(x, y);
+        return IRect.makeXYWH(lastX, lastY, lastWidth, lastHeight).contains(x, y);
     }
 
     public String capitalize(String s) {

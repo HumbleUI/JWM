@@ -8,7 +8,7 @@
 #include "Window.hh"
 
 namespace jwm {
-    struct UIRect {
+    struct IRect {
         int32_t fLeft;
         int32_t fTop;
         int32_t fRight;
@@ -24,7 +24,7 @@ namespace jwm {
                    y <  fBottom;
         }
 
-        static UIRect makeXYWH(int32_t left, int32_t top, int32_t width, int32_t height) {
+        static IRect makeXYWH(int32_t left, int32_t top, int32_t width, int32_t height) {
             return { left, top, left + width, top + height };
         }
     };
@@ -151,24 +151,24 @@ namespace jwm {
         namespace Screen {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::UIRect bounds, jwm::UIRect workArea, jfloat scale);
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale);
         }
 
         namespace TextInputClient {
             extern jclass kCls;
             extern jmethodID kGetRectForMarkedRange;
-            jwm::UIRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
+            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
         }
 
-        namespace UIRect {
+        namespace IRect {
             extern jclass kCls;
             extern jmethodID kCtor;
             extern jfieldID kLeft;
             extern jfieldID kTop;
             extern jfieldID kRight;
             extern jfieldID kBottom;
-            jwm::UIRect fromJava(JNIEnv* env, jobject uirect);
-            jobject toJava(JNIEnv* env, const struct UIRect& rect);
+            jwm::IRect fromJava(JNIEnv* env, jobject IRect);
+            jobject toJava(JNIEnv* env, const struct IRect& rect);
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height);
         }
     }

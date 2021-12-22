@@ -5,7 +5,11 @@ basedir = os.path.abspath(os.path.dirname(__file__) + '/..')
 
 @functools.lru_cache(maxsize=1)
 def deps_run():
-  return [build_utils.fetch_maven('io.github.humbleui', 'types', '0.1.0')]
+  types_dir = build_utils.get_arg("types-dir")
+  if types_dir:
+    return [os.path.normpath(build_utils.execdir + "/" + types_dir + "/target/classes")]
+  else:
+    return [build_utils.fetch_maven('io.github.humbleui', 'types', '0.1.1')]
 
 @functools.lru_cache(maxsize=1)
 def deps_compile():

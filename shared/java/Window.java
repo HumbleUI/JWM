@@ -4,6 +4,7 @@ import java.util.concurrent.*;
 import java.util.function.*;
 import org.jetbrains.annotations.*;
 import io.github.humbleui.jwm.impl.*;
+import io.github.humbleui.types.*;
 import java.io.File;
 
 public abstract class Window extends RefCounted {
@@ -82,7 +83,7 @@ public abstract class Window extends RefCounted {
      *
      * @return          UI window rect
      */
-    public abstract UIRect getWindowRect();
+    public abstract IRect getWindowRect();
 
     /**
      * <p>Get window content position and size in the window as UI rect.</p>
@@ -99,7 +100,7 @@ public abstract class Window extends RefCounted {
      *
      * @return          UI content rect
      */
-    public abstract UIRect getContentRect();
+    public abstract IRect getContentRect();
 
     /**
      * <p>Get window content position and size on the screen as UI rect.</p>
@@ -107,8 +108,8 @@ public abstract class Window extends RefCounted {
      *
      * @return          UI content rect
      */
-    public UIRect getContentRectAbsolute() {
-        UIRect windowRect = getWindowRect();
+    public IRect getContentRectAbsolute() {
+        IRect windowRect = getWindowRect();
         return getContentRect().offset(windowRect._left, windowRect._top);
     }
 

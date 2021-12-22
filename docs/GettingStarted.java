@@ -31,7 +31,7 @@ class EventHandler implements Consumer<Event> {
             App.terminate();
         } else if (e instanceof EventWindowScreenChange) {
             layer.reconfigure();
-            UIRect contentRect = window.getContentRect();
+            IRect contentRect = window.getContentRect();
             layer.resize(contentRect.getWidth(), contentRect.getHeight());
             paint();
         } else if (e instanceof EventWindowResize ee) {

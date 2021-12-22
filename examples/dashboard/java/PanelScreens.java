@@ -35,7 +35,7 @@ public class PanelScreens extends Panel {
                     case DIGIT5 -> {
                         Screen[] screens = App.getScreens();
                         idx = (idx + 1) % (screens.length * 5);
-                        UIRect bounds = screens[idx / 5].getWorkArea();
+                        IRect bounds = screens[idx / 5].getWorkArea();
                         switch (idx % 5) {
                             case 0 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 4, bounds.getTop() + bounds.getHeight() / 4);
                             case 1 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop());
@@ -45,7 +45,7 @@ public class PanelScreens extends Panel {
                         }
                     }
                     case DIGIT6 -> {
-                        UIRect bounds = window.getScreen().getWorkArea();
+                        IRect bounds = window.getScreen().getWorkArea();
                         int width  = (int) (((int) ((bounds.getWidth() / 2) / scale)) * scale);
                         int height = (int) (((int) ((bounds.getHeight() / 2) / scale)) * scale);
                         if (window.getWindowRect().getWidth() != width || window.getWindowRect().getHeight() != height) {
@@ -65,7 +65,7 @@ public class PanelScreens extends Panel {
         }
     }
 
-    public void drawRect(Canvas canvas, UIRect rect) {
+    public void drawRect(Canvas canvas, IRect rect) {
         canvas.drawRect(Rect.makeXYWH(rect.getLeft(), rect.getTop(), rect.getWidth(), rect.getHeight()), fill);
         canvas.drawRect(Rect.makeXYWH(rect.getLeft(), rect.getTop(), rect.getWidth(), rect.getHeight()), stroke);
     }
@@ -93,11 +93,11 @@ public class PanelScreens extends Panel {
             drawRect(canvas, screen.getBounds());
             drawRect(canvas, screen.getWorkArea());
         }
-        UIRect windowRect = window.getWindowRect();
+        IRect windowRect = window.getWindowRect();
         drawRect(canvas, windowRect);
         drawRect(canvas, window.getContentRectAbsolute());
         stroke.setColor(0x80CC3333);
-        drawRect(canvas, UIRect.makeXYWH(lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight()));
+        drawRect(canvas, IRect.makeXYWH(lastMove.getWindowLeft(), lastMove.getWindowTop(), lastResize.getWindowWidth(), lastResize.getWindowHeight()));
         canvas.restore();
 
         var contentRect = window.getContentRect();

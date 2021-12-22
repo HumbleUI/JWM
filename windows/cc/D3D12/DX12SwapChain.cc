@@ -34,7 +34,7 @@ bool jwm::DX12SwapChain::create() {
     ComPtr<IDXGIFactory4> dxgiFactory4 = dx12Common.getFactory();
     ComPtr<IDXGISwapChain1> swapChain1;
 
-    UIRect rect = _window->getContentRect();
+    IRect rect = _window->getContentRect();
     _currentWidth = rect.getWidth();
     _currentHeight = rect.getHeight();
 

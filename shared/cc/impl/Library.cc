@@ -8,7 +8,6 @@
 #include "StringUTF16.hh"
 
 namespace jwm {
-
     namespace classes {
         namespace Throwable {
             jclass kClsRuntimeException;
@@ -437,13 +436,13 @@ namespace jwm {
                 jclass cls = env->FindClass("io/github/humbleui/jwm/Screen");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(JZLio/github/humbleui/jwm/UIRect;Lio/github/humbleui/jwm/UIRect;F)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(JZLio/github/humbleui/types/IRect;Lio/github/humbleui/types/IRect;F)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::UIRect bounds, jwm::UIRect workArea, jfloat scale) {
-                JNILocal<jobject> boundsObj(env, jwm::classes::UIRect::toJava(env, bounds));
-                JNILocal<jobject> workAreaObj(env, jwm::classes::UIRect::toJava(env, workArea));
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale) {
+                JNILocal<jobject> boundsObj(env, jwm::classes::IRect::toJava(env, bounds));
+                JNILocal<jobject> workAreaObj(env, jwm::classes::IRect::toJava(env, workArea));
                 jobject res = env->NewObject(kCls, kCtor, id, isPrimary, boundsObj.get(), workAreaObj.get(), scale);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
@@ -455,18 +454,18 @@ namespace jwm {
             void onLoad(JNIEnv* env) {
                 jclass cls = env->FindClass("io/github/humbleui/jwm/TextInputClient");
                 Throwable::exceptionThrown(env);
-                kGetRectForMarkedRange = env->GetMethodID(cls, "getRectForMarkedRange", "(II)Lio/github/humbleui/jwm/UIRect;");
+                kGetRectForMarkedRange = env->GetMethodID(cls, "getRectForMarkedRange", "(II)Lio/github/humbleui/types/IRect;");
                 Throwable::exceptionThrown(env);
             }
 
-            jwm::UIRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd) {
-                JNILocal<jobject> uiRect(env, env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd));
+            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd) {
+                JNILocal<jobject> IRect(env, env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd));
                 Throwable::exceptionThrown(env);
-                return UIRect::fromJava(env, uiRect.get());
+                return IRect::fromJava(env, IRect.get());
             }
         }
 
-        namespace UIRect {
+        namespace IRect {
             jclass kCls;
             jmethodID kCtor;
             jfieldID kLeft;
@@ -475,7 +474,7 @@ namespace jwm {
             jfieldID kBottom;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/UIRect");
+                jclass cls = env->FindClass("io/github/humbleui/types/IRect");
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
@@ -490,19 +489,19 @@ namespace jwm {
                 Throwable::exceptionThrown(env);
             }
 
-            jwm::UIRect fromJava(JNIEnv* env, jobject uirect) {
-                int32_t left = env->GetIntField(uirect, kLeft);
+            jwm::IRect fromJava(JNIEnv* env, jobject IRect) {
+                int32_t left = env->GetIntField(IRect, kLeft);
                 Throwable::exceptionThrown(env);
-                int32_t top = env->GetIntField(uirect, kTop);
+                int32_t top = env->GetIntField(IRect, kTop);
                 Throwable::exceptionThrown(env);
-                int32_t right = env->GetIntField(uirect, kRight);
+                int32_t right = env->GetIntField(IRect, kRight);
                 Throwable::exceptionThrown(env);
-                int32_t bottom = env->GetIntField(uirect, kBottom);
+                int32_t bottom = env->GetIntField(IRect, kBottom);
                 Throwable::exceptionThrown(env);
                 return { left, top, right, bottom };
             }
 
-            jobject toJava(JNIEnv* env, const struct UIRect& rect) {
+            jobject toJava(JNIEnv* env, const struct IRect& rect) {
                 jobject res = env->NewObject(kCls, kCtor, rect.fLeft, rect.fTop, rect.fRight, rect.fBottom);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
@@ -512,7 +511,6 @@ namespace jwm {
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
-
     }
 }
 
@@ -541,5 +539,5 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventWindowRestore::onLoad(env);
     jwm::classes::Screen::onLoad(env);
     jwm::classes::TextInputClient::onLoad(env);
-    jwm::classes::UIRect::onLoad(env);
+    jwm::classes::IRect::onLoad(env);
 }
