@@ -25,7 +25,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
         timerTask = new TimerTask() {
             public void run() {
                 cursorDraw = !cursorDraw;
-                App.runOnUIThread(() -> { if (!window._closed) window.requestFrame(); });
+                App.runOnUIThread(() -> { if (!window.isClosed()) window.requestFrame(); });
             }
         };
         timer.schedule(timerTask, 0, 500);

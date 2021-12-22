@@ -1,30 +1,29 @@
 #include <iostream>
 #include <jni.h>
 #include "Window.hh"
+#include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 
 jwm::Window::~Window() {
-    if (fEventListener)
-        fEnv->DeleteGlobalRef(fEventListener);
+    fEnv->DeleteGlobalRef(fWindow);
 }
 
 void jwm::Window::dispatch(jobject event) {
-  if (fEventListener)
-      jwm::classes::Consumer::accept(fEnv, fEventListener, event);
+    jwm::classes::Consumer::accept(fEnv, fWindow, event);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Window__1nSetEventListener
-  (JNIEnv* env, jobject obj, jobject listener) {
-    jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
-    if (instance->fEventListener)
-        env->DeleteGlobalRef(instance->fEventListener);
-    instance->fEventListener = listener ? env->NewGlobalRef(listener) : nullptr;
+bool jwm::Window::getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect) {
+    JNILocal<jobject> client(fEnv, fEnv->GetObjectField(fWindow, jwm::classes::Window::kTextInputClient));
+    jwm::classes::Throwable::exceptionThrown(fEnv);
+    if (client.get()) {
+        rect = jwm::classes::TextInputClient::getRectForMarkedRange(fEnv, client.get(), selectionStart, selectionEnd);
+        return true;
+    } else
+        return false;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Window__1nSetTextInputClient
-  (JNIEnv* env, jobject obj, jobject client) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_Window__1nInit
+  (JNIEnv* env, jobject obj) {
     jwm::Window* instance = reinterpret_cast<jwm::Window*>(jwm::classes::Native::fromJava(env, obj));
-    if (instance->fTextInputClient)
-        env->DeleteGlobalRef(instance->fTextInputClient);
-    instance->fTextInputClient = client ? env->NewGlobalRef(client) : nullptr;
+    instance->fWindow = env->NewGlobalRef(obj);
 }

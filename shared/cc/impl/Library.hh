@@ -5,7 +5,6 @@
 #include "KeyLocation.hh"
 #include "MouseButton.hh"
 #include "Types.hh"
-#include "Window.hh"
 
 namespace jwm {
     struct IRect {
@@ -148,18 +147,6 @@ namespace jwm {
             extern jobject kInstance;
         }
         
-        namespace Screen {
-            extern jclass kCls;
-            extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale);
-        }
-
-        namespace TextInputClient {
-            extern jclass kCls;
-            extern jmethodID kGetRectForMarkedRange;
-            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
-        }
-
         namespace IRect {
             extern jclass kCls;
             extern jmethodID kCtor;
@@ -170,6 +157,21 @@ namespace jwm {
             jwm::IRect fromJava(JNIEnv* env, jobject IRect);
             jobject toJava(JNIEnv* env, const struct IRect& rect);
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height);
+        }
+
+        namespace Screen {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale);
+        }
+
+        namespace TextInputClient {
+            extern jmethodID kGetRectForMarkedRange;
+            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
+        }
+
+        namespace Window {
+            extern jfieldID kTextInputClient;
         }
     }
 }

@@ -1,22 +1,30 @@
 package io.github.humbleui.jwm;
 
+import java.io.File;
 import java.util.concurrent.*;
 import java.util.function.*;
-import org.jetbrains.annotations.*;
 import io.github.humbleui.jwm.impl.*;
 import io.github.humbleui.types.*;
-import java.io.File;
+import lombok.*;
+import org.jetbrains.annotations.*;
 
-public abstract class Window extends RefCounted {
+public abstract class Window extends RefCounted implements Consumer<Event> {
     @ApiStatus.Internal
     public MouseCursor _lastCursor = MouseCursor.ARROW;
 
-    @ApiStatus.Internal
-    public boolean _closed = false;
+    @ApiStatus.Internal @Getter
+    public Layer _layer = null;
+
+    @ApiStatus.Internal @Getter
+    public Consumer<Event> _eventListener = null;
+
+    @ApiStatus.Internal @Getter
+    public TextInputClient _textInputClient = null;
 
     @ApiStatus.Internal
     public Window(long ptr) {
         super(ptr);
+        _nInit();
     }
 
     /**
@@ -27,8 +35,7 @@ public abstract class Window extends RefCounted {
      */
     @NotNull @Contract("-> this")
     public Window setEventListener(@Nullable Consumer<Event> eventListener) {
-        assert _onUIThread();
-        _nSetEventListener(eventListener);
+        _eventListener = eventListener;
         return this;
     }
 
@@ -42,8 +49,7 @@ public abstract class Window extends RefCounted {
      */
     @NotNull @Contract("-> this")
     public Window setTextInputClient(@Nullable TextInputClient client) {
-        assert _onUIThread();
-        _nSetTextInputClient(client);
+        _textInputClient = client;
         return this;
     }
 
@@ -291,13 +297,32 @@ public abstract class Window extends RefCounted {
     public abstract Window setZOrder(ZOrder order);
 
     /**
+     * <p>Feed an event to Window’s listener. Same as getEventListener().accept(Event)</p>
+     */
+    public void accept(Event e) {
+        if (_layer != null) {
+            if (e instanceof EventWindowScreenChange) {
+                _layer.reconfigure();
+                _layer.resize(getContentRect().getWidth(), getContentRect().getHeight());
+            } else if (e instanceof EventWindowResize) {
+                EventWindowResize ee = (EventWindowResize) e;
+                _layer.resize(ee.getContentWidth(), ee.getContentHeight());
+            }
+        }
+
+        if (_eventListener != null)
+            _eventListener.accept(e);
+    }
+
+    /**
      * <p>Close window and release its internal resources.</p>
      * <p>Must be last window object method call. After this method window is in released state.</p>
      */
     @Override
     public void close() {
         assert _onUIThread();
-        _closed = true;
+        if (_layer != null)
+            _layer.close();
         setEventListener(null);
         setTextInputClient(null);
         App._windows.remove(this);
@@ -308,7 +333,6 @@ public abstract class Window extends RefCounted {
         return App._onUIThread();
     }
 
-    @ApiStatus.Internal public native void _nSetEventListener(Consumer<Event> eventListener);
-    @ApiStatus.Internal public native void _nSetTextInputClient(TextInputClient client);
+    @ApiStatus.Internal public native void _nInit();
     @ApiStatus.Internal public abstract void _nSetMouseCursor(int cursorIdx);
 }

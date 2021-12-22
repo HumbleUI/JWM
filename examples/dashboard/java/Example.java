@@ -32,7 +32,6 @@ public class Example implements Consumer<Event> {
     public Window window;
 
     public boolean paused = true;
-    public boolean closed = false;
 
     public Example() {
         window = App.makeWindow();
@@ -76,7 +75,7 @@ public class Example implements Consumer<Event> {
     }
 
     public void paint(String reason) {
-        if (closed)
+        if (window.isClosed())
             return;
 
         IRect contentRect = window.getContentRect();
@@ -98,7 +97,7 @@ public class Example implements Consumer<Event> {
             FONT48.setSize(48 * scale);
         }
 
-        var canvas = panelRendering.layer.beforePaint();
+        var canvas = ((SkijaLayer) window.getLayer()).beforePaint();
         canvas.clear(0xFF264653);
         int canvasCount = canvas.save();
 
@@ -150,7 +149,7 @@ public class Example implements Consumer<Event> {
         }
         canvas.restoreToCount(canvasCount);
 
-        panelRendering.layer.afterPaint();
+        ((SkijaLayer) window.getLayer()).afterPaint();
     }
 
     @Override
@@ -195,7 +194,6 @@ public class Example implements Consumer<Event> {
             if (!paused)
                 window.requestFrame();
         } else if (e instanceof EventWindowCloseRequest) {
-            closed = true;
             window.close();
             if (App._windows.size() == 0)
                 App.terminate();

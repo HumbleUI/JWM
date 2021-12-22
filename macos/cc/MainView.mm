@@ -516,9 +516,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range
                          actualRange:(NSRangePointer)actualRange {
-    if (fWindow->fTextInputClient != nullptr) {
+    jwm::IRect rect{};
+    if (fWindow->getRectForMarkedRange(range.location, range.location + range.length, rect)) {
         JNIEnv* env = fWindow->fEnv;
-        jwm::IRect rect = jwm::classes::TextInputClient::getRectForMarkedRange(env, fWindow->fTextInputClient, range.location, range.location + range.length);
         const NSRect frame = [fWindow->fNSWindow.contentView frame];
         CGFloat scale = fWindow->getScale();
         const NSRect res = NSMakeRect(

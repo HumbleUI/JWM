@@ -878,17 +878,11 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
 }
 
 bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
-    if (this->fTextInputClient) {
-        // Query current cursor position
-        // If composition starts, Pos will be always 0
-        auto sectionStart = static_cast<int>(_compositionPos);
-        auto sectionEnd = sectionStart + 0;
-        rect = classes::TextInputClient::getRectForMarkedRange(getJNIEnv(), this->fTextInputClient, sectionStart, sectionEnd);
-
-        return true;
-    }
-
-    return false;
+    // Query current cursor position
+    // If composition starts, Pos will be always 0
+    auto sectionStart = static_cast<int>(_compositionPos);
+    auto sectionEnd = sectionStart + 0;
+    return this->getRectForMarkedRange(selectionStart, selectionEnd, rect);
 }
 
 std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {

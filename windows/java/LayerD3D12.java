@@ -14,9 +14,17 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public void attach(Window window) {
+        // TODO extract
         assert _onUIThread();
+        if (window._layer != null) {
+            window._layer.close();
+            window._layer = null;
+        }
         _window = window;
         _nAttach(window);
+        window._layer = this;
+        reconfigure();
+        resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
 
     @Override
@@ -54,6 +62,7 @@ public class LayerD3D12 extends RefCounted implements Layer {
     @Override
     public void close() {
         assert _onUIThread();
+        _window._layer = null;
         _nClose();
         _window = null;
         super.close();

@@ -15,17 +15,17 @@ namespace jwm {
             jmethodID kPrintStackTrace;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("java/lang/Throwable");
-                kPrintStackTrace = env->GetMethodID(cls, "printStackTrace", "()V");
+                JNILocal<jclass> cls(env, env->FindClass("java/lang/Throwable"));
+                kPrintStackTrace = env->GetMethodID(cls.get(), "printStackTrace", "()V");
 
-                cls = env->FindClass("java/lang/RuntimeException");
+                JNILocal<jclass> cls2(env, env->FindClass("java/lang/RuntimeException"));
                 Throwable::exceptionThrown(env);
-                kClsRuntimeException = static_cast<jclass>(env->NewGlobalRef(cls));
+                kClsRuntimeException = static_cast<jclass>(env->NewGlobalRef(cls2.get()));
                 assert(kClsRuntimeException);
 
-                cls = env->FindClass("io/github/humbleui/jwm/LayerNotSupportedException");
+                JNILocal<jclass> cls3(env, env->FindClass("io/github/humbleui/jwm/LayerNotSupportedException"));
                 Throwable::exceptionThrown(env);
-                kClsLayerNotSupportedException = static_cast<jclass>(env->NewGlobalRef(cls));
+                kClsLayerNotSupportedException = static_cast<jclass>(env->NewGlobalRef(cls3.get()));
                 assert(kClsLayerNotSupportedException);
             }
 
@@ -53,9 +53,9 @@ namespace jwm {
             jmethodID kAccept;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("java/util/function/Consumer");
+                JNILocal<jclass> cls(env, env->FindClass("java/util/function/Consumer"));
                 Throwable::exceptionThrown(env);
-                kAccept = env->GetMethodID(cls, "accept", "(Ljava/lang/Object;)V");
+                kAccept = env->GetMethodID(cls.get(), "accept", "(Ljava/lang/Object;)V");
                 Throwable::exceptionThrown(env);
             }
 
@@ -69,9 +69,9 @@ namespace jwm {
             jmethodID kRun;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("java/lang/Runnable");
+                JNILocal<jclass> cls(env, env->FindClass("java/lang/Runnable"));
                 Throwable::exceptionThrown(env);
-                kRun = env->GetMethodID(cls, "run", "()V");
+                kRun = env->GetMethodID(cls.get(), "run", "()V");
                 Throwable::exceptionThrown(env);
             }
 
@@ -85,9 +85,9 @@ namespace jwm {
             jfieldID kPtr;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/impl/Native");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/impl/Native"));
                 Throwable::exceptionThrown(env);
-                kPtr = env->GetFieldID(cls, "_ptr", "J");
+                kPtr = env->GetFieldID(cls.get(), "_ptr", "J");
                 Throwable::exceptionThrown(env);
             }
 
@@ -102,15 +102,15 @@ namespace jwm {
             jmethodID kRegisterPredefinedFormat;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/Clipboard");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/Clipboard"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 assert(kCls);
 
                 // public static ClipboardFormat _registerPredefinedFormat(String formatId)
                 kRegisterPredefinedFormat = env->GetStaticMethodID(kCls,
-                "_registerPredefinedFormat",
-                "(Ljava/lang/String;)Lio/github/humbleui/jwm/ClipboardFormat;"
+                    "_registerPredefinedFormat",
+                    "(Ljava/lang/String;)Lio/github/humbleui/jwm/ClipboardFormat;"
                 );
                 Throwable::exceptionThrown(env);
                 assert(kRegisterPredefinedFormat);
@@ -129,9 +129,9 @@ namespace jwm {
             jfieldID kData;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/ClipboardEntry");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/ClipboardEntry"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 assert(kCls);
 
                 // public static ClipboardEntry make(ClipboardFormat format, byte[] data)
@@ -172,12 +172,12 @@ namespace jwm {
             jfieldID kFormatId;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/ClipboardFormat");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/ClipboardFormat"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 assert(kCls);
 
-                kFormatId = env->GetFieldID(cls, "_formatId", "Ljava/lang/String;");
+                kFormatId = env->GetFieldID(cls.get(), "_formatId", "Ljava/lang/String;");
                 Throwable::exceptionThrown(env);
                 assert(kFormatId);
             }
@@ -192,10 +192,10 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowScreenChange");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowScreenChange"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventWindowScreenChange;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowScreenChange;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
@@ -204,10 +204,10 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventFrame");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventFrame"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventFrame;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventFrame;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
@@ -220,9 +220,9 @@ namespace jwm {
             void onLoad(JNIEnv* env) {
                 // kCls = EventKey
                 {
-                    jclass cls = env->FindClass("io/github/humbleui/jwm/EventKey");
+                    JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventKey"));
                     Throwable::exceptionThrown(env);
-                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                    kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                     assert(kCls);
                 }
 
@@ -245,9 +245,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventMouseButton");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseButton"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
                 assert(kCtor);
                 Throwable::exceptionThrown(env);
@@ -264,9 +264,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventMouseMove");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseMove"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
                 Throwable::exceptionThrown(env);
             }
@@ -283,9 +283,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventMouseScroll");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseScroll"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(FFFFFI)V");
                 Throwable::exceptionThrown(env);
             }
@@ -303,9 +303,9 @@ namespace jwm {
             void onLoad(JNIEnv* env) {
                 // kCls = EventTextInput
                 {
-                    jclass cls = env->FindClass("io/github/humbleui/jwm/EventTextInput");
+                    JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTextInput"));
                     Throwable::exceptionThrown(env);
-                    kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                    kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                     assert(kCls);
                 }
 
@@ -328,9 +328,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventTextInputMarked");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTextInputMarked"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 assert(kCls);
 
                 kCtor = env->GetMethodID(kCls, "<init>", "(Ljava/lang/String;II)V");
@@ -348,10 +348,10 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowCloseRequest");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowCloseRequest"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventWindowCloseRequest;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowCloseRequest;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
@@ -360,10 +360,10 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowMaximize");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowMaximize"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventWindowMaximize;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowMaximize;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
@@ -372,10 +372,10 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowMinimize");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowMinimize"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventWindowMinimize;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowMinimize;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
             }
         }
@@ -385,9 +385,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowMove");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowMove"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
                 Throwable::exceptionThrown(env);
             }
@@ -403,9 +403,9 @@ namespace jwm {
             jmethodID kCtor;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowResize");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowResize"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
                 Throwable::exceptionThrown(env);
             }
@@ -420,48 +420,11 @@ namespace jwm {
             jobject kInstance;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/EventWindowRestore");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowRestore"));
                 Throwable::exceptionThrown(env);
-                jfieldID field = env->GetStaticFieldID(cls, "INSTANCE", "Lio/github/humbleui/jwm/EventWindowRestore;");
-                jobject instance = env->GetStaticObjectField(cls, field);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowRestore;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
                 kInstance = env->NewGlobalRef(instance);
-            }
-        }
-    
-        namespace Screen {
-            jclass kCls;
-            jmethodID kCtor;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/Screen");
-                Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
-                kCtor = env->GetMethodID(kCls, "<init>", "(JZLio/github/humbleui/types/IRect;Lio/github/humbleui/types/IRect;F)V");
-                Throwable::exceptionThrown(env);
-            }
-
-            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale) {
-                JNILocal<jobject> boundsObj(env, jwm::classes::IRect::toJava(env, bounds));
-                JNILocal<jobject> workAreaObj(env, jwm::classes::IRect::toJava(env, workArea));
-                jobject res = env->NewObject(kCls, kCtor, id, isPrimary, boundsObj.get(), workAreaObj.get(), scale);
-                return Throwable::exceptionThrown(env) ? nullptr : res;
-            }
-        }
-
-        namespace TextInputClient {
-            jmethodID kGetRectForMarkedRange;
-
-            void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/jwm/TextInputClient");
-                Throwable::exceptionThrown(env);
-                kGetRectForMarkedRange = env->GetMethodID(cls, "getRectForMarkedRange", "(II)Lio/github/humbleui/types/IRect;");
-                Throwable::exceptionThrown(env);
-            }
-
-            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd) {
-                JNILocal<jobject> IRect(env, env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd));
-                Throwable::exceptionThrown(env);
-                return IRect::fromJava(env, IRect.get());
             }
         }
 
@@ -474,18 +437,18 @@ namespace jwm {
             jfieldID kBottom;
 
             void onLoad(JNIEnv* env) {
-                jclass cls = env->FindClass("io/github/humbleui/types/IRect");
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/types/IRect"));
                 Throwable::exceptionThrown(env);
-                kCls = static_cast<jclass>(env->NewGlobalRef(cls));
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
                 kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
                 Throwable::exceptionThrown(env);
-                kLeft = env->GetFieldID(cls, "_left", "I");
+                kLeft = env->GetFieldID(kCls, "_left", "I");
                 Throwable::exceptionThrown(env);
-                kTop = env->GetFieldID(cls, "_top", "I");
+                kTop = env->GetFieldID(kCls, "_top", "I");
                 Throwable::exceptionThrown(env);
-                kRight = env->GetFieldID(cls, "_right", "I");
+                kRight = env->GetFieldID(kCls, "_right", "I");
                 Throwable::exceptionThrown(env);
-                kBottom = env->GetFieldID(cls, "_bottom", "I");
+                kBottom = env->GetFieldID(kCls, "_bottom", "I");
                 Throwable::exceptionThrown(env);
             }
 
@@ -509,6 +472,54 @@ namespace jwm {
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height) {
                 jobject res = env->NewObject(kCls, kCtor, left, top, left + width, top + height);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+   
+        namespace Screen {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/Screen"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(JZLio/github/humbleui/types/IRect;Lio/github/humbleui/types/IRect;F)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jlong id, jboolean isPrimary, jwm::IRect bounds, jwm::IRect workArea, jfloat scale) {
+                JNILocal<jobject> boundsObj(env, jwm::classes::IRect::toJava(env, bounds));
+                JNILocal<jobject> workAreaObj(env, jwm::classes::IRect::toJava(env, workArea));
+                jobject res = env->NewObject(kCls, kCtor, id, isPrimary, boundsObj.get(), workAreaObj.get(), scale);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace TextInputClient {
+            jmethodID kGetRectForMarkedRange;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/TextInputClient"));
+                Throwable::exceptionThrown(env);
+                kGetRectForMarkedRange = env->GetMethodID(cls.get(), "getRectForMarkedRange", "(II)Lio/github/humbleui/types/IRect;");
+                Throwable::exceptionThrown(env);
+            }
+
+            jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd) {
+                JNILocal<jobject> IRect(env, env->CallObjectMethod(client, kGetRectForMarkedRange, selectionStart, selectionEnd));
+                Throwable::exceptionThrown(env);
+                return IRect::fromJava(env, IRect.get());
+            }
+        }
+
+        namespace Window {
+            jfieldID kTextInputClient;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/Window"));
+                Throwable::exceptionThrown(env);
+                kTextInputClient = env->GetFieldID(cls.get(), "_textInputClient", "Lio/github/humbleui/jwm/TextInputClient;");
+                Throwable::exceptionThrown(env);
             }
         }
     }
@@ -537,7 +548,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::EventWindowRestore::onLoad(env);
+    jwm::classes::IRect::onLoad(env);
     jwm::classes::Screen::onLoad(env);
     jwm::classes::TextInputClient::onLoad(env);
-    jwm::classes::IRect::onLoad(env);
+    jwm::classes::Window::onLoad(env);
 }

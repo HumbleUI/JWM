@@ -20,7 +20,6 @@ public class PanelRendering extends Panel {
     public Map<String, String> layersStatus = new HashMap<>();
     public String[] layers;
     public int layerIdx = 0;
-    public SkijaLayer layer;
 
     // Layer status displayed on the right side from the layer name
     public static final String CHECKED = "+";
@@ -48,57 +47,40 @@ public class PanelRendering extends Panel {
     }
 
     public void changeLayer() {
-        if (layer != null) {
-            layer.close();
-            layer = null;
-        }
-
         int attemptsCount = layers.length;
 
-        while (layer == null && attemptsCount > 0) {
+        while (attemptsCount > 0) {
             attemptsCount -= 1;
             String layerName = layers[layerIdx];
             String className = "io.github.humbleui.jwm.examples." + layerName;
 
             try {
-                layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+                SkijaLayer layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
                 layer.attach(window);
+                break;
             } catch (Exception e) {
                 System.err.println("Failed to create layer " + className);
                 e.printStackTrace();
-                layer = null;
                 layersStatus.put(layerName, FAILED); // Update layer status
                 nextLayerIdx();
             }
         }
 
-        if (layer == null)
+        if (window._layer == null)
             throw new RuntimeException("No available layer to create");
 
         layersStatus.put(layers[layerIdx], CHECKED); // Mark layer as checked
-        layer.reconfigure();
-        layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventWindowScreenChange) {
-            layer.reconfigure();
-            accept(new EventWindowResize(window.getWindowRect().getWidth(),
-                                         window.getWindowRect().getHeight(),
-                                         window.getContentRect().getWidth(),
-                                         window.getContentRect().getHeight()));
-        } else if (e instanceof EventWindowResize ee) {
-            layer.resize(ee.getContentWidth(), ee.getContentHeight());
-        } else if (e instanceof EventKey ee && ee.isPressed()) {
+        if (e instanceof EventKey ee && ee.isPressed()) {
             Key key = ee.getKey();
             boolean modifier = ee.isModifierDown(Example.MODIFIER);
             if (Key.L == key && modifier) {
                 nextLayerIdx();
                 changeLayer();
             }
-        } else if (e instanceof EventWindowCloseRequest) {
-            layer.close();
         }
     }
 

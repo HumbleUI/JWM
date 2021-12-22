@@ -1,5 +1,6 @@
 #pragma once
 #include <jni.h>
+#include "impl/Library.hh"
 #include "impl/RefCounted.hh"
 
 namespace jwm {
@@ -12,8 +13,9 @@ namespace jwm {
 
         void dispatch(jobject event);
 
+        bool getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect);
+
         JNIEnv* fEnv = nullptr;
-        jobject fEventListener = nullptr;
-        jobject fTextInputClient = nullptr;
+        jobject fWindow = nullptr;
     };
 }
