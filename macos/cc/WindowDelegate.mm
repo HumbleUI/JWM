@@ -16,9 +16,12 @@
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-    NSPoint origin = fWindow->fNSWindow.frame.origin;
-    if (origin.x != fWindow->fLastPosition.x || origin.y != fWindow->fLastPosition.y) {
-        fWindow->fLastPosition = origin;
+    NSWindow* window = fWindow->fNSWindow;
+    NSScreen* screen = [window screen] ?: [NSScreen mainScreen];
+    NSRect frame = [fWindow->fNSWindow frame];
+    frame.origin.y = screen.frame.size.height - frame.origin.y - frame.size.height;
+    if (frame.origin.x != fWindow->fLastPosition.x || frame.origin.y != fWindow->fLastPosition.y) {
+        fWindow->fLastPosition = frame.origin;
         NSPoint pos = jwm::nsWindowPosition(fWindow->fNSWindow);
         jwm::JNILocal<jobject> event(fWindow->fEnv, jwm::classes::EventWindowMove::make(fWindow->fEnv, pos.x, pos.y));
         fWindow->dispatch(event.get());
