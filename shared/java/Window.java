@@ -53,6 +53,21 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
         return this;
     }
 
+    @NotNull @Contract("-> this")
+    public Window setLayer(@Nullable Layer layer) {
+        assert _onUIThread();
+        if (_layer != null) {
+            _layer.close();
+            _layer = null;
+        }
+        if (layer != null) {
+            layer.attach(this);
+            _layer = layer;
+            accept(EventWindowScreenChange.INSTANCE);
+        }
+        return this;
+    }
+
     /**
      * <p>Enables complex text input on this window.</p>
      * <p>Passed value `true` or `false` enables or disables complex text input and IME on this window respectively.</p>
@@ -321,8 +336,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     @Override
     public void close() {
         assert _onUIThread();
-        if (_layer != null)
-            _layer.close();
+        setLayer(null);
         setEventListener(null);
         setTextInputClient(null);
         App._windows.remove(this);

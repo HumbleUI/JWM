@@ -28,6 +28,7 @@ public class Example implements Consumer<Event> {
     public PanelRendering panelRendering;
     public PanelEvents panelEvents;
     public PanelTheme panelTheme;
+    public boolean initialized = false;
 
     public Window window;
 
@@ -72,6 +73,7 @@ public class Example implements Consumer<Event> {
         }
         window.setVisible(true);
         window.requestFrame();
+        initialized = true;
     }
 
     public void paint(String reason) {
@@ -154,6 +156,9 @@ public class Example implements Consumer<Event> {
 
     @Override
     public void accept(Event e) {
+        if (!initialized)
+            return;
+        
         panelTextInput.accept(e);
         panelScreens.accept(e);
         panelMouse.accept(e);

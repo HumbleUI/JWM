@@ -56,7 +56,7 @@ public class PanelRendering extends Panel {
 
             try {
                 SkijaLayer layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
-                layer.attach(window);
+                window.setLayer(layer);
                 break;
             } catch (Exception e) {
                 System.err.println("Failed to create layer " + className);
