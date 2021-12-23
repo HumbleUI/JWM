@@ -318,7 +318,6 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
         if (_layer != null) {
             if (e instanceof EventWindowScreenChange) {
                 _layer.reconfigure();
-                _layer.resize(getContentRect().getWidth(), getContentRect().getHeight());
             } else if (e instanceof EventWindowResize) {
                 EventWindowResize ee = (EventWindowResize) e;
                 _layer.resize(ee.getContentWidth(), ee.getContentHeight());
@@ -327,6 +326,16 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
 
         if (_eventListener != null)
             _eventListener.accept(e);
+
+        if (e instanceof EventWindowScreenChange) {
+            accept(new EventWindowResize(
+                    getWindowRect().getWidth(),
+                    getWindowRect().getHeight(),
+                    getContentRect().getWidth(),
+                    getContentRect().getHeight()));
+        } else if (e instanceof EventWindowResize) {
+            accept(EventFrame.INSTANCE);
+        }
     }
 
     /**

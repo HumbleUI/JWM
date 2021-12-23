@@ -192,8 +192,6 @@ public class Example implements Consumer<Event> {
                         window.minimize();
                 }
             }
-        } else if (e instanceof EventWindowResize ee) {
-            paint("Resize");
         } else if (e instanceof EventFrame) {
             paint("Frame");
             if (!paused)
