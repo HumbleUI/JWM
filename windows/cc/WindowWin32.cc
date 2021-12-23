@@ -368,7 +368,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             // assume page scroll
             // https://github.com/mozilla/gecko-dev/blob/da97cbad6c9f00fc596253feb5964a8adbb45d9e/widget/windows/WinMouseScrollHandler.cpp#L891-L903
             if (linesPerTick > WHEEL_DELTA) {
-                float sign = ticks > 0 ? 1 : ticks < 0 ? -1 : 0;
+                float sign =  ticks > 0.0f ? 1.0f : ticks < 0.0f ? -1.0f : 0.0f;
                 JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, getContentRect().getHeight() * sign, 0.0f, 0.0f, sign, modifiers));
                 dispatch(eventMouseScroll.get());
             } else {
@@ -880,9 +880,9 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
 bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
     // Query current cursor position
     // If composition starts, Pos will be always 0
-    auto sectionStart = static_cast<int>(_compositionPos);
-    auto sectionEnd = sectionStart + 0;
-    return this->getRectForMarkedRange(selectionStart, selectionEnd, rect);
+    auto selectionStart = static_cast<int>(_compositionPos);
+    auto selectionEnd = selectionStart + 0;
+    return getRectForMarkedRange(selectionStart, selectionEnd, rect);
 }
 
 std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {

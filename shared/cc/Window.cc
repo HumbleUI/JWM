@@ -12,7 +12,7 @@ void jwm::Window::dispatch(jobject event) {
     jwm::classes::Consumer::accept(fEnv, fWindow, event);
 }
 
-bool jwm::Window::getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect) {
+bool jwm::Window::getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect) const {
     JNILocal<jobject> client(fEnv, fEnv->GetObjectField(fWindow, jwm::classes::Window::kTextInputClient));
     jwm::classes::Throwable::exceptionThrown(fEnv);
     if (client.get()) {
