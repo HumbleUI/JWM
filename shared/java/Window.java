@@ -321,6 +321,8 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
             } else if (e instanceof EventWindowResize) {
                 EventWindowResize ee = (EventWindowResize) e;
                 _layer.resize(ee.getContentWidth(), ee.getContentHeight());
+            } else if (e instanceof EventFrame) {
+                _layer.frame();
             }
         }
 

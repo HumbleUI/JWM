@@ -76,20 +76,11 @@ public class Example implements Consumer<Event> {
         initialized = true;
     }
 
-    public void paint(String reason) {
-        if (window.isClosed())
-            return;
-
-        IRect contentRect = window.getContentRect();
-
-        // If content area empty no rendering must happen
-        if (contentRect.getWidth() <= 0 || contentRect.getHeight() <= 0)
-            return;
-
+    public void paint(Canvas canvas, int width, int height) {
         float scale = window.getScreen().getScale();
         PADDING = (int) (10 * scale);
-        int panelWidth = (contentRect.getWidth() - (COLS + 1) * PADDING) / COLS;
-        int panelHeight = (contentRect.getHeight() - (ROWS + 1) * PADDING) / ROWS;
+        int panelWidth = (width - (COLS + 1) * PADDING) / COLS;
+        int panelHeight = (height - (ROWS + 1) * PADDING) / ROWS;
         if (panelWidth <= 0 || panelHeight <= 0)
             return;
 
@@ -99,7 +90,6 @@ public class Example implements Consumer<Event> {
             FONT48.setSize(48 * scale);
         }
 
-        var canvas = ((SkijaLayer) window.getLayer()).beforePaint();
         canvas.clear(0xFF264653);
         int canvasCount = canvas.save();
 
@@ -112,7 +102,6 @@ public class Example implements Consumer<Event> {
         // Second row
         panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelRendering.bumpCounter(reason);
         panelRendering.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
@@ -121,8 +110,6 @@ public class Example implements Consumer<Event> {
 
         // Colored bars
         try (var paint = new Paint()) {
-            int width = contentRect.getWidth();
-            int height = contentRect.getHeight();
             var barSize = 3 * scale;
 
             // left
@@ -150,8 +137,6 @@ public class Example implements Consumer<Event> {
             canvas.drawRect(Rect.makeXYWH(width - 100 * scale, height - barSize, 100 * scale, barSize), paint);
         }
         canvas.restoreToCount(canvasCount);
-
-        ((SkijaLayer) window.getLayer()).afterPaint();
     }
 
     @Override
@@ -193,9 +178,11 @@ public class Example implements Consumer<Event> {
                 }
             }
         } else if (e instanceof EventFrame) {
-            paint("Frame");
             if (!paused)
                 window.requestFrame();
+        } else if (e instanceof EventFrameSkija ee) {
+            Surface s = ee.getSurface();
+            paint(s.getCanvas(), s.getWidth(), s.getHeight());
         } else if (e instanceof EventWindowCloseRequest) {
             window.close();
             if (App._windows.size() == 0)

@@ -15,7 +15,7 @@ public class PanelEvents extends Panel {
     public void accept(Event e) {
         while (events.size() > 19)
             events.remove(0);
-        if (!(e instanceof EventFrame)) {
+        if (!(e instanceof EventFrame || e instanceof EventFrameSkija)) {
             events.add(e);
             window.requestFrame();
         }

@@ -11,7 +11,6 @@ import io.github.humbleui.types.*;
 
 public class PanelRendering extends Panel {
     public boolean vsyncColor = false;
-    public Map<String, Integer> counters = new ConcurrentHashMap<>();
 
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
@@ -30,20 +29,16 @@ public class PanelRendering extends Panel {
         super(window);
 
         if (Platform.CURRENT == Platform.MACOS)
-            layers = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };
+            layers = new String[] { "LayerMetalSkija", "LayerGLSkija" };
         else if (Platform.CURRENT == Platform.WINDOWS)
-            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
-        else
-            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
+            layers = new String[] { "LayerD3D12Skija", "LayerGLSkija", "SkijaLayerRaster" };
+        else if (Platform.CURRENT == Platform.X11)
+            layers = new String[] { "LayerGLSkija", "LayerRasterSkija" };
 
         for (var layerName: layers)
             layersStatus.put(layerName, UNKNOWN);
 
         changeLayer();
-    }
-
-    public void bumpCounter(String reason) {
-        counters.merge(reason, 1, Integer::sum);
     }
 
     public void changeLayer() {
@@ -52,10 +47,10 @@ public class PanelRendering extends Panel {
         while (attemptsCount > 0) {
             attemptsCount -= 1;
             String layerName = layers[layerIdx];
-            String className = "io.github.humbleui.jwm.examples." + layerName;
+            String className = "io.github.humbleui.jwm.skija." + layerName;
 
             try {
-                SkijaLayer layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+                Layer layer = (Layer) Example.class.forName(className).getDeclaredConstructor().newInstance();
                 window.setLayer(layer);
                 break;
             } catch (Exception e) {
@@ -142,11 +137,6 @@ public class PanelRendering extends Panel {
             paint.setColor(0xFFFFFFFF);
 
             // Paint counters
-            for (var entry: counters.entrySet()) {
-                canvas.drawString(entry.getKey() + ": " + entry.getValue(), 0, 0, Example.FONT12, paint);
-                canvas.translate(0, metrics.getHeight());
-            }
-
             int len = (int) ((width - Example.PADDING * 2) / scale);
             if (len > 0 && times.length != len) {
                 times = new double[len];
