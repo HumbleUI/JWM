@@ -82,7 +82,7 @@ public class WindowMac extends Window {
     public Window setVisible(boolean value) {
         assert _onUIThread();
         _nSetVisible(value);
-        return this;
+        return super.setVisible(true);
     }
 
     @Override

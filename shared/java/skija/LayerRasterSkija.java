@@ -16,8 +16,7 @@ public class LayerRasterSkija extends LayerRaster {
             _surface = Surface.makeRasterDirect(imageInfo, getPixelsPtr(), getRowBytes());
         }
 
-        EventFrameSkija e = new EventFrameSkija(_surface);
-        _window.accept(e);
+        _window.accept(new EventFrameSkija(_surface));
 
         swapBuffers();
     }

@@ -19,7 +19,7 @@ public class WindowX11 extends Window {
     public Window setVisible(boolean isVisible) {
         assert _onUIThread();
         _nSetVisible(isVisible);
-        return this;
+        return super.setVisible(true);
     }
 
     @Override

@@ -235,7 +235,11 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      * @return          this
      */
     @NotNull @Contract("-> this")
-    public abstract Window setVisible(boolean isVisible);
+    public Window setVisible(boolean isVisible) {
+        if (isVisible)
+            accept(EventWindowScreenChange.INSTANCE);
+        return this;
+    }
 
     /**
      * Sets window opacity [0.0, 1.0]. If the opacity is outside the range,
@@ -330,11 +334,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
             _eventListener.accept(e);
 
         if (e instanceof EventWindowScreenChange) {
-            accept(new EventWindowResize(
-                    getWindowRect().getWidth(),
-                    getWindowRect().getHeight(),
-                    getContentRect().getWidth(),
-                    getContentRect().getHeight()));
+            accept(new EventWindowResize(this));
         } else if (e instanceof EventWindowResize) {
             accept(EventFrame.INSTANCE);
         }

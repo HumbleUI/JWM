@@ -24,8 +24,7 @@ public class LayerD3D12Skija extends LayerD3D12 {
         try (BackendRenderTarget _renderTarget = BackendRenderTarget.makeDirect3D(_width, _height, nextDrawableTexturePtr(), getFormat(), getSampleCount(), getLevelCount());
              Surface _surface = Surface.makeFromBackendRenderTarget( _directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
         {
-            EventFrameSkija e = new EventFrameSkija(_surface);
-            _window.accept(e);
+            _window.accept(new EventFrameSkija(_surface));
 
             _surface.flushAndSubmit();
             swapBuffers();

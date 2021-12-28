@@ -72,7 +72,6 @@ public class Example implements Consumer<Event> {
             }
         }
         window.setVisible(true);
-        window.requestFrame();
         initialized = true;
     }
 

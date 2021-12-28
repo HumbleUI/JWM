@@ -24,8 +24,7 @@ public class LayerMetalSkija extends LayerMetal {
         try (BackendRenderTarget _renderTarget = BackendRenderTarget.makeMetal(_width, _height, nextDrawableTexturePtr());
              Surface _surface = Surface.makeFromBackendRenderTarget(_directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
         {
-            EventFrameSkija e = new EventFrameSkija(_surface);
-            _window.accept(e);
+            _window.accept(new EventFrameSkija(_surface));
 
             _surface.flushAndSubmit();
             swapBuffers();
