@@ -1,5 +1,6 @@
-package io.github.humbleui.jwm;
+package io.github.humbleui.jwm.skija;
 
+import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
 import lombok.*;
 import org.jetbrains.annotations.*;
