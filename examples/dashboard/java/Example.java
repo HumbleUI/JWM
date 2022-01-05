@@ -1,6 +1,7 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.skija.*;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.types.*;
 

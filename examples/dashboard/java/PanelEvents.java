@@ -2,6 +2,7 @@ package io.github.humbleui.jwm.examples;
 
 import java.util.*;
 import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.skija.*;
 import io.github.humbleui.skija.*;
 
 public class PanelEvents extends Panel {
