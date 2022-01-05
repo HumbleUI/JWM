@@ -10,6 +10,19 @@ def build_native():
     "-DJWM_ARCH=" + build_utils.arch,
     *(["-DCMAKE_OSX_ARCHITECTURES=" + {"x64": "x86_64", "arm64": "arm64"}[build_utils.arch]] if build_utils.system == "macos" else [])])
   subprocess.check_call(["ninja"], cwd = "build")
+  
+  if os.path.exists('build/libjwm_x64.dylib'):
+    build_utils.copy_newer('build/libjwm_x64.dylib', '../target/classes/libjwm_x64.dylib')
+  
+  if os.path.exists('build/libjwm_arm64.dylib'):
+    build_utils.copy_newer('build/libjwm_arm64.dylib', '../target/classes/libjwm_arm64.dylib')
+  
+  if os.path.exists('build/libjwm_x64.so'):
+    build_utils.copy_newer('build/libjwm_x64.so', '../target/classes/libjwm_x64.so')
+  
+  if os.path.exists('build/jwm_x64.dll'):
+    build_utils.copy_newer('build/jwm_x64.dll', '../target/classes/jwm_x64.dll')
+
   return 0
 
 def build_java():

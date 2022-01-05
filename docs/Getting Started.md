@@ -16,7 +16,7 @@ E.g. for Maven it’ll look like this:
 <dependency>
     <groupId>io.github.humbleui</groupId>
     <artifactId>jwm</artifactId>
-    <version>0.2.6</version>
+    <version>0.3.1</version>
 </dependency>
 ```
 
@@ -86,14 +86,16 @@ See it all together in [GettingStarted.java](GettingStarted.java).
 On Windows and Linux, just run:
 
 ```sh
-java -cp jwm-macos-arm64.jar:jwm-shared.jar GettingStarted.java
+java -cp jwm-0.3.1.jar:types-0.1.1.jar GettingStarted.java
 ```
 
 On macOS, add `-XstartOnFirstThread` flag to `java`:
 
 ```sh
-java -XstartOnFirstThread -cp jwm-macos-arm64.jar:jwm-shared.jar GettingStarted.java
+java -XstartOnFirstThread -cp jwm-0.3.1.jar:types-0.1.1.jar GettingStarted.java
 ```
+
+`types-0.1.1.jar` here are from https://github.com/HumbleUI/Types. They will be included as a transitive dependency if you are using Maven or Gradle.
 
 ## Positioning the window
 
@@ -213,24 +215,7 @@ class EventHandler implements Consumer<Event> {
     public EventHandler(Window window) {
         this.window = window;
         layer = new LayerGL();
-        layer.attach(window);
-    }
-}
-```
-
-Now, we need to handle `EventWindowScreenChange` and `EventWindowResize` and tell layer to resize itself so that its backing texture will match screen pixels:
-
-```java
-@Override
-public void accept(Event e) {
-    if (e instanceof EventWindowScreenChange) {
-        layer.reconfigure();
-        IRect contentRect = window.getContentRect();
-        layer.resize(contentRect.getWidth(), contentRect.getHeight());
-        paint();
-    } else if (e instanceof EventWindowResize ee) {
-        layer.resize(ee.getContentWidth(), ee.getContentHeight());
-        paint();
+        window.setLayer(layer);
     }
 }
 ```
@@ -257,4 +242,22 @@ public void paint() {
 }
 ```
 
-For details on [Skija](https://github.com/HumbleUI/Skija) integration, consult `SkijaLayer*.java` in [dashboard example](https://github.com/HumbleUI/JWM/tree/main/examples/dashboard/java) sources.
+## Using JWM with Skija
+
+If you wish to use [Skija](https://github.com/HumbleUI/Skija) for rendering, JWM comes with convenient `Layer*Skija` classes:
+
+```
+layer = new LayerGLSkija();
+window.setLayer(layer);
+```
+
+Skija layers work by generating a special event (`EventFrameSkija`) every time frame is requested. So instead of handling `EventFrame`, handle `EventFrameSkija`:
+
+```
+if (e instanceof EventFrameSkija ee) {
+    Surface s = ee.getSurface();
+    paint(s.getCanvas(), s.getWidth(), s.getHeight());
+}
+```
+
+Note: JWM does not declare Skija as a dependency. For Skija layers to work, add Skija (0.98.0 or later) to your apps’s dependencies.
