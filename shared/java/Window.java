@@ -204,6 +204,9 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
 
+    @NotNull @Contract("-> this")
+    public abstract Window setTitlebarVisible(boolean isVisible);
+
     /**
      * <p>Set system mouse cursor, displayed on the window.</p>
      *

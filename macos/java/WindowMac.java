@@ -74,6 +74,13 @@ public class WindowMac extends Window {
         return this;
     }
 
+    @Override
+    public Window setTitlebarVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetTitlebarVisible(isVisible);
+        return this;
+    }
+
     
     @ApiStatus.Internal @Override
     public native void _nSetMouseCursor(int cursorIdx);
@@ -156,6 +163,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String path);
+    @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean value);
     @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

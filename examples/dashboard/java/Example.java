@@ -72,6 +72,9 @@ public class Example implements Consumer<Event> {
                 window.setIcon(new File("examples/dashboard/resources/macos.icns"));
             }
         }
+
+        window.setTitlebarVisible(false);
+
         window.setVisible(true);
         initialized = true;
     }
