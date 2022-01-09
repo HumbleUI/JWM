@@ -18,7 +18,7 @@ public class Theme {
 
     public static boolean isDark() {
         assert App._onUIThread();
-        if (Platform.CURRENT != Platform.MACOS)
+        if (Platform.CURRENT != Platform.WINDOWS && Platform.CURRENT != Platform.MACOS)
             return false;
         return _nIsDark();
     }
