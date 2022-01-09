@@ -305,7 +305,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetVi
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    return jwm::classes::UIRect::toJavaXYWH(
+    return jwm::classes::IRect::toJavaXYWH(
       env,
       instance->getLeft(),
       instance->getTop(),
@@ -318,7 +318,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGe
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     // TODO https://github.com/HumbleUI/JWM/issues/109
-    return jwm::classes::UIRect::toJavaXYWH(
+    return jwm::classes::IRect::toJavaXYWH(
       env,
       0,
       0,

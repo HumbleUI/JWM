@@ -7,10 +7,10 @@ import java.util.stream.*;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelRendering extends Panel {
     public boolean vsyncColor = false;
-    public Map<String, Integer> counters = new ConcurrentHashMap<>();
 
     public long t0 = System.nanoTime();
     public double[] times = new double[180];
@@ -19,7 +19,6 @@ public class PanelRendering extends Panel {
     public Map<String, String> layersStatus = new HashMap<>();
     public String[] layers;
     public int layerIdx = 0;
-    public SkijaLayer layer;
 
     // Layer status displayed on the right side from the layer name
     public static final String CHECKED = "+";
@@ -30,11 +29,11 @@ public class PanelRendering extends Panel {
         super(window);
 
         if (Platform.CURRENT == Platform.MACOS)
-            layers = new String[] { "SkijaLayerGL", "macos.SkijaLayerMetal" };
+            layers = new String[] { "LayerMetalSkija", "LayerGLSkija" };
         else if (Platform.CURRENT == Platform.WINDOWS)
-            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster", "windows.SkijaLayerD3D12" };
-        else
-            layers = new String[] { "SkijaLayerGL", "SkijaLayerRaster" };
+            layers = new String[] { "LayerD3D12Skija", "LayerGLSkija", "SkijaLayerRaster" };
+        else if (Platform.CURRENT == Platform.X11)
+            layers = new String[] { "LayerGLSkija", "LayerRasterSkija" };
 
         for (var layerName: layers)
             layersStatus.put(layerName, UNKNOWN);
@@ -42,62 +41,41 @@ public class PanelRendering extends Panel {
         changeLayer();
     }
 
-    public void bumpCounter(String reason) {
-        counters.merge(reason, 1, Integer::sum);
-    }
-
     public void changeLayer() {
-        if (layer != null) {
-            layer.close();
-            layer = null;
-        }
-
         int attemptsCount = layers.length;
 
-        while (layer == null && attemptsCount > 0) {
+        while (attemptsCount > 0) {
             attemptsCount -= 1;
             String layerName = layers[layerIdx];
-            String className = "io.github.humbleui.jwm.examples." + layerName;
+            String className = "io.github.humbleui.jwm.skija." + layerName;
 
             try {
-                layer = (SkijaLayer) Example.class.forName(className).getDeclaredConstructor().newInstance();
-                layer.attach(window);
+                Layer layer = (Layer) Example.class.forName(className).getDeclaredConstructor().newInstance();
+                window.setLayer(layer);
+                break;
             } catch (Exception e) {
                 System.err.println("Failed to create layer " + className);
                 e.printStackTrace();
-                layer = null;
                 layersStatus.put(layerName, FAILED); // Update layer status
                 nextLayerIdx();
             }
         }
 
-        if (layer == null)
+        if (window._layer == null)
             throw new RuntimeException("No available layer to create");
 
         layersStatus.put(layers[layerIdx], CHECKED); // Mark layer as checked
-        layer.reconfigure();
-        layer.resize(window.getContentRect().getWidth(), window.getContentRect().getHeight());
     }
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventWindowScreenChange) {
-            layer.reconfigure();
-            accept(new EventWindowResize(window.getWindowRect().getWidth(),
-                                         window.getWindowRect().getHeight(),
-                                         window.getContentRect().getWidth(),
-                                         window.getContentRect().getHeight()));
-        } else if (e instanceof EventWindowResize ee) {
-            layer.resize(ee.getContentWidth(), ee.getContentHeight());
-        } else if (e instanceof EventKey ee && ee.isPressed()) {
+        if (e instanceof EventKey ee && ee.isPressed()) {
             Key key = ee.getKey();
             boolean modifier = ee.isModifierDown(Example.MODIFIER);
             if (Key.L == key && modifier) {
                 nextLayerIdx();
                 changeLayer();
             }
-        } else if (e instanceof EventWindowCloseRequest) {
-            layer.close();
         }
     }
 
@@ -159,11 +137,6 @@ public class PanelRendering extends Panel {
             paint.setColor(0xFFFFFFFF);
 
             // Paint counters
-            for (var entry: counters.entrySet()) {
-                canvas.drawString(entry.getKey() + ": " + entry.getValue(), 0, 0, Example.FONT12, paint);
-                canvas.translate(0, metrics.getHeight());
-            }
-
             int len = (int) ((width - Example.PADDING * 2) / scale);
             if (len > 0 && times.length != len) {
                 times = new double[len];

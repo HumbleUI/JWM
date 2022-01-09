@@ -2,6 +2,7 @@ package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelAnimation extends Panel {
     public int angle = 0;

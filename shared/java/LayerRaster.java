@@ -15,8 +15,8 @@ public class LayerRaster extends RefCounted implements Layer {
     @Override
     public void attach(Window window) {
         assert _onUIThread();
-        _window = window;
         _nAttach(window);
+        _window = window;
     }
 
     @Override
@@ -55,7 +55,6 @@ public class LayerRaster extends RefCounted implements Layer {
     public void close() {
         assert _onUIThread();
         _nClose();
-        _window = null;
         super.close();
     }
 

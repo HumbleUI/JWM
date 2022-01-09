@@ -8,13 +8,13 @@ public interface Layer extends AutoCloseable {
      *
      * @param window        window to attach
      */
-    void attach(Window window);
+    default void attach(Window window) {}
 
     /**
      * <p>Reconfigure layer for attached window.</p>
      * <p>Must be called to recreate internal layer platform specific context if window/environment/screen settings changed.</p>
      */
-    void reconfigure();
+    default void reconfigure() {}
 
     /**
      * <p>Resize layer framebuffer/area for rendering.</p>
@@ -23,7 +23,9 @@ public interface Layer extends AutoCloseable {
      * @param width         new framebuffer width in pixels
      * @param height        new framebuffer height in pixels
      */
-    void resize(int width, int height);
+    default void resize(int width, int height) {}
+
+    default void frame() {}
 
     /**
      * <p>Get current layer framebuffer width in pixels.</p>
@@ -41,8 +43,8 @@ public interface Layer extends AutoCloseable {
      * <p>Request back-buffer swap for presentation on this layer.</p>
      * <p>Must be called after each accepted frame event for correct presentation.</p>
      */
-    void swapBuffers();
+    default void swapBuffers() {}
 
     @Override
-    void close();
+    default void close() {}
 }

@@ -6,7 +6,7 @@ namespace jwm
 {
     struct ScreenInfo {
         long id;
-        UIRect bounds;
+        IRect bounds;
         bool isPrimary;
         jobject asJavaObject(JNIEnv* env) const;
     };

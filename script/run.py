@@ -1,64 +1,61 @@
 #! /usr/bin/env python3
-import argparse, build, common, glob, os, platform, subprocess, sys
+import argparse, build, build_utils, common, glob, os, platform, subprocess, sys
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('example', nargs='?', default='Example')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.96.0')
+  parser.add_argument('--skija-version', default='0.98.0')
   parser.add_argument('--skija-dir', default=None)
+  parser.add_argument('--types-dir', default=None)
   args = parser.parse_args()
 
   if not args.jwm_version:
-    build.build_native()
-    build.build_java()
+    build.main()
 
   if args.skija_dir:
     skija_dir = os.path.abspath(args.skija_dir)
   
-  os.chdir(os.path.dirname(__file__) + '/..')
+  os.chdir(common.basedir)
 
   # compile
-  compile_classpath = common.deps()
+  classpath = common.deps_compile()
+  
   if args.jwm_version:
-    compile_classpath += [
-      common.fetch_maven('io.github.humbleui.jwm', 'jwm', args.jwm_version)
+    classpath += [
+      build_utils.fetch_maven('io.github.humbleui.jwm', 'jwm', args.jwm_version)
     ]
   else:
-    compile_classpath += [
+    classpath += [
       'target/classes',
-      common.system + '/build'
+      build_utils.system + '/build'
     ]
+
   if args.skija_dir:
-    compile_classpath += [
+    classpath += [
       skija_dir + '/platform/build',
       skija_dir + '/platform/target/classes',
       skija_dir + '/shared/target/classes',
     ]
   else:
-    skija_native = 'skija-' + common.system + (('-' + common.arch) if 'macos' == common.system else '')
-    compile_classpath += [
-      common.fetch_maven('io.github.humbleui.skija', 'skija-shared', args.skija_version),
-      common.fetch_maven('io.github.humbleui.skija', skija_native, args.skija_version),
+    skija_native = 'skija-' + build_utils.system + (('-' + build_utils.arch) if 'macos' == build_utils.system else '')
+    classpath += [
+      build_utils.fetch_maven('io.github.humbleui', 'skija-shared', args.skija_version),
+      build_utils.fetch_maven('io.github.humbleui', skija_native, args.skija_version),
     ]
-  sources = glob.glob('examples/dashboard/java/**/*.java', recursive=True)
-  common.javac(compile_classpath, sources, 'examples/dashboard/target/classes', release='16')
+  sources = build_utils.files('examples/dashboard/java/**/*.java')
+  build_utils.javac(sources, 'examples/dashboard/target/classes', classpath = classpath, release='16')
   
   # run
-  
-  
-  
-  run_classpath = compile_classpath + ['examples/dashboard/target/classes']
   subprocess.check_call([
     'java',
-    '--class-path', common.classpath_separator.join(run_classpath)]
-    + (['-XstartOnFirstThread'] if 'macos' == common.system else [])
-    + ['-Djava.awt.headless=true',
+    '--class-path', build_utils.classpath_join(classpath + ['examples/dashboard/target/classes']),
+    *(['-XstartOnFirstThread'] if 'macos' == build_utils.system else []),
+    '-Djava.awt.headless=true',
     '-enableassertions',
     '-enablesystemassertions',
     '-Dfile.encoding=UTF-8',
     '-Xcheck:jni',
-    'io.github.humbleui.jwm.examples.' + args.example
+    'io.github.humbleui.jwm.examples.Example'
   ])
 
   return 0

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 import org.jetbrains.annotations.*;
+import io.github.humbleui.types.*;
 
 public class WindowMac extends Window {
     @ApiStatus.Internal
@@ -25,13 +26,13 @@ public class WindowMac extends Window {
     }
 
     @Override 
-    public UIRect getWindowRect() {
+    public IRect getWindowRect() {
         assert _onUIThread();
         return _nGetWindowRect();
     }
 
     @Override 
-    public UIRect getContentRect() {
+    public IRect getContentRect() {
         assert _onUIThread();
         return _nGetContentRect();
     }
@@ -81,7 +82,7 @@ public class WindowMac extends Window {
     public Window setVisible(boolean value) {
         assert _onUIThread();
         _nSetVisible(value);
-        return this;
+        return super.setVisible(true);
     }
 
     @Override
@@ -148,8 +149,8 @@ public class WindowMac extends Window {
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native UIRect _nGetWindowRect();
-    @ApiStatus.Internal public native UIRect _nGetContentRect();
+    @ApiStatus.Internal public native IRect _nGetWindowRect();
+    @ApiStatus.Internal public native IRect _nGetContentRect();
     @ApiStatus.Internal public native boolean _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);

@@ -1,23 +1,23 @@
-package io.github.humbleui.jwm.examples;
+package io.github.humbleui.jwm.skija;
 
-import io.github.humbleui.jwm.LayerRaster;
+import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import lombok.*;
+import org.jetbrains.annotations.*;
 
-public class SkijaLayerRaster extends LayerRaster implements SkijaLayer {
-    public Surface _surface;
+public class LayerRasterSkija extends LayerRaster {
+    @Getter @Setter @ApiStatus.Internal public ColorInfo _colorInfo = new ColorInfo(ColorType.N32, ColorAlphaType.PREMUL, null);
+    @Getter @ApiStatus.Internal public Surface _surface = null;
 
     @Override
-    public Canvas beforePaint() {
+    public void frame() {
         if (_surface == null) {
-            ImageInfo imageInfo = ImageInfo.makeN32Premul(getWidth(), getHeight());
+            ImageInfo imageInfo = new ImageInfo(_colorInfo, getWidth(), getHeight());
             _surface = Surface.makeRasterDirect(imageInfo, getPixelsPtr(), getRowBytes());
         }
 
-        return _surface.getCanvas();
-    }
+        _window.accept(new EventFrameSkija(_surface));
 
-    @Override
-    public void afterPaint() {
         swapBuffers();
     }
 

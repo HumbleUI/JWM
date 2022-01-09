@@ -79,7 +79,7 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
                     }
                 }
 
-                auto bounds = jwm::UIRect::makeXYWH(info->x, info->y, info->width, info->height);
+                auto bounds = jwm::IRect::makeXYWH(info->x, info->y, info->width, info->height);
 
                 ScreenInfo myScreenInfo = {
                     long(info->outputs[0]),
