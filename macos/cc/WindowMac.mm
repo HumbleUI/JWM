@@ -32,13 +32,13 @@ NSCursor* cursorFromFile(NSString* name) {
 void initCursorCache() {
     // must be in sync with MouseCursor.hh
     kCursorCache = [NSArray arrayWithObjects:
-                    [NSCursor arrowCursor],        /* ARROW */         
-                    [NSCursor crosshairCursor],    /* CROSSHAIR */     
-                    cursorFromFile(@"help"),       /* HELP */          
-                    [NSCursor pointingHandCursor], /* POINTING_HAND */ 
-                    [NSCursor IBeamCursor],        /* IBEAM */         
-                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */   
-                    [NSCursor arrowCursor],        /* WAIT */          
+                    [NSCursor arrowCursor],        /* ARROW */
+                    [NSCursor crosshairCursor],    /* CROSSHAIR */
+                    cursorFromFile(@"help"),       /* HELP */
+                    [NSCursor pointingHandCursor], /* POINTING_HAND */
+                    [NSCursor IBeamCursor],        /* IBEAM */
+                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */
+                    [NSCursor arrowCursor],        /* WAIT */
                     [NSCursor arrowCursor],        /* WIN_UPARROW */
                     nil];
     [kCursorCache retain];
@@ -255,6 +255,14 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     [title release];
 }
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitleVisible
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    [nsWindow setTitleVisibility:(NSWindowTitleVisibility) !value];
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
   (JNIEnv* env, jobject obj, jstring pathStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
@@ -277,17 +285,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 
-//     NSUInteger newStyleMask = [nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView;
-//     [nsWindow setStyleMask:newStyleMask];
-//     [nsWindow setTitlebarAppearsTransparent:YES];
-    // [nsWindow setToolbar:[[NSToolbar alloc] init]];
-//     [nsWindow setTitleVisibility:NSWindowTitleHidden];
-
-
-    // Nothing
-    // Traffic lights & title
-    // Traffic lights
-
     NSWindowStyleMask style = [nsWindow styleMask];
     if (value) {
         style |= NSWindowStyleMaskTitled;
@@ -295,6 +292,21 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
         style &= ~NSWindowStyleMaskTitled;
     }
     [nsWindow setStyleMask:style];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFullSizeContentView
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSWindowStyleMask style = [nsWindow styleMask];
+    if (value) {
+        style |= NSWindowStyleMaskFullSizeContentView;
+    } else {
+        style &= ~NSWindowStyleMaskFullSizeContentView;
+    }
+    [nsWindow setStyleMask:style];
+    [nsWindow setTitlebarAppearsTransparent:value];
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor
