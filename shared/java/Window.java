@@ -191,7 +191,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      * @return          this
      */
     @NotNull @Contract("-> this")
-    public abstract Window setTitle(String title);
+    public abstract Window setTitle(@Nullable String title);
 
     /**
      * <p>Set window icon from file on the disk.</p>

@@ -247,20 +247,17 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetCo
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitle
   (JNIEnv* env, jobject obj, jstring titleStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    jsize len = env->GetStringLength(titleStr);
-    const jchar* chars = env->GetStringCritical(titleStr, nullptr);
-    NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
-    env->ReleaseStringCritical(titleStr, chars);
-    instance->fNSWindow.title = title;
-    [title release];
-}
-
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitleVisible
-        (JNIEnv* env, jobject obj, jboolean value) {
-    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    NSWindow* nsWindow = instance->fNSWindow;
-
-    [nsWindow setTitleVisibility:(NSWindowTitleVisibility) !value];
+    if (env->IsSameObject(titleStr, nullptr)) {
+        [instance->fNSWindow setTitleVisibility:NSWindowTitleHidden];
+    } else {
+        jsize len = env->GetStringLength(titleStr);
+        const jchar* chars = env->GetStringCritical(titleStr, nullptr);
+        NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
+        env->ReleaseStringCritical(titleStr, chars);
+        instance->fNSWindow.title = title;
+        [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
+        [title release];
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon

@@ -72,7 +72,7 @@ public class WindowX11 extends Window {
     public Window setTitle(String title) {
         assert _onUIThread();
         try {
-            _nSetTitle(title.getBytes("UTF-8"));
+            _nSetTitle(title == null ? new byte[0] : title.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ignored) {}
         return this;
     }

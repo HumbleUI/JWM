@@ -67,13 +67,6 @@ public class WindowMac extends Window {
         return this;
     }
 
-    @NotNull @Contract("-> this")
-    public WindowMac setTitleVisible(boolean isVisible) {
-        assert _onUIThread();
-        _nSetTitleVisible(isVisible);
-        return this;
-    }
-
     @Override
     public Window setIcon(File icon) {
         assert _onUIThread();
@@ -176,7 +169,6 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
-    @ApiStatus.Internal public native void _nSetTitleVisible(boolean value);
     @ApiStatus.Internal public native void _nSetIcon(String path);
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean value);
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
