@@ -192,6 +192,8 @@ public class Example implements Consumer<Event> {
             window.close();
             if (App._windows.size() == 0)
                 App.terminate();
+        } else if (e instanceof EventWindowDragRequested eventWindowDragRequested) {
+            System.out.println("Drag requested");
         }
     }
 
