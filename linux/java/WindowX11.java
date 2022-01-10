@@ -84,6 +84,11 @@ public class WindowX11 extends Window {
     }
 
     @Override
+    public Window setTitlebarVisible(boolean value) {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
     public Window setOpacity(float opacity) {
         // TODO: impl me!
         return this;

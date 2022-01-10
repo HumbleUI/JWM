@@ -204,6 +204,14 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
 
+    /**
+     * <p>Completely removes the titlebar from the window including buttons and title.</p>
+     *
+     * <p>See platform windows for platform specific configuration.</p>
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
     @NotNull @Contract("-> this")
     public abstract Window setTitlebarVisible(boolean isVisible);
 

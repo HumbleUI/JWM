@@ -77,6 +77,11 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window setTitlebarVisible(boolean value) {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
     public Window setVisible(boolean isVisible) {
        assert _onUIThread();
        _nSetVisible(isVisible);
