@@ -1,7 +1,7 @@
 import sbt._
 import Utils._
 object Dependencies {
-  val skijaVersion = "0.93.1"
+  val skijaVersion = "0.96.0"
   val jwmVersion = "0.0.0-SNAPSHOT"
   val deps = Seq(
     "org.jetbrains" % "annotations" % "20.1.0",
