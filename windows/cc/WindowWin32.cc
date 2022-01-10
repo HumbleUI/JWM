@@ -766,6 +766,9 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     // Set this as property to reference from message callbacks
     SetPropW(_hWnd, L"JWM", this);
 
+    // Set default mouse cursor
+    _hDefaultMouseCursor = LoadCursorW(nullptr,IDC_ARROW);
+
     // Register window, so manager can process its update
     _windowManager._registerWindow(*this);
 
@@ -802,7 +805,11 @@ void jwm::WindowWin32::_close() {
 }
 
 void jwm::WindowWin32::_setMouseCursorInternal() {
-    SetCursor(_hMouseCursor);
+    if(_hMouseCursor == nullptr) {
+        SetCursor(_hDefaultMouseCursor);
+    } else {
+        SetCursor(_hMouseCursor);
+    }
 }
 
 void jwm::WindowWin32::_imeResetComposition() {
