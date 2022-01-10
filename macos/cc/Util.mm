@@ -9,12 +9,12 @@ jstring jwm::nsStringToJava(JNIEnv* env, NSString* characters) {
     return env->NewString(buffer, len);
 }
 
-jwm::UIRect jwm::transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale) {
+jwm::IRect jwm::transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale) {
     NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
     CGFloat primaryHeight = [primary frame].size.height;
     CGFloat primaryScale = [primary backingScaleFactor];
 
-    return jwm::UIRect::makeXYWH(
+    return jwm::IRect::makeXYWH(
              rect.origin.x * primaryScale,
              (primaryHeight - rect.size.height - rect.origin.y) * primaryScale,
              rect.size.width * scale,
@@ -24,8 +24,8 @@ jwm::UIRect jwm::transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale
 
 jobject jwm::screenFromNSScreen(JNIEnv* env, NSScreen* screen) {
     CGFloat scale = [screen backingScaleFactor];
-    jwm::UIRect bounds = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
-    jwm::UIRect workArea = jwm::transformRectRelativeToPrimaryScreen([screen visibleFrame], scale);
+    jwm::IRect bounds = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
+    jwm::IRect workArea = jwm::transformRectRelativeToPrimaryScreen([screen visibleFrame], scale);
     NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
     return jwm::classes::Screen::make(env, reinterpret_cast<long>(screen), screen == primary, bounds, workArea, scale);
 }

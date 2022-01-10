@@ -5,7 +5,7 @@
 
 namespace jwm {
     jstring nsStringToJava(JNIEnv* env, NSString* characters);
-    UIRect transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale);
+    IRect transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale);
     jobject screenFromNSScreen(JNIEnv* env, NSScreen* screen);
     NSPoint nsWindowPosition(NSWindow* window);
 }

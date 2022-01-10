@@ -1,34 +1,46 @@
 #! /usr/bin/env python3
-import argparse, common, glob, os, platform, subprocess, sys
+import argparse, build_utils, common, glob, os, platform, subprocess, sys
 
 def build_native():
-  print('Building ' + common.target_native_lib + '...')
-  subprocess.check_call([
-    "cmake",
+  os.chdir(common.basedir + "/" + build_utils.system)
+  subprocess.check_call(["cmake",
     "-DCMAKE_BUILD_TYPE=Release",
     "-B", "build",
     "-G", "Ninja",
-    "-DJWM_ARCH=" + common.arch,
-  ] + (["-DCMAKE_OSX_ARCHITECTURES=" + {"x64": "x86_64", "arm64": "arm64"}[common.arch]] if common.system == "macos" else []),
-  cwd = common.system)
-  subprocess.check_call(["ninja"], cwd = common.system + "/build")
+    "-DJWM_ARCH=" + build_utils.arch,
+    *(["-DCMAKE_OSX_ARCHITECTURES=" + {"x64": "x86_64", "arm64": "arm64"}[build_utils.arch]] if build_utils.system == "macos" else [])])
+  subprocess.check_call(["ninja"], cwd = "build")
+  
+  if os.path.exists('build/libjwm_x64.dylib'):
+    build_utils.copy_newer('build/libjwm_x64.dylib', '../target/classes/libjwm_x64.dylib')
+  
+  if os.path.exists('build/libjwm_arm64.dylib'):
+    build_utils.copy_newer('build/libjwm_arm64.dylib', '../target/classes/libjwm_arm64.dylib')
+  
+  if os.path.exists('build/libjwm_x64.so'):
+    build_utils.copy_newer('build/libjwm_x64.so', '../target/classes/libjwm_x64.so')
+  
+  if os.path.exists('build/jwm_x64.dll'):
+    build_utils.copy_newer('build/jwm_x64.dll', '../target/classes/jwm_x64.dll')
+
+  return 0
 
 def build_java():
-  os.chdir(os.path.dirname(__file__) + '/..')
-  sources = glob.glob('linux/java/**/*.java', recursive=True) + \
-            glob.glob('macos/java/**/*.java', recursive=True) + \
-            glob.glob('shared/java/**/*.java', recursive=True) + \
-            glob.glob('windows/java/**/*.java', recursive=True)
-  print('Building java classes...')
-  common.javac(common.deps(), sources, 'target/classes')
+  os.chdir(common.basedir)
+  sources = build_utils.files("linux/java/**/*.java", "macos/java/**/*.java", "shared/java/**/*.java",  "windows/java/**/*.java",)
+  build_utils.javac(sources, "target/classes", classpath=common.deps_compile())
+  return 0
 
-if __name__ == '__main__':
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--only', choices = ['native', 'java'])
   (args, _) = parser.parse_known_args()
+  res = 0
   if None == args.only or 'native' == args.only:
-    build_native()
+    res += build_native()
   if None == args.only or 'java' == args.only:
-    build_java()
+    res += build_java()
+  return res
 
-  sys.exit(0)
+if __name__ == '__main__':
+  sys.exit(main())

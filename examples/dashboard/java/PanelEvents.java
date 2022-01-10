@@ -2,6 +2,7 @@ package io.github.humbleui.jwm.examples;
 
 import java.util.*;
 import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.skija.*;
 import io.github.humbleui.skija.*;
 
 public class PanelEvents extends Panel {
@@ -15,7 +16,7 @@ public class PanelEvents extends Panel {
     public void accept(Event e) {
         while (events.size() > 19)
             events.remove(0);
-        if (!(e instanceof EventFrame)) {
+        if (!(e instanceof EventFrame || e instanceof EventFrameSkija)) {
             events.add(e);
             window.requestFrame();
         }

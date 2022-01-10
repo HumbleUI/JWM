@@ -177,7 +177,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGe
     NSPoint pos = jwm::nsWindowPosition(nsWindow);
     const NSRect frame = [nsWindow frame];
     auto scale = instance->getScale();
-    return jwm::classes::UIRect::toJavaXYWH(
+    return jwm::classes::IRect::toJavaXYWH(
       env,
       pos.x,
       pos.y,
@@ -193,7 +193,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGe
     const NSRect frame = [nsWindow.contentView frame];
     const NSRect outerFrame = [nsWindow frame];
     auto scale = instance->getScale();
-    return jwm::classes::UIRect::toJavaXYWH(
+    return jwm::classes::IRect::toJavaXYWH(
       env,
       frame.origin.x * scale,
       (outerFrame.size.height - frame.origin.y - frame.size.height) * scale,
@@ -210,7 +210,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_github_humbleui_jwm_WindowMac__1nS
     for (int i = 0; i < [screens count]; ++i) {
         NSScreen* screen = [screens objectAtIndex:i];
         CGFloat scale = [screen backingScaleFactor];
-        jwm::UIRect rect = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
+        jwm::IRect rect = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
         if (rect.fLeft <= left && left <= rect.fRight && rect.fTop <= top && top <= rect.fBottom) {
             CGFloat relativeLeft = (left - rect.fLeft) / scale;
             CGFloat relativeTop = screen.frame.size.height - (top - rect.fTop) / scale;

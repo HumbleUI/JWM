@@ -1,7 +1,9 @@
 package io.github.humbleui.jwm.examples;
 
 import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.skija.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -27,11 +29,11 @@ public class Example implements Consumer<Event> {
     public PanelRendering panelRendering;
     public PanelEvents panelEvents;
     public PanelTheme panelTheme;
+    public boolean initialized = false;
 
     public Window window;
 
     public boolean paused = true;
-    public boolean closed = false;
 
     public Example() {
         window = App.makeWindow();
@@ -50,7 +52,7 @@ public class Example implements Consumer<Event> {
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
         Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
-        UIRect bounds = screen.getWorkArea();
+        IRect bounds = screen.getWorkArea();
 
         window.setWindowSize(bounds.getWidth() / 2, bounds.getHeight() / 2);
         switch (count % 5) {
@@ -71,23 +73,14 @@ public class Example implements Consumer<Event> {
             }
         }
         window.setVisible(true);
-        window.requestFrame();
+        initialized = true;
     }
 
-    public void paint(String reason) {
-        if (closed)
-            return;
-
-        UIRect contentRect = window.getContentRect();
-
-        // If content area empty no rendering must happen
-        if (contentRect.getWidth() <= 0 || contentRect.getHeight() <= 0)
-            return;
-
+    public void paint(Canvas canvas, int width, int height) {
         float scale = window.getScreen().getScale();
         PADDING = (int) (10 * scale);
-        int panelWidth = (contentRect.getWidth() - (COLS + 1) * PADDING) / COLS;
-        int panelHeight = (contentRect.getHeight() - (ROWS + 1) * PADDING) / ROWS;
+        int panelWidth = (width - (COLS + 1) * PADDING) / COLS;
+        int panelHeight = (height - (ROWS + 1) * PADDING) / ROWS;
         if (panelWidth <= 0 || panelHeight <= 0)
             return;
 
@@ -97,7 +90,6 @@ public class Example implements Consumer<Event> {
             FONT48.setSize(48 * scale);
         }
 
-        var canvas = panelRendering.layer.beforePaint();
         canvas.clear(0xFF264653);
         int canvasCount = canvas.save();
 
@@ -110,7 +102,6 @@ public class Example implements Consumer<Event> {
         // Second row
         panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
-        panelRendering.bumpCounter(reason);
         panelRendering.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         
         // Third row
@@ -119,8 +110,6 @@ public class Example implements Consumer<Event> {
 
         // Colored bars
         try (var paint = new Paint()) {
-            int width = contentRect.getWidth();
-            int height = contentRect.getHeight();
             var barSize = 3 * scale;
 
             // left
@@ -148,12 +137,13 @@ public class Example implements Consumer<Event> {
             canvas.drawRect(Rect.makeXYWH(width - 100 * scale, height - barSize, 100 * scale, barSize), paint);
         }
         canvas.restoreToCount(canvasCount);
-
-        panelRendering.layer.afterPaint();
     }
 
     @Override
     public void accept(Event e) {
+        if (!initialized)
+            return;
+        
         panelTextInput.accept(e);
         panelScreens.accept(e);
         panelMouse.accept(e);
@@ -187,14 +177,13 @@ public class Example implements Consumer<Event> {
                         window.minimize();
                 }
             }
-        } else if (e instanceof EventWindowResize ee) {
-            paint("Resize");
         } else if (e instanceof EventFrame) {
-            paint("Frame");
             if (!paused)
                 window.requestFrame();
+        } else if (e instanceof EventFrameSkija ee) {
+            Surface s = ee.getSurface();
+            paint(s.getCanvas(), s.getWidth(), s.getHeight());
         } else if (e instanceof EventWindowCloseRequest) {
-            closed = true;
             window.close();
             if (App._windows.size() == 0)
                 App.terminate();

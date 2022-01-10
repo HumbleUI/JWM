@@ -7,6 +7,7 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.impl.*;
+import io.github.humbleui.types.*;
 
 public class WindowX11 extends Window {
     @ApiStatus.Internal
@@ -18,7 +19,7 @@ public class WindowX11 extends Window {
     public Window setVisible(boolean isVisible) {
         assert _onUIThread();
         _nSetVisible(isVisible);
-        return this;
+        return super.setVisible(true);
     }
 
     @Override
@@ -35,13 +36,13 @@ public class WindowX11 extends Window {
     }
 
     @Override 
-    public UIRect getWindowRect() {
+    public IRect getWindowRect() {
         assert _onUIThread();
         return _nGetWindowRect();
     }
 
     @Override 
-    public UIRect getContentRect() {
+    public IRect getContentRect() {
         assert _onUIThread();
         return _nGetContentRect();
     }
@@ -145,8 +146,8 @@ public class WindowX11 extends Window {
 
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
-    @ApiStatus.Internal public native UIRect _nGetWindowRect();
-    @ApiStatus.Internal public native UIRect _nGetContentRect();
+    @ApiStatus.Internal public native IRect _nGetWindowRect();
+    @ApiStatus.Internal public native IRect _nGetContentRect();
     @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);

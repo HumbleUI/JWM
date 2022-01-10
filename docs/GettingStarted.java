@@ -7,7 +7,6 @@ public class GettingStarted {
         Window window = App.makeWindow();
         window.setEventListener(new EventHandler(window));
         window.setVisible(true);
-        window.requestFrame();
         App.start();
     }
 }
@@ -19,27 +18,17 @@ class EventHandler implements Consumer<Event> {
     public EventHandler(Window window) {
         this.window = window;
         layer = new LayerGL();
-        layer.attach(window);
+        window.setLayer(layer);
     }
 
     @Override
     public void accept(Event e) {
         System.out.println(e);
-
         if (e instanceof EventWindowCloseRequest) {
             window.close();
             App.terminate();
-        } else if (e instanceof EventWindowScreenChange) {
-            layer.reconfigure();
-            UIRect contentRect = window.getContentRect();
-            layer.resize(contentRect.getWidth(), contentRect.getHeight());
-            paint();
-        } else if (e instanceof EventWindowResize ee) {
-            layer.resize(ee.getContentWidth(), ee.getContentHeight());
-            paint();
         } else if (e instanceof EventFrame) {
             paint();
-            window.requestFrame();
         }
     }
 

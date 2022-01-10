@@ -1,5 +1,7 @@
 package io.github.humbleui.jwm;
 
+import io.github.humbleui.types.*;
+
 public interface TextInputClient {
     /**
      * <p>Get UI rect in screen space for currently edited text region.</p>
@@ -13,7 +15,7 @@ public interface TextInputClient {
      *
      * @see <a href="https://github.com/HumbleUI/JWM/blob/main/examples/java/io/github/humbleui/jwm/examples/PanelTextInput.java">Text input example</a>
      */
-    UIRect getRectForMarkedRange(int selectionStart, int selectionEnd);
+    IRect getRectForMarkedRange(int selectionStart, int selectionEnd);
 
     // todo: remove default int characterIndexForPoint(int x, int y) { return 0; }
 }

@@ -41,6 +41,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
     // we only run on systems that support at least Core Profile 3.2
     return EXIT_FAILURE;
 #endif
+
+    if (![NSThread isMainThread]) {
+        jwm::classes::Throwable::throwRuntimeException(env, "App::init should be called from main thread, forgot -XstartOnFirstThread?");
+        return;
+    }
+
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     [JWMNSApplication sharedApplication];
 

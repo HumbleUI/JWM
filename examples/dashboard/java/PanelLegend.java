@@ -3,6 +3,7 @@ package io.github.humbleui.jwm.examples;
 import java.util.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.*;
 
 public class PanelLegend extends Panel {
     public Map<String, String> shortcuts = new TreeMap<>();
