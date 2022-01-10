@@ -114,6 +114,7 @@ namespace jwm {
 
         HWND _hWnd = nullptr;
         HCURSOR _hMouseCursor = nullptr;
+        HCURSOR _hDefaultMouseCursor = nullptr;
         bool _minimized = false;
         bool _maximized = false;
         int _nextCallbackID = 0;
