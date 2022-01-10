@@ -428,6 +428,37 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowDragRequested {
+            jclass kCls;
+            jmethodID kCtor;
+            jfieldID kDragAcceptedField;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowDragRequested"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                assert(kCls);
+
+                kCtor = env->GetMethodID(kCls, "<init>", "(II)V");
+                Throwable::exceptionThrown(env);
+                assert(kCtor);
+
+                kDragAcceptedField = env->GetFieldID(kCls, "_dragAccepted", "Z");
+                Throwable::exceptionThrown(env);
+                assert(kDragAcceptedField);
+            }
+
+            jobject make(JNIEnv* env, jint x, jint y) {
+                jobject res = env->NewObject(kCls, kCtor, x, y);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+
+            jboolean isDragAccepted(JNIEnv* env, jobject obj) {
+                jboolean res = env->GetBooleanField(obj, kDragAcceptedField);
+                return Throwable::exceptionThrown(env) ? false : res;
+            }
+        }
+
         namespace IRect {
             jclass kCls;
             jmethodID kCtor;
@@ -548,6 +579,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::EventWindowRestore::onLoad(env);
+    jwm::classes::EventWindowDragRequested::onLoad(env);
     jwm::classes::IRect::onLoad(env);
     jwm::classes::Screen::onLoad(env);
     jwm::classes::TextInputClient::onLoad(env);

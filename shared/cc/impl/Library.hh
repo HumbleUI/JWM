@@ -146,6 +146,14 @@ namespace jwm {
         namespace EventWindowRestore {
             extern jobject kInstance;
         }
+
+        namespace EventWindowDragRequested {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            extern jfieldID kDragAcceptedField;
+            jobject make(JNIEnv* env, jint x, jint y);
+            jboolean isDragAccepted(JNIEnv* env, jobject event);
+        }
         
         namespace IRect {
             extern jclass kCls;

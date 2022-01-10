@@ -7,5 +7,5 @@ public class EventWindowDragRequested implements Event {
     public final int _windowLeft;
     public final int _windowTop;
 
-    public boolean _dragAccepted;
+    public boolean _dragAccepted = false;
 }
