@@ -1,5 +1,7 @@
 package io.github.humbleui.jwm;
 
+import org.jetbrains.annotations.*;
+
 public enum WindowMacTitlebarStyle {
     DEFAULT,
     UNIFIED_SMALL,
