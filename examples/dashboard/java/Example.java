@@ -62,12 +62,10 @@ public class Example implements Consumer<Event> {
             case 3 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop() + bounds.getHeight() / 2);
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
-        if (window instanceof WindowMac windowMac) {
-            window.setTitle("JWM Demo");
-            windowMac.setSubtitle("Window #" + count);
-        } else {
-            window.setTitle("JWM Window #" + count);
-        }
+
+        window.setTitle("JWM Window #" + count);
+        if (window instanceof WindowMac windowMac)
+            windowMac.setSubtitle("Window Subtitle");
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
@@ -76,13 +74,6 @@ public class Example implements Consumer<Event> {
             case MACOS -> {
                 window.setIcon(new File("examples/dashboard/resources/macos.icns"));
             }
-        }
-
-//         window.setTitlebarVisible(false);
-        if (window instanceof WindowMac windowMac) {
-            windowMac.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_SMALL);
-            windowMac.setFullSizeContentView(true);
-//            windowMac.setTrafficLightPosition(5, 30);
         }
 
         window.setVisible(true);

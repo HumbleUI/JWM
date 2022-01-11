@@ -95,8 +95,8 @@ Alpha. Expect API breakages.
 |                   | Windows | macOS | X11 |
 |-------------------|---------|-------|-----|
 | isHighContrast    | ✅      | ✅    | ➖  |
-| isDark            | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
-| isInverted       | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
+| isDark            | ✅      | ✅ | ➖ |
+| isInverted        | [#161](https://github.com/HumbleUI/JWM/issues/161) | ✅ | ➖ |
 
 ### Window
 
@@ -121,7 +121,9 @@ Alpha. Expect API breakages.
 | setTitle            | ✅   | ✅   | ✅   |
 | setIcon             | ✅   | ✅   | [#95](https://github.com/HumbleUI/JWM/issues/95)  |
 | Set system cursor   | ✅   | ✅   | [#99](https://github.com/HumbleUI/JWM/issues/99)  |
-| Remove decorations  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
+| Customize titlebar  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
+| focus               | ❌   | ✅   | ❌   |
+| Get ZOrder          | ❌   | ✅   | ❌   |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |

@@ -315,6 +315,13 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public abstract Window restore();
 
     /**
+     * Focus current window
+     * 
+     * @return  this
+     */
+    public abstract Window focus();
+
+    /**
      * @return  current Z order
      */
     public abstract ZOrder getZOrder();

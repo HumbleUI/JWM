@@ -133,6 +133,13 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window focus() {
+        assert _onUIThread();
+        // TODO implement
+        return this;
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder.NORMAL;

@@ -12,9 +12,12 @@ public class PanelScreens extends Panel {
     public Paint fill = new Paint().setColor(0x20FFFFFF);
     public Paint white = new Paint().setColor(0xFFFFFFFF);
     public int idx = 0;
+    public Options titleStyles = new Options("Default", "Hidden");
 
     public PanelScreens(Window window) {
         super(window);
+        if (Platform.MACOS == Platform.CURRENT)
+            titleStyles = new Options("Default", "Hidden", "Transparent", "Unified", "Unified Compact", "Unified Transparent", "Unified Compact Transparent");
     }
 
     @Override
@@ -54,6 +57,43 @@ public class PanelScreens extends Panel {
                             window.setContentSize(width, height);
                         }
                     }
+                    case T -> {
+                        String titleStyle = titleStyles.next();
+                        if (Platform.MACOS == Platform.CURRENT) {
+                            WindowMac w = (WindowMac) window;                        
+                            switch (titleStyle) {
+                                case "Default" -> {
+                                    w.setFullSizeContentView(false);
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
+                                }
+                                case "Hidden" -> {
+                                    window.setTitlebarVisible(false);
+                                    w.setTrafficLightPosition(0, 0);
+                                }
+                                case "Transparent" -> {
+                                    window.setTitlebarVisible(true);
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
+                                    w.setFullSizeContentView(true);
+                                    w.setTrafficLightPosition(0, 0);
+                                }
+                                case "Unified" -> {
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
+                                    w.setFullSizeContentView(false);
+                                }
+                                case "Unified Compact" -> {
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
+                                }
+                                case "Unified Transparent" -> {
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
+                                    w.setFullSizeContentView(true);
+                                }
+                                case "Unified Compact Transparent" -> {
+                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
+                                }
+                            }
+                            window.focus();
+                        }
+                    }
                 }
             }
         } if (e instanceof EventWindowResize ee) {
@@ -83,10 +123,10 @@ public class PanelScreens extends Panel {
 
         canvas.save();
         float scale2 = Math.min((width - Example.PADDING * 2) / (maxX - minX),
-                               (height - Example.PADDING * 2) / (maxY - minY));
+                                (height - Example.PADDING * 2) / (maxY - minY));
         canvas.translate(Example.PADDING, Example.PADDING);
         canvas.scale(scale2, scale2);
-        canvas.translate(-minX, -minY);
+        canvas.translate(-minX, (height - Example.PADDING * 2) / scale2 - maxY);
         stroke.setStrokeWidth(1 * scale / scale2);
         for (var screen: App.getScreens()) {
             stroke.setColor(screen.isPrimary() ? 0x80CC3333 : 0x80FFFFFF);
@@ -102,9 +142,17 @@ public class PanelScreens extends Panel {
 
         var contentRect = window.getContentRect();
         var capHeight = Example.FONT12.getMetrics().getCapHeight();
-        var padding = (int) 8 * scale;
-        canvas.drawString("Position: " + windowRect.getLeft() + ", " + windowRect.getTop(), Example.PADDING, Example.PADDING + capHeight, Example.FONT12, white);
-        canvas.drawString("Window size: " + windowRect.getWidth() + ", " + windowRect.getHeight(), Example.PADDING, Example.PADDING + capHeight * 2 + padding, Example.FONT12, white);
-        canvas.drawString("Content size: " + contentRect.getWidth() + ", " + contentRect.getHeight(), Example.PADDING, Example.PADDING + capHeight * 3 + padding * 2, Example.FONT12, white);
+        var lineHeight = capHeight + (int) 8 * scale;
+        canvas.save();
+        canvas.translate(Example.PADDING, Example.PADDING + capHeight);
+        canvas.drawString("Position: " + windowRect.getLeft() + ", " + windowRect.getTop(), 0, 0, Example.FONT12, white);
+        canvas.translate(0, lineHeight);
+        canvas.drawString("Window size: " + windowRect.getWidth() + ", " + windowRect.getHeight(), 0, 0, Example.FONT12, white);
+        canvas.translate(0, lineHeight);
+        canvas.drawString("Content size: " + contentRect.getWidth() + ", " + contentRect.getHeight(), 0, 0, Example.FONT12, white);
+        canvas.translate(0, lineHeight);
+        canvas.drawString("Titlebar: " + titleStyles.get(), 0, 0, Example.FONT12, white);
+        canvas.translate(0, lineHeight);
+        canvas.restore();
     }
 }

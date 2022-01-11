@@ -13,6 +13,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("L", "Toggle Layer");
         shortcuts.put("P", "Pause");
         shortcuts.put("N", "New Window");
+        shortcuts.put("T", "Toggle Titlebar");
         shortcuts.put("W", "Close Window");
         shortcuts.put("F", "Clipboard formats");
         shortcuts.put("Z", "Toggle Z-order");

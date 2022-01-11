@@ -99,6 +99,7 @@ public class WindowMac extends Window {
     public WindowMac setTitlebarStyle(WindowMacTitlebarStyle titlebarStyle) {
         assert _onUIThread();
         _nSetTitlebarStyle(titlebarStyle.ordinal());
+        accept(new EventWindowResize(this));
         return this;
     }
 
@@ -164,6 +165,13 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public Window focus() {
+        assert _onUIThread();
+        _nFocus();
+        return this;
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder._values[_nGetZOrder()];
@@ -202,6 +210,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nRestore();
+    @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native int _nGetZOrder();
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
     @ApiStatus.Internal public native void _nClose();

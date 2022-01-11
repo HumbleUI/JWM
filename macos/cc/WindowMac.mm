@@ -330,13 +330,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
         case jwm::WindowMacTitlebarStyle::DEFAULT:
             // Just set the toolbar to null
             break;
-        case jwm::WindowMacTitlebarStyle::UNIFIED_SMALL:
-            toolbar = [[NSToolbar alloc] init];
-            toolbarStyle = NSWindowToolbarStyleUnifiedCompact;
-            break;
-        case jwm::WindowMacTitlebarStyle::UNIFIED_LARGE:
+        case jwm::WindowMacTitlebarStyle::UNIFIED:
             toolbar = [[NSToolbar alloc] init];
             toolbarStyle = NSWindowToolbarStyleUnified;
+            break;
+        case jwm::WindowMacTitlebarStyle::UNIFIED_COMPACT:
+            toolbar = [[NSToolbar alloc] init];
+            toolbarStyle = NSWindowToolbarStyleUnifiedCompact;
             break;
     }
     [nsWindow setToolbar:toolbar];
@@ -436,6 +436,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nResto
         instance->fRestoreFrame = NSZeroRect;
         instance->dispatch(jwm::classes::EventWindowRestore::kInstance);
     }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nFocus
+  (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    [nsWindow makeKeyAndOrderFront:nil];
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetZOrder
