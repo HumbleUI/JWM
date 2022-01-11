@@ -349,7 +349,40 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTr
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 
-//todo
+    if (([nsWindow styleMask] & NSWindowStyleMaskTitled) == 0) {
+        // Will fail due to missing buttons.
+        return;
+    }
+
+    // Based on https://www.codetd.com/en/article/6488220
+    NSButton *close = [nsWindow standardWindowButton:NSWindowCloseButton];
+    NSButton *miniaturize = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton *zoom = [nsWindow standardWindowButton:NSWindowZoomButton];
+    NSView *titlebarView = close.superview;
+
+    NSArray* windowButtons = @[close, miniaturize, zoom];
+    CGFloat spaceBetween = miniaturize.frame.origin.x - close.frame.origin.x;
+    for (NSUInteger i = 0; i < windowButtons.count; i++) {
+        NSButton* button = windowButtons[i];
+
+        button.translatesAutoresizingMaskIntoConstraints = NO;
+        [titlebarView addConstraints:@[
+            [NSLayoutConstraint constraintWithItem:button
+                                attribute:NSLayoutAttributeTop
+                                relatedBy:NSLayoutRelationEqual
+                                toItem:titlebarView
+                                attribute:NSLayoutAttributeTop
+                                multiplier:1
+                                constant:top],
+            [NSLayoutConstraint constraintWithItem:button
+                                attribute:NSLayoutAttributeLeft
+                                relatedBy:NSLayoutRelationEqual
+                                toItem:titlebarView
+                                attribute:NSLayoutAttributeLeft
+                                multiplier:1
+                                constant:left + (spaceBetween * i)]
+        ]];
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor

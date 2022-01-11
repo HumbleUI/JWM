@@ -73,9 +73,10 @@ public class Example implements Consumer<Event> {
             }
         }
 
-//         window.setTitlebarVisible(true);
-        ((WindowMac) window).setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_SMALL);
+         window.setTitlebarVisible(false);
+//        ((WindowMac) window).setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_SMALL);
 //        ((WindowMac) window).setFullSizeContentView(true);
+        ((WindowMac) window).setTrafficLightPosition(5, 5);
 
         window.setVisible(true);
         initialized = true;
