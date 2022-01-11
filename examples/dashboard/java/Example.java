@@ -54,6 +54,8 @@ public class Example implements Consumer<Event> {
         Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
         IRect bounds = screen.getWorkArea();
 
+        panelScreens.setTitleStyle(panelScreens.titleStyles.get(count));
+
         window.setWindowSize(bounds.getWidth() / 2, bounds.getHeight() / 2);
         switch (count % 5) {
             case 0 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 4, bounds.getTop() + bounds.getHeight() / 4);

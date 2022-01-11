@@ -20,6 +20,43 @@ public class PanelScreens extends Panel {
             titleStyles = new Options("Default", "Hidden", "Transparent", "Unified", "Unified Compact", "Unified Transparent", "Unified Compact Transparent");
     }
 
+    public void setTitleStyle(String style) {
+        titleStyles.set(style);
+        if (Platform.MACOS == Platform.CURRENT) {
+            WindowMac w = (WindowMac) window;                        
+            switch (style) {
+                case "Default" -> {
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
+                    w.setFullSizeContentView(false);
+                }
+                case "Hidden" -> {
+                    window.setTitlebarVisible(false);
+                }
+                case "Transparent" -> {
+                    window.setTitlebarVisible(true);
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
+                    w.setFullSizeContentView(true);
+                    w.setTrafficLightPosition(0, 0);
+                }
+                case "Unified" -> {
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
+                    w.setFullSizeContentView(false);
+                }
+                case "Unified Compact" -> {
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
+                }
+                case "Unified Transparent" -> {
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
+                    w.setFullSizeContentView(true);
+                }
+                case "Unified Compact Transparent" -> {
+                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
+                    w.setFullSizeContentView(true);
+                }
+            }
+        }
+    }
+
     @Override
     public void accept(Event e) {
         float scale = window.getScreen().getScale();
@@ -58,41 +95,8 @@ public class PanelScreens extends Panel {
                         }
                     }
                     case T -> {
-                        String titleStyle = titleStyles.next();
-                        if (Platform.MACOS == Platform.CURRENT) {
-                            WindowMac w = (WindowMac) window;                        
-                            switch (titleStyle) {
-                                case "Default" -> {
-                                    w.setFullSizeContentView(false);
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
-                                }
-                                case "Hidden" -> {
-                                    window.setTitlebarVisible(false);
-                                    w.setTrafficLightPosition(0, 0);
-                                }
-                                case "Transparent" -> {
-                                    window.setTitlebarVisible(true);
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
-                                    w.setFullSizeContentView(true);
-                                    w.setTrafficLightPosition(0, 0);
-                                }
-                                case "Unified" -> {
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
-                                    w.setFullSizeContentView(false);
-                                }
-                                case "Unified Compact" -> {
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
-                                }
-                                case "Unified Transparent" -> {
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED);
-                                    w.setFullSizeContentView(true);
-                                }
-                                case "Unified Compact Transparent" -> {
-                                    w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
-                                }
-                            }
-                            window.focus();
-                        }
+                        setTitleStyle(titleStyles.next());
+                        window.focus();
                     }
                 }
             }

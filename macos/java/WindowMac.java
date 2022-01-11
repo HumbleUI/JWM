@@ -85,6 +85,7 @@ public class WindowMac extends Window {
     public Window setTitlebarVisible(boolean isVisible) {
         assert _onUIThread();
         _nSetTitlebarVisible(isVisible);
+        accept(new EventWindowResize(this));
         return this;
     }
 
@@ -92,6 +93,7 @@ public class WindowMac extends Window {
     public WindowMac setFullSizeContentView(boolean isFullSizeContentView) {
         assert _onUIThread();
         _nSetFullSizeContentView(isFullSizeContentView);
+        accept(new EventWindowResize(this));
         return this;
     }
 
