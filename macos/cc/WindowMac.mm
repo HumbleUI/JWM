@@ -9,6 +9,7 @@
 #include "WindowDelegate.hh"
 #include "Util.hh"
 #include "ZOrder.hh"
+#include "WindowMacTitlebarStyle.hh"
 
 namespace jwm {
 NSArray* kCursorCache;
@@ -32,13 +33,13 @@ NSCursor* cursorFromFile(NSString* name) {
 void initCursorCache() {
     // must be in sync with MouseCursor.hh
     kCursorCache = [NSArray arrayWithObjects:
-                    [NSCursor arrowCursor],        /* ARROW */         
-                    [NSCursor crosshairCursor],    /* CROSSHAIR */     
-                    cursorFromFile(@"help"),       /* HELP */          
-                    [NSCursor pointingHandCursor], /* POINTING_HAND */ 
-                    [NSCursor IBeamCursor],        /* IBEAM */         
-                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */   
-                    [NSCursor arrowCursor],        /* WAIT */          
+                    [NSCursor arrowCursor],        /* ARROW */
+                    [NSCursor crosshairCursor],    /* CROSSHAIR */
+                    cursorFromFile(@"help"),       /* HELP */
+                    [NSCursor pointingHandCursor], /* POINTING_HAND */
+                    [NSCursor IBeamCursor],        /* IBEAM */
+                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */
+                    [NSCursor arrowCursor],        /* WAIT */
                     [NSCursor arrowCursor],        /* WIN_UPARROW */
                     nil];
     [kCursorCache retain];
@@ -247,12 +248,29 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetCo
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitle
   (JNIEnv* env, jobject obj, jstring titleStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    jsize len = env->GetStringLength(titleStr);
-    const jchar* chars = env->GetStringCritical(titleStr, nullptr);
-    NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
-    env->ReleaseStringCritical(titleStr, chars);
-    instance->fNSWindow.title = title;
-    [title release];
+    if (env->IsSameObject(titleStr, nullptr)) {
+        [instance->fNSWindow setTitleVisibility:NSWindowTitleHidden];
+    } else {
+        jsize len = env->GetStringLength(titleStr);
+        const jchar* chars = env->GetStringCritical(titleStr, nullptr);
+        NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
+        env->ReleaseStringCritical(titleStr, chars);
+        instance->fNSWindow.title = title;
+        [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
+        [title release];
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSubtitle
+  (JNIEnv* env, jobject obj, jstring subtitleStr) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    jsize len = env->GetStringLength(subtitleStr);
+    const jchar* chars = env->GetStringCritical(subtitleStr, nullptr);
+    NSString* subtitle = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(subtitleStr, chars);
+    instance->fNSWindow.subtitle = subtitle;
+    [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
+    [subtitle release];
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
@@ -270,6 +288,101 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIc
     app.applicationIconImage = image;
 
     [image release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarVisible
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSWindowStyleMask style = [nsWindow styleMask];
+    if (value) {
+        style |= NSWindowStyleMaskTitled;
+    } else {
+        style &= ~NSWindowStyleMaskTitled;
+    }
+    [nsWindow setStyleMask:style];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFullSizeContentView
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSWindowStyleMask style = [nsWindow styleMask];
+    if (value) {
+        style |= NSWindowStyleMaskFullSizeContentView;
+    } else {
+        style &= ~NSWindowStyleMaskFullSizeContentView;
+    }
+    [nsWindow setStyleMask:style];
+    [nsWindow setTitlebarAppearsTransparent:value];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarStyle
+        (JNIEnv* env, jobject obj, jint titlebarStyle) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSToolbar* toolbar = nullptr;
+    NSWindowToolbarStyle toolbarStyle = NSWindowToolbarStyleAutomatic;
+    switch (static_cast<jwm::WindowMacTitlebarStyle>(titlebarStyle)) {
+        case jwm::WindowMacTitlebarStyle::DEFAULT:
+            // Just set the toolbar to null
+            break;
+        case jwm::WindowMacTitlebarStyle::UNIFIED_SMALL:
+            toolbar = [[NSToolbar alloc] init];
+            toolbarStyle = NSWindowToolbarStyleUnifiedCompact;
+            break;
+        case jwm::WindowMacTitlebarStyle::UNIFIED_LARGE:
+            toolbar = [[NSToolbar alloc] init];
+            toolbarStyle = NSWindowToolbarStyleUnified;
+            break;
+    }
+    [nsWindow setToolbar:toolbar];
+    [nsWindow setToolbarStyle:toolbarStyle];
+    [toolbar release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightPosition
+        (JNIEnv* env, jobject obj, jint left, jint top) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    if (([nsWindow styleMask] & NSWindowStyleMaskTitled) == 0) {
+        // Will fail due to missing buttons.
+        return;
+    }
+
+    // Based on https://www.codetd.com/en/article/6488220
+    NSButton *close = [nsWindow standardWindowButton:NSWindowCloseButton];
+    NSButton *miniaturize = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton *zoom = [nsWindow standardWindowButton:NSWindowZoomButton];
+    NSView *titlebarView = close.superview;
+
+    NSArray* windowButtons = @[close, miniaturize, zoom];
+    CGFloat spaceBetween = miniaturize.frame.origin.x - close.frame.origin.x;
+    for (NSUInteger i = 0; i < windowButtons.count; i++) {
+        NSButton* button = windowButtons[i];
+
+        button.translatesAutoresizingMaskIntoConstraints = NO;
+        [titlebarView addConstraints:@[
+            [NSLayoutConstraint constraintWithItem:button
+                                attribute:NSLayoutAttributeTop
+                                relatedBy:NSLayoutRelationEqual
+                                toItem:titlebarView
+                                attribute:NSLayoutAttributeTop
+                                multiplier:1
+                                constant:top],
+            [NSLayoutConstraint constraintWithItem:button
+                                attribute:NSLayoutAttributeLeft
+                                relatedBy:NSLayoutRelationEqual
+                                toItem:titlebarView
+                                attribute:NSLayoutAttributeLeft
+                                multiplier:1
+                                constant:left + (spaceBetween * i)]
+        ]];
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor

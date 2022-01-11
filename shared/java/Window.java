@@ -191,7 +191,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      * @return          this
      */
     @NotNull @Contract("-> this")
-    public abstract Window setTitle(String title);
+    public abstract Window setTitle(@Nullable String title);
 
     /**
      * <p>Set window icon from file on the disk.</p>
@@ -203,6 +203,17 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     @NotNull @Contract("-> this")
     public abstract Window setIcon(File icon);
+
+    /**
+     * <p>Completely removes the titlebar from the window including buttons and title.</p>
+     *
+     * <p>See platform windows for platform specific configuration.</p>
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
+    @NotNull @Contract("-> this")
+    public abstract Window setTitlebarVisible(boolean isVisible);
 
     /**
      * <p>Set system mouse cursor, displayed on the window.</p>

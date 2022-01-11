@@ -64,7 +64,7 @@ public class WindowWin32 extends Window {
     @Override
     public Window setTitle(String title) {
         assert _onUIThread();
-        _nSetTitle(title);
+        _nSetTitle(title == null ? "" : title);
         return this;
     }
 
@@ -74,6 +74,11 @@ public class WindowWin32 extends Window {
         assert _onUIThread();
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
+    }
+
+    @Override
+    public Window setTitlebarVisible(boolean value) {
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override

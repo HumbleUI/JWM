@@ -62,7 +62,12 @@ public class Example implements Consumer<Event> {
             case 3 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop() + bounds.getHeight() / 2);
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
-        window.setTitle("JWM Window #" + count);
+        if (window instanceof WindowMac windowMac) {
+            window.setTitle("JWM Demo");
+            windowMac.setSubtitle("Window #" + count);
+        } else {
+            window.setTitle("JWM Window #" + count);
+        }
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
@@ -72,6 +77,14 @@ public class Example implements Consumer<Event> {
                 window.setIcon(new File("examples/dashboard/resources/macos.icns"));
             }
         }
+
+//         window.setTitlebarVisible(false);
+        if (window instanceof WindowMac windowMac) {
+            windowMac.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_SMALL);
+            windowMac.setFullSizeContentView(true);
+//            windowMac.setTrafficLightPosition(5, 30);
+        }
+
         window.setVisible(true);
         initialized = true;
     }
@@ -94,8 +107,8 @@ public class Example implements Consumer<Event> {
         int canvasCount = canvas.save();
 
         // First row
-        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
         panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
         panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight * 3 + PADDING * 2, scale);
 
