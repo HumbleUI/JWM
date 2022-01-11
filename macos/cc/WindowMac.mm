@@ -9,6 +9,7 @@
 #include "WindowDelegate.hh"
 #include "Util.hh"
 #include "ZOrder.hh"
+#include "WindowMacTitlebarStyle.hh"
 
 namespace jwm {
 NSArray* kCursorCache;
@@ -260,6 +261,18 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     }
 }
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSubtitle
+  (JNIEnv* env, jobject obj, jstring subtitleStr) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    jsize len = env->GetStringLength(subtitleStr);
+    const jchar* chars = env->GetStringCritical(subtitleStr, nullptr);
+    NSString* subtitle = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(subtitleStr, chars);
+    instance->fNSWindow.subtitle = subtitle;
+    [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
+    [subtitle release];
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
   (JNIEnv* env, jobject obj, jstring pathStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
@@ -304,6 +317,39 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFu
     }
     [nsWindow setStyleMask:style];
     [nsWindow setTitlebarAppearsTransparent:value];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarStyle
+        (JNIEnv* env, jobject obj, jint titlebarStyle) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSToolbar* toolbar = nullptr;
+    NSWindowToolbarStyle toolbarStyle = NSWindowToolbarStyleAutomatic;
+    switch (static_cast<jwm::WindowMacTitlebarStyle>(titlebarStyle)) {
+        case jwm::WindowMacTitlebarStyle::DEFAULT:
+            // Just set the toolbar to null
+            break;
+        case jwm::WindowMacTitlebarStyle::UNIFIED_SMALL:
+            toolbar = [[NSToolbar alloc] init];
+            toolbarStyle = NSWindowToolbarStyleUnifiedCompact;
+            break;
+        case jwm::WindowMacTitlebarStyle::UNIFIED_LARGE:
+            toolbar = [[NSToolbar alloc] init];
+            toolbarStyle = NSWindowToolbarStyleUnified;
+            break;
+    }
+    [nsWindow setToolbar:toolbar];
+    [nsWindow setToolbarStyle:toolbarStyle];
+    [toolbar release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightPosition
+        (JNIEnv* env, jobject obj, jint left, jint top) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+//todo
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor
