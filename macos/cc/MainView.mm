@@ -320,16 +320,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseDown:(NSEvent *)event {
     onMouseButton(fWindow, event, &fLastPressedButtons);
-
-    NSPoint mousePos = [event locationInWindow];
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventWindowDragRequested::make(fWindow->fEnv, mousePos.x, mousePos.y));
-    fWindow->dispatch(eventObj.get());
-
-    jboolean isDragAccepted = jwm::classes::EventWindowDragRequested::isDragAccepted(fWindow->fEnv, eventObj.get());
-    if (isDragAccepted) {
-        NSWindow* nsWindow = [self window];
-        [nsWindow performWindowDragWithEvent:event];
-    }
 }
 
 - (void)mouseUp:(NSEvent *)event {
