@@ -366,10 +366,13 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public void close() {
         assert _onUIThread();
         setLayer(null);
+        Consumer<Event> eventListener = _eventListener;
         setEventListener(null);
         setTextInputClient(null);
         App._windows.remove(this);
         super.close();
+        if (eventListener != null)
+            eventListener.accept(EventWindowClose.INSTANCE);
     }
 
     @ApiStatus.Internal public static boolean _onUIThread() {

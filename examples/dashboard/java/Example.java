@@ -149,6 +149,11 @@ public class Example implements Consumer<Event> {
     public void accept(Event e) {
         if (!initialized)
             return;
+
+        if (e instanceof EventWindowClose) {
+            if (App._windows.size() == 0)
+                App.terminate();
+        }
         
         panelTextInput.accept(e);
         panelScreens.accept(e);
@@ -172,7 +177,7 @@ public class Example implements Consumer<Event> {
                     case H ->
                         window.setVisible(false);
                     case W ->
-                        accept(EventWindowCloseRequest.INSTANCE);
+                        window.close();
                     case O ->
                         window.setOpacity(window.getOpacity() == 1f ? 0.5f : 1f);
                     case UP ->
@@ -191,8 +196,6 @@ public class Example implements Consumer<Event> {
             paint(s.getCanvas(), s.getWidth(), s.getHeight());
         } else if (e instanceof EventWindowCloseRequest) {
             window.close();
-            if (App._windows.size() == 0)
-                App.terminate();
         }
     }
 
