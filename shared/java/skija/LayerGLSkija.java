@@ -51,7 +51,8 @@ public class LayerGLSkija extends LayerGL {
         }
 
         if (_directContext != null) {
-            _directContext.abandon();
+            // https://bugs.chromium.org/p/skia/issues/detail?id=12814
+            // _directContext.abandon();
             _directContext.close();
             _directContext = null;
         }
@@ -62,7 +63,8 @@ public class LayerGLSkija extends LayerGL {
     @Override
     public void close() {
         if (_directContext != null) {
-            _directContext.abandon();
+            // https://bugs.chromium.org/p/skia/issues/detail?id=12814
+            // _directContext.abandon();
             _directContext.close();
             _directContext = null;
         }
