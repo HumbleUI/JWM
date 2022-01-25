@@ -261,8 +261,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     }
 }
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSubtitle
   (JNIEnv* env, jobject obj, jstring subtitleStr) {
+    if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_15) {
+        jwm::classes::Throwable::throwRuntimeException(env, "WindowMac::setSubtitle is only available on macOS 11+");
+        return;
+    }
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     jsize len = env->GetStringLength(subtitleStr);
     const jchar* chars = env->GetStringCritical(subtitleStr, nullptr);
@@ -272,6 +277,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSu
     [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
     [subtitle release];
 }
+#endif
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
   (JNIEnv* env, jobject obj, jstring pathStr) {
@@ -319,8 +325,14 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFu
     [nsWindow setTitlebarAppearsTransparent:value];
 }
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarStyle
         (JNIEnv* env, jobject obj, jint titlebarStyle) {
+    if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_15) {
+        jwm::classes::Throwable::throwRuntimeException(env, "WindowMac::setSubtitle is only available on macOS 11+");
+        return;
+    }
+
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 
@@ -343,6 +355,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     [nsWindow setToolbarStyle:toolbarStyle];
     [toolbar release];
 }
+#endif
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightPosition
         (JNIEnv* env, jobject obj, jint left, jint top) {
