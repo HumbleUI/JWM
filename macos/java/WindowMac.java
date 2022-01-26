@@ -83,9 +83,7 @@ public class WindowMac extends Window {
 
     @Override
     public Window setTitlebarVisible(boolean isVisible) {
-        assert _onUIThread();
-        _nSetTitlebarVisible(isVisible);
-        accept(new EventWindowResize(this));
+
         return this;
     }
 
@@ -200,9 +198,9 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+    @ApiStatus.Internal public native void _nSetTitleVisible(boolean value);
     @ApiStatus.Internal public native void _nSetSubtitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String path);
-    @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean value);
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);
     @ApiStatus.Internal public native void _nSetTrafficLightPosition(int left, int top);
