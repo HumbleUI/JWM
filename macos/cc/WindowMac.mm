@@ -257,6 +257,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
     [title release];
 }
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitleVisible
+  (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    [instance->fNSWindow setTitleVisibility:value ? NSWindowTitleVisible : NSWindowTitleHidden];
+}
+
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSubtitle
   (JNIEnv* env, jobject obj, jstring subtitleStr) {
