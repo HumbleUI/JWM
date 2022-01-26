@@ -67,6 +67,19 @@ public class WindowMac extends Window {
         return this;
     }
 
+    /**
+     * Hide the title from the title bar without changing the text content.
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
+    @NotNull @Contract("-> this")
+    public Window setTitleVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetTitleVisible(isVisible);
+        return this;
+    }
+
     @NotNull @Contract("-> this")
     public Window setSubtitle(@NotNull String title) {
         assert _onUIThread();
@@ -81,9 +94,19 @@ public class WindowMac extends Window {
         return this;
     }
 
+    /**
+     * <p>Shortcut for {@link #setTitleVisible(boolean)}, {@link #setFullSizeContentView(boolean)}</p>
+     *
+     * <p>TODO: Traffic light visibility</p>
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
     @Override
     public Window setTitlebarVisible(boolean isVisible) {
-
+        assert _onUIThread();
+        setTitleVisible(isVisible);
+        setFullSizeContentView(!isVisible);
         return this;
     }
 
