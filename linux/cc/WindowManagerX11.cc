@@ -5,6 +5,9 @@
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
 #include "AppX11.hh"
+#include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
 #include <X11/extensions/sync.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xcursor/Xcursor.h>
@@ -207,6 +210,18 @@ void WindowManagerX11::_xi2IterateDevices() {
 void WindowManagerX11::runLoop() {
     _runLoop = true;
     XEvent ev;
+
+    char buf[100];
+    int pipes[2];
+    if (pipe(pipes)) {
+        printf("Failed to open pipe\n");
+        return;
+    }
+
+    notifyFD = pipes[1];
+    fcntl(pipes[1], F_SETFL, O_NONBLOCK); // make sure notifyLoop doesn't block
+    struct pollfd ps[] = {{.fd=XConnectionNumber(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
+
     while (_runLoop) {
         while (XPending(display)) {
             XNextEvent(display, &ev);
@@ -214,9 +229,24 @@ void WindowManagerX11::runLoop() {
             if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
                 _runLoop = false;
         }
-
         _processCallbacks();
 
+        if (poll(&ps[0], 2, -1) < 0) {
+            printf("Error during poll\n");
+            break;
+        }
+        notifyBool.store(false);
+        if (ps[1].revents & POLLIN) {
+            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
+        }
+    }
+}
+
+void WindowManagerX11::notifyLoop() {
+    if (notifyFD==-1) return;
+    if (!notifyBool.exchange(true)) {
+        char dummy[1] = {0};
+        int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }
 }
 
@@ -224,9 +254,6 @@ void WindowManagerX11::_processCallbacks() {
     {
         // process ui thread callbacks
         std::unique_lock<std::mutex> lock(_taskQueueLock);
-        
-        // TODO better solution for handling both XPending and condition_variable
-        _taskQueueNotify.wait_for(lock, std::chrono::microseconds(500));
 
         while (!_taskQueue.empty()) {
             auto callback = std::move(_taskQueue.front());
@@ -752,4 +779,5 @@ void WindowManagerX11::enqueueTask(const std::function<void()>& task) {
     std::unique_lock<std::mutex> lock(_taskQueueLock);
     _taskQueue.push(task);
     _taskQueueNotify.notify_one();
+    notifyLoop();
 }
