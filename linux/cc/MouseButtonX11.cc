@@ -6,10 +6,14 @@ jwm::MouseButton jwm::MouseButtonX11::fromNative(uint32_t v) {
         case 1: return jwm::MouseButton::PRIMARY; 
         case 2: return jwm::MouseButton::MIDDLE;
         case 3: return jwm::MouseButton::SECONDARY;
-        case 4: return jwm::MouseButton::BACK;
-        case 5: return jwm::MouseButton::FORWARD;
+        case 8: return jwm::MouseButton::BACK;
+        case 9: return jwm::MouseButton::FORWARD;
     }
     return jwm::MouseButton::PRIMARY;
+}
+
+bool jwm::MouseButtonX11::isButton(uint32_t v) {
+    return v!=4 && v!=5; // mouse wheel buttons
 }
 
 int jwm::MouseButtonX11::fromNativeMask(unsigned v) {
