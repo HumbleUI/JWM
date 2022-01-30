@@ -436,30 +436,36 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case ButtonPress: { // mouse down
-            jwm::JNILocal<jobject> eventButton(
-                app.getJniEnv(),
-                EventMouseButton::make(
+            uint32_t button = ev.xbutton.button;
+            if (MouseButtonX11::isButton(button)) {
+                jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
-                    MouseButtonX11::fromNative(ev.xbutton.button),
-                    true,
-                    jwm::KeyX11::getModifiers()
-                )
-            );
-            myWindow->dispatch(eventButton.get());
+                    EventMouseButton::make(
+                        app.getJniEnv(),
+                        MouseButtonX11::fromNative(button),
+                        true,
+                        jwm::KeyX11::getModifiers()
+                    )
+                );
+                myWindow->dispatch(eventButton.get());
+            }
             break;
         }
 
-        case ButtonRelease: { // mouse down
-            jwm::JNILocal<jobject> eventButton(
-                app.getJniEnv(),
-                EventMouseButton::make(
+        case ButtonRelease: { // mouse up
+            uint32_t button = ev.xbutton.button;
+            if (MouseButtonX11::isButton(button)) {
+                jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
-                    MouseButtonX11::fromNative(ev.xbutton.button),
-                    false,
-                    jwm::KeyX11::getModifiers()
-                )
-            );
-            myWindow->dispatch(eventButton.get());
+                    EventMouseButton::make(
+                        app.getJniEnv(),
+                        MouseButtonX11::fromNative(button),
+                        false,
+                        jwm::KeyX11::getModifiers()
+                    )
+                );
+                myWindow->dispatch(eventButton.get());
+            }
             break;
         }
 
