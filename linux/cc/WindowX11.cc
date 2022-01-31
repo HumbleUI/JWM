@@ -149,31 +149,48 @@ void WindowX11::restore() {
     }
 }
 
-void WindowX11::getPosition(int& posX, int& posY) {
+void WindowX11::getDecorations(int& left, int& top, int& right, int& bottom) {
+    unsigned long* data = nullptr;
+    _xGetWindowProperty(_windowManager.getAtoms()._NET_FRAME_EXTENTS, XA_CARDINAL, reinterpret_cast<unsigned char**>(&data));
+    if (data!=nullptr) {
+        left   = data[0];
+        top    = data[2];
+        right  = data[1];
+        bottom = data[3];
+        XFree(data);
+    } else {
+        XWindowAttributes xwa;
+        XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
+        left   = xwa.x;
+        top    = xwa.y;
+        right  = 0;
+        bottom = 0;
+    }
+}
+
+void WindowX11::getContentPosition(int& posX, int& posY) {
     int x, y;
     ::Window child;
-    XWindowAttributes xwa;
     XTranslateCoordinates(_windowManager.display,
                           _x11Window,
                           XRootWindow(_windowManager.display, 0),
                           0, 0,
                           &x, &y,
                           &child);
-    XGetWindowAttributes(_windowManager.display, _x11Window, &xwa);
+    posX = x;
+    posY = y;
     
-    posX = x - xwa.x;
-    posY = y - xwa.y;
 }
 
 int WindowX11::getLeft() {
     int x, y;
-    getPosition(x, y);
+    getContentPosition(x, y);
     return x;
 }
 
 int WindowX11::getTop() {
     int x, y;
-    getPosition(x, y);
+    getContentPosition(x, y);
     return y;
 }
 
@@ -305,23 +322,28 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetVi
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetWindowRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    int left, top, right, bottom;
+    instance->getDecorations(left, top, right, bottom);
+    int x, y;
+    instance->getContentPosition(x, y);
     return jwm::classes::IRect::toJavaXYWH(
       env,
-      instance->getLeft(),
-      instance->getTop(),
-      instance->getWidth(),
-      instance->getHeight()
+      x-left,
+      y-top,
+      instance->getWidth()+left+right,
+      instance->getHeight()+top+bottom
     );
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowX11__1nGetContentRect
   (JNIEnv* env, jobject obj) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO https://github.com/HumbleUI/JWM/issues/109
+    int left, top, right, bottom;
+    instance->getDecorations(left, top, right, bottom);
     return jwm::classes::IRect::toJavaXYWH(
       env,
-      0,
-      0,
+      left,
+      top,
       instance->getWidth(),
       instance->getHeight()
     );
