@@ -386,6 +386,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTr
     }
 }
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightsVisible
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSButton *close = [nsWindow standardWindowButton:NSWindowCloseButton];
+    if (close != nullptr) close.hidden = !value;
+    NSButton *miniaturize = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+    if (miniaturize != nullptr) miniaturize.hidden = !value;
+    NSButton *zoom = [nsWindow standardWindowButton:NSWindowZoomButton];
+    if (zoom != nullptr) zoom.hidden = !value;
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor
   (JNIEnv* env, jobject obj, jint cursorIdx) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
