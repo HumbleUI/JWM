@@ -1,0 +1,17 @@
+[en]
+  languageName = "English"
+  contentDir = "content/en"
+  weight = 10
+  [en.params]
+    languageISO = "EN"
+
+#[ja]
+#  languageName = "日本語"
+#  contentDir = "content/ja"
+#  weight = 15
+#  [ja.params]
+#    languageISO = "JA"
+#    titleAddition
+#    titleHome="JWM"
+#    footer =""
+#    alertText =""

@@ -14,3 +14,9 @@ docs/apidocs
 
 # jvm crash logs
 hs_err_*.log
+
+
+# website
+website/public
+website/resources
+.hugo_build.lock

@@ -1,0 +1,61 @@
+{
+  "name": "jwm-website",
+  "description": "jwm website",
+  "repository": "https://github.com/humbleui/jwm",
+  "version": "0.4.0",
+  "browserslist": [
+    "defaults"
+  ],
+  "scripts": {
+    "prestart": "npm run clean",
+    "start": "exec-bin node_modules/.bin/hugo/hugo server --bind=0.0.0.0 --disableFastRender",
+    "startprod": "exec-bin node_modules/.bin/hugo/hugo server --minify --bind=0.0.0.0 --environment=production",
+    "prebuild": "npm run clean",
+    "build": "exec-bin node_modules/.bin/hugo/hugo --gc --minify",
+    "build:preview": "npm run build -D -F",
+    "clean": "shx rm -rf public resources",
+    "clean:install": "shx rm -rf package-lock.json node_modules ",
+    "lint": "npm run -s lint:scripts && npm run -s lint:styles && npm run -s lint:markdown",
+    "lint:scripts": "eslint assets/js config",
+    "lint:styles": "stylelint \"assets/scss/**/*.{css,sass,scss,sss,less}\"",
+    "lint:markdown": "markdownlint \"*.md\" \"content/**/*.md\"",
+    "server": "exec-bin node_modules/.bin/hugo/hugo server",
+    "test": "npm run -s lint",
+    "precheck": "npm version",
+    "check": "exec-bin node_modules/.bin/hugo/hugo version",
+    "copy:katex-fonts": "shx cp ./node_modules/katex/dist/fonts/* ./static/fonts/",
+    "setuphugo": "hugo-installer --version otherDependencies.hugo --extended --destination node_modules/.bin/hugo"
+  },
+  "dependencies": {
+    "bootstrap": "^5.1",
+    "katex": "^0.15",
+    "flexsearch": "^0.7.21",
+    "clipboard": "^2.0",
+    "postcss": "^8.4",
+    "@fullhuman/postcss-purgecss": "^4.1",
+    "autoprefixer": "^10.4",
+    "postcss-cli": "^9.1",
+    "purgecss-whitelister": "^2.4",
+    "instant.page": "^5.1",
+    "lazysizes": "^5.3",
+    "highlight.js": "^11.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16",
+    "@babel/core": "^7.16",
+    "@babel/preset-env": "^7.16",
+    "auto-changelog": "^2.3.0",
+    "eslint": "^8.8",
+    "exec-bin": "^1.0.0",
+    "hugo-installer": "^3.1",
+    "markdownlint-cli": "^0.30.0",
+    "mermaid": "^8.13",
+    "node-fetch": "^3.2",
+    "shx": "^0.3.4",
+    "stylelint": "^14.3",
+    "stylelint-config-standard-scss": "^3.0"
+  },
+  "otherDependencies": {
+    "hugo": "0.92.1"
+  }
+}

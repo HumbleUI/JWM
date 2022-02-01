@@ -1,0 +1,79 @@
+# Meta Data for SEO
+
+## Homepage
+title = "JWM"
+titleSeparator = "-"
+titleAddition = "Java Window Management Library"
+description = "JWM is a cross-platform Java window management and OS integration library."
+
+## Documentation
+# docsVersion = "0.1"
+
+## Open Graph
+images = ["jwm_logo.svg"]
+ogLocale = "en_US"
+domainTLD = "hunbleui.github.io"
+titleHome = "JWM"
+
+## Twitter Cards
+twitterSite = "@getdoks"
+twitterCreator = "@henkverlinde"
+
+## JSON-LD
+schemaType = "Organization"
+schemaName = "HumbleUI"
+schemaAuthor = "HumbleUI"
+schemaAuthorGitHub = "https://github.com/humbleui/jwm"
+schemaLocale = "en-US"
+schemaLogo = "jwm_logo.svg"
+schemaLogoWidth = 512
+schemaLogoHeight = 512
+schemaImage = "jwm_logo.svg"
+schemaImageWidth = 1280
+schemaImageHeight = 640
+schemaGitHub = "https://github.com/humbleui/jwm"
+
+## Sitelinks Search Box
+siteLinksSearchBox = false
+
+## Chrome Browser
+themeColor = "#fff"
+
+# Images
+quality = 85
+bgColor = "#fff"
+landscapePhotoWidths = [900, 800, 700, 600, 500]
+portraitPhotoWidths = [800, 700, 600, 500]
+lqipWidth = "20x"
+smallLimit = "300"
+
+# Footer
+footer = "Powered by <a href=\"https://gohugo.io/\">Hugo</a> and <a href=\"https://getdoks.org/\">Doks</a>"
+
+# Feed
+copyRight = "Copyright (c) 2020-2022 HumbleUI"
+
+# Alert
+alert = false
+alertDismissable = true
+# alertText = "Introducing the Doks child theme, several DX + UX updates, and more! <a class=\"alert-link stretched-link\" href=\"https://getdoks.org/blog/doks-v0.2/\" target=\"_blank\" rel=\"noopener\">Check out Doks v0.2</a>"
+alertText = "Introducing the Doks child theme, several DX + UX updates, and more! <a class=\"alert-link stretched-link\" href=\"https://getdoks.org/blog/doks-v0.2/\">Check out Doks v0.2</a>"
+
+# Edit Page
+docsRepo = "https://github.com/humbleUI/JWM"
+docsRepoBranch = "main"
+editPage = false
+
+[options]
+  lazySizes = true
+  clipBoard = true
+  instantPage = true
+  flexSearch = true
+  darkMode = true
+  bootStrapJs = true
+  breadCrumb = true
+  highLight = true
+  kaTex = false
+  collapsibleSidebar = true
+  multilingualMode = true
+  docsVersioning = false
