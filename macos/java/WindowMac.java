@@ -107,6 +107,7 @@ public class WindowMac extends Window {
         assert _onUIThread();
         setTitleVisible(isVisible);
         setFullSizeContentView(!isVisible);
+        setTrafficLightsVisible(isVisible);
         return this;
     }
 
@@ -130,6 +131,13 @@ public class WindowMac extends Window {
     public WindowMac setTrafficLightPosition(int left, int top) {
         assert _onUIThread();
         _nSetTrafficLightPosition(left, top);
+        return this;
+    }
+
+    @NotNull @Contract("-> this")
+    public WindowMac setTrafficLightsVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetTrafficLightsVisible(isVisible);
         return this;
     }
 
@@ -227,6 +235,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);
     @ApiStatus.Internal public native void _nSetTrafficLightPosition(int left, int top);
+    @ApiStatus.Internal public native void _nSetTrafficLightsVisible(boolean value);
     @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
