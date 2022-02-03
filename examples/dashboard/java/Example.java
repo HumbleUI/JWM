@@ -153,6 +153,7 @@ public class Example implements Consumer<Event> {
         if (e instanceof EventWindowClose) {
             if (App._windows.size() == 0)
                 App.terminate();
+            return;
         }
         
         panelTextInput.accept(e);
