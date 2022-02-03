@@ -237,14 +237,19 @@ void WindowManagerX11::_processCallbacks() {
         }        
     }
     {
-        // process redraw requests
+        // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
+        std::vector<WindowX11*> copy;
         for (auto& p : _nativeWindowToMy) {
-            if (p.second->isRedrawRequested()) {
-                p.second->unsetRedrawRequest();
-                if (p.second->_layer) {
-                    p.second->_layer->makeCurrent();
+            copy.push_back(p.second);
+        }
+        // process redraw requests
+        for (auto p : copy) {
+            if (p->isRedrawRequested()) {
+                p->unsetRedrawRequest();
+                if (p->_layer) {
+                    p->_layer->makeCurrent();
                 }
-                p.second->dispatch(classes::EventFrame::kInstance);
+                p->dispatch(classes::EventFrame::kInstance);
             }
         }
     }
