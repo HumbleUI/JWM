@@ -126,6 +126,7 @@ WindowManagerX11::WindowManagerX11():
                         | StructureNotifyMask
                         | PointerMotionMask
                         | PropertyChangeMask
+                        | FocusChangeMask
                         | StructureNotifyMask;
         x11SWA.override_redirect = true;
     }
@@ -486,6 +487,16 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 );
                 myWindow->dispatch(eventButton.get());
             }
+            break;
+        }
+
+        case FocusIn: { // focused
+            myWindow->dispatch(EventWindowFocusIn::kInstance);
+            break;
+        }
+
+        case FocusOut: { // unfocused
+            myWindow->dispatch(EventWindowFocusOut::kInstance);
             break;
         }
 
