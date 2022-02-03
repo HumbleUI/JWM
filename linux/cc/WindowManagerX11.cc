@@ -767,6 +767,7 @@ void WindowManagerX11::unregisterWindow(WindowX11* window) {
 
 void WindowManagerX11::terminate() {
     _runLoop = false;
+    notifyLoop();
 }
 
 void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
