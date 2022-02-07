@@ -54,6 +54,10 @@ public class Example implements Consumer<Event> {
         Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
         IRect bounds = screen.getWorkArea();
 
+        window.setTitle("JWM Window #" + count);
+        if (window instanceof WindowMac windowMac)
+            windowMac.setSubtitle("Window Subtitle");
+
         panelScreens.setTitleStyle(panelScreens.titleStyles.get(count));
 
         window.setWindowSize(bounds.getWidth() / 2, bounds.getHeight() / 2);
@@ -64,10 +68,6 @@ public class Example implements Consumer<Event> {
             case 3 -> window.setWindowPosition(bounds.getLeft(), bounds.getTop() + bounds.getHeight() / 2);
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
-
-        window.setTitle("JWM Window #" + count);
-        if (window instanceof WindowMac windowMac)
-            windowMac.setSubtitle("Window Subtitle");
 
         switch (Platform.CURRENT) {
             case WINDOWS -> {
