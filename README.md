@@ -107,10 +107,10 @@ Alpha. Expect API breakages.
 | setTextInputEnabled | ✅   | ❌   | ❌   |
 | unmarkText          | ✅   | ❌   | ❌   |
 | show                | ✅   | ✅   | ✅   |
-| getWindowRect       | ✅   | ✅   | [#109](https://github.com/HumbleUI/JWM/issues/109) |
+| getWindowRect       | ✅   | ✅   | ✅   |
 | getContentRect      | ✅   | ✅   | ✅   |
 | setWindowPosition   | ✅   | ✅   | ✅   |
-| setWindowSize       | ✅   | ✅   | [#109](https://github.com/HumbleUI/JWM/issues/109) |
+| setWindowSize       | ✅   | ✅   | ✅   |
 | setContentSize      | ✅   | ✅   | ✅   |
 | getScreen           | ✅   | ✅   | ✅   |
 | requestFrame        | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
