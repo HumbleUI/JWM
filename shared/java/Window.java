@@ -333,8 +333,15 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     public abstract Window setZOrder(ZOrder order);
 
-    public abstract float getProgressBar();
-
+    /**
+     * <p>Changes the progress bar depending on the platform.</p>
+     * <p>macOS changes the value for the entire App.</p>
+     * <p>Windows is not implemented for now</p>
+     * <p>Linux is not implemented for now</p>
+     *
+     * @param progress The new progress bar value for this window
+     * @return this
+     */
     @NotNull @Contract("-> this")
     public abstract Window setProgressBar(float progress);
 

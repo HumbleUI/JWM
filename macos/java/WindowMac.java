@@ -216,12 +216,6 @@ public class WindowMac extends Window {
     }
 
     @Override
-    public float getProgressBar() {
-        assert _onUIThread();
-        return _nGetProgressBar();
-    }
-
-    @Override
     public Window setProgressBar(float progress) {
         assert _onUIThread();
         _nSetProgressBar(progress);
@@ -258,7 +252,6 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native int _nGetZOrder();
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
-    @ApiStatus.Internal public native void _nGetProgressBar();
     @ApiStatus.Internal public native void _nSetProgressBar(float value);
     @ApiStatus.Internal public native void _nClose();
 }
