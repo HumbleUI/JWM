@@ -622,7 +622,14 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 return true;
             }
             break;
-
+        case WM_SHOWWINDOW:
+            JWM_VERBOSE("On window visibility change");
+            if (wParam == TRUE) {
+                dispatch(classes::EventWindowAppear::kInstance);
+            } else {
+                dispatch(classes::EventWindowDisappear::kInstance);
+            }
+            return 0;
         case WM_CLOSE:
             JWM_VERBOSE("Event close");
             dispatch(classes::EventWindowCloseRequest::kInstance);
