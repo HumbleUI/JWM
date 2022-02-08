@@ -2,7 +2,6 @@
 #include <jni.h>
 #include "Library.hh"
 #include <cassert>
-#include <Log.hh>
 #include "Key.hh"
 #include "MouseButton.hh"
 #include "JNILocal.hh"
