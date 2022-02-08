@@ -126,6 +126,7 @@ WindowManagerX11::WindowManagerX11():
                         | StructureNotifyMask
                         | PointerMotionMask
                         | PropertyChangeMask
+                        | FocusChangeMask
                         | StructureNotifyMask;
         x11SWA.override_redirect = true;
     }
@@ -237,14 +238,19 @@ void WindowManagerX11::_processCallbacks() {
         }        
     }
     {
-        // process redraw requests
+        // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
+        std::vector<WindowX11*> copy;
         for (auto& p : _nativeWindowToMy) {
-            if (p.second->isRedrawRequested()) {
-                p.second->unsetRedrawRequest();
-                if (p.second->_layer) {
-                    p.second->_layer->makeCurrent();
+            copy.push_back(p.second);
+        }
+        // process redraw requests
+        for (auto p : copy) {
+            if (p->isRedrawRequested()) {
+                p->unsetRedrawRequest();
+                if (p->_layer) {
+                    p->_layer->makeCurrent();
                 }
-                p.second->dispatch(classes::EventFrame::kInstance);
+                p->dispatch(classes::EventFrame::kInstance);
             }
         }
     }
@@ -451,30 +457,46 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case ButtonPress: { // mouse down
-            jwm::JNILocal<jobject> eventButton(
-                app.getJniEnv(),
-                EventMouseButton::make(
+            uint32_t button = ev.xbutton.button;
+            if (MouseButtonX11::isButton(button)) {
+                jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
-                    MouseButtonX11::fromNative(ev.xbutton.button),
-                    true,
-                    jwm::KeyX11::getModifiers()
-                )
-            );
-            myWindow->dispatch(eventButton.get());
+                    EventMouseButton::make(
+                        app.getJniEnv(),
+                        MouseButtonX11::fromNative(button),
+                        true,
+                        jwm::KeyX11::getModifiers()
+                    )
+                );
+                myWindow->dispatch(eventButton.get());
+            }
             break;
         }
 
-        case ButtonRelease: { // mouse down
-            jwm::JNILocal<jobject> eventButton(
-                app.getJniEnv(),
-                EventMouseButton::make(
+        case ButtonRelease: { // mouse up
+            uint32_t button = ev.xbutton.button;
+            if (MouseButtonX11::isButton(button)) {
+                jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
-                    MouseButtonX11::fromNative(ev.xbutton.button),
-                    false,
-                    jwm::KeyX11::getModifiers()
-                )
-            );
-            myWindow->dispatch(eventButton.get());
+                    EventMouseButton::make(
+                        app.getJniEnv(),
+                        MouseButtonX11::fromNative(button),
+                        false,
+                        jwm::KeyX11::getModifiers()
+                    )
+                );
+                myWindow->dispatch(eventButton.get());
+            }
+            break;
+        }
+
+        case FocusIn: { // focused
+            myWindow->dispatch(EventWindowFocusIn::kInstance);
+            break;
+        }
+
+        case FocusOut: { // unfocused
+            myWindow->dispatch(EventWindowFocusOut::kInstance);
             break;
         }
 

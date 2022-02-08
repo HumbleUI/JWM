@@ -64,7 +64,7 @@ public class WindowWin32 extends Window {
     @Override
     public Window setTitle(String title) {
         assert _onUIThread();
-        _nSetTitle(title == null ? "" : title);
+        _nSetTitle(title);
         return this;
     }
 

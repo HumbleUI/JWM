@@ -67,6 +67,19 @@ public class WindowMac extends Window {
         return this;
     }
 
+    /**
+     * Hide the title from the title bar without changing the text content.
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
+    @NotNull @Contract("-> this")
+    public Window setTitleVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetTitleVisible(isVisible);
+        return this;
+    }
+
     @NotNull @Contract("-> this")
     public Window setSubtitle(@NotNull String title) {
         assert _onUIThread();
@@ -81,11 +94,20 @@ public class WindowMac extends Window {
         return this;
     }
 
+    /**
+     * <p>Shortcut for {@link #setTitleVisible(boolean)}, {@link #setFullSizeContentView(boolean)}</p>
+     *
+     * <p>TODO: Traffic light visibility</p>
+     *
+     * @param isVisible visibility flag value
+     * @return this
+     */
     @Override
     public Window setTitlebarVisible(boolean isVisible) {
         assert _onUIThread();
-        _nSetTitlebarVisible(isVisible);
-        accept(new EventWindowResize(this));
+        setTitleVisible(isVisible);
+        setFullSizeContentView(!isVisible);
+        setTrafficLightsVisible(isVisible);
         return this;
     }
 
@@ -109,6 +131,13 @@ public class WindowMac extends Window {
     public WindowMac setTrafficLightPosition(int left, int top) {
         assert _onUIThread();
         _nSetTrafficLightPosition(left, top);
+        return this;
+    }
+
+    @NotNull @Contract("-> this")
+    public WindowMac setTrafficLightsVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetTrafficLightsVisible(isVisible);
         return this;
     }
 
@@ -200,12 +229,13 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
     @ApiStatus.Internal public native void _nSetTitle(String title);
+    @ApiStatus.Internal public native void _nSetTitleVisible(boolean value);
     @ApiStatus.Internal public native void _nSetSubtitle(String title);
     @ApiStatus.Internal public native void _nSetIcon(String path);
-    @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean value);
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);
     @ApiStatus.Internal public native void _nSetTrafficLightPosition(int left, int top);
+    @ApiStatus.Internal public native void _nSetTrafficLightsVisible(boolean value);
     @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

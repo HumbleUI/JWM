@@ -624,11 +624,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         case WM_SETFOCUS:
             JWM_VERBOSE("ON FOCUS");
-            dispatch(classes::EventWindowFocusOn::kInstance);
+            dispatch(classes::EventWindowFocusIn::kInstance);
             break;
         case WM_KILLFOCUS:
             JWM_VERBOSE("OFF FOCUS");
-            dispatch(classes::EventWindowFocusOff::kInstance);
+            dispatch(classes::EventWindowFocusOut::kInstance);
             break;
 
 

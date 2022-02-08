@@ -248,17 +248,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetCo
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitle
   (JNIEnv* env, jobject obj, jstring titleStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    if (env->IsSameObject(titleStr, nullptr)) {
-        [instance->fNSWindow setTitleVisibility:NSWindowTitleHidden];
-    } else {
-        jsize len = env->GetStringLength(titleStr);
-        const jchar* chars = env->GetStringCritical(titleStr, nullptr);
-        NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
-        env->ReleaseStringCritical(titleStr, chars);
-        instance->fNSWindow.title = title;
-        [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
-        [title release];
-    }
+    jsize len = env->GetStringLength(titleStr);
+    const jchar* chars = env->GetStringCritical(titleStr, nullptr);
+    NSString* title = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(titleStr, chars);
+    instance->fNSWindow.title = title;
+    [instance->fNSWindow setTitleVisibility:NSWindowTitleVisible];
+    [title release];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitleVisible
+  (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    [instance->fNSWindow setTitleVisibility:value ? NSWindowTitleVisible : NSWindowTitleHidden];
 }
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
@@ -294,20 +296,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIc
     app.applicationIconImage = image;
 
     [image release];
-}
-
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarVisible
-        (JNIEnv* env, jobject obj, jboolean value) {
-    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
-    NSWindow* nsWindow = instance->fNSWindow;
-
-    NSWindowStyleMask style = [nsWindow styleMask];
-    if (value) {
-        style |= NSWindowStyleMaskTitled;
-    } else {
-        style &= ~NSWindowStyleMaskTitled;
-    }
-    [nsWindow setStyleMask:style];
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFullSizeContentView
@@ -396,6 +384,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTr
                                 constant:left + (spaceBetween * i)]
         ]];
     }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightsVisible
+        (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+
+    NSButton *close = [nsWindow standardWindowButton:NSWindowCloseButton];
+    if (close != nullptr) close.hidden = !value;
+    NSButton *miniaturize = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+    if (miniaturize != nullptr) miniaturize.hidden = !value;
+    NSButton *zoom = [nsWindow standardWindowButton:NSWindowZoomButton];
+    if (zoom != nullptr) zoom.hidden = !value;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMouseCursor

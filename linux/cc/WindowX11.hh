@@ -14,7 +14,8 @@ namespace jwm {
         WindowX11(JNIEnv* env, WindowManagerX11& windowManager);
         ~WindowX11() override;
 
-        void getPosition(int& posX, int& posY);
+        void getDecorations(int& left, int& top, int& right, int& bottom);
+        void getContentPosition(int& posX, int& posY);
         void setVisible(bool isVisible);
         void close();
         bool init();

@@ -131,11 +131,11 @@ namespace jwm {
             extern jobject kInstance;
         }
 
-         namespace EventWindowFocusOn {
+        namespace EventWindowFocusIn {
             extern jobject kInstance;
         }
-        
-        namespace EventWindowFocusOff {
+
+        namespace EventWindowFocusOut {
             extern jobject kInstance;
         }
 
