@@ -28,13 +28,13 @@ public class WindowWin32 extends Window {
         _nUnmarkText();
     }
 
-    @Override 
+    @Override
     public IRect getWindowRect() {
         assert _onUIThread();
         return _nGetWindowRect();
     }
 
-    @Override 
+    @Override
     public IRect getContentRect() {
         assert _onUIThread();
         return _nGetContentRect();
@@ -68,7 +68,7 @@ public class WindowWin32 extends Window {
         return this;
     }
 
-    
+
     @Override
     public Window setIcon(File icon){
         assert _onUIThread();
@@ -135,7 +135,7 @@ public class WindowWin32 extends Window {
     @Override
     public Window focus() {
         assert _onUIThread();
-        // TODO implement
+        _nFocus();
         return this;
     }
 
@@ -184,6 +184,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
+    @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }
