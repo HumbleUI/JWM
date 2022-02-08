@@ -9,7 +9,8 @@ jwm::Window::~Window() {
 }
 
 void jwm::Window::dispatch(jobject event) {
-    jwm::classes::Consumer::accept(fEnv, fWindow, event);
+    if(fWindow)
+        jwm::classes::Consumer::accept(fEnv, fWindow, event);
 }
 
 bool jwm::Window::getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect) const {

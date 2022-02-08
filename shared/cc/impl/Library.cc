@@ -2,6 +2,7 @@
 #include <jni.h>
 #include "Library.hh"
 #include <cassert>
+#include <Log.hh>
 #include "Key.hh"
 #include "MouseButton.hh"
 #include "JNILocal.hh"
@@ -380,6 +381,32 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowFocusOn {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(
+                    env, env->FindClass(
+                             "io/github/humbleui/jwm/EventWindowFocusOn"));
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowFocusOn;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
+        namespace EventWindowFocusOff {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowFocusOff"));
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowFocusOff;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
         namespace EventWindowMove {
             jclass kCls;
             jmethodID kCtor;
@@ -545,6 +572,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventWindowCloseRequest::onLoad(env);
     jwm::classes::EventWindowMaximize::onLoad(env);
     jwm::classes::EventWindowMinimize::onLoad(env);
+    jwm::classes::EventWindowFocusOn::onLoad(env);
+    jwm::classes::EventWindowFocusOff::onLoad(env);
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::EventWindowRestore::onLoad(env);
