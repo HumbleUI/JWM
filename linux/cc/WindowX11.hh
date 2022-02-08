@@ -28,6 +28,7 @@ namespace jwm {
         void resize(int width, int height);
         void requestRedraw() {
             _isRedrawRequested = true;
+            _windowManager.notifyLoop();
         }
         void unsetRedrawRequest() {
             _isRedrawRequested = false;
