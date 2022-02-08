@@ -7,6 +7,8 @@ import org.jetbrains.annotations.*;
 import io.github.humbleui.types.*;
 
 public class WindowMac extends Window {
+    @ApiStatus.Internal public float _lastProgressBarValue = -1f;
+
     @ApiStatus.Internal
     public WindowMac() {
         super(_nMake());
@@ -216,9 +218,16 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public float getProgressBar() {
+        assert _onUIThread();
+        return _lastProgressBarValue;
+    }
+
+    @Override
     public Window setProgressBar(float progress) {
         assert _onUIThread();
         _nSetProgressBar(progress);
+        _lastProgressBarValue = progress;
         return this;
     }
 

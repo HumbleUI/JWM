@@ -153,6 +153,11 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public float getProgressBar() {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
     public Window setProgressBar(float progress) {
         throw new UnsupportedOperationException("impl me!");
     }
