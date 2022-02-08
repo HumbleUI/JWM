@@ -333,6 +333,11 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     public abstract Window setZOrder(ZOrder order);
 
+    public abstract float getProgressBar();
+
+    @NotNull @Contract("-> this")
+    public abstract Window setProgressBar(float progress);
+
     /**
      * <p>Feed an event to Window’s listener. Same as getEventListener().accept(Event)</p>
      */
