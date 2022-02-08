@@ -247,6 +247,10 @@ void WindowManagerX11::runLoop() {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
     }
+    
+    notifyFD = -1;
+    close(pipes[0]);
+    close(pipes[1]);
 }
 
 void WindowManagerX11::notifyLoop() {
