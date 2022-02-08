@@ -122,7 +122,7 @@ Alpha. Expect API breakages.
 | setIcon             | ✅   | ✅   | [#95](https://github.com/HumbleUI/JWM/issues/95)  |
 | Set system cursor   | ✅   | ✅   | [#99](https://github.com/HumbleUI/JWM/issues/99)  |
 | Customize titlebar  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
-| focus               | ❌   | ✅   | ❌   |
+| focus               | ✅   | ✅   | ❌   |
 | Get ZOrder          | ❌   | ✅   | ❌   |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |

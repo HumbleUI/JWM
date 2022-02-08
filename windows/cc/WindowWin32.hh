@@ -60,6 +60,7 @@ namespace jwm {
         void maximize();
         void minimize();
         void restore();
+        void focus();
         void requestSwap();
         void requestFrame();
         IRect getWindowRect() const;
