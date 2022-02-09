@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #include "DockTileProgressBar.hh"
 
 @implementation DockTileProgressBar

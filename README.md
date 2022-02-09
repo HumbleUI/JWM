@@ -124,6 +124,7 @@ Alpha. Expect API breakages.
 | Customize titlebar  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
 | focus               | ✅   | ✅   | ❌   |
 | Get ZOrder          | ❌   | ✅   | ❌   |
+| Progress Bar        | ❌   | ✅   | ❌   |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
