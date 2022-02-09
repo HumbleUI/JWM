@@ -530,6 +530,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case FocusIn: { // focused
+            XSetICFocus(myWindow->_ic);
             myWindow->dispatch(EventWindowFocusIn::kInstance);
             break;
         }
@@ -540,23 +541,32 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case KeyPress: { // keyboard down
+
             KeySym s = XLookupKeysym(&ev.xkey, 0);
-            jwm::Key key = KeyX11::fromNative(s);
-            jwm::KeyX11::setKeyState(key, true);
-            jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
-                                                    EventKey::make(app.getJniEnv(),
-                                                                        key,
-                                                                        true,
-                                                                        jwm::KeyX11::getModifiers()));
-            myWindow->dispatch(eventKey.get());
-            uint8_t textBuffer[0x20];
+            if (s != NoSymbol) {
+                jwm::Key key = KeyX11::fromNative(s);
+                jwm::KeyX11::setKeyState(key, true);
+                jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
+                                                        EventKey::make(app.getJniEnv(),
+                                                                            key,
+                                                                            true,
+                                                                            jwm::KeyX11::getModifiers()));
+                myWindow->dispatch(eventKey.get());
+            }
+
+            // allow input methods (incl. XCompose) to interpret the event; but not before dispatching EventKey
+            if (XFilterEvent(&ev, myWindow->_x11Window)) break;
+
+            uint8_t textBuffer[0x40];
             Status status;
             int count = Xutf8LookupString(myWindow->_ic,
                                           (XKeyPressedEvent*)&ev,
                                           reinterpret_cast<char*>(textBuffer),
-                                          sizeof(textBuffer),
+                                          sizeof(textBuffer)-1,
                                           &s,
                                           &status);
+            if (status==XBufferOverflow) break;
+
             textBuffer[count] = 0;
             if (count > 0) {
                 // ignore delete key and other control symbols
