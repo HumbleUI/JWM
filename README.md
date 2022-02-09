@@ -241,6 +241,8 @@ Issues labeled “[Design](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+i
 - [Alexey Titov](https://github.com/Alex2772)
 - [Pavel Sergeev](https://github.com/SergeevPavel)
 - [110416](https://github.com/i10416)
+- [Matt Worzala](https://github.com/mworzala)
+- [dzaima](https://github.com/dzaima)
 
 Development sponsored by:
 
