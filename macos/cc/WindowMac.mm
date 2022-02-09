@@ -10,6 +10,7 @@
 #include "Util.hh"
 #include "ZOrder.hh"
 #include "WindowMacTitlebarStyle.hh"
+#include "DockTileProgressBar.hh"
 
 namespace jwm {
 NSArray* kCursorCache;
@@ -517,6 +518,55 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetZO
     }
     nsWindow.level = level;
 }
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetProgressBar
+  (JNIEnv* env, jobject obj, jfloat value) {
+    // Based on
+    // https://github.com/electron/electron/blob/3768a7b25f3db505a25582706de58e7f81121565/shell/browser/native_window_mac.mm#L1268
+    // https://github.com/electron/electron/blob/3768a7b25f3db505a25582706de58e7f81121565/LICENSE
+
+    NSDockTile* dockTile = [NSApp dockTile];
+
+    // Check if there is an existing progress indicator
+    bool firstTime = !dockTile.contentView || // No content view at all
+                     [[dockTile.contentView subviews] count] == 0 || // Content view contains no children
+                     ![[[dockTile.contentView subviews] lastObject] isKindOfClass:[NSProgressIndicator class]]; // Child is not a progress indicator
+
+    // Create progress indicator the first time
+    if (firstTime) {
+      NSImageView* imageView = [[[NSImageView alloc] init] autorelease];
+      [imageView setImage:[NSApp applicationIconImage]];
+      [dockTile setContentView:imageView];
+
+      NSRect frame = NSMakeRect(0.0f, 0.0f, dockTile.size.width, 15.0);
+      NSProgressIndicator* progressIndicator =
+          [[[DockTileProgressBar alloc] initWithFrame:frame] autorelease];
+      [progressIndicator setStyle:NSProgressIndicatorStyleBar];
+      [progressIndicator setIndeterminate:NO];
+      [progressIndicator setBezeled:YES];
+      [progressIndicator setMinValue:0];
+      [progressIndicator setMaxValue:1];
+      [progressIndicator setHidden:NO];
+      [dockTile.contentView addSubview:progressIndicator];
+    }
+
+    // Otherwise update the existing progress indicator
+    NSProgressIndicator* progressIndicator =
+        static_cast<NSProgressIndicator*>([[[dockTile contentView] subviews] lastObject]);
+    if (value < 0) {
+      [progressIndicator setHidden:YES];
+    } else if (value > 1) {
+      [progressIndicator setHidden:NO];
+      [progressIndicator setIndeterminate:YES];
+      [progressIndicator setDoubleValue:1];
+    } else {
+      [progressIndicator setHidden:NO];
+      [progressIndicator setDoubleValue:value];
+    }
+
+    [dockTile display];
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nClose
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
