@@ -110,8 +110,6 @@ bool jwm::WindowMac::init() {
 
 void jwm::WindowMac::setVisible(bool value) {
     if (value && fDisplayLink == 0) {
-        [fNSWindow orderFront:nil];
-        [NSApp activateIgnoringOtherApps:YES];
         [fNSWindow makeKeyAndOrderFront:NSApp];
 
         CVDisplayLinkCreateWithActiveCGDisplays(&fDisplayLink);

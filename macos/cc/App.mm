@@ -4,6 +4,7 @@
 #include "impl/Library.hh"
 #include "MainView.hh"
 #include "Util.hh"
+#include "ApplicationDelegate.hh"
 
 // http://trac.wxwidgets.org/ticket/13557
 // here we subclass NSApplication, for the purpose of being able to override sendEvent
@@ -47,29 +48,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
         return;
     }
 
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     [JWMNSApplication sharedApplication];
 
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-
-    //Create the application menu.
-    NSMenu* menuBar=[[NSMenu alloc] initWithTitle:@"AMainMenu"];
-    [NSApp setMainMenu:menuBar];
-
-    NSMenuItem* item;
-    NSMenu* subMenu;
-
-    item=[[NSMenuItem alloc] initWithTitle:@"Apple" action:nil keyEquivalent:@""];
-    [menuBar addItem:item];
-    subMenu=[[NSMenu alloc] initWithTitle:@"Apple"];
-    [menuBar setSubmenu:subMenu forItem:item];
-    [item release];
-    item=[[NSMenuItem alloc] initWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
-    [subMenu addItem:item];
-    [item release];
-    [subMenu release];
-    [menuBar release];
-    [pool release];
+    ApplicationDelegate* delegate = [[ApplicationDelegate alloc] init];
+    [NSApp setDelegate:delegate];
+    [delegate release];
 
     jwm::initKeyTable();
     jwm::initCursorCache();
