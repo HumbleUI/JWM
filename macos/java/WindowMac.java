@@ -89,6 +89,19 @@ public class WindowMac extends Window {
         return this;
     }
 
+    /**
+     * <p>Adds the system icon for the specified file next to the window title (and allows viewing the parent directories).</p>
+     *
+     * @param filename A path to a file
+     * @return this
+     */
+    @NotNull @Contract("-> this")
+    public Window setRepresentedFilename(@NotNull String filename) {
+        assert _onUIThread();
+        _nSetRepresentedFilename(filename);
+        return this;
+    }
+
     @Override
     public Window setIcon(File icon) {
         assert _onUIThread();
@@ -247,6 +260,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetTitleVisible(boolean value);
     @ApiStatus.Internal public native void _nSetSubtitle(String title);
+    @ApiStatus.Internal public native void _nSetRepresentedFilename(String filename);
     @ApiStatus.Internal public native void _nSetIcon(String path);
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);

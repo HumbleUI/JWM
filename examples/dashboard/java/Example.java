@@ -57,8 +57,10 @@ public class Example implements Consumer<Event> {
         IRect bounds = screen.getWorkArea();
 
         window.setTitle("JWM Window #" + count);
-        if (window instanceof WindowMac windowMac)
+        if (window instanceof WindowMac windowMac) {
             windowMac.setSubtitle("Window Subtitle");
+            windowMac.setRepresentedFilename("macos/cc/WindowMac.mm");
+        }
 
         panelScreens.setTitleStyle(panelScreens.titleStyles.get(count));
 
