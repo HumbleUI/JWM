@@ -53,16 +53,7 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
         XRRScreenResources* resources = XRRGetScreenResources(display, getWindowManager().getRootWindow());
         RROutput primaryOutput = XRRGetOutputPrimary(display, getWindowManager().getRootWindow());
         int count = resources->ncrtc;
-
-
-        // skip empty monitors
-        for (int i = 0; i < resources->ncrtc; ++i) {
-            XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
-            if (info->width == 0) {
-                count -= 1;
-            }
-            XRRFreeCrtcInfo(info);
-        } 
+        int primaryIdx = 0;
 
         float dpi = jwm::app.getScale();
 
@@ -70,11 +61,10 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
             XRRCrtcInfo* info = XRRGetCrtcInfo(display, resources, resources->crtcs[i]);
             // skip empty monitors
             if (info->width != 0) {
-                bool isPrimary = false;
-                for (int o = 0; o < info->noutput; ++o) {
-                    RROutput output = info->outputs[o];
+                for (int j = 0; j < info->noutput; ++j) {
+                    RROutput output = info->outputs[j];
                     if (output == primaryOutput) {
-                        isPrimary = true;
+                        primaryIdx = _screens.size();
                         break;
                     }
                 }
@@ -84,7 +74,7 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
                 ScreenInfo myScreenInfo = {
                     long(info->outputs[0]),
                     bounds,
-                    isPrimary
+                    false
                 };
                 _screens.push_back(myScreenInfo);
             }
@@ -92,6 +82,7 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
             XRRFreeCrtcInfo(info);
         }
         XRRFreeScreenResources(resources);
+        _screens[primaryIdx].isPrimary = true;
     }
     return _screens;
 }
