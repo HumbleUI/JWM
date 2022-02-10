@@ -282,6 +282,17 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetSu
 }
 #endif
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetRepresentedFilename
+  (JNIEnv* env, jobject obj, jstring filenameStr) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    jsize len = env->GetStringLength(filenameStr);
+    const jchar* chars = env->GetStringCritical(filenameStr, nullptr);
+    NSString* filename = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(filenameStr, chars);
+    [instance->fNSWindow setRepresentedFilename:filename];
+    [filename release];
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIcon
   (JNIEnv* env, jobject obj, jstring pathStr) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
