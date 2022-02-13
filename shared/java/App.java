@@ -35,7 +35,7 @@ public class App {
 
     /**
      * <p>Make new native platform-specific window.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after {@link #init(Runnable)} successful method call.</p>
      *
      * @return          new window instance
      */
@@ -57,8 +57,7 @@ public class App {
 
     /**
      * <p>Request application terminate.</p>
-     * <p>This request causes application terminate and causes control return from {@link #start()} method.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after {@link #init(Runnable)} successful method call.</p>
      */
     public static void terminate() {
         assert _onUIThread();
@@ -78,7 +77,7 @@ public class App {
 
     /**
      * <p>Get desktop environment screens configurations.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after {@link #init(Runnable)} successful method call.</p>
      *
      * @return          list of desktop screens
      */
@@ -89,7 +88,7 @@ public class App {
 
     /**
      * <p>Get desktop environment primary screen info.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after {@link #init(Runnable)} successful method call.</p>
      *
      * @return          primary desktop screen
      */
