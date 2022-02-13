@@ -89,11 +89,12 @@ const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit(JNIEnv* env, jclass jclass) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit(JNIEnv* env, jclass jclass, jobject launcher) {
     jwm::app.init(env);
-}
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart(JNIEnv* env, jclass jclass) {
+    // Call user start function
+    jwm::classes::Runnable::run(env, launcher);
+
     jwm::app.start();
 }
 

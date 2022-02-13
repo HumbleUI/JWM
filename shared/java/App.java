@@ -16,17 +16,21 @@ public class App {
     public static long _uiThreadId;
 
     /**
-     * <p>Initialize global JWM application instance.</p>
+     * <p>Start the JWM application, blocking until completion.</p>
+     * <p>User init should be handled inside the `launcher` callback (on the main thread).</p>
      *
      * <p>This method must be the first method called in the JWM library.</p>
      * <p>After this method call, library API can be safely accessed for creating windows and querying system info.</p>
      */
-    public static void init() {
+    public static void init(@NotNull Runnable launcher) {
         Library.load();
-        _nInit();
-        _uiThreadId = Thread.currentThread().getId();
-        Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
-        Log.setLogger(System.out::println);
+        _nInit(() -> {
+            _uiThreadId = Thread.currentThread().getId();
+            Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
+            Log.setLogger(System.out::println);
+
+            launcher.run();
+        });
     }
 
     /**
@@ -49,19 +53,6 @@ public class App {
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
         _windows.add(window);
         return window;
-    }
-
-    /**
-     * <p>Start application primary event loop.</p>
-     *
-     * <p>Will block current thread until you call {@link #terminate()}</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
-     *
-     * @return          status code; 0 on success, otherwise error
-     */
-    public static int start() {
-        assert _onUIThread();
-        return _nStart();
     }
 
     /**
@@ -114,8 +105,7 @@ public class App {
         return _uiThreadId == Thread.currentThread().getId();
     }
 
-    @ApiStatus.Internal public static native void _nInit();
-    @ApiStatus.Internal public static native int _nStart();
+    @ApiStatus.Internal public static native void _nInit(Runnable launcher);
     @ApiStatus.Internal public static native void _nTerminate();
     @ApiStatus.Internal public static native Screen[] _nGetScreens();
     @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable callback);

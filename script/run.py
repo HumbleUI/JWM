@@ -49,7 +49,6 @@ def main():
   subprocess.check_call([
     'java',
     '--class-path', build_utils.classpath_join(classpath + ['examples/dashboard/target/classes']),
-    *(['-XstartOnFirstThread'] if 'macos' == build_utils.system else []),
     '-Djava.awt.headless=true',
     '-enableassertions',
     '-enablesystemassertions',

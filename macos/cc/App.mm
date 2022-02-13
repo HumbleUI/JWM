@@ -2,66 +2,33 @@
 #include <jni.h>
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
-#include "MainView.hh"
 #include "Util.hh"
 #include "ApplicationDelegate.hh"
 
-// http://trac.wxwidgets.org/ticket/13557
-// here we subclass NSApplication, for the purpose of being able to override sendEvent
-@interface JWMNSApplication: NSApplication {
-}
 
-- (id)init;
 
-- (void)sendEvent:(NSEvent *)anEvent;
-
-@end
-
-@implementation JWMNSApplication
-
-- (id)init {
-    self = [super init];
-    return self;
-}
-
-// This is needed because otherwise we don't receive any key-up events for command-key combinations (an AppKit bug, apparently)
-- (void)sendEvent:(NSEvent *)anEvent {
-    if ([anEvent type] == NSEventTypeKeyUp && ([anEvent modifierFlags] & NSEventModifierFlagCommand))
-        [[self keyWindow] sendEvent:anEvent];
-    else
-        [super sendEvent:anEvent];    
-}
-
-@end
 
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
-  (JNIEnv* env, jclass jclass) {
+  (JNIEnv* env, jclass jclass, jobject launcher) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
     // we only run on systems that support at least Core Profile 3.2
     return EXIT_FAILURE;
 #endif
 
-    if (![NSThread isMainThread]) {
-        jwm::classes::Throwable::throwRuntimeException(env, "App::init should be called from main thread, forgot -XstartOnFirstThread?");
-        return;
-    }
+    JavaVM* jvm;
+    env->GetJavaVM(&jvm);
 
-    [JWMNSApplication sharedApplication];
+    // Create a global ref to runnable (will be released after use)
+    jobject launcherRef = env->NewGlobalRef(launcher);
 
-    ApplicationDelegate* delegate = [[ApplicationDelegate alloc] init];
-    [NSApp setDelegate:delegate];
-    [delegate release];
+    // Create delegate
+    ApplicationDelegate* delegate = [[ApplicationDelegate alloc] initWithJVM:jvm andLauncherGlobalRef:launcherRef];
 
-    jwm::initKeyTable();
-    jwm::initCursorCache();
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_App__1nStart
-  (JNIEnv* env, jclass jclass) {
-    [NSApp run];
-    return EXIT_SUCCESS;
+    // Start the application on the main thread, blocking here until complete.
+    // If we are already on the main thread then this will simply call the selector.
+    [delegate performSelectorOnMainThread:@selector(runLoop) withObject:nil waitUntilDone:YES];
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nTerminate
