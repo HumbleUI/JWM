@@ -2,15 +2,15 @@
 #include <jni.h>
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
+#include "Log.hh"
 #include "Util.hh"
 #include "ApplicationDelegate.hh"
 
-
-
+#include <iostream>
 
 // JNI
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart
   (JNIEnv* env, jclass jclass, jobject launcher) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
     // we only run on systems that support at least Core Profile 3.2
@@ -19,11 +19,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
 
     JavaVM* jvm;
     env->GetJavaVM(&jvm);
-
-    // Create a global ref to runnable (will be released after use)
     jobject launcherRef = env->NewGlobalRef(launcher);
-
-    // Create delegate
     ApplicationDelegate* delegate = [[ApplicationDelegate alloc] initWithJVM:jvm andLauncherGlobalRef:launcherRef];
 
     // Start the application on the main thread, blocking here until complete.
@@ -56,9 +52,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThre
     auto callbackRef = env->NewGlobalRef(callback);
     dispatch_async(dispatch_get_main_queue(), ^{
         JNIEnv* env2;
-        if (javaVM->GetEnv(reinterpret_cast<void**>(&env2), JNI_VERSION_1_8) == JNI_OK) {
-          jwm::classes::Runnable::run(env2, callbackRef);
-          env2->DeleteGlobalRef(callbackRef);
-        }
+        jint ret = javaVM->GetEnv(reinterpret_cast<void**>(&env2), JNI_VERSION_1_8);
+        if (ret == JNI_OK) {
+            jwm::classes::Runnable::run(env2, callbackRef);
+            env2->DeleteGlobalRef(callbackRef);
+        } else
+            std::cerr << "Failed to AttachCurrentThread: " << ret << std::endl;
     });
 }

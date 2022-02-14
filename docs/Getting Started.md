@@ -25,7 +25,7 @@ E.g. for Maven it’ll look like this:
 Init JWM library:
 
 ```java
-App.init(() -> {
+App.start(() -> {
     // Initialization here
 });
 ```
@@ -33,7 +33,7 @@ App.init(() -> {
 Create a window:
 
 ```java
-// Inside App::init callback
+// Inside App::start callback
 Window window = App.makeWindow();
 window.setTitle("Hello, world!");
 ```

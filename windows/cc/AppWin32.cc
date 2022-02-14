@@ -68,10 +68,7 @@ LRESULT jwm::AppWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nInit
         (JNIEnv* env, jclass jclass, jobject launcher) {
     jwm::AppWin32::getInstance().init(env);
-
-    // Call user start function
     jwm::classes::Runnable::run(env, launcher);
-
     jwm::AppWin32::getInstance().start();
 }
 

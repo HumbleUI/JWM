@@ -82,7 +82,7 @@ Alpha. Expect API breakages.
 
 |                   | Windows | macOS | X11 |
 |-------------------|---------|-------|-----|
-| init              | ✅   | ✅   | ✅   |
+| start             | ✅   | ✅   | ✅   |
 | makeWindow        | ✅   | [#121](https://github.com/HumbleUI/JWM/issues/121)   | ✅   |
 | getScreens        | ✅   | ✅   | ✅   |
 | getPrimaryScreen  | ✅   | ✅   | ✅   |

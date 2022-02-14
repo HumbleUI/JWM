@@ -218,7 +218,7 @@ public class Example implements Consumer<Event> {
     }
 
     public static void main(String[] args) {
-        App.init(() -> {
+        App.start(() -> {
             new Example();
         });
     }

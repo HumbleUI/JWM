@@ -1,6 +1,7 @@
 #include "ApplicationDelegate.hh"
 
 #include "MainView.hh"
+#include "Log.hh"
 
 @implementation JWMNSApplication
 
@@ -33,8 +34,6 @@
 }
 
 - (void) runLoop {
-
-    // Setup NSApplication
     [JWMNSApplication sharedApplication];
 
     [NSApp setDelegate:self];
@@ -42,17 +41,19 @@
     jwm::initKeyTable();
     jwm::initCursorCache();
 
-    // Call user launch runnable
-    JNIEnv *env; // get vm in current thread
+    JNIEnv *env;
     JavaVMAttachArgs vmAttachArgs = {JNI_VERSION_1_8, 0, 0};
-    if (self->jvm->AttachCurrentThread((void**) &env, &vmAttachArgs) == JNI_OK) {
+    jint ret = self->jvm->AttachCurrentThread((void**) &env, &vmAttachArgs);
+    if (ret == JNI_OK) {
         jwm::classes::Runnable::run(env, self->launcher);
+        jwm::classes::Throwable::exceptionThrown(env);
         env->DeleteGlobalRef(self->launcher);
         self->launcher = nullptr;
-    }
+    } else
+        std::cerr << "Failed to AttachCurrentThread: " << ret << std::endl;
 
-    // Run app
     [NSApp run];
+    self->jvm->DetachCurrentThread();
 }
 
 - (id)initWithJVM:(JavaVM *)pVm andLauncher:(jobject)launcher {

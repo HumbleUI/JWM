@@ -22,13 +22,12 @@ public class App {
      * <p>This method must be the first method called in the JWM library.</p>
      * <p>After this method call, library API can be safely accessed for creating windows and querying system info.</p>
      */
-    public static void init(@NotNull Runnable launcher) {
+    public static void start(@NotNull Runnable launcher) {
         Library.load();
-        _nInit(() -> {
+        _nStart(() -> {
             _uiThreadId = Thread.currentThread().getId();
             Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
             Log.setLogger(System.out::println);
-
             launcher.run();
         });
     }
@@ -104,7 +103,7 @@ public class App {
         return _uiThreadId == Thread.currentThread().getId();
     }
 
-    @ApiStatus.Internal public static native void _nInit(Runnable launcher);
+    @ApiStatus.Internal public static native void _nStart(Runnable launcher);
     @ApiStatus.Internal public static native void _nTerminate();
     @ApiStatus.Internal public static native Screen[] _nGetScreens();
     @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable callback);
