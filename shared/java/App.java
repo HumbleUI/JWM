@@ -16,22 +16,25 @@ public class App {
     public static long _uiThreadId;
 
     /**
-     * <p>Initialize global JWM application instance.</p>
+     * <p>Start the JWM application, blocking until completion.</p>
+     * <p>User init should be handled inside the `launcher` callback (on the main thread).</p>
      *
      * <p>This method must be the first method called in the JWM library.</p>
      * <p>After this method call, library API can be safely accessed for creating windows and querying system info.</p>
      */
-    public static void init() {
+    public static void start(@NotNull Runnable launcher) {
         Library.load();
-        _nInit();
-        _uiThreadId = Thread.currentThread().getId();
-        Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
-        Log.setLogger(System.out::println);
+        _nStart(() -> {
+            _uiThreadId = Thread.currentThread().getId();
+            Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
+            Log.setLogger(System.out::println);
+            launcher.run();
+        });
     }
 
     /**
      * <p>Make new native platform-specific window.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after or inside {@link #start(Runnable)} successful method call.</p>
      *
      * @return          new window instance
      */
@@ -52,22 +55,8 @@ public class App {
     }
 
     /**
-     * <p>Start application primary event loop.</p>
-     *
-     * <p>Will block current thread until you call {@link #terminate()}</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
-     *
-     * @return          status code; 0 on success, otherwise error
-     */
-    public static int start() {
-        assert _onUIThread();
-        return _nStart();
-    }
-
-    /**
      * <p>Request application terminate.</p>
-     * <p>This request causes application terminate and causes control return from {@link #start()} method.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after or inside {@link #start(Runnable)} successful method call.</p>
      */
     public static void terminate() {
         assert _onUIThread();
@@ -87,7 +76,7 @@ public class App {
 
     /**
      * <p>Get desktop environment screens configurations.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after or inside {@link #start(Runnable)} successful method call.</p>
      *
      * @return          list of desktop screens
      */
@@ -98,7 +87,7 @@ public class App {
 
     /**
      * <p>Get desktop environment primary screen info.</p>
-     * <p>Note: must be called only after {@link #init()} successful method call.</p>
+     * <p>Note: must be called only after or inside {@link #start(Runnable)} successful method call.</p>
      *
      * @return          primary desktop screen
      */
@@ -114,8 +103,7 @@ public class App {
         return _uiThreadId == Thread.currentThread().getId();
     }
 
-    @ApiStatus.Internal public static native void _nInit();
-    @ApiStatus.Internal public static native int _nStart();
+    @ApiStatus.Internal public static native void _nStart(Runnable launcher);
     @ApiStatus.Internal public static native void _nTerminate();
     @ApiStatus.Internal public static native Screen[] _nGetScreens();
     @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable callback);

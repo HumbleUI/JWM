@@ -25,12 +25,15 @@ E.g. for Maven it’ll look like this:
 Init JWM library:
 
 ```java
-App.init();
+App.start(() -> {
+    // Initialization here
+});
 ```
 
 Create a window:
 
 ```java
+// Inside App::start callback
 Window window = App.makeWindow();
 window.setTitle("Hello, world!");
 ```
@@ -87,12 +90,6 @@ On Windows and Linux, just run:
 
 ```sh
 java -cp jwm-0.3.1.jar:types-0.1.1.jar GettingStarted.java
-```
-
-On macOS, add `-XstartOnFirstThread` flag to `java`:
-
-```sh
-java -XstartOnFirstThread -cp jwm-0.3.1.jar:types-0.1.1.jar GettingStarted.java
 ```
 
 `types-0.1.1.jar` here are from https://github.com/HumbleUI/Types. They will be included as a transitive dependency if you are using Maven or Gradle.

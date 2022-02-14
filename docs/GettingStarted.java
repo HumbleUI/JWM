@@ -3,11 +3,11 @@ import io.github.humbleui.jwm.*;
 
 public class GettingStarted {
     public static void main(String[] args) {
-        App.init();
-        Window window = App.makeWindow();
-        window.setEventListener(new EventHandler(window));
-        window.setVisible(true);
-        App.start();
+        App.init(() -> {
+            Window window = App.makeWindow();
+            window.setEventListener(new EventHandler(window));
+            window.setVisible(true);
+        });
     }
 }
 
