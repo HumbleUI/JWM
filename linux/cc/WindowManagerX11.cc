@@ -627,11 +627,11 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 XChangeProperty(display,
                                 ev.xselectionrequest.requestor,
                                 ev.xselectionrequest.property,
-                                ev.xselectionrequest.target,
-                                targetAtoms.size(),
+                                XA_ATOM,
+                                32,
                                 PropModeReplace,
                                 (unsigned char*) targetAtoms.data(),
-                                sizeof(Atom) * targetAtoms.size());
+                                targetAtoms.size());
             } else { // data request
                 std::string targetName;
                 {
@@ -832,7 +832,9 @@ void WindowManagerX11::terminate() {
 void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
-    XSetSelectionOwner(display, _atoms.CLIPBOARD, _nativeWindowToMy.begin()->first, CurrentTime);
+    ::Window window = _nativeWindowToMy.begin()->first;
+    XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
+    XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
 }
 
 void WindowManagerX11::enqueueTask(const std::function<void()>& task) {
