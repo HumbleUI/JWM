@@ -536,6 +536,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case FocusOut: { // unfocused
+            KeyX11::resetKeyState();
             myWindow->dispatch(EventWindowFocusOut::kInstance);
             break;
         }
