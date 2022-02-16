@@ -449,6 +449,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                     myWindow->_layer->makeCurrent();
                     myWindow->_layer->setVsyncMode(ILayer::VSYNC_DISABLED);
                 }
+                myWindow->unsetRedrawRequest();
                 myWindow->dispatch(EventFrame::kInstance);
 
                 if (myWindow->_layer) {
