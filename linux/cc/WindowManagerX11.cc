@@ -536,7 +536,14 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case FocusOut: { // unfocused
-            KeyX11::resetKeyState();
+            for (size_t i = 0; i < (size_t) jwm::Key::_KEY_COUNT; i++) {
+                jwm::Key key = (jwm::Key) i;
+                if (jwm::KeyX11::getKeyState(key)) {
+                    jwm::KeyX11::setKeyState(key, false);
+                    jwm::JNILocal<jobject> eventKey(app.getJniEnv(), EventKey::make(app.getJniEnv(), key, false, 0));
+                    myWindow->dispatch(eventKey.get());
+                }
+            }
             myWindow->dispatch(EventWindowFocusOut::kInstance);
             break;
         }

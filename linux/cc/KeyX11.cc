@@ -16,10 +16,6 @@ void jwm::KeyX11::setKeyState(jwm::Key key, bool isDown) {
     gKeyStates[(size_t) key] = isDown;
 }
 
-void jwm::KeyX11::resetKeyState() {
-    for (size_t i = 0; i < (size_t)jwm::Key::_KEY_COUNT; i++) gKeyStates[i] = 0;
-}
-
 int jwm::KeyX11::getModifiers() {
     int m = 0;
 
