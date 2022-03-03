@@ -27,7 +27,8 @@ public class App {
         _nStart(() -> {
             _uiThreadId = Thread.currentThread().getId();
             Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
-            Log.setLogger(System.out::println);
+            long t0 = System.currentTimeMillis();
+            Log.setLogger((s) -> System.out.println("[ " + (System.currentTimeMillis() - t0) + " ] " + s));
             launcher.run();
         });
     }
