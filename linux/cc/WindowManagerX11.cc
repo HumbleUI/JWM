@@ -422,20 +422,20 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
         case ConfigureNotify: { // resize and move
             WindowX11* except = nullptr;
-            if (ev.xconfigure.x != myWindow->_posX || ev.xconfigure.y != myWindow->_posY) {
-                myWindow->_posX = ev.xconfigure.x;
-                myWindow->_posY = ev.xconfigure.y;
+            int posX, posY;
+            myWindow->getContentPosition(posX, posY);
+            
+            if (posX != myWindow->_posX || posY != myWindow->_posY) {
+                myWindow->_posX = posX;
+                myWindow->_posY = posY;
 
                 jwm::JNILocal<jobject> eventMove(
                     app.getJniEnv(),
-                    EventWindowMove::make(
-                        app.getJniEnv(),
-                        ev.xconfigure.x,
-                        ev.xconfigure.y
-                    )
+                    EventWindowMove::make(app.getJniEnv(), posX, posY)
                 );
                 myWindow->dispatch(eventMove.get()); 
             }
+
             if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
             {
                 except = myWindow;
@@ -593,7 +593,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             break;
         }
 
-        case KeyRelease: { // keyboard down
+        case KeyRelease: { // keyboard up
             KeySym s = XLookupKeysym(&ev.xkey, 0);
             jwm::Key key = KeyX11::fromNative(s);
             jwm::KeyX11::setKeyState(key, false);
