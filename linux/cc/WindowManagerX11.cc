@@ -314,6 +314,30 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                         _xi2IterateDevices();
                         break;
 
+                    case XI_Enter: {
+                        XIEnterEvent* deviceEvent = reinterpret_cast<XIEnterEvent*>(xiEvent);
+
+                        it = _nativeWindowToMy.find(deviceEvent->event);
+
+                        if (it != _nativeWindowToMy.end()) {
+                            myWindow = it->second;
+                        } else {
+                            break;
+                        }
+
+                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
+                        if (itMyDevice == _xi2->deviceById.end()) {
+                            break;
+                        }
+
+                        XInput2::Device& myDevice = itMyDevice->second;
+
+                        for (auto& valuator : myDevice.scroll) {
+                            valuator.previousValue = 0;
+                        }
+                        break;
+                    }
+
                     case XI_Motion: {
                         XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
                         
@@ -818,6 +842,7 @@ void WindowManagerX11::registerWindow(WindowX11* window) {
         unsigned char mask[2] = { 0 };
         XISetMask(mask, XI_DeviceChanged);
         XISetMask(mask, XI_Motion);
+        XISetMask(mask, XI_Enter);
         eventMask.deviceid = XIAllDevices;
         eventMask.mask_len = sizeof(mask);
         eventMask.mask = mask;
