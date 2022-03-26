@@ -242,11 +242,13 @@ void WindowManagerX11::runLoop() {
             break;
         }
 
-        // clear our pipe; ordering doesn't matter as any new events during clearing will be immediately processed
-        notifyBool.store(false);
+        // clear pipe
         if (ps[1].revents & POLLIN) {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
+        // clear fast path boolean; done after clearing the pipe so that, during event execution, new notifyLoop calls can still function
+        notifyBool.store(false);
+        // The events causing a notifyLoop anywhere between poll() end and here will be processed in all cases, as that's the next thing that happens
     }
     
     notifyFD = -1;
