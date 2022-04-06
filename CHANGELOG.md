@@ -1,3 +1,9 @@
+# WIP
+
+Changed:
+
+- Renamed Objective-C classes to avoid conflict with AWT
+
 # 0.4.0 - February 16, 2022
 
 Changed:

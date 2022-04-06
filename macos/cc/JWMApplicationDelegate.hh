@@ -18,7 +18,7 @@
 
 
 
-@interface ApplicationDelegate : NSObject<NSApplicationDelegate> {
+@interface JWMApplicationDelegate : NSObject<NSApplicationDelegate> {
     JavaVM *jvm;
     jobject launcher;
 }

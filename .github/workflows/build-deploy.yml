@@ -11,6 +11,7 @@ on:
       - 'docs/**'
       - 'examples/**'
       - 'extras/**'
+      - CHANGELOG.md
       - LICENSE
       - README.md
 

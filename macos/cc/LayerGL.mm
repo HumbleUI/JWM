@@ -8,7 +8,6 @@
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
 #include "Log.hh"
-#include "MainView.hh"
 #include <OpenGL/gl.h>
 #include "WindowMac.hh"
 

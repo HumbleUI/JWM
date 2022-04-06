@@ -4,7 +4,7 @@
 #include "impl/Library.hh"
 #include "Log.hh"
 #include "Util.hh"
-#include "ApplicationDelegate.hh"
+#include "JWMApplicationDelegate.hh"
 
 #include <iostream>
 
@@ -20,7 +20,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart
     JavaVM* jvm;
     env->GetJavaVM(&jvm);
     jobject launcherRef = env->NewGlobalRef(launcher);
-    ApplicationDelegate* delegate = [[ApplicationDelegate alloc] initWithJVM:jvm andLauncherGlobalRef:launcherRef];
+    JWMApplicationDelegate* delegate = [[JWMApplicationDelegate alloc] initWithJVM:jvm andLauncherGlobalRef:launcherRef];
 
     // Start the application on the main thread, blocking here until complete.
     // If we are already on the main thread then this will simply call the selector.

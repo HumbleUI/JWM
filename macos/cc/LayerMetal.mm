@@ -5,7 +5,6 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "Log.hh"
-#include "MainView.hh"
 #import  <Metal/Metal.h>
 #include "WindowMac.hh"
 

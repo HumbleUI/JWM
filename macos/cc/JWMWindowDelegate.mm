@@ -3,14 +3,14 @@
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "WindowMac.hh"
-#include "WindowDelegate.hh"
+#include "JWMWindowDelegate.hh"
 #include "Util.hh"
 
-@implementation WindowDelegate {
+@implementation JWMWindowDelegate {
     jwm::WindowMac* fWindow;
 }
 
-- (WindowDelegate*)initWithWindow:(jwm::WindowMac*)initWindow {
+- (JWMWindowDelegate*)initWithWindow:(jwm::WindowMac*)initWindow {
     fWindow = initWindow;
     return self;
 }

@@ -4,7 +4,7 @@
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "KeyModifier.hh"
-#include "MainView.hh"
+#include "JWMMainView.hh"
 #include "WindowMac.hh"
 #include "Util.hh"
 
@@ -238,7 +238,7 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
 
 static const NSRange kEmptyRange = { NSNotFound, 0 };
 
-@implementation MainView {
+@implementation JWMMainView {
     jwm::WindowMac* fWindow;
     // A TrackingArea prevents us from capturing events outside the view
     NSTrackingArea* fTrackingArea;
@@ -249,7 +249,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSUInteger fLastPressedButtons;
 }
 
-- (MainView*)initWithWindow:(jwm::WindowMac*)initWindow {
+- (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
     self = [super init];
 
     fWindow = initWindow;

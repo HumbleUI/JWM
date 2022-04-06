@@ -1,6 +1,6 @@
-#include "ApplicationDelegate.hh"
+#include "JWMApplicationDelegate.hh"
 
-#include "MainView.hh"
+#include "JWMMainView.hh"
 #include "Log.hh"
 
 @implementation JWMNSApplication
@@ -22,7 +22,7 @@
 
 
 
-@implementation ApplicationDelegate {
+@implementation JWMApplicationDelegate {
 
 }
 

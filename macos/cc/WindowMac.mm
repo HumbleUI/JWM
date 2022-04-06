@@ -2,11 +2,11 @@
 #include <jni.h>
 #include <sstream>
 #include "impl/Library.hh"
-#include "MainView.hh"
+#include "JWMMainView.hh"
 #include "MouseCursor.hh"
 #include <memory>
 #include "WindowMac.hh"
-#include "WindowDelegate.hh"
+#include "JWMWindowDelegate.hh"
 #include "Util.hh"
 #include "ZOrder.hh"
 #include "WindowMacTitlebarStyle.hh"
@@ -70,7 +70,7 @@ jwm::WindowMac::~WindowMac() {
 
 bool jwm::WindowMac::init() {
     // Create a delegate to track certain events
-    WindowDelegate* delegate = [[WindowDelegate alloc] initWithWindow:this];
+    JWMWindowDelegate* delegate = [[JWMWindowDelegate alloc] initWithWindow:this];
     if (nil == delegate)
         return false;
 
@@ -89,7 +89,7 @@ bool jwm::WindowMac::init() {
     }
 
     // create view
-    MainView* view = [[MainView alloc] initWithWindow:this];
+    JWMMainView* view = [[JWMMainView alloc] initWithWindow:this];
     if (nil == view) {
         [fNSWindow release];
         [delegate release];
