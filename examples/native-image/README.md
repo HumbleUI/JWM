@@ -24,8 +24,7 @@
 
 ```sh
 // at jwm dir
-./script/build.py
-./script/publish_local.py
+./script/install.py
 cd examples/native-image
 ```
 
