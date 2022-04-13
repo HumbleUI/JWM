@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <GL/glx.h>
+#include <atomic>
 #include <map>
 #include <memory>
 #include <vector>
@@ -20,6 +21,7 @@ namespace jwm {
         WindowManagerX11();
 
         void runLoop();
+        void notifyLoop();
         void terminate();
 
         void registerWindow(WindowX11* window);
@@ -62,6 +64,8 @@ namespace jwm {
         XVisualInfo* x11VisualInfo;
         XSetWindowAttributes x11SWA;
         bool _runLoop;
+        int notifyFD = -1;
+        std::atomic_bool notifyBool{false};
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;

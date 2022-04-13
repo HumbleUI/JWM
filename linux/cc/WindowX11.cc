@@ -259,23 +259,34 @@ bool WindowX11::init()
 }
 
 void WindowX11::move(int left, int top) {
-    XMoveWindow(_windowManager.display, _x11Window, left, top);
+    _posX = left;
+    _posY = top;
+    if (_visible)
+        XMoveWindow(_windowManager.display, _x11Window, left, top);
 }
 
 void WindowX11::resize(int width, int height) {
     _width = width;
     _height = height;
-    XResizeWindow(_windowManager.display, _x11Window, width, height);
-    jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), classes::EventWindowResize::make(app.getJniEnv(), width, height, width, height));
-    dispatch(eventWindowResize.get());
+    if (_visible) {
+        XResizeWindow(_windowManager.display, _x11Window, width, height);
+        jwm::JNILocal<jobject> eventWindowResize(app.getJniEnv(), classes::EventWindowResize::make(app.getJniEnv(), width, height, width, height));
+        dispatch(eventWindowResize.get());
+    }
 }
 
-
 void WindowX11::setVisible(bool isVisible) {
-    if (isVisible) {
-        XMapWindow(_windowManager.getDisplay(), _x11Window);
-    } else {
-        XUnmapWindow(_windowManager.getDisplay(), _x11Window);
+    if (_visible != isVisible) {
+        _visible = isVisible;
+        if (_visible) {
+            XMapWindow(_windowManager.getDisplay(), _x11Window);
+            if (_posX > 0 && _posY > 0)
+                move(_posX, _posY);
+            if (_width > 0 && _height > 0)
+                resize(_width, _height);
+        } else {
+            XUnmapWindow(_windowManager.getDisplay(), _x11Window);
+        }
     }
 }
 

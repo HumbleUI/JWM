@@ -8,8 +8,8 @@ namespace jwm {
     void initKeyTable();
 }
 
-@interface MainView : NSView <NSTextInputClient>
+@interface JWMMainView : NSView <NSTextInputClient>
 
-- (MainView*)initWithWindow:(jwm::WindowMac*)initWindow;
+- (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow;
 
 @end

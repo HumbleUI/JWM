@@ -7,6 +7,8 @@ import org.jetbrains.annotations.*;
 import io.github.humbleui.types.*;
 
 public class WindowMac extends Window {
+    @ApiStatus.Internal public float _lastProgressBarValue = -1f;
+
     @ApiStatus.Internal
     public WindowMac() {
         super(_nMake());
@@ -84,6 +86,19 @@ public class WindowMac extends Window {
     public Window setSubtitle(@NotNull String title) {
         assert _onUIThread();
         _nSetSubtitle(title);
+        return this;
+    }
+
+    /**
+     * <p>Adds the system icon for the specified file next to the window title (and allows viewing the parent directories).</p>
+     *
+     * @param filename A path to a file
+     * @return this
+     */
+    @NotNull @Contract("-> this")
+    public Window setRepresentedFilename(@NotNull String filename) {
+        assert _onUIThread();
+        _nSetRepresentedFilename(filename);
         return this;
     }
 
@@ -216,6 +231,20 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public float getProgressBar() {
+        assert _onUIThread();
+        return _lastProgressBarValue;
+    }
+
+    @Override
+    public Window setProgressBar(float progress) {
+        assert _onUIThread();
+        _nSetProgressBar(progress);
+        _lastProgressBarValue = progress;
+        return this;
+    }
+
+    @Override
     public void close() {
         assert _onUIThread();
         _nClose();
@@ -231,6 +260,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetTitleVisible(boolean value);
     @ApiStatus.Internal public native void _nSetSubtitle(String title);
+    @ApiStatus.Internal public native void _nSetRepresentedFilename(String filename);
     @ApiStatus.Internal public native void _nSetIcon(String path);
     @ApiStatus.Internal public native void _nSetFullSizeContentView(boolean value);
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);
@@ -245,5 +275,6 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native int _nGetZOrder();
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
+    @ApiStatus.Internal public native void _nSetProgressBar(float value);
     @ApiStatus.Internal public native void _nClose();
 }

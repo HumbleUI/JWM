@@ -3,6 +3,7 @@ import argparse, build, build_utils, common, glob, os, platform, subprocess, sys
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument('--example', default='dashboard')
   parser.add_argument('--jwm-version', default=None)
   parser.add_argument('--skija-version', default='0.98.0')
   parser.add_argument('--skija-dir', default=None)
@@ -42,14 +43,13 @@ def main():
       build_utils.fetch_maven('io.github.humbleui', 'skija-shared', args.skija_version),
       build_utils.fetch_maven('io.github.humbleui', skija_native, args.skija_version),
     ]
-  sources = build_utils.files('examples/dashboard/java/**/*.java')
-  build_utils.javac(sources, 'examples/dashboard/target/classes', classpath = classpath, release='16')
+  sources = build_utils.files(f'examples/{args.example}/java/**/*.java')
+  build_utils.javac(sources, f'examples/{args.example}/target/classes', classpath = classpath, release='16')
   
   # run
   subprocess.check_call([
     'java',
-    '--class-path', build_utils.classpath_join(classpath + ['examples/dashboard/target/classes']),
-    *(['-XstartOnFirstThread'] if 'macos' == build_utils.system else []),
+    '--class-path', build_utils.classpath_join(classpath + [f'examples/{args.example}/target/classes']),
     '-Djava.awt.headless=true',
     '-enableassertions',
     '-enablesystemassertions',

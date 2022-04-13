@@ -28,6 +28,7 @@ namespace jwm {
         void resize(int width, int height);
         void requestRedraw() {
             _isRedrawRequested = true;
+            _windowManager.notifyLoop();
         }
         void unsetRedrawRequest() {
             _isRedrawRequested = false;
@@ -62,10 +63,11 @@ namespace jwm {
             XID counter;
         } _xsyncRequestCounter;
 
-        int _posX = 0;
-        int _posY = 0;
-        int _width = 0;
-        int _height = 0;
+        int _posX = -1;
+        int _posY = -1;
+        int _width = -1;
+        int _height = -1;
+        bool _visible = false;
 
         bool _isRedrawRequested = false;
 

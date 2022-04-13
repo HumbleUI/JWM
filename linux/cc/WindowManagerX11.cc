@@ -5,6 +5,9 @@
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
 #include "AppX11.hh"
+#include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
 #include <X11/extensions/sync.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xcursor/Xcursor.h>
@@ -21,7 +24,8 @@ using namespace jwm;
 int WindowManagerX11::_xerrorhandler(Display* dsp, XErrorEvent* error) {
     char errorstring[0x100];
     XGetErrorText(dsp, error->error_code, errorstring, sizeof(errorstring));
-    printf("X Error: %s\n", errorstring);
+    fprintf(stderr, "X Error: %s\n", errorstring);
+    fflush(stderr);
     return 0;
 }
 
@@ -208,6 +212,21 @@ void WindowManagerX11::_xi2IterateDevices() {
 void WindowManagerX11::runLoop() {
     _runLoop = true;
     XEvent ev;
+
+    // buffer to read into; really only needs to be two characters long due to the notifyBool fast path, but longer doesn't hurt
+    char buf[100];
+    // initialize a pipe to write to whenever this loop needs to process something new
+    int pipes[2];
+    if (pipe(pipes)) {
+        printf("Failed to open pipe\n");
+        return;
+    }
+
+    notifyFD = pipes[1];
+    fcntl(pipes[1], F_SETFL, O_NONBLOCK); // make sure notifyLoop doesn't block
+    // two polled items - the X11 event queue, and our event queue
+    struct pollfd ps[] = {{.fd=XConnectionNumber(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
+
     while (_runLoop) {
         while (XPending(display)) {
             XNextEvent(display, &ev);
@@ -215,9 +234,34 @@ void WindowManagerX11::runLoop() {
             if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
                 _runLoop = false;
         }
-
         _processCallbacks();
 
+        // block until the next X11 or our event
+        if (poll(&ps[0], 2, -1) < 0) {
+            printf("Error during poll\n");
+            break;
+        }
+
+        // clear pipe
+        if (ps[1].revents & POLLIN) {
+            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
+        }
+        // clear fast path boolean; done after clearing the pipe so that, during event execution, new notifyLoop calls can still function
+        notifyBool.store(false);
+        // The events causing a notifyLoop anywhere between poll() end and here will be processed in all cases, as that's the next thing that happens
+    }
+    
+    notifyFD = -1;
+    close(pipes[0]);
+    close(pipes[1]);
+}
+
+void WindowManagerX11::notifyLoop() {
+    if (notifyFD==-1) return;
+    // fast notifyBool path to not make system calls when not necessary
+    if (!notifyBool.exchange(true)) {
+        char dummy[1] = {0};
+        int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }
 }
 
@@ -225,9 +269,6 @@ void WindowManagerX11::_processCallbacks() {
     {
         // process ui thread callbacks
         std::unique_lock<std::mutex> lock(_taskQueueLock);
-        
-        // TODO better solution for handling both XPending and condition_variable
-        _taskQueueNotify.wait_for(lock, std::chrono::microseconds(500));
 
         while (!_taskQueue.empty()) {
             auto callback = std::move(_taskQueue.front());
@@ -274,6 +315,30 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                         _xi2->deviceById.clear();
                         _xi2IterateDevices();
                         break;
+
+                    case XI_Enter: {
+                        XIEnterEvent* deviceEvent = reinterpret_cast<XIEnterEvent*>(xiEvent);
+
+                        it = _nativeWindowToMy.find(deviceEvent->event);
+
+                        if (it != _nativeWindowToMy.end()) {
+                            myWindow = it->second;
+                        } else {
+                            break;
+                        }
+
+                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
+                        if (itMyDevice == _xi2->deviceById.end()) {
+                            break;
+                        }
+
+                        XInput2::Device& myDevice = itMyDevice->second;
+
+                        for (auto& valuator : myDevice.scroll) {
+                            valuator.previousValue = 0;
+                        }
+                        break;
+                    }
 
                     case XI_Motion: {
                         XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
@@ -383,20 +448,20 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
         case ConfigureNotify: { // resize and move
             WindowX11* except = nullptr;
-            if (ev.xconfigure.x != myWindow->_posX || ev.xconfigure.y != myWindow->_posY) {
-                myWindow->_posX = ev.xconfigure.x;
-                myWindow->_posY = ev.xconfigure.y;
+            int posX, posY;
+            myWindow->getContentPosition(posX, posY);
+            
+            if (posX != myWindow->_posX || posY != myWindow->_posY) {
+                myWindow->_posX = posX;
+                myWindow->_posY = posY;
 
                 jwm::JNILocal<jobject> eventMove(
                     app.getJniEnv(),
-                    EventWindowMove::make(
-                        app.getJniEnv(),
-                        ev.xconfigure.x,
-                        ev.xconfigure.y
-                    )
+                    EventWindowMove::make(app.getJniEnv(), posX, posY)
                 );
                 myWindow->dispatch(eventMove.get()); 
             }
+
             if (ev.xconfigure.width != myWindow->_width || ev.xconfigure.height != myWindow->_height)
             {
                 except = myWindow;
@@ -410,6 +475,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                     myWindow->_layer->makeCurrent();
                     myWindow->_layer->setVsyncMode(ILayer::VSYNC_DISABLED);
                 }
+                myWindow->unsetRedrawRequest();
                 myWindow->dispatch(EventFrame::kInstance);
 
                 if (myWindow->_layer) {
@@ -491,33 +557,51 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case FocusIn: { // focused
+            XSetICFocus(myWindow->_ic);
             myWindow->dispatch(EventWindowFocusIn::kInstance);
             break;
         }
 
         case FocusOut: { // unfocused
+            for (size_t i = 0; i < (size_t) jwm::Key::_KEY_COUNT; i++) {
+                jwm::Key key = (jwm::Key) i;
+                if (jwm::KeyX11::getKeyState(key)) {
+                    jwm::KeyX11::setKeyState(key, false);
+                    jwm::JNILocal<jobject> eventKey(app.getJniEnv(), EventKey::make(app.getJniEnv(), key, false, 0));
+                    myWindow->dispatch(eventKey.get());
+                }
+            }
             myWindow->dispatch(EventWindowFocusOut::kInstance);
             break;
         }
 
         case KeyPress: { // keyboard down
+
             KeySym s = XLookupKeysym(&ev.xkey, 0);
-            jwm::Key key = KeyX11::fromNative(s);
-            jwm::KeyX11::setKeyState(key, true);
-            jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
-                                                    EventKey::make(app.getJniEnv(),
-                                                                        key,
-                                                                        true,
-                                                                        jwm::KeyX11::getModifiers()));
-            myWindow->dispatch(eventKey.get());
-            uint8_t textBuffer[0x20];
+            if (s != NoSymbol) {
+                jwm::Key key = KeyX11::fromNative(s);
+                jwm::KeyX11::setKeyState(key, true);
+                jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
+                                                        EventKey::make(app.getJniEnv(),
+                                                                            key,
+                                                                            true,
+                                                                            jwm::KeyX11::getModifiers()));
+                myWindow->dispatch(eventKey.get());
+            }
+
+            // allow input methods (incl. XCompose) to interpret the event; but not before dispatching EventKey
+            if (XFilterEvent(&ev, myWindow->_x11Window)) break;
+
+            uint8_t textBuffer[0x40];
             Status status;
             int count = Xutf8LookupString(myWindow->_ic,
                                           (XKeyPressedEvent*)&ev,
                                           reinterpret_cast<char*>(textBuffer),
-                                          sizeof(textBuffer),
+                                          sizeof(textBuffer)-1,
                                           &s,
                                           &status);
+            if (status==XBufferOverflow) break;
+
             textBuffer[count] = 0;
             if (count > 0) {
                 // ignore delete key and other control symbols
@@ -535,7 +619,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             break;
         }
 
-        case KeyRelease: { // keyboard down
+        case KeyRelease: { // keyboard up
             KeySym s = XLookupKeysym(&ev.xkey, 0);
             jwm::Key key = KeyX11::fromNative(s);
             jwm::KeyX11::setKeyState(key, false);
@@ -578,11 +662,11 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                 XChangeProperty(display,
                                 ev.xselectionrequest.requestor,
                                 ev.xselectionrequest.property,
-                                ev.xselectionrequest.target,
-                                targetAtoms.size(),
+                                XA_ATOM,
+                                32,
                                 PropModeReplace,
                                 (unsigned char*) targetAtoms.data(),
-                                sizeof(Atom) * targetAtoms.size());
+                                targetAtoms.size());
             } else { // data request
                 std::string targetName;
                 {
@@ -760,6 +844,7 @@ void WindowManagerX11::registerWindow(WindowX11* window) {
         unsigned char mask[2] = { 0 };
         XISetMask(mask, XI_DeviceChanged);
         XISetMask(mask, XI_Motion);
+        XISetMask(mask, XI_Enter);
         eventMask.deviceid = XIAllDevices;
         eventMask.mask_len = sizeof(mask);
         eventMask.mask = mask;
@@ -777,16 +862,20 @@ void WindowManagerX11::unregisterWindow(WindowX11* window) {
 
 void WindowManagerX11::terminate() {
     _runLoop = false;
+    notifyLoop();
 }
 
 void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
-    XSetSelectionOwner(display, _atoms.CLIPBOARD, _nativeWindowToMy.begin()->first, CurrentTime);
+    ::Window window = _nativeWindowToMy.begin()->first;
+    XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
+    XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
 }
 
 void WindowManagerX11::enqueueTask(const std::function<void()>& task) {
     std::unique_lock<std::mutex> lock(_taskQueueLock);
     _taskQueue.push(task);
     _taskQueueNotify.notify_one();
+    notifyLoop();
 }

@@ -82,9 +82,8 @@ Alpha. Expect API breakages.
 
 |                   | Windows | macOS | X11 |
 |-------------------|---------|-------|-----|
-| init              | ✅   | ✅   | ✅   |
-| makeWindow        | ✅   | [#121](https://github.com/HumbleUI/JWM/issues/121)   | ✅   |
 | start             | ✅   | ✅   | ✅   |
+| makeWindow        | ✅   | [#121](https://github.com/HumbleUI/JWM/issues/121)   | ✅   |
 | getScreens        | ✅   | ✅   | ✅   |
 | getPrimaryScreen  | ✅   | ✅   | ✅   |
 | runOnUIThread     | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
@@ -122,8 +121,9 @@ Alpha. Expect API breakages.
 | setIcon             | ✅   | ✅   | [#95](https://github.com/HumbleUI/JWM/issues/95)  |
 | Set system cursor   | ✅   | ✅   | [#99](https://github.com/HumbleUI/JWM/issues/99)  |
 | Customize titlebar  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
-| focus               | ❌   | ✅   | ❌   |
+| focus               | ✅   | ✅   | ❌   |
 | Get ZOrder          | ❌   | ✅   | ❌   |
+| Progress Bar        | ❌   | ✅   | ❌   |
 | Set custom cursor   | ❌   | ❌   | ❌   |
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
@@ -152,8 +152,8 @@ Alpha. Expect API breakages.
 | EventWindowRestore      | ✅   | ✅   | [#96](https://github.com/HumbleUI/JWM/issues/96)   |
 | EventWindowVisible      | ✅   | [#140](https://github.com/HumbleUI/JWM/issues/140)   | [#140](https://github.com/HumbleUI/JWM/issues/140)   |
 | EventWindowScreenChange | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) |
-| EventWindowFocusIn      | ❌   | ❌   | ✅   |
-| EventWindowFocusOut     | ❌   | ❌   | ✅   |
+| EventWindowFocusIn      | ✅   | ❌   | ✅   |
+| EventWindowFocusOut     | ✅   | ❌   | ✅   |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
 | Theme Changed           | ❌   | ❌   | ❌   |
@@ -240,6 +240,8 @@ Issues labeled “[Design](https://github.com/HumbleUI/JWM/issues?q=is%3Aissue+i
 - [Alexey Titov](https://github.com/Alex2772)
 - [Pavel Sergeev](https://github.com/SergeevPavel)
 - [110416](https://github.com/i10416)
+- [Matt Worzala](https://github.com/mworzala)
+- [dzaima](https://github.com/dzaima)
 
 Development sponsored by:
 

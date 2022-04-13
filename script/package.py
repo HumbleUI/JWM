@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import argparse, build, build_utils, common, glob, os, re, subprocess, sys
+import argparse, build, build_utils, common, glob, os, re, shutil, subprocess, sys
 from typing import List, Tuple
 
 def main() -> Tuple[str, str, str]:
@@ -21,11 +21,14 @@ def main() -> Tuple[str, str, str]:
   
   jar = build_utils.jar(f"target/jwm-{common.version}.jar", ("target/classes", "."), ("target/maven", "META-INF"))
 
-  build_utils.delombok(["linux/java", "macos/java", "shared/java", "windows/java"],
-                        "target/delomboked/io/github/humbleui/jwm",
-                        classpath=common.deps_compile())
-  sources = build_utils.jar(f"target/jwm-{common.version}-sources.jar", ("target/delomboked", "."), ("target/maven", "META-INF"))
+  build_utils.makedirs("target/src/io/github/humbleui/jwm")
+  shutil.copytree("linux/java", "target/src/io/github/humbleui/jwm", dirs_exist_ok=True)
+  shutil.copytree("macos/java", "target/src/io/github/humbleui/jwm", dirs_exist_ok=True)
+  shutil.copytree("shared/java", "target/src/io/github/humbleui/jwm", dirs_exist_ok=True)
+  shutil.copytree("windows/java", "target/src/io/github/humbleui/jwm", dirs_exist_ok=True)
+  sources = build_utils.jar(f"target/jwm-{common.version}-sources.jar", ("target/src", "."), ("target/maven", "META-INF"))
 
+  build_utils.delombok(["target/src"], "target/delomboked", classpath=common.deps_compile())
   build_utils.javadoc(["target/delomboked"], "target/apidocs", classpath=common.deps_compile())
   javadoc = build_utils.jar(f"target/jwm-{common.version}-javadoc.jar", ("target/apidocs", "."), ("target/maven", "META-INF"))
 

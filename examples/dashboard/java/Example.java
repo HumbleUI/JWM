@@ -35,6 +35,8 @@ public class Example implements Consumer<Event> {
 
     public boolean paused = true;
 
+    public Options progressBars = new Options("Default", "0%", "50%", "100%", "Indeterminate");
+
     public Example() {
         window = App.makeWindow();
         window.setEventListener(this);
@@ -55,8 +57,10 @@ public class Example implements Consumer<Event> {
         IRect bounds = screen.getWorkArea();
 
         window.setTitle("JWM Window #" + count);
-        if (window instanceof WindowMac windowMac)
+        if (window instanceof WindowMac windowMac) {
             windowMac.setSubtitle("Window Subtitle");
+            windowMac.setRepresentedFilename("macos/cc/WindowMac.mm");
+        }
 
         panelScreens.setTitleStyle(panelScreens.titleStyles.get(count));
 
@@ -187,6 +191,8 @@ public class Example implements Consumer<Event> {
                         window.restore();
                     case M ->
                         window.minimize();
+                    case B ->
+                        setProgressBar(progressBars.next());
                 }
             }
         } else if (e instanceof EventFrame) {
@@ -200,9 +206,20 @@ public class Example implements Consumer<Event> {
         }
     }
 
+    public void setProgressBar(String type) {
+        progressBars.set(type);
+        window.setProgressBar(switch (type) {
+            case "0%" -> 0f;
+            case "50%" -> 0.5f;
+            case "100%" -> 1f;
+            case "Indeterminate" -> 2f;
+            default -> -1f;
+        });
+    }
+
     public static void main(String[] args) {
-        App.init();
-        new Example();
-        App.start();
+        App.start(() -> {
+            new Example();
+        });
     }
 }

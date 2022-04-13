@@ -13,7 +13,7 @@ jwm::MouseButton jwm::MouseButtonX11::fromNative(uint32_t v) {
 }
 
 bool jwm::MouseButtonX11::isButton(uint32_t v) {
-    return v!=4 && v!=5; // mouse wheel buttons
+    return v < 4 || v > 7; // mouse wheel buttons
 }
 
 int jwm::MouseButtonX11::fromNativeMask(unsigned v) {
