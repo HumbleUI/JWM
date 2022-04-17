@@ -33,6 +33,7 @@ public class LayerRasterSkija extends LayerRaster {
 
     @Override
     public void close() {
+        assert !isClosed();
         if (_surface != null) {
             _surface.close();
             _surface = null;

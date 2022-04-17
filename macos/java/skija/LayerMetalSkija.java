@@ -33,6 +33,7 @@ public class LayerMetalSkija extends LayerMetal {
 
     @Override
     public void close() {
+        assert !isClosed();
         if (_directContext != null) {
             _directContext.abandon();
             _directContext.close();
