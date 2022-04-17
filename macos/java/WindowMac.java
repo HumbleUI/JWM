@@ -246,7 +246,7 @@ public class WindowMac extends Window {
 
     @Override
     public void close() {
-        assert _onUIThread();
+        assert _onUIThread() && !isClosed();
         _nClose();
         super.close();
     }

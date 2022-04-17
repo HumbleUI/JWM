@@ -381,7 +381,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     @Override
     public void close() {
-        assert _onUIThread();
+        assert _onUIThread() && !isClosed();
         setLayer(null);
         Consumer<Event> eventListener = _eventListener;
         setEventListener(null);

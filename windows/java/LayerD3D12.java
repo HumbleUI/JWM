@@ -53,7 +53,7 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public void close() {
-        assert _onUIThread();
+        assert _onUIThread() && !isClosed();
         _nClose();
         super.close();
     }

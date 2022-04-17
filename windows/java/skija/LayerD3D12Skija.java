@@ -50,6 +50,7 @@ public class LayerD3D12Skija extends LayerD3D12 {
 
     @Override
     public void close() {
+        assert !isClosed();
         if (_directContext != null) {
             _directContext.abandon();
             _directContext.close();
