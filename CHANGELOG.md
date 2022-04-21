@@ -4,6 +4,10 @@ Added:
 
 - macOS: text/plain clipboard support #225 #51 via @bumfo @lgorence
 
+Fixed:
+
+- Set ContextClassLoader for App thread
+
 # 0.4.1 - April 6, 2022
 
 Changed:

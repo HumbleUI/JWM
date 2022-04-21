@@ -24,8 +24,11 @@ public class App {
      */
     public static void start(@NotNull Runnable launcher) {
         Library.load();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         _nStart(() -> {
-            _uiThreadId = Thread.currentThread().getId();
+            Thread t = Thread.currentThread();
+            t.setContextClassLoader(cl);
+            _uiThreadId = t.getId();
             Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
             long t0 = System.currentTimeMillis();
             Log.setLogger((s) -> System.out.println("[ " + (System.currentTimeMillis() - t0) + " ] " + s));
