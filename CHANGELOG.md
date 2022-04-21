@@ -1,4 +1,4 @@
-# WIP
+# 0.4.2 - April 21, 2022
 
 Added:
 
@@ -7,6 +7,7 @@ Added:
 Fixed:
 
 - Set ContextClassLoader for App thread
+- Check whether is closed before invoking native methods #229 via @dzaima
 
 # 0.4.1 - April 6, 2022
 
