@@ -20,7 +20,7 @@ public class Clipboard {
      *
      * @param entries   List if clipboard entries to set
      */
-    public static void set(ClipboardEntry ... entries) {
+    public static void set(ClipboardEntry... entries) {
         assert _onUIThread();
         assert entries.length > 0;
         _nSet(entries);
@@ -40,7 +40,7 @@ public class Clipboard {
      * @return          Extracted clipboard entry; may be null
      */
     @Nullable
-    public static ClipboardEntry get(ClipboardFormat ... formats) {
+    public static ClipboardEntry get(ClipboardFormat... formats) {
         assert _onUIThread();
         assert formats.length > 0: "must contain at least one format entry";
         return _nGet(formats);

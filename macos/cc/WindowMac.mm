@@ -299,13 +299,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIc
     NSString* path = [[NSString alloc] initWithCharacters:chars length:len];
     env->ReleaseStringCritical(pathStr, chars);
 
-    NSImage* image = [[NSImage alloc] initByReferencingFile:path];
-    [path release];
-
-    NSApplication* app = [NSApplication sharedApplication];
-    app.applicationIconImage = image;
-
-    [image release];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSImage* image = [[NSImage alloc] initByReferencingFile:path];
+        [path release];
+        NSApplication* app = [NSApplication sharedApplication];
+        app.applicationIconImage = image;
+        [image release];
+    });
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFullSizeContentView
