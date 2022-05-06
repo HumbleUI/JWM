@@ -365,8 +365,13 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
             }
         }
 
-        if (_eventListener != null)
-            _eventListener.accept(e);
+        if (_eventListener != null) {
+            try {
+                _eventListener.accept(e);
+            } catch (Exception ex) {
+                Log.log(ex);
+            }
+        }
 
         if (e instanceof EventWindowScreenChange) {
             accept(new EventWindowResize(this));

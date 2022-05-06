@@ -1,5 +1,6 @@
 package io.github.humbleui.jwm;
 
+import java.io.*;
 import java.util.function.*;
 import org.jetbrains.annotations.*;
 
@@ -15,8 +16,16 @@ public class Log {
      */
     public static void log(Object message) {
         assert _onUIThread();
-        if (_listener != null)
+        if (_listener != null) {
+            if (message instanceof Throwable) {
+                StringWriter sw = new StringWriter();
+                try (PrintWriter pw = new PrintWriter(sw);) {
+                    ((Throwable) message).printStackTrace(pw);
+                }
+                message = sw.toString();
+            }
             _listener.accept(message);
+        }
     }
 
     /**
