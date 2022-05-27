@@ -139,6 +139,31 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
         case MouseCursor::WIN_UPARROW:
             cursorName = IDC_UPARROW;
             break;
+        
+        case MouseCursor::E_RESIZE:
+        case MouseCursor::W_RESIZE:
+        case MouseCursor::EW_RESIZE:
+            cursorName = IDC_SIZEWE;
+            break;
+        
+        case MouseCursor::N_RESIZE:
+        case MouseCursor::S_RESIZE:
+        case MouseCursor::NS_RESIZE:
+            cursorName = IDC_SIZENS;
+            break;
+        
+        case MouseCursor::NE_RESIZE:
+        case MouseCursor::SW_RESIZE:
+        case MouseCursor::NESW_RESIZE:
+            cursorName = IDC_SIZENESW;
+            break;
+        
+        case MouseCursor::NW_RESIZE:
+        case MouseCursor::SE_RESIZE:
+        case MouseCursor::NWSE_RESIZE:
+            cursorName = IDC_SIZENWSE;
+            break;
+        
         default:
             break;
     }

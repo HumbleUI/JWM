@@ -42,6 +42,18 @@ void initCursorCache() {
                     cursorFromFile(@"notallowed"), /* NOT_ALLOWED */
                     [NSCursor arrowCursor],        /* WAIT */
                     [NSCursor arrowCursor],        /* WIN_UPARROW */
+                    [NSCursor resizeDown],         /* N_RESIZE */
+                    [NSCursor resizeLeft],         /* E_RESIZE */
+                    [NSCursor resizeUp],           /* S_RESIZE */
+                    [NSCursor resizeRight],        /* W_RESIZE */
+                    [NSCursor pointingHandCursor], /* NE_RESIZE */
+                    [NSCursor pointingHandCursor], /* NW_RESIZE */
+                    [NSCursor pointingHandCursor], /* SE_RESIZE */
+                    [NSCursor pointingHandCursor], /* SW_RESIZE */
+                    [NSCursor resizeLeftRight],    /* EW_RESIZE */
+                    [NSCursor resizeUpDown],       /* NS_RESIZE */
+                    [NSCursor pointingHandCursor], /* NESW_RESIZE */
+                    [NSCursor pointingHandCursor], /* NWSE_RESIZE */
                     nil];
     [kCursorCache retain];
 }
