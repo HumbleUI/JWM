@@ -172,18 +172,10 @@ WindowManagerX11::WindowManagerX11():
         _cursors[static_cast<int>(jwm::MouseCursor::IBEAM         )] = loadCursor("text"        , XC_xterm              );
         _cursors[static_cast<int>(jwm::MouseCursor::NOT_ALLOWED   )] = loadCursor("not-allowed" , XC_pirate             );
         _cursors[static_cast<int>(jwm::MouseCursor::WAIT          )] = loadCursor("watch"       , XC_watch              );
-        _cursors[static_cast<int>(jwm::MouseCursor::N_RESIZE      )] = loadCursor("n-resize"    , XC_top_side           );
-        _cursors[static_cast<int>(jwm::MouseCursor::E_RESIZE      )] = loadCursor("e-resize"    , XC_right_side         );
-        _cursors[static_cast<int>(jwm::MouseCursor::S_RESIZE      )] = loadCursor("s-resize"    , XC_bottom_side        );
-        _cursors[static_cast<int>(jwm::MouseCursor::W_RESIZE      )] = loadCursor("w-resize"    , XC_left_side          );
-        _cursors[static_cast<int>(jwm::MouseCursor::NE_RESIZE     )] = loadCursor("ne-resize"   , XC_top_right_corner   );
-        _cursors[static_cast<int>(jwm::MouseCursor::NW_RESIZE     )] = loadCursor("nw-resize"   , XC_top_left_corner    );
-        _cursors[static_cast<int>(jwm::MouseCursor::SE_RESIZE     )] = loadCursor("se-resize"   , XC_bottom_right_corner);
-        _cursors[static_cast<int>(jwm::MouseCursor::SW_RESIZE     )] = loadCursor("sw-resize"   , XC_bottom_left_corner );
-        _cursors[static_cast<int>(jwm::MouseCursor::EW_RESIZE     )] = loadCursor("ew-resize"   , XC_sb_h_double_arrow  );
-        _cursors[static_cast<int>(jwm::MouseCursor::NS_RESIZE     )] = loadCursor("ns-resize"   , XC_sb_v_double_arrow  );
-        _cursors[static_cast<int>(jwm::MouseCursor::NWSE_RESIZE   )] = loadCursor("nwse-resize" , XC_hand2              );
-        _cursors[static_cast<int>(jwm::MouseCursor::NESW_RESIZE   )] = loadCursor("nesw-resize" , XC_hand2              );
+        _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NS     )] = loadCursor("ns-resize"   , XC_sb_v_double_arrow  );
+        _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_WE     )] = loadCursor("ew-resize"   , XC_sb_h_double_arrow  );
+        _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NESW   )] = loadCursor("nesw-resize" , XC_hand2              );
+        _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NWSE   )] = loadCursor("nwse-resize" , XC_hand2              );
     }
 }
 

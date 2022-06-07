@@ -34,26 +34,18 @@ NSCursor* cursorFromFile(NSString* name) {
 void initCursorCache() {
     // must be in sync with MouseCursor.hh
     kCursorCache = [NSArray arrayWithObjects:
-                    [NSCursor arrowCursor],        /* ARROW */
-                    [NSCursor crosshairCursor],    /* CROSSHAIR */
-                    cursorFromFile(@"help"),       /* HELP */
-                    [NSCursor pointingHandCursor], /* POINTING_HAND */
-                    [NSCursor IBeamCursor],        /* IBEAM */
-                    cursorFromFile(@"notallowed"), /* NOT_ALLOWED */
-                    [NSCursor arrowCursor],        /* WAIT */
-                    [NSCursor arrowCursor],        /* WIN_UPARROW */
-                    [NSCursor resizeDown],         /* N_RESIZE */
-                    [NSCursor resizeLeft],         /* E_RESIZE */
-                    [NSCursor resizeUp],           /* S_RESIZE */
-                    [NSCursor resizeRight],        /* W_RESIZE */
-                    [NSCursor pointingHandCursor], /* NE_RESIZE */
-                    [NSCursor pointingHandCursor], /* NW_RESIZE */
-                    [NSCursor pointingHandCursor], /* SE_RESIZE */
-                    [NSCursor pointingHandCursor], /* SW_RESIZE */
-                    [NSCursor resizeLeftRight],    /* EW_RESIZE */
-                    [NSCursor resizeUpDown],       /* NS_RESIZE */
-                    [NSCursor pointingHandCursor], /* NESW_RESIZE */
-                    [NSCursor pointingHandCursor], /* NWSE_RESIZE */
+                    [NSCursor arrowCursor],           /* ARROW */
+                    [NSCursor crosshairCursor],       /* CROSSHAIR */
+                    cursorFromFile(@"help"),          /* HELP */
+                    [NSCursor pointingHandCursor],    /* POINTING_HAND */
+                    [NSCursor IBeamCursor],           /* IBEAM */
+                    cursorFromFile(@"notallowed"),    /* NOT_ALLOWED */
+                    [NSCursor arrowCursor],           /* WAIT */
+                    [NSCursor arrowCursor],           /* WIN_UPARROW */
+                    [NSCursor resizeUpDownCursor],    /* RESIZE_NS */
+                    [NSCursor resizeLeftRightCursor], /* RESIZE_WE */
+                    [NSCursor pointingHandCursor],    /* RESIZE_NESW */ // FIXME
+                    [NSCursor pointingHandCursor],    /* RESIZE_NWSE */ // FIXME
                     nil];
     [kCursorCache retain];
 }
