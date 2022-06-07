@@ -1,3 +1,14 @@
+# WIP
+
+Added:
+
+- Resizing mouse cursors #231 via @dzaima
+
+Fixed:
+
+- Catch exception in _eventListener.accept(e) to remove it from the queue
+- macOS: fixed Window.setIcon
+
 # 0.4.2 - April 21, 2022
 
 Added:
