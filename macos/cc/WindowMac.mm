@@ -53,14 +53,19 @@ void initCursorCache() {
 
 static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* _now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* ctx) {
     jwm::WindowMac* window = (jwm::WindowMac*) ctx;
-    if (!window->fFrameScheduled) {
+    if (window->fFrameRequested && !window->fFrameScheduled) {
         window->fFrameScheduled = true;
         window->ref();
         dispatch_async(dispatch_get_main_queue(), ^{
             window->fFrameRequested = false;
             window->dispatch(jwm::classes::EventFrame::kInstance);
-            if (!window->fFrameRequested)
+            if (!window->fFrameRequested) {
+              std::lock_guard<std::mutex> lock(window->fDisplayLinkMutex);
+              if (!window->fFrameRequested && window->fDisplayLinkRunning) {
                 CVDisplayLinkStop(window->fDisplayLink);
+                window->fDisplayLinkRunning = false;
+              }
+            }
             window->unref();
             window->fFrameScheduled = false;
         });
@@ -129,6 +134,7 @@ void jwm::WindowMac::setVisible(bool value) {
 }
 
 void jwm::WindowMac::reconfigure() {
+    std::lock_guard<std::mutex> lock(fDisplayLinkMutex);
     CGDirectDisplayID currentDisplay = (CGDirectDisplayID)[[[[fNSWindow screen] deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
     CGDirectDisplayID oldDisplay = CVDisplayLinkGetCurrentCGDisplay(fDisplayLink);
     if (currentDisplay != oldDisplay)
@@ -141,8 +147,14 @@ float jwm::WindowMac::getScale() const {
 
 void jwm::WindowMac::requestFrame() {
     fFrameRequested = true;
-    if (!CVDisplayLinkIsRunning(fDisplayLink))
-        CVDisplayLinkStart(fDisplayLink);
+    // if (!CVDisplayLinkIsRunning(fDisplayLink)) {
+    if (!fDisplayLinkRunning) {
+        std::lock_guard<std::mutex> lock(fDisplayLinkMutex);
+        if (!fDisplayLinkRunning) {
+          CVDisplayLinkStart(fDisplayLink);
+          fDisplayLinkRunning = true;
+        }
+    }
 }
 
 bool jwm::WindowMac::isMaximized() {

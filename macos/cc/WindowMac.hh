@@ -1,6 +1,8 @@
 #pragma once
+#include <atomic>
 #import <Cocoa/Cocoa.h>
 #import  <CoreVideo/CoreVideo.h>
+#include <mutex>
 #include "Window.hh"
 #include <jni.h>
 
@@ -24,7 +26,9 @@ namespace jwm {
         NSPoint fLastPosition = {0, 0};
         NSRect fRestoreFrame = NSZeroRect;
         CVDisplayLinkRef fDisplayLink = 0;
-        volatile bool fFrameRequested = false;
-        volatile bool fFrameScheduled = false;
+        std::atomic_bool fFrameRequested {false};
+        std::atomic_bool fFrameScheduled {false};
+        std::atomic_bool fDisplayLinkRunning {false};
+        std::mutex fDisplayLinkMutex;
     };
 }

@@ -1,4 +1,4 @@
-# WIP
+# 0.4.3 - June 13, 2022
 
 Added:
 
@@ -8,6 +8,7 @@ Fixed:
 
 - Catch exception in _eventListener.accept(e) to remove it from the queue
 - macOS: fixed Window.setIcon
+- macOS: race condition when requesting frame from non-UI thread
 
 # 0.4.2 - April 21, 2022
 
