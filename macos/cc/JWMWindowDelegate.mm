@@ -52,6 +52,14 @@
     fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
 }
 
+- (void)windowDidBecomeKey:(NSNotification *)notification {
+    fWindow->dispatch(jwm::classes::EventWindowFocusIn::kInstance);
+}
+
+- (void)windowDidResignKey:(NSNotification *)notification {
+    fWindow->dispatch(jwm::classes::EventWindowFocusOut::kInstance);
+}
+
 - (BOOL)windowShouldClose:(NSWindow*)sender {
     fWindow->dispatch(jwm::classes::EventWindowCloseRequest::kInstance);
     return FALSE;
