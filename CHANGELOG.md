@@ -1,3 +1,13 @@
+# 0.4.4 - June 23, 2022
+
+Added:
+
+- macOS: Implement window focus events via @LuisThiamNye
+
+Fixed:
+
+- macOS: Fixed requestFrame when window is not visible
+
 # 0.4.3 - June 13, 2022
 
 Added:

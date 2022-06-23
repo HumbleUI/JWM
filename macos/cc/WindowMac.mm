@@ -118,6 +118,7 @@ bool jwm::WindowMac::init() {
 }
 
 void jwm::WindowMac::setVisible(bool value) {
+    std::lock_guard<std::mutex> lock(fDisplayLinkMutex);
     if (value && fDisplayLink == 0) {
         [fNSWindow makeKeyAndOrderFront:NSApp];
 
@@ -131,6 +132,8 @@ void jwm::WindowMac::setVisible(bool value) {
         fDisplayLink = 0;
         unref();
     }
+    fVisible = value;
+
 }
 
 void jwm::WindowMac::reconfigure() {
@@ -148,11 +151,11 @@ float jwm::WindowMac::getScale() const {
 void jwm::WindowMac::requestFrame() {
     fFrameRequested = true;
     // if (!CVDisplayLinkIsRunning(fDisplayLink)) {
-    if (!fDisplayLinkRunning) {
+    if (fVisible && !fDisplayLinkRunning) {
         std::lock_guard<std::mutex> lock(fDisplayLinkMutex);
-        if (!fDisplayLinkRunning) {
-          CVDisplayLinkStart(fDisplayLink);
-          fDisplayLinkRunning = true;
+        if (fVisible && !fDisplayLinkRunning) {
+            CVDisplayLinkStart(fDisplayLink);
+            fDisplayLinkRunning = true;
         }
     }
 }

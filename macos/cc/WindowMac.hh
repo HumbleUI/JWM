@@ -26,6 +26,7 @@ namespace jwm {
         NSPoint fLastPosition = {0, 0};
         NSRect fRestoreFrame = NSZeroRect;
         CVDisplayLinkRef fDisplayLink = 0;
+        std::atomic_bool fVisible {false};
         std::atomic_bool fFrameRequested {false};
         std::atomic_bool fFrameScheduled {false};
         std::atomic_bool fDisplayLinkRunning {false};
