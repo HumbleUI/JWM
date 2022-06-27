@@ -97,6 +97,8 @@ bool jwm::WindowMac::init() {
         return false;
     }
 
+    fCursor = [kCursorCache objectAtIndex:0];
+
     // create view
     JWMMainView* view = [[JWMMainView alloc] initWithWindow:this];
     if (nil == view) {
@@ -432,6 +434,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMo
   (JNIEnv* env, jobject obj, jint cursorIdx) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSCursor* cursor = [jwm::kCursorCache objectAtIndex:cursorIdx];
+    instance->fCursor = cursor;
     [cursor set];
 }
 
