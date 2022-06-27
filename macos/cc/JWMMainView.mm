@@ -342,6 +342,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     onMouseButton(fWindow, event, &fLastPressedButtons);
 }
 
+- (void)cursorUpdate:(NSEvent *)event {
+    [fWindow->fCursor set];
+}
+
 - (void)scrollWheel:(NSEvent *)event {
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
     CGFloat deltaX;

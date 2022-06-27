@@ -25,6 +25,7 @@ namespace jwm {
         NSWindow* fNSWindow = nullptr;
         NSPoint fLastPosition = {0, 0};
         NSRect fRestoreFrame = NSZeroRect;
+        NSCursor* fCursor = nullptr;
         CVDisplayLinkRef fDisplayLink = 0;
         std::atomic_bool fVisible {false};
         std::atomic_bool fFrameRequested {false};

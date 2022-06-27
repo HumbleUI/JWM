@@ -12,6 +12,7 @@ public class PanelMouseCursors extends Panel {
     public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
     public Map<IRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
+    public boolean keepCursor = false;
 
     public PanelMouseCursors(Window window) {
         super(window);
@@ -23,7 +24,6 @@ public class PanelMouseCursors extends Panel {
             lastMove = ee;
             var inside = contains(ee.getX(), ee.getY());
             if (inside || lastInside) {
-                lastInside = inside;
                 var relX = lastMove.getX() - lastX;
                 var relY = lastMove.getY() - lastY;
 
@@ -36,10 +36,17 @@ public class PanelMouseCursors extends Panel {
                         return;
                     }
                 }
-                if (window._lastCursor != MouseCursor.ARROW)
-                    window.requestFrame();
-                window.setMouseCursor(MouseCursor.ARROW);
+                if (!inside && lastInside) {
+                    keepCursor = false;
+                } else if (!keepCursor) {
+                    if (window._lastCursor != MouseCursor.ARROW)
+                        window.requestFrame();
+                    window.setMouseCursor(MouseCursor.ARROW);
+                }
+                lastInside = inside;
             }
+        } else if (e instanceof EventMouseButton ee && ee.isPressed() && lastInside) {
+            keepCursor = true;
         }
     }
 
