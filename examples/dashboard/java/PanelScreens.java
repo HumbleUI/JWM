@@ -16,14 +16,18 @@ public class PanelScreens extends Panel {
 
     public PanelScreens(Window window) {
         super(window);
-        if (Platform.MACOS == Platform.CURRENT)
+        if (Platform.MACOS == Platform.CURRENT) {
             titleStyles = new Options("Default", "Hidden", "Transparent", "Unified", "Unified Compact", "Unified Transparent", "Unified Compact Transparent");
+        } else if (Platform.X11 == Platform.CURRENT) {
+            titleStyles = new Options("Default", "Hidden");
+        }
     }
 
     public void setTitleStyle(String style) {
         titleStyles.set(style);
+
         if (Platform.MACOS == Platform.CURRENT) {
-            WindowMac w = (WindowMac) window;                        
+            WindowMac w = (WindowMac) window;
             switch (style) {
                 case "Default" -> {
                     w.setTitlebarStyle(WindowMacTitlebarStyle.DEFAULT);
@@ -53,6 +57,14 @@ public class PanelScreens extends Panel {
                     w.setTitlebarStyle(WindowMacTitlebarStyle.UNIFIED_COMPACT);
                     w.setFullSizeContentView(true);
                 }
+            }
+        } else if (Platform.X11 == Platform.CURRENT) {
+            WindowX11 w = (WindowX11) window;
+            switch (style) {
+            case "Default" ->
+                w.setTitlebarVisible(true);
+            case "Hidden" ->
+                w.setTitlebarVisible(false);
             }
         }
     }

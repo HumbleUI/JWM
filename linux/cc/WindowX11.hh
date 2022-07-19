@@ -5,6 +5,7 @@
 #include <X11/Xlib.h>
 #include "Window.hh"
 #include "WindowManagerX11.hh"
+#include "WindowX11MotifHints.hh"
 #include "ILayer.hh"
 #include "ScreenInfo.hh"
 
@@ -37,6 +38,7 @@ namespace jwm {
             return _isRedrawRequested;
         }
         void setTitle(const std::string& title);
+        void setTitlebarVisible(bool isVisible);
 
         void maximize();
         void minimize();

@@ -115,6 +115,7 @@ namespace jwm {
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST);
             
             // other atoms
+            DEFINE_ATOM(_MOTIF_WM_HINTS);
             DEFINE_ATOM(_NET_WM_STATE);
             DEFINE_ATOM(_NET_WM_NAME);
             DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_VERT);
