@@ -32,6 +32,22 @@ void WindowX11::setTitle(const std::string& title) {
                     title.length());
 }
 
+void WindowX11::setTitlebarVisible(bool isVisible) {
+    MotifHints motifHints = {0};
+
+    motifHints.flags = MOTIF_HINTS_DECORATIONS;
+    motifHints.decorations = int(isVisible);
+
+    XChangeProperty(_windowManager.getDisplay(),
+                    _x11Window,
+                    _windowManager.getAtoms()._MOTIF_WM_HINTS,
+                    _windowManager.getAtoms()._MOTIF_WM_HINTS,
+                    32,
+                    PropModeReplace,
+                    (unsigned char*) &motifHints,
+                    5);
+}
+
 void WindowX11::close() {
     if (_x11Window) {
         _windowManager.unregisterWindow(this);
@@ -424,6 +440,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTi
 
     instance->setTitle(titleS);
 }
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTitlebarVisible
+        (JNIEnv* env, jobject obj, jboolean isVisible) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setTitlebarVisible(isVisible);
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetMouseCursor
         (JNIEnv* env, jobject obj, jint idx) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
