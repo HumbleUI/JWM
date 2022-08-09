@@ -382,6 +382,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                         valuator.previousValue = value;
                                         value = delta;                                                
                                     }
+                                    const float kPixelsPerScroll = 100; // #236
+                                    value = value * kPixelsPerScroll / valuator.increment;
                                     if (valuator.isHorizontal) {
                                         dX = value;
                                     } else {

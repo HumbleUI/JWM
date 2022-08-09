@@ -72,20 +72,14 @@ public class PanelMouse extends Panel {
         }
 
         // scroll
-        int halfWidth = width / 2;
-        int halfHeight = height / 2;
-        int step = (int) (25 * scale);
-        int halfStep = step / 2;
-
         try (var paint = new Paint().setMode(PaintMode.STROKE).setStrokeWidth(2 * scale).setColor(0x40FFFFFF)) {
-            for (int x = (int) Math.ceil(-scroll.getX() / step - 1) * step; x + scroll.getX() < width; x += step) {
-                canvas.drawLine(scroll.getX() + x, 0, scroll.getX() + x, 5 * scale, paint);
-                canvas.drawLine(scroll.getX() + x + halfStep, 0, scroll.getX() + x + halfStep, 8 * scale, paint);
-            }
-
-            for (int y = (int) Math.ceil(-scroll.getY() / step - 1) * step; y + scroll.getY() < height; y += step) {
-                canvas.drawLine(0, scroll.getY() + y, 5 * scale, scroll.getY() + y, paint);
-                canvas.drawLine(0, scroll.getY() + y + halfStep, 8 * scale, scroll.getY() + y + halfStep, paint);
+            for (int i = 0; i < 100; ++i) {
+                var x = scroll.getX() + i * 10 * scale;
+                if (0 <= x && x <= width)
+                    canvas.drawLine(x, 0, x, i * scale, paint);
+                var y = scroll.getY() + i * 10 * scale;
+                if (0 <= y && y <= height)
+                    canvas.drawLine(0, y, i * scale, y, paint);
             }
         }
 
