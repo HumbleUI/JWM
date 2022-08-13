@@ -103,6 +103,14 @@ public class App {
         throw new IllegalStateException("Can't find primary screen");
     }
 
+    public static void openSymbolsPalette() {
+        assert _onUIThread();
+        if (Platform.CURRENT == Platform.MACOS)
+            _nOpenSymbolsPalette();
+        else
+            throw new RuntimeException("Not supported on " + Platform.CURRENT);
+    }
+
     @ApiStatus.Internal public static boolean _onUIThread() {
         return _uiThreadId == Thread.currentThread().getId();
     }
@@ -111,4 +119,5 @@ public class App {
     @ApiStatus.Internal public static native void _nTerminate();
     @ApiStatus.Internal public static native Screen[] _nGetScreens();
     @ApiStatus.Internal public static native void _nRunOnUIThread(Runnable callback);
+    @ApiStatus.Internal public static native void _nOpenSymbolsPalette();
 }

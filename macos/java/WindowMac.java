@@ -126,7 +126,7 @@ public class WindowMac extends Window {
         return this;
     }
 
-    @NotNull @Contract("-> this")
+    @NotNull @Contract("_ -> this")
     public WindowMac setFullSizeContentView(boolean isFullSizeContentView) {
         assert _onUIThread();
         _nSetFullSizeContentView(isFullSizeContentView);
@@ -134,7 +134,7 @@ public class WindowMac extends Window {
         return this;
     }
 
-    @NotNull @Contract("-> this")
+    @NotNull @Contract("_, -> this")
     public WindowMac setTitlebarStyle(WindowMacTitlebarStyle titlebarStyle) {
         assert _onUIThread();
         _nSetTitlebarStyle(titlebarStyle.ordinal());
@@ -142,21 +142,20 @@ public class WindowMac extends Window {
         return this;
     }
 
-    @NotNull @Contract("-> this")
+    @NotNull @Contract("_, _ -> this")
     public WindowMac setTrafficLightPosition(int left, int top) {
         assert _onUIThread();
         _nSetTrafficLightPosition(left, top);
         return this;
     }
 
-    @NotNull @Contract("-> this")
+    @NotNull @Contract("_ -> this")
     public WindowMac setTrafficLightsVisible(boolean isVisible) {
         assert _onUIThread();
         _nSetTrafficLightsVisible(isVisible);
         return this;
     }
 
-    
     @ApiStatus.Internal @Override
     public native void _nSetMouseCursor(int cursorIdx);
 

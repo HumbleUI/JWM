@@ -1,3 +1,15 @@
+# 0.4.5 - Aug 13, 2022
+
+Added:
+
+- macOS: App::openSymbolsPalette
+- X11: Window::setTitleBarVisible #235 via @mgxm
+
+Fixed:
+
+- X11: Fixed mouse scroll amount #236
+- macOS: Fix cursor resetting to arrow #234 via @LuisThiamNye
+
 # 0.4.4 - June 23, 2022
 
 Added:

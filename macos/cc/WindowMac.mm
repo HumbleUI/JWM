@@ -330,7 +330,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetIc
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFullSizeContentView
-        (JNIEnv* env, jobject obj, jboolean value) {
+  (JNIEnv* env, jobject obj, jboolean value) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 
@@ -346,7 +346,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetFu
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTitlebarStyle
-        (JNIEnv* env, jobject obj, jint titlebarStyle) {
+  (JNIEnv* env, jobject obj, jint titlebarStyle) {
     if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_15) {
         jwm::classes::Throwable::throwRuntimeException(env, "WindowMac::setSubtitle is only available on macOS 11+");
         return;
@@ -377,7 +377,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTi
 #endif
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightPosition
-        (JNIEnv* env, jobject obj, jint left, jint top) {
+  (JNIEnv* env, jobject obj, jint left, jint top) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 
@@ -418,7 +418,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTr
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetTrafficLightsVisible
-        (JNIEnv* env, jobject obj, jboolean value) {
+  (JNIEnv* env, jobject obj, jboolean value) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
 

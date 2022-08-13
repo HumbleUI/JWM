@@ -60,3 +60,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThre
             std::cerr << "Failed to AttachCurrentThread: " << ret << std::endl;
     });
 }
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nOpenSymbolsPalette
+  (JNIEnv* env, jclass cls) {
+    NSApplication* app = [NSApplication sharedApplication];
+    [app orderFrontCharacterPalette:nil];
+}

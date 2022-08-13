@@ -71,6 +71,14 @@ public class PanelTextInput extends Panel implements TextInputClient {
                             }
                         }
                     }
+                    case SPACE -> {
+                        if (Platform.CURRENT == Platform.MACOS
+                            && ee.isModifierDown(KeyModifier.CONTROL)
+                            && ee.isModifierDown(KeyModifier.MAC_COMMAND))
+                        {
+                            App.openSymbolsPalette();
+                        }
+                    }
                 }
 
                 if (ee.isModifierDown(Example.MODIFIER)) {
