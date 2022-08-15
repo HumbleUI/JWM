@@ -110,8 +110,7 @@ public class WindowWin32 extends Window {
 
     @Override
     public void requestFrame() {
-        assert _onUIThread();
-        _nRequestFrame();
+        App.runOnUIThread(() -> _nRequestFrame());
     }
 
     public Window maximize() {

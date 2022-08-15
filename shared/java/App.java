@@ -75,7 +75,10 @@ public class App {
      * @param callback  function for execution on UI thread
      */
     public static void runOnUIThread(Runnable callback) {
-        _nRunOnUIThread(callback);
+        if (_onUIThread())
+            callback.run();
+        else
+            _nRunOnUIThread(callback);
     }
 
     /**

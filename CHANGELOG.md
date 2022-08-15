@@ -1,3 +1,9 @@
+# 0.4.6 - Aug 16, 2022
+
+Changed:
+
+- Window::requestFrame can be called from any thread #137
+
 # 0.4.5 - Aug 13, 2022
 
 Added:

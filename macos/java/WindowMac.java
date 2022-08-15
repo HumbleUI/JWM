@@ -184,8 +184,7 @@ public class WindowMac extends Window {
 
     @Override
     public void requestFrame() {
-        assert _onUIThread();
-        _nRequestFrame();
+        App.runOnUIThread(() -> _nRequestFrame());
     }
 
     @Override
