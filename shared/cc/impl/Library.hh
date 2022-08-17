@@ -139,6 +139,14 @@ namespace jwm {
             extern jobject kInstance;
         }
 
+        namespace EventWindowAppear {
+            extern jobject kInstance;
+        }
+
+        namespace EventWindowDisappear {
+            extern jobject kInstance;
+        }
+
         namespace EventWindowMove {
             extern jclass kCls;
             extern jmethodID kCtor;

@@ -404,6 +404,30 @@ namespace jwm {
             }
         }
 
+        namespace EventWindowAppear {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowAppear"));
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowAppear;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
+        namespace EventWindowDisappear {
+            jobject kInstance;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventWindowDisappear"));
+                Throwable::exceptionThrown(env);
+                jfieldID field = env->GetStaticFieldID(cls.get(), "INSTANCE", "Lio/github/humbleui/jwm/EventWindowDisappear;");
+                jobject instance = env->GetStaticObjectField(cls.get(), field);
+                kInstance = env->NewGlobalRef(instance);
+            }
+        }
+
         namespace EventWindowMove {
             jclass kCls;
             jmethodID kCtor;
@@ -571,6 +595,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventWindowMinimize::onLoad(env);
     jwm::classes::EventWindowFocusIn::onLoad(env);
     jwm::classes::EventWindowFocusOut::onLoad(env);
+    jwm::classes::EventWindowAppear::onLoad(env);
+    jwm::classes::EventWindowDisappear::onLoad(env);
     jwm::classes::EventWindowMove::onLoad(env);
     jwm::classes::EventWindowResize::onLoad(env);
     jwm::classes::EventWindowRestore::onLoad(env);

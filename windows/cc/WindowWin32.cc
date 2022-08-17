@@ -1,23 +1,20 @@
-#include <algorithm>
-#include <PlatformWin32.hh>
 #include <AppWin32.hh>
-#include <WindowWin32.hh>
-#include <WindowManagerWin32.hh>
 #include <Key.hh>
 #include <KeyLocation.hh>
 #include <KeyModifier.hh>
-#include <MouseButton.hh>
 #include <Log.hh>
+#include <MouseButton.hh>
+#include <PlatformWin32.hh>
+#include <WindowManagerWin32.hh>
+#include <WindowWin32.hh>
+#include <algorithm>
 #include <memory>
 
-jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
-        : Window(env), _windowManager(windowManagerWin32) {
+jwm::WindowWin32::WindowWin32(JNIEnv* env,
+                              class WindowManagerWin32& windowManagerWin32)
+    : Window(env), _windowManager(windowManagerWin32) {}
 
-}
-
-jwm::WindowWin32::~WindowWin32() {
-    _close();
-}
+jwm::WindowWin32::~WindowWin32() { _close(); }
 
 bool jwm::WindowWin32::init() {
     int x = CW_USEDEFAULT;
@@ -57,8 +54,7 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
         // Re-enabled Windows IME by associating default context.
         ImmAssociateContextEx(getHWnd(), nullptr, IACE_DEFAULT);
         JWM_VERBOSE("Enable ime text input")
-    }
-    else {
+    } else {
         // Disable Windows IME by associating 0 context.
         ImmAssociateContext(getHWnd(), nullptr);
         JWM_VERBOSE("Disable ime text input");
@@ -72,8 +68,10 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
 
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     JWM_VERBOSE("Set window icon '" << iconPath << "'");
-    // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the default icon size.
-    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
+    // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the
+    // default icon size.
+    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0,
+                                   LR_LOADFROMFILE | LR_DEFAULTSIZE);
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
 
@@ -83,8 +81,7 @@ void jwm::WindowWin32::setOpacity(float opacity) {
     float lower = 0.0;
     float upper = 1.0;
     float clamped = std::max(lower, std::min(opacity, upper));
-    if (clamped == 1.0)
-    {
+    if (clamped == 1.0) {
         LONG reset = previousStyle & ~WS_EX_LAYERED;
         SetWindowLongPtr(_hWnd, GWL_EXSTYLE, reset);
         return;
@@ -98,12 +95,12 @@ void jwm::WindowWin32::setOpacity(float opacity) {
 float jwm::WindowWin32::getOpacity() {
     BYTE alpha;
     DWORD flags = LWA_ALPHA;
-    BOOL hasOpacity = GetLayeredWindowAttributes(_hWnd, nullptr, &alpha, &flags);
-    // GetLayeredWindowAttributes can be invoked iff the application 
-    // has previously called SetLayeredWindowAttributes on the window. 
+    BOOL hasOpacity =
+        GetLayeredWindowAttributes(_hWnd, nullptr, &alpha, &flags);
+    // GetLayeredWindowAttributes can be invoked iff the application
+    // has previously called SetLayeredWindowAttributes on the window.
     // Otherwise it returns false as failure.
-    if (!hasOpacity)
-    {
+    if (!hasOpacity) {
         return 1.0;
     }
     return static_cast<float>(alpha / 255.0);
@@ -167,7 +164,7 @@ void jwm::WindowWin32::setMouseCursor(MouseCursor cursor) {
 
 void jwm::WindowWin32::setVisible(bool value) {
     JWM_VERBOSE("Set visible=" << value << " for window 0x" << this);
-    ShowWindow(_hWnd, value? SW_SHOWNA: SW_HIDE);
+    ShowWindow(_hWnd, value ? SW_SHOWNA : SW_HIDE);
 }
 
 void jwm::WindowWin32::maximize() {
@@ -216,50 +213,50 @@ jwm::IRect jwm::WindowWin32::getContentRect() const {
     GetWindowRect(_hWnd, &windowRect);
 
     // Convert client area rect to screen space and
-    POINT corners[] = {POINT{clientRect.left, clientRect.top}, POINT{clientRect.right, clientRect.bottom}};
-    MapWindowPoints(getHWnd(), nullptr, corners, sizeof(corners)/sizeof(corners[0]));
+    POINT corners[] = {POINT{clientRect.left, clientRect.top},
+                       POINT{clientRect.right, clientRect.bottom}};
+    MapWindowPoints(getHWnd(), nullptr, corners,
+                    sizeof(corners) / sizeof(corners[0]));
 
     POINT leftTop = corners[0];
     POINT rightBottom = corners[1];
 
-    // Build rect with client area rect relative to the window rect to handle title bar
+    // Build rect with client area rect relative to the window rect to handle
+    // title bar
     return IRect{leftTop.x - windowRect.left, leftTop.y - windowRect.top,
-                  rightBottom.x - windowRect.left, rightBottom.y - windowRect.top};
+                 rightBottom.x - windowRect.left,
+                 rightBottom.y - windowRect.top};
 }
 
 void jwm::WindowWin32::setWindowPosition(int left, int top) {
     JWM_VERBOSE("Set window position left=" << left << " top=" << top);
 
-    SetWindowPos(_hWnd, nullptr,
-                 left, top,
-                 0, 0,
+    SetWindowPos(_hWnd, nullptr, left, top, 0, 0,
                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
 }
 
 void jwm::WindowWin32::setWindowSize(int width, int height) {
     JWM_VERBOSE("Set window size w=" << width << " h=" << height);
 
-    SetWindowPos(_hWnd, HWND_TOP,
-                 0, 0,
-                 width,
-                 height,
-                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(
+        _hWnd, HWND_TOP, 0, 0, width, height,
+        SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void jwm::WindowWin32::setContentSize(int width, int height) {
     RECT rect{0, 0, width, height};
 
-    AdjustWindowRectEx(&rect, _getWindowStyle(),
-                       FALSE, _getWindowExStyle());
+    AdjustWindowRectEx(&rect, _getWindowStyle(), FALSE, _getWindowExStyle());
 
-    JWM_VERBOSE("Set content size " << "w=" << width << " h=" << height << " "
-                << "(adjusted window size" << " w=" << rect.right - rect.left << " h=" << rect.bottom - rect.top << ")");
+    JWM_VERBOSE("Set content size "
+                << "w=" << width << " h=" << height << " "
+                << "(adjusted window size"
+                << " w=" << rect.right - rect.left
+                << " h=" << rect.bottom - rect.top << ")");
 
-    SetWindowPos(_hWnd, HWND_TOP,
-                 0, 0,
-                 rect.right - rect.left,
-                 rect.bottom - rect.top,
-                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(
+        _hWnd, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
+        SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
 jwm::ScreenWin32 jwm::WindowWin32::getScreen() const {
@@ -267,11 +264,10 @@ jwm::ScreenWin32 jwm::WindowWin32::getScreen() const {
     return ScreenWin32::fromHMonitor(hMonitor);
 }
 
-void jwm::WindowWin32::close() {
-    _close();
-}
+void jwm::WindowWin32::close() { _close(); }
 
-LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam,
+                                       LPARAM lParam) {
     // https://github.com/chromium/chromium/blob/72ceeed2ebcd505b8d8205ed7354e862b871995e/ui/events/blink/web_input_event_builders_win.cc#L331
     static const float kScrollbarPixelsPerLine = 100.0f / 3.0f;
 
@@ -283,10 +279,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
     notifyEvent(Event::SwitchContext);
 
     switch (uMsg) {
-        // HACK: Set timer to get JWM_WM_TIMER_UPDATE_EVENT event.
-        // When user hold mouse button and drag window, app enter modal loop,
-        // animation is stopped. This hack allows us to get JWM_WM_TIMER_UPDATE_EVENT
-        // event with minimum possible delay to repaint window and animate it.
+            // HACK: Set timer to get JWM_WM_TIMER_UPDATE_EVENT event.
+            // When user hold mouse button and drag window, app enter modal
+            // loop, animation is stopped. This hack allows us to get
+            // JWM_WM_TIMER_UPDATE_EVENT event with minimum possible delay to
+            // repaint window and animate it.
 
         case WM_ENTERSIZEMOVE:
             setFlag(Flag::EnterSizeMove);
@@ -307,36 +304,40 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             bool minimized = wParam == SIZE_MINIMIZED;
             bool maximized = wParam == SIZE_MAXIMIZED;
-            bool restored = wParam == SIZE_RESTORED && (_maximized || _minimized);
+            bool restored =
+                wParam == SIZE_RESTORED && (_maximized || _minimized);
 
             _maximized = maximized;
             _minimized = minimized;
 
-            JWM_VERBOSE("Size event (min="<< minimized << ", max="<< maximized << ", res=" << restored << ") "
-                        << "window w=" << windowWidth << " h=" << windowHeight << " "
-                        << "content w=" << contentWidth << " h=" << contentHeight);
+            JWM_VERBOSE("Size event (min=" << minimized << ", max=" << maximized
+                                           << ", res=" << restored << ") "
+                                           << "window w=" << windowWidth
+                                           << " h=" << windowHeight << " "
+                                           << "content w=" << contentWidth
+                                           << " h=" << contentHeight);
 
-            if (minimized)
-                dispatch(classes::EventWindowMinimize::kInstance);
-            if (maximized)
-                dispatch(classes::EventWindowMaximize::kInstance);
-            if (restored)
-                dispatch(classes::EventWindowRestore::kInstance);
+            if (minimized) dispatch(classes::EventWindowMinimize::kInstance);
+            if (maximized) dispatch(classes::EventWindowMaximize::kInstance);
+            if (restored) dispatch(classes::EventWindowRestore::kInstance);
 
-            JNILocal<jobject> eventWindowResize(env, classes::EventWindowResize::make(env, windowWidth, windowHeight,
-                                                                                      contentWidth, contentHeight));
+            JNILocal<jobject> eventWindowResize(
+                env,
+                classes::EventWindowResize::make(env, windowWidth, windowHeight,
+                                                 contentWidth, contentHeight));
             dispatch(eventWindowResize.get());
             return 0;
         }
 
         case WM_MOVE: {
             IRect rect = getWindowRect();
-            int windowLeft= rect.fLeft;
+            int windowLeft = rect.fLeft;
             int windowTop = rect.fTop;
 
             JWM_VERBOSE("Move event left=" << windowLeft << " top" << windowTop)
 
-            JNILocal<jobject> eventMove(env, classes::EventWindowMove::make(env, windowLeft, windowTop));
+            JNILocal<jobject> eventMove(env, classes::EventWindowMove::make(
+                                                 env, windowLeft, windowTop));
             dispatch(eventMove.get());
             return 0;
         }
@@ -346,9 +347,10 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_TIMER: {
             if (wParam == JWM_WM_TIMER_UPDATE_EVENT) {
-                // HACK: modal event loop on move/resize for focus window blocks background windows.
-                // Therefore they are freeze. Here we can receive update event inside modal loop
-                // to get chance to process frame event and etc.
+                // HACK: modal event loop on move/resize for focus window blocks
+                // background windows. Therefore they are freeze. Here we can
+                // receive update event inside modal loop to get chance to
+                // process frame event and etc.
                 _windowManager.timerUpdate();
             }
 
@@ -373,7 +375,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int buttons = _getMouseButtons();
             int modifiers = _getModifiers();
 
-            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos, buttons, modifiers));
+            JNILocal<jobject> eventMouseMove(
+                env, classes::EventMouseMove::make(env, xPos, yPos, buttons,
+                                                   modifiers));
             dispatch(eventMouseMove.get());
             return 0;
         }
@@ -381,18 +385,25 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_MOUSEWHEEL: {
             int modifiers = _getModifiers();
             auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto ticks = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto ticks = static_cast<float>(nativeScroll) /
+                         static_cast<float>(WHEEL_DELTA);
             auto linesPerTick = _getWheelScrollLines();
             // assume page scroll
             // https://github.com/mozilla/gecko-dev/blob/da97cbad6c9f00fc596253feb5964a8adbb45d9e/widget/windows/WinMouseScrollHandler.cpp#L891-L903
             if (linesPerTick > WHEEL_DELTA) {
-                float sign =  ticks > 0.0f ? 1.0f : ticks < 0.0f ? -1.0f : 0.0f;
-                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, getContentRect().getHeight() * sign, 0.0f, 0.0f, sign, modifiers));
+                float sign = ticks > 0.0f ? 1.0f : ticks < 0.0f ? -1.0f : 0.0f;
+                JNILocal<jobject> eventMouseScroll(
+                    env, classes::EventMouseScroll::make(
+                             env, 0.0f, getContentRect().getHeight() * sign,
+                             0.0f, 0.0f, sign, modifiers));
                 dispatch(eventMouseScroll.get());
             } else {
                 auto lines = ticks * static_cast<float>(_getWheelScrollLines());
                 auto scale = _getScale();
-                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, lines * kScrollbarPixelsPerLine * scale, 0.0f, lines, 0.0f, modifiers));
+                JNILocal<jobject> eventMouseScroll(
+                    env, classes::EventMouseScroll::make(
+                             env, 0.0f, lines * kScrollbarPixelsPerLine * scale,
+                             0.0f, lines, 0.0f, modifiers));
                 dispatch(eventMouseScroll.get());
             }
             return 0;
@@ -400,11 +411,15 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_MOUSEHWHEEL: {
             auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto ticks = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
+            auto ticks = static_cast<float>(nativeScroll) /
+                         static_cast<float>(WHEEL_DELTA);
             auto chars = ticks * static_cast<float>(_getWheelScrollChars());
             auto scale = _getScale();
             int modifiers = _getModifiers();
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, chars * kScrollbarPixelsPerLine * scale, 0.0f, chars, 0.0f, 0.0f, modifiers));
+            JNILocal<jobject> eventMouseScroll(
+                env, classes::EventMouseScroll::make(
+                         env, chars * kScrollbarPixelsPerLine * scale, 0.0f,
+                         chars, 0.0f, 0.0f, modifiers));
             dispatch(eventMouseScroll.get());
             return 0;
         }
@@ -426,11 +441,8 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
         case WM_XBUTTONUP: {
-            bool isPressed =
-                uMsg == WM_LBUTTONDOWN ||
-                uMsg == WM_RBUTTONDOWN ||
-                uMsg == WM_MBUTTONDOWN ||
-                uMsg == WM_XBUTTONDOWN;
+            bool isPressed = uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN ||
+                             uMsg == WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN;
 
             int modifiers = _getModifiers();
             MouseButton button;
@@ -446,7 +458,9 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else
                 button = MouseButton::FORWARD;
 
-            JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, modifiers));
+            JNILocal<jobject> eventMouseButton(
+                env, classes::EventMouseButton::make(env, button, isPressed,
+                                                     modifiers));
             dispatch(eventMouseButton.get());
             break;
         }
@@ -460,7 +474,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             WORD flags = HIWORD(lParam);
             bool isPressed = !(flags & KF_UP);
             bool isExtended = flags & KF_EXTENDED;
-            int keycode = (int) wParam;
+            int keycode = (int)wParam;
             int scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
             int modifiers = _getModifiers();
             auto& table = _windowManager.getKeyTable();
@@ -470,21 +484,23 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             JWM_VERBOSE("Keycode=" << keycode << " scancode=" << scancode);
 
             // Ignore system keys (unknown on java side)
-            if (ignoreList.find(keycode) != ignoreList.end())
-                break;
+            if (ignoreList.find(keycode) != ignoreList.end()) break;
 
             auto mapping = table.find(keycode);
-            Key key = mapping != table.end()? mapping->second: Key::UNDEFINED;
+            Key key = mapping != table.end() ? mapping->second : Key::UNDEFINED;
             KeyLocation location = KeyLocation::DEFAULT;
 
             // Right/numpad keys location handling
-            if (isExtended || scancode == MapVirtualKeyW(VK_RSHIFT, MAPVK_VK_TO_VSC)) {
+            if (isExtended ||
+                scancode == MapVirtualKeyW(VK_RSHIFT, MAPVK_VK_TO_VSC)) {
                 auto locationMapping = locations.find(keycode);
                 if (locationMapping != locations.end())
                     location = locationMapping->second;
             }
 
-            JNILocal<jobject> eventKey(env, classes::EventKey::make(env, key, isPressed, modifiers, location));
+            JNILocal<jobject> eventKey(
+                env, classes::EventKey::make(env, key, isPressed, modifiers,
+                                             location));
             dispatch(eventKey.get());
             break;
         }
@@ -493,8 +509,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_SYSCHAR: {
             if (HIGH_SURROGATE_L <= wParam && wParam <= HIGH_SURROGATE_U) {
                 _highSurrogate = static_cast<wchar_t>(wParam);
-            }
-            else {
+            } else {
                 jsize len = 0;
                 jchar text[2];
                 int modifiers = _getModifiers();
@@ -510,8 +525,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                         text[len] = _highSurrogate;
                         len += 1;
                     }
-                }
-                else if (wParam == VK_BACK) {
+                } else if (wParam == VK_BACK) {
                     break;
                 }
 
@@ -521,12 +535,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 len += 1;
 
                 JNILocal<jstring> jtext(env, env->NewString(text, len));
-                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
+                JNILocal<jobject> eventTextInput(
+                    env, classes::EventTextInput::make(env, jtext.get()));
                 dispatch(eventTextInput.get());
             }
 
-            if (uMsg == WM_SYSCHAR)
-                break;
+            if (uMsg == WM_SYSCHAR) break;
 
             return 0;
         }
@@ -548,49 +562,58 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             HIMC hImc = ImmGetContext(getHWnd());
 
-            if (!hImc)
-                return false;
+            if (!hImc) return false;
 
             if (iParam & (GCS_COMPSTR | GCS_COMPATTR | GCS_CURSORPOS)) {
                 // Read partial composition result
-                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
-                _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_COMPSTR));
-                _compositionPos = ImmGetCompositionStringW(hImc, GCS_CURSORPOS, nullptr, 0);
+                // NOTE: accessible in WM_IME_COMPOSITION or
+                // WM_IME_STARTCOMPOSITION message.
+                _compositionStr =
+                    std::move(_imeGetCompositionString(hImc, GCS_COMPSTR));
+                _compositionPos =
+                    ImmGetCompositionStringW(hImc, GCS_CURSORPOS, nullptr, 0);
 
                 int selectedFrom, selectedTo;
-                _imeGetCompositionStringConvertedRange(hImc, selectedFrom, selectedTo);
+                _imeGetCompositionStringConvertedRange(hImc, selectedFrom,
+                                                       selectedTo);
 
                 if ((lParam & CS_INSERTCHAR) && (lParam & CS_NOMOVECARET)) {
                     selectedFrom = 0;
                     selectedTo = static_cast<int>(_compositionStr.length());
                 }
 
-                if (!selectedTo)
-                    selectedFrom = 0;
+                if (!selectedTo) selectedFrom = 0;
 
                 if (!selectedFrom && !selectedTo) {
                     selectedFrom = _compositionPos;
                     selectedTo = static_cast<int>(_compositionStr.length());
                 }
 
-                auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
+                auto jcharText =
+                    reinterpret_cast<const jchar*>(_compositionStr.c_str());
                 auto jlength = static_cast<jsize>(_compositionStr.length());
 
                 JNILocal<jstring> text(env, env->NewString(jcharText, jlength));
-                JNILocal<jobject> eventTextInputMarked(env, classes::EventTextInputMarked::make(env, text.get(), selectedFrom, selectedTo));
+                JNILocal<jobject> eventTextInputMarked(
+                    env, classes::EventTextInputMarked::make(
+                             env, text.get(), selectedFrom, selectedTo));
                 dispatch(eventTextInputMarked.get());
             }
 
             if (iParam & (GCS_RESULTSTR)) {
                 // If composition result, we must read its result string here.
-                // NOTE: accessible in WM_IME_COMPOSITION or WM_IME_STARTCOMPOSITION message.
-                _compositionStr = std::move(_imeGetCompositionString(hImc, GCS_RESULTSTR));
+                // NOTE: accessible in WM_IME_COMPOSITION or
+                // WM_IME_STARTCOMPOSITION message.
+                _compositionStr =
+                    std::move(_imeGetCompositionString(hImc, GCS_RESULTSTR));
 
-                auto jcharText = reinterpret_cast<const jchar*>(_compositionStr.c_str());
+                auto jcharText =
+                    reinterpret_cast<const jchar*>(_compositionStr.c_str());
                 auto jlength = static_cast<jsize>(_compositionStr.length());
 
                 JNILocal<jstring> text(env, env->NewString(jcharText, jlength));
-                JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text.get()));
+                JNILocal<jobject> eventTextInput(
+                    env, classes::EventTextInput::make(env, text.get()));
                 dispatch(eventTextInput.get());
             }
 
@@ -605,9 +628,11 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             _compositionStr.resize(0);
             _compositionPos = 0;
 
-            // Send commit message. This is required, for example if user suddenly closes ime window
+            // Send commit message. This is required, for example if user
+            // suddenly closes ime window
             JNILocal<jstring> text(env, env->NewString(nullptr, 0));
-            JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, text.get()));
+            JNILocal<jobject> eventTextInput(
+                env, classes::EventTextInput::make(env, text.get()));
             dispatch(eventTextInput.get());
             break;
         }
@@ -617,16 +642,17 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 IRect IRect{};
 
                 // If no text client set, simply break
-                if (!_imeGetRectForMarkedRange(IRect))
-                    break;
+                if (!_imeGetRectForMarkedRange(IRect)) break;
 
-                // Cursor upper left corner (doc requires baseline, but its enough)
+                // Cursor upper left corner (doc requires baseline, but its
+                // enough)
                 POINT cursorPos;
                 cursorPos.x = IRect.fLeft;
                 cursorPos.y = IRect.fTop;
                 ClientToScreen(getHWnd(), &cursorPos);
 
-                // Area of the window (interpreted as document area (where we can place ime window))
+                // Area of the window (interpreted as document area (where we
+                // can place ime window))
                 RECT documentArea;
                 GetWindowRect(getHWnd(), &documentArea);
 
@@ -640,6 +666,14 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 return true;
             }
             break;
+        case WM_SHOWWINDOW:
+            JWM_VERBOSE("On window visibility change");
+            if (wParam == TRUE) {
+                dispatch(classes::EventWindowAppear::kInstance);
+            } else {
+                dispatch(classes::EventWindowDisappear::kInstance);
+            }
+            return 0;
         case WM_SETFOCUS:
             JWM_VERBOSE("ON FOCUS");
             dispatch(classes::EventWindowFocusIn::kInstance);
@@ -648,7 +682,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             JWM_VERBOSE("OFF FOCUS");
             dispatch(classes::EventWindowFocusOut::kInstance);
             break;
-
 
         case WM_CLOSE:
             JWM_VERBOSE("Event close");
@@ -679,17 +712,14 @@ void jwm::WindowWin32::removeEventListener(int callbackID) {
 }
 
 void jwm::WindowWin32::notifyEvent(Event event) {
-    for (auto& entry: _eventListeners)
-        entry.second(event);
+    for (auto& entry : _eventListeners) entry.second(event);
 }
 
 DWORD jwm::WindowWin32::_getWindowStyle() const {
     return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 }
 
-DWORD jwm::WindowWin32::_getWindowExStyle() const {
-    return 0;
-}
+DWORD jwm::WindowWin32::_getWindowExStyle() const { return 0; }
 
 UINT jwm::WindowWin32::_getWheelScrollLines() const {
     UINT numLines;
@@ -709,7 +739,7 @@ float jwm::WindowWin32::_getScale() const {
     GetScaleFactorForMonitor(hMonitor, &scaleFactor);
     if (scaleFactor == DEVICE_SCALE_FACTOR_INVALID)
         scaleFactor = JWM_DEFAULT_DEVICE_SCALE;
-    return (float) scaleFactor / 100.0f;
+    return (float)scaleFactor / 100.0f;
 }
 
 int jwm::WindowWin32::_getModifiers() const {
@@ -751,9 +781,7 @@ int jwm::WindowWin32::_getMouseButtons() const {
     return buttons;
 }
 
-int jwm::WindowWin32::_getNextCallbackID() {
-    return _nextCallbackID++;
-}
+int jwm::WindowWin32::_getNextCallbackID() { return _nextCallbackID++; }
 
 void jwm::WindowWin32::_setFrameTimer() {
     SetTimer(_hWnd, JWM_WM_TIMER_UPDATE_EVENT, USER_TIMER_MINIMUM, nullptr);
@@ -763,7 +791,8 @@ void jwm::WindowWin32::_killFrameTimer() {
     KillTimer(_hWnd, JWM_WM_TIMER_UPDATE_EVENT);
 }
 
-bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t *caption) {
+bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h,
+                                       const wchar_t* caption) {
     DWORD style = _getWindowStyle();
     DWORD exStyle = _getWindowExStyle();
 
@@ -772,18 +801,9 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     HINSTANCE hInstance = GetModuleHandle(nullptr);
     LPVOID lpParam = nullptr;
 
-    _hWnd = CreateWindowExW(
-        exStyle,
-        JWM_WIN32_WINDOW_CLASS_NAME,
-        caption,
-        style,
-        x, y,
-        w, h,
-        hWndParent,
-        hMenu,
-        hInstance,
-        lpParam
-    );
+    _hWnd =
+        CreateWindowExW(exStyle, JWM_WIN32_WINDOW_CLASS_NAME, caption, style, x,
+                        y, w, h, hWndParent, hMenu, hInstance, lpParam);
 
     if (!_hWnd) {
         JWM_LOG("Failed to init WindowWin32");
@@ -794,7 +814,7 @@ bool jwm::WindowWin32::_createInternal(int x, int y, int w, int h, const wchar_t
     SetPropW(_hWnd, L"JWM", this);
 
     // Set default mouse cursor
-    _hDefaultMouseCursor = LoadCursorW(nullptr,IDC_ARROW);
+    _hDefaultMouseCursor = LoadCursorW(nullptr, IDC_ARROW);
 
     // Register window, so manager can process its update
     _windowManager._registerWindow(*this);
@@ -832,7 +852,7 @@ void jwm::WindowWin32::_close() {
 }
 
 void jwm::WindowWin32::_setMouseCursorInternal() {
-    if(_hMouseCursor == nullptr) {
+    if (_hMouseCursor == nullptr) {
         SetCursor(_hDefaultMouseCursor);
     } else {
         SetCursor(_hMouseCursor);
@@ -842,8 +862,7 @@ void jwm::WindowWin32::_setMouseCursorInternal() {
 void jwm::WindowWin32::_imeResetComposition() {
     HIMC hImc = ImmGetContext(getHWnd());
 
-    if (!hImc)
-        return;
+    if (!hImc) return;
 
     ImmNotifyIME(hImc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
     ImmReleaseContext(getHWnd(), hImc);
@@ -856,13 +875,11 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
     IRect IRect{};
 
     // If no text client set, simply break
-    if (!_imeGetRectForMarkedRange(IRect))
-        return;
+    if (!_imeGetRectForMarkedRange(IRect)) return;
 
     HIMC hImc = ImmGetContext(getHWnd());
 
-    if (!hImc)
-        return;
+    if (!hImc) return;
 
     COMPOSITIONFORM compositionform;
     compositionform.dwStyle = CFS_FORCE_POSITION;
@@ -872,7 +889,8 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
     CANDIDATEFORM candidateform;
     candidateform.dwIndex = 0;
     candidateform.dwStyle = CFS_EXCLUDE;
-    candidateform.ptCurrentPos.x = IRect.fLeft;;
+    candidateform.ptCurrentPos.x = IRect.fLeft;
+    ;
     candidateform.ptCurrentPos.y = IRect.fTop;
     candidateform.rcArea.left = IRect.fLeft;
     candidateform.rcArea.top = IRect.fTop;
@@ -884,7 +902,8 @@ void jwm::WindowWin32::_imeChangeCursorPos() const {
     ImmReleaseContext(getHWnd(), hImc);
 }
 
-void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const {
+void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(
+    HIMC hImc, int& selFrom, int& selTo) const {
     selFrom = selTo = 0;
 
     // Size in bytes without terminating null character
@@ -896,13 +915,15 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
 
         int start = 0;
 
-        while (start < static_cast<int>(sizeBytes) && !(buffer[start] & ATTR_TARGET_CONVERTED))
+        while (start < static_cast<int>(sizeBytes) &&
+               !(buffer[start] & ATTR_TARGET_CONVERTED))
             start += 1;
 
         if (start < static_cast<int>(sizeBytes)) {
             int end = start + 1;
 
-            while (end < static_cast<int>(sizeBytes) && (buffer[end] & ATTR_TARGET_CONVERTED))
+            while (end < static_cast<int>(sizeBytes) &&
+                   (buffer[end] & ATTR_TARGET_CONVERTED))
                 end += 1;
 
             selFrom = start;
@@ -911,7 +932,7 @@ void jwm::WindowWin32::_imeGetCompositionStringConvertedRange(HIMC hImc, int &se
     }
 }
 
-bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
+bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect& rect) const {
     // Query current cursor position
     // If composition starts, Pos will be always 0
     auto selectionStart = static_cast<int>(_compositionPos);
@@ -919,7 +940,8 @@ bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
     return getRectForMarkedRange(selectionStart, selectionEnd, rect);
 }
 
-std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {
+std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc,
+                                                        DWORD compType) const {
     // Size in bytes without terminating null character
     DWORD sizeBytes = ImmGetCompositionStringW(hImc, compType, nullptr, 0);
 
@@ -927,7 +949,8 @@ std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compTyp
         // Get actual string and copy into tmp buffer
         std::unique_ptr<uint8_t[]> buffer{new uint8_t[sizeBytes]};
         ImmGetCompositionStringW(hImc, compType, buffer.get(), sizeBytes);
-        return std::wstring(reinterpret_cast<wchar_t*>(buffer.get()), sizeBytes / sizeof(wchar_t));
+        return std::wstring(reinterpret_cast<wchar_t*>(buffer.get()),
+                            sizeBytes / sizeof(wchar_t));
     }
 
     return std::wstring();
@@ -935,145 +958,191 @@ std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compTyp
 
 // JNI
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMake
-        (JNIEnv* env, jclass jclass) {
-    std::unique_ptr<jwm::WindowWin32> instance(new jwm::WindowWin32(env, jwm::AppWin32::getInstance().getWindowManager()));
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nMake(JNIEnv* env, jclass jclass) {
+    std::unique_ptr<jwm::WindowWin32> instance(new jwm::WindowWin32(
+        env, jwm::AppWin32::getInstance().getWindowManager()));
     if (instance->init())
         return reinterpret_cast<jlong>(instance.release());
     else
         return 0;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTextInputEnabled
-        (JNIEnv* env, jobject obj, jboolean enabled) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetTextInputEnabled(
+    JNIEnv* env, jobject obj, jboolean enabled) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setImeEnabled(enabled);
     return obj;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nUnmarkText
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nUnmarkText(JNIEnv* env,
+                                                      jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->unmarkText();
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetWindowRect
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nGetWindowRect(JNIEnv* env,
+                                                         jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     jwm::IRect rect = instance->getWindowRect();
     return jwm::classes::IRect::toJava(env, rect);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetContentRect
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nGetContentRect(JNIEnv* env,
+                                                          jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     jwm::IRect rect = instance->getContentRect();
     return jwm::classes::IRect::toJava(env, rect);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowPosition
-        (JNIEnv* env, jobject obj, int left, int top) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowPosition(JNIEnv* env,
+                                                             jobject obj,
+                                                             int left,
+                                                             int top) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setWindowPosition(left, top);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowSize
-        (JNIEnv* env, jobject obj, int width, int height) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetWindowSize(JNIEnv* env,
+                                                         jobject obj, int width,
+                                                         int height) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setWindowSize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetContentSize
-        (JNIEnv* env, jobject obj, int width, int height) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetContentSize(JNIEnv* env,
+                                                          jobject obj,
+                                                          int width,
+                                                          int height) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setContentSize(width, height);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTitle
-        (JNIEnv* env, jobject obj, jstring title) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetTitle(JNIEnv* env, jobject obj,
+                                                    jstring title) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     const jchar* titleStr = env->GetStringChars(title, nullptr);
     jsize length = env->GetStringLength(title);
-    instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
+    instance->setTitle(
+        std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
     env->ReleaseStringChars(title, titleStr);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIcon
-        (JNIEnv* env, jobject obj, jstring iconPath) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetIcon(JNIEnv* env, jobject obj,
+                                                   jstring iconPath) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     const jchar* iconPathStr = env->GetStringChars(iconPath, nullptr);
     jsize length = env->GetStringLength(iconPath);
-    instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
+    instance->setIcon(
+        std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetVisible
-        (JNIEnv* env, jobject obj, jboolean isVisible) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetVisible(JNIEnv* env, jobject obj,
+                                                      jboolean isVisible) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setVisible(isVisible);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetOpacity
-        (JNIEnv* env, jobject obj,float opacity) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetOpacity(JNIEnv* env, jobject obj,
+                                                      float opacity) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setOpacity(opacity);
 }
-extern "C" JNIEXPORT float JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetOpacity
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT float JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nGetOpacity(JNIEnv* env,
+                                                      jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     return instance->getOpacity();
 }
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetMouseCursor
-        (JNIEnv* env, jobject obj, jint cursorId) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nSetMouseCursor(JNIEnv* env,
+                                                          jobject obj,
+                                                          jint cursorId) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->setMouseCursor(static_cast<jwm::MouseCursor>(cursorId));
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetScreen
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nGetScreen(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     jwm::ScreenWin32 screen = instance->getScreen();
     return screen.toJni(env);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nRequestFrame
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nRequestFrame(JNIEnv* env,
+                                                        jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->requestFrame();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMaximize
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nMaximize(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->maximize();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nMinimize
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nMinimize(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->minimize();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nRestore
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nRestore(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->restore();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nFocus
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nFocus(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->focus();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nClose
-        (JNIEnv* env, jobject obj) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nClose(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nWinSetParent
-        (JNIEnv* env, jobject obj, jlong hwnd) {
-    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    SetParent(instance->getHWnd(), (HWND) hwnd);
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_humbleui_jwm_WindowWin32__1nWinSetParent(JNIEnv* env,
+                                                        jobject obj,
+                                                        jlong hwnd) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(
+        jwm::classes::Native::fromJava(env, obj));
+    SetParent(instance->getHWnd(), (HWND)hwnd);
 }
