@@ -248,13 +248,13 @@ namespace jwm {
                 JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseButton"));
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IZI)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(IZIII)V");
                 assert(kCtor);
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, modifiers);
+            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint x, jint y, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, static_cast<int>(mouseButton), isPressed, x, y, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -286,12 +286,12 @@ namespace jwm {
                 JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseScroll"));
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
-                kCtor = env->GetMethodID(kCls, "<init>", "(FFFFFI)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(FFFFFIII)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, deltaX, deltaY, deltaChars, deltaLines, deltaPages, modifiers);
+            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint x, jint y, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, deltaX, deltaY, deltaChars, deltaLines, deltaPages, x, y, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

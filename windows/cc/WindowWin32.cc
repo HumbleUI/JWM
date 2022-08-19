@@ -368,12 +368,12 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case WM_MOUSEMOVE: {
-            int xPos = GET_X_LPARAM(lParam);
-            int yPos = GET_Y_LPARAM(lParam);
+            _lastMousePosX = GET_X_LPARAM(lParam);
+            _lastMousePosY = GET_Y_LPARAM(lParam);
             int buttons = _getMouseButtons();
             int modifiers = _getModifiers();
 
-            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, xPos, yPos, buttons, modifiers));
+            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, _lastMousePosX, _lastMousePosY, buttons, modifiers));
             dispatch(eventMouseMove.get());
             return 0;
         }
@@ -387,25 +387,14 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             // https://github.com/mozilla/gecko-dev/blob/da97cbad6c9f00fc596253feb5964a8adbb45d9e/widget/windows/WinMouseScrollHandler.cpp#L891-L903
             if (linesPerTick > WHEEL_DELTA) {
                 float sign =  ticks > 0.0f ? 1.0f : ticks < 0.0f ? -1.0f : 0.0f;
-                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, getContentRect().getHeight() * sign, 0.0f, 0.0f, sign, modifiers));
+                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, getContentRect().getHeight() * sign, 0.0f, 0.0f, sign, _lastMousePosX, _lastMousePosY, modifiers));
                 dispatch(eventMouseScroll.get());
             } else {
                 auto lines = ticks * static_cast<float>(_getWheelScrollLines());
                 auto scale = _getScale();
-                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, lines * kScrollbarPixelsPerLine * scale, 0.0f, lines, 0.0f, modifiers));
+                JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, 0.0f, lines * kScrollbarPixelsPerLine * scale, 0.0f, lines, 0.0f, _lastMousePosX, _lastMousePosY, modifiers));
                 dispatch(eventMouseScroll.get());
             }
-            return 0;
-        }
-
-        case WM_MOUSEHWHEEL: {
-            auto nativeScroll = static_cast<SHORT>(HIWORD(wParam));
-            auto ticks = static_cast<float>(nativeScroll) / static_cast<float>(WHEEL_DELTA);
-            auto chars = ticks * static_cast<float>(_getWheelScrollChars());
-            auto scale = _getScale();
-            int modifiers = _getModifiers();
-            JNILocal<jobject> eventMouseScroll(env, classes::EventMouseScroll::make(env, chars * kScrollbarPixelsPerLine * scale, 0.0f, chars, 0.0f, 0.0f, modifiers));
-            dispatch(eventMouseScroll.get());
             return 0;
         }
 
@@ -446,7 +435,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             else
                 button = MouseButton::FORWARD;
 
-            JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, modifiers));
+            JNILocal<jobject> eventMouseButton(env, classes::EventMouseButton::make(env, button, isPressed, _lastMousePosX, _lastMousePosY, modifiers));
             dispatch(eventMouseButton.get());
             break;
         }

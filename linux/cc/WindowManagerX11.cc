@@ -405,6 +405,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                     0.0f,
                                     0.0f,
                                     0.0f,
+                                    lastMousePosX,
+                                    lastMousePosY,
                                     jwm::KeyX11::getModifiers()
                                 )
                             );
@@ -515,6 +517,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             ::Window unused1;
             int unused2;
             XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
+            lastMousePosX = ev.xmotion.x;
+            lastMousePosY = ev.xmotion.y;
             jwm::JNILocal<jobject> eventMove(
                 app.getJniEnv(),
                 EventMouseMove::make(app.getJniEnv(),
@@ -537,6 +541,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                         app.getJniEnv(),
                         MouseButtonX11::fromNative(button),
                         true,
+                        lastMousePosX,
+                        lastMousePosY,
                         jwm::KeyX11::getModifiers()
                     )
                 );
@@ -554,6 +560,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                         app.getJniEnv(),
                         MouseButtonX11::fromNative(button),
                         false,
+                        lastMousePosX,
+                        lastMousePosY,
                         jwm::KeyX11::getModifiers()
                     )
                 );

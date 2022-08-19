@@ -37,6 +37,9 @@ public class EventMouseScroll implements Event {
      */
     @ApiStatus.Internal public final float _deltaPages;
 
+    @ApiStatus.Internal public final int _x;
+    @ApiStatus.Internal public final int _y;
+
     @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers;
 
     public boolean isModifierDown(KeyModifier modifier) {

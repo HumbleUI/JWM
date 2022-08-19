@@ -66,6 +66,8 @@ namespace jwm {
         bool _runLoop;
         int notifyFD = -1;
         std::atomic_bool notifyBool{false};
+        int lastMousePosX = 0;
+        int lastMousePosY = 0;
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;

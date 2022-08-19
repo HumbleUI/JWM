@@ -202,32 +202,35 @@ jint modifierMask(NSEventModifierFlags flags) {
     return mask;
 }
 
-void onMouseMoved(jwm::WindowMac* window, NSEvent* event) {
+void onMouseMoved(jwm::WindowMac* window, NSEvent* event, CGPoint* lastPos) {
     NSView* view = window->fNSWindow.contentView;
     CGFloat scale = window->getScale();
 
     const NSPoint pos = [event locationInWindow];
     const NSRect rect = [view frame];
+    lastPos->x = pos.x * scale;
+    lastPos->y = (rect.size.height - pos.y) * scale;
+
     jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseMove::make(
         window->fEnv,
-        (jint) (pos.x * scale),
-        (jint) ((rect.size.height - pos.y) * scale),
+        (jint) lastPos->x,
+        (jint) lastPos->y,
         [NSEvent pressedMouseButtons],
         jwm::modifierMask([event modifierFlags])));
     window->dispatch(eventObj.get());
 }
 
-void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPressedButtons) {
+void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPressedButtons, CGPoint& lastPos) {
     NSUInteger before = *lastPressedButtons;
     NSUInteger after = [NSEvent pressedMouseButtons];
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
     for (jwm::MouseButton button: jwm::kMouseButtonValues) {
         int mask = static_cast<int>(button);
         if ((before & mask) == 0 && (after & mask) != 0) {
-            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, true, modifierMask));
+            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, true, lastPos.x, lastPos.y, modifierMask));
             window->dispatch(eventObj.get());
         } else if ((before & mask) != 0 && (after & mask) == 0) {
-            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, false, modifierMask));
+            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, false, lastPos.x, lastPos.y, modifierMask));
             window->dispatch(eventObj.get());
         }
     }
@@ -247,6 +250,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     // key-up/down events for each modifier.
     NSEventModifierFlags fLastFlags;
     NSUInteger fLastPressedButtons;
+    CGPoint fLastPos;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -303,43 +307,43 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)mouseMoved:(NSEvent *)event {
-    onMouseMoved(fWindow, event);
+    onMouseMoved(fWindow, event, &fLastPos);
 }
 
 - (void)mouseDragged:(NSEvent *)event {
-    onMouseMoved(fWindow, event);
+    onMouseMoved(fWindow, event, &fLastPos);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
-    onMouseMoved(fWindow, event);
+    onMouseMoved(fWindow, event, &fLastPos);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
-    onMouseMoved(fWindow, event);
+    onMouseMoved(fWindow, event, &fLastPos);
 }
 
 - (void)mouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)mouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)otherMouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons);
+    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
@@ -361,7 +365,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     CGFloat scale = fWindow->getScale();
     deltaX *= scale;
     deltaY *= scale;
-    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseScroll::make(fWindow->fEnv, deltaX, deltaY, 0, 0, 0, modifierMask));
+    jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventMouseScroll::make(fWindow->fEnv, deltaX, deltaY, 0, 0, 0, fLastPos.x, fLastPos.y, modifierMask));
     fWindow->dispatch(eventObj.get());
 }
 

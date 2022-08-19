@@ -92,7 +92,7 @@ namespace jwm {
         namespace EventMouseButton {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint modifiers);
+            jobject make(JNIEnv* env, MouseButton mouseButton, jboolean isPressed, jint x, jint y, jint modifiers);
         }
 
         namespace EventMouseMove {
@@ -104,7 +104,7 @@ namespace jwm {
         namespace EventMouseScroll {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint modifiers);
+            jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint x, jint y, jint modifiers);
         }
 
         namespace EventTextInput {
