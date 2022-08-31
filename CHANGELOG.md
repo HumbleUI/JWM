@@ -1,3 +1,10 @@
+# 0.4.7 - Aug 31, 2022
+
+Changed:
+
+- Mouse position is reported in EventMouseButton/EventMouseScroll
+- Window::requestFrame now checks if window was already closed
+
 # 0.4.6 - Aug 16, 2022
 
 Changed:
