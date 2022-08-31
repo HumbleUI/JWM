@@ -110,7 +110,13 @@ public class WindowWin32 extends Window {
 
     @Override
     public void requestFrame() {
-        App.runOnUIThread(() -> _nRequestFrame());
+        if (!isClosed()) {
+            App.runOnUIThread(() -> {
+                if (!isClosed()) {
+                    _nRequestFrame();
+                }
+            });
+        }
     }
 
     public Window maximize() {
