@@ -19,7 +19,7 @@ Primary goals:
 
 - Native JVM API
 - High-quality OS integration (indistinguishable from native apps)
-- Plays well with (but does not require) [Skija](https://github.com/jetbrains/skija)
+- Plays well with (but does not require) [Skija](https://github.com/HumbleUI/Skija)
 
 Motto: **“Electron for JVM, without Chrome and JS”**
 
