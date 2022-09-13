@@ -22,9 +22,8 @@ float jwm::AppX11::getScale() {
         }
     } once;
 
-    db = XrmGetStringDatabase(resourceString);
-
     if (resourceString) {
+        db = XrmGetStringDatabase(resourceString);
         if (XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
             if (value.addr) {
                 return atof(value.addr) / 96.f;
