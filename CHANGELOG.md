@@ -1,3 +1,10 @@
+# 0.4.8 - Sep 14, 2022
+
+Changed:
+
+- macOS: setFramebufferOnly:NO on Metal backend
+- linux: avoid crash on empty X11 resources
+
 # 0.4.7 - Aug 31, 2022
 
 Changed:
