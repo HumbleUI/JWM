@@ -51,6 +51,7 @@ public:
 
         fMetalLayer.device = fDevice;
         fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        [fMetalLayer setFramebufferOnly:NO];
 
         fMetalLayer.allowsNextDrawableTimeout = NO;
         fMetalLayer.displaySyncEnabled = NO;
