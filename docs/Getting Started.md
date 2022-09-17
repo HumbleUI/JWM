@@ -16,13 +16,13 @@ E.g. for Maven it’ll look like this:
 <dependency>
     <groupId>io.github.humbleui</groupId>
     <artifactId>jwm</artifactId>
-    <version>0.3.1</version>
+    <version>0.4.8</version>
 </dependency>
 ```
 
 ## Creating a window and starting an event loop
 
-Init JWM library:
+Initialize the JWM library, doing operations on the correct thread:
 
 ```java
 App.start(() -> {
@@ -76,11 +76,7 @@ Display the window:
 window.setVisible(true);
 ```
 
-Start the event loop (will block the thread):
-
-```java
-App.start();
-```
+And, when the `App::start` callback returns, the event loop will start.
 
 See it all together in [GettingStarted.java](GettingStarted.java).
 
@@ -89,7 +85,7 @@ See it all together in [GettingStarted.java](GettingStarted.java).
 On Windows and Linux, just run:
 
 ```sh
-java -cp jwm-0.3.1.jar:types-0.1.1.jar GettingStarted.java
+java -cp jwm-0.4.8.jar:types-0.1.1.jar GettingStarted.java
 ```
 
 `types-0.1.1.jar` here are from https://github.com/HumbleUI/Types. They will be included as a transitive dependency if you are using Maven or Gradle.
