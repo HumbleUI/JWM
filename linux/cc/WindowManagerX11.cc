@@ -182,14 +182,14 @@ WindowManagerX11::WindowManagerX11():
 void WindowManagerX11::_xi2IterateDevices() {
     int deviceCount;
     XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &deviceCount);
-    for (int deviceId = 0; deviceId < deviceCount; ++deviceId) {
-        XIDeviceInfo& device = devices[deviceId];
+    for (int i = 0; i < deviceCount; ++i) {
+        XIDeviceInfo& device = devices[i];
         if (device.use != XIMasterPointer) {
             continue;
         }
-        XInput2::Device& myDevice = _xi2->deviceById[device.deviceid];
         for (int classId = 0; classId < device.num_classes; ++classId) {
             XIAnyClassInfo* classInfo = device.classes[classId];
+            XInput2::Device& myDevice = _xi2->deviceById[classInfo->sourceid];
 
             switch (classInfo->type)
             {
@@ -331,7 +331,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                             break;
                         }
 
-                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->deviceid);
+                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->sourceid);
                         if (itMyDevice == _xi2->deviceById.end()) {
                             break;
                         }
