@@ -100,7 +100,7 @@ You can access information about screen configuration through `App::getScreens` 
 
 This will create a window that occupies the left side of the screen and is 800 px wide:
 
-```
+```java
 Screen screen = App.getPrimaryScreen();
 IRect workArea = screen.getWorkArea();
 window.setWindowPosition(workArea.getLeft(), workArea.getTop());
@@ -114,9 +114,9 @@ All screen coordinates are in one absolute coordinate space. Top left corner of 
 
 All pixel sizes are also unscaled. They correspond to the physical screen pixels, not “logical” pixels. Note: this is similar to how Windows/Linux work but opposite of what macOS does. JWM abstracts that difference away for you.
 
-To convert “logical” pixels to physical one, multiply by `Screen::getScale()`. E.g. if you want 800×600 window on macOS, do:
+To convert “logical” pixels to physical ones, multiply by `Screen::getScale()`. E.g. if you want 800×600 window on macOS, do:
 
-```
+```java
 float scale = window.getScreen().getScale();
 window.setWindowSize(800 * scale, 600 * scale);
 ```
@@ -145,7 +145,7 @@ public void accept(Event e) {
 
 Simple key handling (e.g. for program shortcuts) via `EventKey`.
 Simple text input via `EventTextInput`.
-Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/HumbleUI/JWM/blob/main/examples/java/PanelTextInput.java) for hints how to handle IME input.
+Advanced text input (IME) via `EventTextInputMarked` + `TextInputClient`. See [PanelTextInput.java](https://github.com/HumbleUI/JWM/blob/main/examples/dashboard/java/PanelTextInput.java) for hints how to handle IME input.
 
 ```java
 @Override
@@ -243,14 +243,14 @@ public void paint() {
 
 If you wish to use [Skija](https://github.com/HumbleUI/Skija) for rendering, JWM comes with convenient `Layer*Skija` classes:
 
-```
+```java
 layer = new LayerGLSkija();
 window.setLayer(layer);
 ```
 
 Skija layers work by generating a special event (`EventFrameSkija`) every time frame is requested. So instead of handling `EventFrame`, handle `EventFrameSkija`:
 
-```
+```java
 if (e instanceof EventFrameSkija ee) {
     Surface s = ee.getSurface();
     paint(s.getCanvas(), s.getWidth(), s.getHeight());
