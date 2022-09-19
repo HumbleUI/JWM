@@ -8,7 +8,7 @@ def deps_compile():
   deps = [
     build_utils.fetch_maven('org.projectlombok', 'lombok', '1.18.22'),
     build_utils.fetch_maven('org.jetbrains', 'annotations', '20.1.0'),
-    build_utils.fetch_maven('io.github.humbleui', 'skija-shared', '0.98.0'),
+    build_utils.fetch_maven('io.github.humbleui', 'skija-shared', '0.106.0'),
   ]
 
   types_dir = build_utils.get_arg("types-dir")

@@ -9,6 +9,14 @@ jstring jwm::nsStringToJava(JNIEnv* env, NSString* characters) {
     return env->NewString(buffer, len);
 }
 
+NSString* jwm::nsStringFromJava(JNIEnv* env, jstring str) {
+    jsize len = env->GetStringLength(str);
+    const jchar* chars = env->GetStringCritical(str, nullptr);
+    NSString* res = [[NSString alloc] initWithCharacters:chars length:len];
+    env->ReleaseStringCritical(str, chars);
+    return res;
+}
+
 jwm::IRect jwm::transformRectRelativeToPrimaryScreen(NSRect rect, CGFloat scale) {
     NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
     CGFloat primaryHeight = [primary frame].size.height;
