@@ -1,3 +1,9 @@
+# 0.4.9 - Sep 24, 2022
+
+Changed:
+
+- X11: Fixed mouse position in EventMouseButton/EventMouseScroll #241 #242 #243 #244 thx @navaratine @dzaima
+
 # 0.4.8 - Sep 14, 2022
 
 Changed:
