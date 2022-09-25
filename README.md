@@ -128,7 +128,7 @@ Alpha. Expect API breakages.
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
 | Transparency        | ✅   | ❌   | ❌   |
-| Toggle Fullscreen   | ❌   | ❌   | ❌   |
+| Toggle Fullscreen   | ❌   | ✅   | ❌   |
 | setMinimumSize      | ❌   | ❌   | ❌   |
 | setMaximumSize      | ❌   | ❌   | ❌   |
 | setResizable        | ❌   | ❌   | ❌   |
@@ -154,6 +154,8 @@ Alpha. Expect API breakages.
 | EventWindowScreenChange | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) | [#117](https://github.com/HumbleUI/JWM/issues/117) |
 | EventWindowFocusIn      | ✅   | ✅   | ✅   |
 | EventWindowFocusOut     | ✅   | ✅   | ✅   |
+| EventWindowFullScreenEnter | ❌   | ✅   | ❌   |
+| EventWindowFullScreenExit  | ❌   | ✅   | ❌   |
 | Drag & Drop             | ❌   | ❌   | ❌   |
 | Touch events            | ❌   | ❌   | ❌   |
 | Theme Changed           | ❌   | ❌   | ❌   |

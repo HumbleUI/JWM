@@ -138,6 +138,16 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window setFullScreen(boolean value) {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
+    public boolean isFullScreen() {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
     public Window focus() {
         assert _onUIThread();
         _nFocus();

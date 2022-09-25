@@ -215,6 +215,19 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public Window setFullScreen(boolean value) {
+        assert _onUIThread();
+        _nSetFullScreen(value);
+        return this;
+    }
+
+    @Override
+    public boolean isFullScreen() {
+        assert _onUIThread();
+        return _nIsFullScreen();
+    }
+
+    @Override
     public Window focus() {
         assert _onUIThread();
         _nFocus();
@@ -276,6 +289,8 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nRestore();
+    @ApiStatus.Internal public native void _nSetFullScreen(boolean value);
+    @ApiStatus.Internal public native boolean _nIsFullScreen();
     @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native int _nGetZOrder();
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);

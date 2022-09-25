@@ -172,6 +172,16 @@ public class WindowX11 extends Window {
         return this;
     }
 
+    @Override
+    public Window setFullScreen(boolean value) {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
+    @Override
+    public boolean isFullScreen() {
+        throw new UnsupportedOperationException("impl me!");
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native IRect _nGetWindowRect();

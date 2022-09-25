@@ -183,6 +183,8 @@ public class Example implements Consumer<Event> {
                         window.setVisible(false);
                     case W ->
                         window.close();
+                    case F ->
+                        window.setFullScreen(!window.isFullScreen());
                     case O ->
                         window.setOpacity(window.getOpacity() == 1f ? 0.5f : 1f);
                     case UP ->

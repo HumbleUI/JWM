@@ -60,6 +60,14 @@
     fWindow->dispatch(jwm::classes::EventWindowFocusOut::kInstance);
 }
 
+- (void)windowDidEnterFullScreen:(NSNotification *)notification {
+    fWindow->dispatch(jwm::classes::EventWindowFullScreenEnter::kInstance);
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification {
+    fWindow->dispatch(jwm::classes::EventWindowFullScreenExit::kInstance);
+}
+
 - (BOOL)windowShouldClose:(NSWindow*)sender {
     fWindow->dispatch(jwm::classes::EventWindowCloseRequest::kInstance);
     return FALSE;

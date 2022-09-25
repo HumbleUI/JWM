@@ -314,6 +314,10 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     public abstract Window restore();
 
+    public abstract Window setFullScreen(boolean value);
+
+    public abstract boolean isFullScreen();
+
     /**
      * Focus current window
      * 

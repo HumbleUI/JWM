@@ -91,7 +91,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
                             if (entry != null)
                                 text += entry.getString();
                         }
-                        case F -> {
+                        case X -> {
                             ClipboardFormat[] formats = Clipboard.getFormats();
                             if (formats != null)
                                 for (ClipboardFormat format: formats)

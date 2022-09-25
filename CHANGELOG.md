@@ -1,3 +1,9 @@
+# WIP
+
+Added:
+
+- macOS: Window::setFullScreen, ::isFullScreen, EventWindowFullScreenEnter, EventWindowFullScreenExit #130
+
 # 0.4.9 - Sep 24, 2022
 
 Changed:

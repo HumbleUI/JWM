@@ -139,6 +139,14 @@ namespace jwm {
             extern jobject kInstance;
         }
 
+        namespace EventWindowFullScreenEnter {
+            extern jobject kInstance;
+        }
+
+        namespace EventWindowFullScreenExit {
+            extern jobject kInstance;
+        }
+
         namespace EventWindowMove {
             extern jclass kCls;
             extern jmethodID kCtor;
