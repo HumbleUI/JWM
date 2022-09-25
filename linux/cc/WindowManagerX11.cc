@@ -331,15 +331,10 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                             break;
                         }
 
-                        auto itMyDevice = _xi2->deviceById.find(deviceEvent->sourceid);
-                        if (itMyDevice == _xi2->deviceById.end()) {
-                            break;
-                        }
-
-                        XInput2::Device& myDevice = itMyDevice->second;
-
-                        for (auto& valuator : myDevice.scroll) {
-                            valuator.previousValue = 0;
+                        for (auto& device : _xi2->deviceById) {
+                            for (auto& valuator : device.second.scroll) {
+                                valuator.previousValue = 0;
+                            }
                         }
                         break;
                     }
