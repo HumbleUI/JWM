@@ -1,8 +1,9 @@
-# WIP
+# 0.4.10 - Sep 27, 2022
 
 Added:
 
 - macOS: Window::setFullScreen, ::isFullScreen, EventWindowFullScreenEnter, EventWindowFullScreenExit #130
+- macOS: Window::hideMouseCursorUntilMoved
 
 # 0.4.9 - Sep 24, 2022
 
