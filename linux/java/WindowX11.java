@@ -16,13 +16,6 @@ public class WindowX11 extends Window {
     }
 
     @Override
-    public Window setVisible(boolean isVisible) {
-        assert _onUIThread();
-        _nSetVisible(isVisible);
-        return super.setVisible(true);
-    }
-
-    @Override
     public Window setTextInputEnabled(boolean enabled) {
         assert _onUIThread();
         // TODO: impl me
@@ -86,6 +79,19 @@ public class WindowX11 extends Window {
     @Override
     public Window setTitlebarVisible(boolean value) {
         _nSetTitlebarVisible(value);
+        return this;
+    }
+
+    @Override
+    public Window setVisible(boolean isVisible) {
+        assert _onUIThread();
+        _nSetVisible(isVisible);
+        return super.setVisible(true);
+    }
+
+    @Override
+    public Window hideMouseCursorUntilMoved(boolean value) {
+        // TODO impl me!
         return this;
     }
 

@@ -160,6 +160,13 @@ public class WindowMac extends Window {
     public native void _nSetMouseCursor(int cursorIdx);
 
     @Override
+    public Window hideMouseCursorUntilMoved(boolean value) {
+        assert _onUIThread();
+        _nHideMouseCursorUntilMoved(value);
+        return this;
+    }
+
+    @Override
     public Window setVisible(boolean value) {
         assert _onUIThread();
         _nSetVisible(value);
@@ -283,6 +290,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetTitlebarStyle(int titlebarStyle);
     @ApiStatus.Internal public native void _nSetTrafficLightPosition(int left, int top);
     @ApiStatus.Internal public native void _nSetTrafficLightsVisible(boolean value);
+    @ApiStatus.Internal public native void _nHideMouseCursorUntilMoved(boolean value);
     @ApiStatus.Internal public native void _nSetVisible(boolean value);
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();

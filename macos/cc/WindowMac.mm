@@ -435,6 +435,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetMo
     [cursor set];
 }
 
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nHideMouseCursorUntilMoved
+  (JNIEnv* env, jobject obj, jboolean value) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    [NSCursor setHiddenUntilMouseMoves:value];
+}
+
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetScreen
   (JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));

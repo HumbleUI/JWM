@@ -13,6 +13,7 @@ public class PanelMouseCursors extends Panel {
     public Map<IRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
     public boolean keepCursor = false;
+    public boolean cursorHidden = false;
 
     public PanelMouseCursors(Window window) {
         super(window);
@@ -20,7 +21,17 @@ public class PanelMouseCursors extends Panel {
 
     @Override
     public void accept(Event e) {
-        if (e instanceof EventMouseMove ee) {
+        if (e instanceof EventKey eventKey) {
+            if (eventKey.isPressed() == true && eventKey.isModifierDown(Example.MODIFIER)) {
+                switch (eventKey.getKey()) {
+                    case Y -> {
+                        window.hideMouseCursorUntilMoved(!cursorHidden);
+                        cursorHidden = !cursorHidden;
+                    }
+                }
+            }
+        } else if (e instanceof EventMouseMove ee) {
+            cursorHidden = false;
             lastMove = ee;
             var inside = contains(ee.getX(), ee.getY());
             if (inside || lastInside) {
