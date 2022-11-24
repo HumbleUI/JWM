@@ -157,7 +157,7 @@ Alpha. Expect API breakages.
 | EventWindowFullScreenEnter | ❌   | ✅   | ❌   |
 | EventWindowFullScreenExit  | ❌   | ✅   | ❌   |
 | Drag & Drop             | ❌   | ❌   | ❌   |
-| Touch events            | ❌   | ❌   | ❌   |
+| Touch events            | ❌   | [#249](https://github.com/HumbleUI/JWM/issues/249)   | ❌   |
 | Theme Changed           | ❌   | ❌   | ❌   |
 
 ### Screen
