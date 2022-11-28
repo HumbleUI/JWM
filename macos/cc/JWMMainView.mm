@@ -284,6 +284,30 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     return YES;
 }
 
+- (NSTouchTypeMask)allowedTouchTypes {
+    return NSTouchTypeMaskIndirect | NSTouchTypeMaskDirect;
+}
+
+- (BOOL)acceptsTouchEvents {
+    return YES;
+}
+
+- (void)touchesBeganWithEvent:(NSEvent *)event {
+    NSLog(@"TOUCH BEGAN");
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event {
+    NSLog(@"TOUCH MOVED");
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event {
+    NSLog(@"TOUCH ENDED");
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event {
+    NSLog(@"TOUCH CANCELED");
+}
+
 - (void)updateTrackingAreas {
     if (fTrackingArea != nil) {
         [self removeTrackingArea:fTrackingArea];
