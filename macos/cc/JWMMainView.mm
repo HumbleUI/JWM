@@ -293,11 +293,16 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)touchesBeganWithEvent:(NSEvent *)event {
-    NSLog(@"TOUCH BEGAN");
+    // FIXME: Mouse events originating outside the view are still tracked if the window is in focus.
+    //        But touch events here are only triggered if the cursor originates inside the view.
+    //        Is this related to fTrackingArea?
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
+    NSLog(@"TOUCH BEGAN: %d", touches.count);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event {
-    NSLog(@"TOUCH MOVED");
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
+    NSLog(@"TOUCH MOVED: %d", touches.count);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event {
