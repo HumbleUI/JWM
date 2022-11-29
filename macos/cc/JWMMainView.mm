@@ -297,7 +297,13 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     return NSTouchTypeMaskIndirect | NSTouchTypeMaskDirect;
 }
 
+- (BOOL)wantsRestingTouches {
+    return YES;
+}
+
 - (BOOL)acceptsTouchEvents {
+    // deprecated according to: https://developer.apple.com/documentation/appkit/nsview/1483739-acceptstouchevents?language=objc
+    // but touch events are not caught unless this property is set to YES
     return YES;
 }
 
