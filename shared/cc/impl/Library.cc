@@ -660,6 +660,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventMouseButton::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventMouseScroll::onLoad(env);
+    jwm::classes::EventTrackpadTouchStart::onLoad(env);
+    jwm::classes::EventTrackpadTouchMove::onLoad(env);
+    jwm::classes::EventTrackpadTouchCancel::onLoad(env);
+    jwm::classes::EventTrackpadTouchEnd::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
     jwm::classes::EventWindowCloseRequest::onLoad(env);

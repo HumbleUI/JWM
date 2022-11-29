@@ -237,6 +237,55 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
+void onTrackpadTouchStart(jwm::WindowMac* window, NSEvent* event) {
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSSize size = [touch deviceSize];
+        const NSPoint pos = [touch normalizedPosition];
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchStart::make(
+                    window->fEnv,
+                    (jint)touch.identity.hash,
+                    pos.x,
+                    pos.y,
+                    size.width,
+                    size.height));
+        window->dispatch(eventObj.get());
+    }
+}
+
+void onTrackpadTouchMove(jwm::WindowMac* window, NSEvent* event) {
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSPoint pos = [touch normalizedPosition];
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchMove::make(
+                    window->fEnv,
+                    (jint)touch.identity.hash,
+                    pos.x,
+                    pos.y));
+        window->dispatch(eventObj.get());
+    }
+}
+
+void onTrackpadTouchCancel(jwm::WindowMac* window, NSEvent* event) {
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:nil];
+    for (NSTouch *touch in touches) {
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
+                    window->fEnv,
+                    (jint)touch.identity.hash));
+        window->dispatch(eventObj.get());
+    }
+}
+
+void onTrackpadTouchEnd(jwm::WindowMac* window, NSEvent* event) {
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:nil];
+    for (NSTouch *touch in touches) {
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
+                    window->fEnv,
+                    (jint)touch.identity.hash));
+        window->dispatch(eventObj.get());
+    }
+}
+
 void logTouch(NSTouch* touch) {
     const NSSize size = [touch deviceSize];
     const NSPoint pos = [touch normalizedPosition];
@@ -309,30 +358,22 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)touchesBeganWithEvent:(NSEvent *)event {
-    // FIXME: Mouse events originating outside the view are still tracked if the window is in focus.
+    // NOTE:  Mouse events originating outside the view are still tracked if the window is in focus.
     //        But touch events here are only triggered if the cursor originates inside the view.
     //        Is this related to fTrackingArea?
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
-    for (NSTouch *touch in touches) {
-        jwm::logTouch(touch);
-    }
+    onTrackpadTouchStart(fWindow, event);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
-    for (NSTouch *touch in touches) {
-        jwm::logTouch(touch);
-    }
+    onTrackpadTouchMove(fWindow, event);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
-    for (NSTouch *touch in touches) {
-        jwm::logTouch(touch);
-    }
+    onTrackpadTouchEnd(fWindow, event);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event {
+    onTrackpadTouchCancel(fWindow, event);
 }
 
 - (void)updateTrackingAreas {
