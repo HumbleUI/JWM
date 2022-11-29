@@ -237,6 +237,15 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
+void logTouch(NSTouch* touch) {
+    const NSSize size = [touch deviceSize];
+    const NSPoint pos = [touch normalizedPosition];
+    const CGFloat x = pos.x * size.width;
+    const CGFloat y = pos.y * size.height;
+    NSLog(@"Size %f x %f", size.width, size.height);
+    NSLog(@"Touch %u: %.2f %.2f", (unsigned int)touch.identity.hash, x, y);
+}
+
 } // namespace jwm
 
 static const NSRange kEmptyRange = { NSNotFound, 0 };
@@ -297,20 +306,26 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     //        But touch events here are only triggered if the cursor originates inside the view.
     //        Is this related to fTrackingArea?
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
-    NSLog(@"TOUCH BEGAN: %d", touches.count);
+    for (NSTouch *touch in touches) {
+        jwm::logTouch(touch);
+    }
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event {
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
-    NSLog(@"TOUCH MOVED: %d", touches.count);
+    for (NSTouch *touch in touches) {
+        jwm::logTouch(touch);
+    }
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event {
-    NSLog(@"TOUCH ENDED");
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseTouching inView:nil];
+    for (NSTouch *touch in touches) {
+        jwm::logTouch(touch);
+    }
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event {
-    NSLog(@"TOUCH CANCELED");
 }
 
 - (void)updateTrackingAreas {
