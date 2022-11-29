@@ -107,6 +107,30 @@ namespace jwm {
             jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint x, jint y, jint modifiers);
         }
 
+        namespace EventTrackpadTouchStart {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jfloat deviceWidth, jfloat deviceHeight);
+        }
+
+        namespace EventTrackpadTouchMove {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY);
+        }
+
+        namespace EventTrackpadTouchCancel {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id);
+        }
+
+        namespace EventTrackpadTouchEnd {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id);
+        }
+
         namespace EventTextInput {
             extern jclass kCls;
             extern jmethodID kCtor;

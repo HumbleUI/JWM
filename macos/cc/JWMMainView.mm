@@ -242,7 +242,7 @@ void logTouch(NSTouch* touch) {
     const NSPoint pos = [touch normalizedPosition];
     const CGFloat x = pos.x * size.width;
     const CGFloat y = pos.y * size.height;
-    NSLog(@"Size %f x %f", size.width, size.height);
+    //NSLog(@"Size %f x %f", size.width, size.height);
     NSLog(@"Touch %u: %.2f %.2f", (unsigned int)touch.identity.hash, x, y);
 }
 
@@ -298,6 +298,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (BOOL)wantsRestingTouches {
+    // we set this to YES to prevent resting touches from triggering the cancel event
     return YES;
 }
 

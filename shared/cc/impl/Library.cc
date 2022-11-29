@@ -296,6 +296,78 @@ namespace jwm {
             }
         }
 
+        namespace EventTrackpadTouchStart {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTrackpadTouchStart"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IFFFF)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jfloat deviceWidth, jfloat deviceHeight) {
+                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY, deviceWidth, deviceHeight);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTrackpadTouchMove {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTrackpadTouchMove"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IFF)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY) {
+                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTrackpadTouchCancel {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTrackpadTouchCancel"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(I)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id) {
+                jobject res = env->NewObject(kCls, kCtor, id);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTrackpadTouchEnd {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTrackpadTouchEnd"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(I)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id) {
+                jobject res = env->NewObject(kCls, kCtor, id);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace EventTextInput {
             jclass kCls;
             jmethodID kCtor;
