@@ -237,15 +237,6 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
-void logTouch(NSTouch* touch) {
-    const NSSize size = [touch deviceSize];
-    const NSPoint pos = [touch normalizedPosition];
-    const CGFloat x = pos.x * size.width;
-    const CGFloat y = pos.y * size.height;
-    //NSLog(@"Size %f x %f", size.width, size.height);
-    NSLog(@"Touch %u: %.2f %.2f", (unsigned int)touch.identity.hash, x, y);
-}
-
 } // namespace jwm
 
 static const NSRange kEmptyRange = { NSNotFound, 0 };
@@ -261,7 +252,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSUInteger fLastPressedButtons;
     CGPoint fLastPos;
     NSMutableDictionary* fTouchIds;
+    NSMutableDictionary* fTouchDeviceIds;
     NSUInteger fTouchCount;
+    NSUInteger fTouchDeviceCount;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -273,7 +266,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fLastFlags = 0;
 
     fTouchIds = [NSMutableDictionary dictionary];
+    fTouchDeviceIds = [NSMutableDictionary dictionary];
     fTouchCount = 0;
+    fTouchDeviceCount = 0;
 
     [self updateTrackingAreas];
 
@@ -284,6 +279,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     [fTrackingArea release];
     [fMarkedText release];
     [fTouchIds release];
+    [fTouchDeviceIds release];
     [super dealloc];
 }
 
@@ -320,16 +316,26 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     //        Is this related to fTrackingArea?
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:nil];
     for (NSTouch *touch in touches) {
-        const NSUInteger tid = ++fTouchCount;
-        [fTouchIds setObject:[NSNumber numberWithUnsignedInteger:tid]
-                      forKey:touch.identity];
+        // create a Touch ID number and associate it with this touch’s identity object
+        const NSNumber* touchId = [NSNumber numberWithUnsignedInteger:++fTouchCount];
+        [fTouchIds setObject:touchId forKey:touch.identity];
+
+        // create a Device ID number and associate it with this touch’s device object address
+        const NSNumber* deviceKey = [NSNumber numberWithUnsignedInteger:(NSUInteger)touch.device];
+        NSNumber* deviceId = [fTouchDeviceIds objectForKey:deviceKey];
+        if (deviceId == nil) {
+            deviceId = [NSNumber numberWithUnsignedInteger:++fTouchDeviceCount];
+            [fTouchDeviceIds setObject:deviceId forKey:deviceKey];
+        }
+
         const NSSize size = [touch deviceSize];
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchStart::make(
                     fWindow->fEnv,
-                    (jint)tid,
+                    (jint)[touchId unsignedIntegerValue],
                     pos.x,
                     pos.y,
+                    (jint)[deviceId unsignedIntegerValue],
                     size.width,
                     size.height));
         fWindow->dispatch(eventObj.get());
@@ -339,11 +345,11 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)touchesMovedWithEvent:(NSEvent *)event {
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
     for (NSTouch *touch in touches) {
-        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchMove::make(
                     fWindow->fEnv,
-                    (jint)tid,
+                    (jint)touchId,
                     pos.x,
                     pos.y));
         fWindow->dispatch(eventObj.get());
@@ -353,7 +359,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)touchesEndedWithEvent:(NSEvent *)event {
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:nil];
     for (NSTouch *touch in touches) {
-        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
         [fTouchIds removeObjectForKey:touch.identity];
         if ([fTouchIds count] == 0) {
             fTouchCount = 0;
@@ -361,7 +367,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
                     fWindow->fEnv,
-                    (jint)tid));
+                    (jint)touchId));
         fWindow->dispatch(eventObj.get());
     }
 }
@@ -369,14 +375,14 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)touchesCancelledWithEvent:(NSEvent *)event {
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:nil];
     for (NSTouch *touch in touches) {
-        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
         [fTouchIds removeObjectForKey:touch.identity];
         if ([fTouchIds count] == 0) {
             fTouchCount = 0;
         }
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
                     fWindow->fEnv,
-                    (jint)tid));
+                    (jint)touchId));
         fWindow->dispatch(eventObj.get());
     }
 }

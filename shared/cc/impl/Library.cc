@@ -304,12 +304,12 @@ namespace jwm {
                 JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTrackpadTouchStart"));
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IFFFF)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(IFFIFF)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jfloat deviceWidth, jfloat deviceHeight) {
-                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY, deviceWidth, deviceHeight);
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jint deviceId, jfloat deviceWidth, jfloat deviceHeight) {
+                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY, deviceId, deviceWidth, deviceHeight);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

@@ -110,7 +110,7 @@ namespace jwm {
         namespace EventTrackpadTouchStart {
             extern jclass kCls;
             extern jmethodID kCtor;
-            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jfloat deviceWidth, jfloat deviceHeight);
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jint deviceId, jfloat deviceWidth, jfloat deviceHeight);
         }
 
         namespace EventTrackpadTouchMove {
