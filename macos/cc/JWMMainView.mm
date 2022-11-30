@@ -254,7 +254,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSMutableDictionary* fTouchIds;
     NSMutableDictionary* fTouchDeviceIds;
     NSUInteger fTouchCount;
-    NSUInteger fTouchDeviceCount;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -268,7 +267,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fTouchIds = [NSMutableDictionary dictionary];
     fTouchDeviceIds = [NSMutableDictionary dictionary];
     fTouchCount = 0;
-    fTouchDeviceCount = 0;
 
     [self updateTrackingAreas];
 
@@ -324,7 +322,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         const NSNumber* deviceKey = [NSNumber numberWithUnsignedInteger:(NSUInteger)touch.device];
         NSNumber* deviceId = [fTouchDeviceIds objectForKey:deviceKey];
         if (deviceId == nil) {
-            deviceId = [NSNumber numberWithUnsignedInteger:++fTouchDeviceCount];
+            const NSUInteger deviceCount = [fTouchDeviceIds count];
+            deviceId = [NSNumber numberWithUnsignedInteger:deviceCount+1];
             [fTouchDeviceIds setObject:deviceId forKey:deviceKey];
         }
 
