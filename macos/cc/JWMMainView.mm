@@ -330,13 +330,13 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         const NSSize size = [touch deviceSize];
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchStart::make(
-                    fWindow->fEnv,
-                    (jint)[touchId unsignedIntegerValue],
-                    pos.x,
-                    pos.y,
-                    (jint)[deviceId unsignedIntegerValue],
-                    size.width,
-                    size.height));
+            fWindow->fEnv,
+            (jint)[touchId unsignedIntegerValue],
+            pos.x,
+            pos.y,
+            (jint)[deviceId unsignedIntegerValue],
+            size.width,
+            size.height));
         fWindow->dispatch(eventObj.get());
     }
 }
@@ -347,10 +347,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchMove::make(
-                    fWindow->fEnv,
-                    (jint)touchId,
-                    pos.x,
-                    pos.y));
+            fWindow->fEnv,
+            (jint)touchId,
+            pos.x,
+            pos.y));
         fWindow->dispatch(eventObj.get());
     }
 }
@@ -365,8 +365,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         }
         const NSPoint pos = [touch normalizedPosition];
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
-                    fWindow->fEnv,
-                    (jint)touchId));
+            fWindow->fEnv,
+            (jint)touchId));
         fWindow->dispatch(eventObj.get());
     }
 }
@@ -380,8 +380,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
             fTouchCount = 0;
         }
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
-                    fWindow->fEnv,
-                    (jint)touchId));
+            fWindow->fEnv,
+            (jint)touchId));
         fWindow->dispatch(eventObj.get());
     }
 }
