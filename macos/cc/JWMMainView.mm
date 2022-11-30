@@ -237,55 +237,6 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
-void onTrackpadTouchStart(jwm::WindowMac* window, NSEvent* event) {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:nil];
-    for (NSTouch *touch in touches) {
-        const NSSize size = [touch deviceSize];
-        const NSPoint pos = [touch normalizedPosition];
-        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchStart::make(
-                    window->fEnv,
-                    (jint)touch.identity.hash,
-                    pos.x,
-                    pos.y,
-                    size.width,
-                    size.height));
-        window->dispatch(eventObj.get());
-    }
-}
-
-void onTrackpadTouchMove(jwm::WindowMac* window, NSEvent* event) {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
-    for (NSTouch *touch in touches) {
-        const NSPoint pos = [touch normalizedPosition];
-        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchMove::make(
-                    window->fEnv,
-                    (jint)touch.identity.hash,
-                    pos.x,
-                    pos.y));
-        window->dispatch(eventObj.get());
-    }
-}
-
-void onTrackpadTouchCancel(jwm::WindowMac* window, NSEvent* event) {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:nil];
-    for (NSTouch *touch in touches) {
-        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
-                    window->fEnv,
-                    (jint)touch.identity.hash));
-        window->dispatch(eventObj.get());
-    }
-}
-
-void onTrackpadTouchEnd(jwm::WindowMac* window, NSEvent* event) {
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:nil];
-    for (NSTouch *touch in touches) {
-        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
-                    window->fEnv,
-                    (jint)touch.identity.hash));
-        window->dispatch(eventObj.get());
-    }
-}
-
 void logTouch(NSTouch* touch) {
     const NSSize size = [touch deviceSize];
     const NSPoint pos = [touch normalizedPosition];
@@ -309,6 +260,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSEventModifierFlags fLastFlags;
     NSUInteger fLastPressedButtons;
     CGPoint fLastPos;
+    NSMutableDictionary* fTouchIds;
+    NSUInteger fTouchCount;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -319,6 +272,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fMarkedText = [[NSMutableAttributedString alloc] init];
     fLastFlags = 0;
 
+    fTouchIds = [NSMutableDictionary dictionary];
+    fTouchCount = 0;
+
     [self updateTrackingAreas];
 
     return self;
@@ -327,6 +283,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)dealloc {
     [fTrackingArea release];
     [fMarkedText release];
+    [fTouchIds release];
     [super dealloc];
 }
 
@@ -361,19 +318,67 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     // NOTE:  Mouse events originating outside the view are still tracked if the window is in focus.
     //        But touch events here are only triggered if the cursor originates inside the view.
     //        Is this related to fTrackingArea?
-    onTrackpadTouchStart(fWindow, event);
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSUInteger tid = ++fTouchCount;
+        [fTouchIds setObject:[NSNumber numberWithUnsignedInteger:tid]
+                      forKey:touch.identity];
+        const NSSize size = [touch deviceSize];
+        const NSPoint pos = [touch normalizedPosition];
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchStart::make(
+                    fWindow->fEnv,
+                    (jint)tid,
+                    pos.x,
+                    pos.y,
+                    size.width,
+                    size.height));
+        fWindow->dispatch(eventObj.get());
+    }
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event {
-    onTrackpadTouchMove(fWindow, event);
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        const NSPoint pos = [touch normalizedPosition];
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchMove::make(
+                    fWindow->fEnv,
+                    (jint)tid,
+                    pos.x,
+                    pos.y));
+        fWindow->dispatch(eventObj.get());
+    }
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event {
-    onTrackpadTouchEnd(fWindow, event);
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        [fTouchIds removeObjectForKey:touch.identity];
+        if ([fTouchIds count] == 0) {
+            fTouchCount = 0;
+        }
+        const NSPoint pos = [touch normalizedPosition];
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
+                    fWindow->fEnv,
+                    (jint)tid));
+        fWindow->dispatch(eventObj.get());
+    }
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event {
-    onTrackpadTouchCancel(fWindow, event);
+    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:nil];
+    for (NSTouch *touch in touches) {
+        const NSUInteger tid = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
+        [fTouchIds removeObjectForKey:touch.identity];
+        if ([fTouchIds count] == 0) {
+            fTouchCount = 0;
+        }
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
+                    fWindow->fEnv,
+                    (jint)tid));
+        fWindow->dispatch(eventObj.get());
+    }
 }
 
 - (void)updateTrackingAreas {
