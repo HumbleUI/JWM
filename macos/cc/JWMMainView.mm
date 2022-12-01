@@ -237,6 +237,12 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
+NSPoint trackpadTouchPos(NSTouch* touch) {
+    // Keep convention: (0, 0) in top left corner
+    const NSPoint pos = [touch normalizedPosition];
+    return NSMakePoint(pos.x, 1.0 - pos.y);
+}
+
 } // namespace jwm
 
 static const NSRange kEmptyRange = { NSNotFound, 0 };
@@ -328,7 +334,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         }
 
         const NSSize size = [touch deviceSize];
-        const NSPoint pos = [touch normalizedPosition];
+        const NSPoint pos = jwm::trackpadTouchPos(touch);
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchStart::make(
             fWindow->fEnv,
             (jint)[touchId unsignedIntegerValue],
@@ -345,7 +351,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
     for (NSTouch *touch in touches) {
         const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
-        const NSPoint pos = [touch normalizedPosition];
+        const NSPoint pos = jwm::trackpadTouchPos(touch);
         jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchMove::make(
             fWindow->fEnv,
             (jint)touchId,
