@@ -300,7 +300,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (NSTouchTypeMask)allowedTouchTypes {
-    return NSTouchTypeMaskIndirect | NSTouchTypeMaskDirect;
+    // Direct = on-screen
+    // Indirect = off-screen (e.g. trackpad)
+    return NSTouchTypeMaskIndirect; // | NSTouchTypeMaskDirect;
 }
 
 - (BOOL)wantsRestingTouches {
