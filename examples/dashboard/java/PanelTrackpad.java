@@ -13,6 +13,8 @@ public class PanelTrackpad extends Panel {
     public Map<Integer, Point> devices = Collections.synchronizedMap(new TreeMap<Integer, Point>()); // sizes
     public Map<Integer, Integer> touchDevices = Collections.synchronizedMap(new HashMap<Integer, Integer>()); // touch -> device
 
+    public final float radius = 32;
+
     public PanelTrackpad(Window window) {
         super(window);
     }
@@ -23,16 +25,38 @@ public class PanelTrackpad extends Panel {
             touchDevices.put(ee.getDeviceId(), ee.getId());
             devices.put(ee.getDeviceId(), new Point(ee.getDeviceWidth(), ee.getDeviceHeight()));
             touches.put(ee.getId(), new Point(ee.getFracX(), ee.getFracY()));
+            window.requestFrame();
         } else if (e instanceof EventTrackpadTouchMove ee) {
             touches.put(ee.getId(), new Point(ee.getFracX(), ee.getFracY()));
+            window.requestFrame();
         } else if (e instanceof EventTrackpadTouchCancel ee) {
             touches.remove(ee.getId());
+            window.requestFrame();
         } else if (e instanceof EventTrackpadTouchEnd ee) {
             touches.remove(ee.getId());
+            window.requestFrame();
         }
     }
 
     @Override
     public void paintImpl(Canvas canvas, int width, int height, float scale) {
+        if (touches.isEmpty()) return;
+
+        var capHeight = Example.FONT12.getMetrics().getCapHeight();
+        var padding = (int) 8 * scale;
+
+        try (var bg = new Paint().setColor(0x40FFFFFF);
+             var fg = new Paint().setColor(0xFF000000)) {
+            for (var touch : touches.entrySet()) {
+                final int id = touch.getKey();
+                final Point pos = touch.getValue();
+                final float x = pos.getX() * width;
+                final float y = pos.getY() * height;
+                canvas.drawCircle(x, y, radius, bg);
+                try (var line = TextLine.make(String.valueOf(id), Example.FONT12)) {
+                    canvas.drawTextLine(line, x - line.getWidth()/2, y + capHeight/2, fg);
+                }
+            }
+        }
     }
 }
