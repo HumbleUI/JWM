@@ -13,6 +13,7 @@
 namespace jwm {
 Key kKeyTable[128];
 KeyLocation kKeyLocations[128];
+TouchType kTouchTypes[2];
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
@@ -183,6 +184,9 @@ void initKeyTable() {
     kKeyLocations[kVK_ANSI_KeypadMinus] = KeyLocation::KEYPAD;
     kKeyLocations[kVK_ANSI_KeypadDecimal] = KeyLocation::KEYPAD;
     kKeyLocations[kVK_ANSI_KeypadDivide] = KeyLocation::KEYPAD;
+
+    kTouchTypes[NSTouchTypeDirect] = TouchType::DIRECT;
+    kTouchTypes[NSTouchTypeIndirect] = TouchType::INDIRECT;
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -337,14 +341,15 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
         const NSSize size = [touch deviceSize];
         const NSPoint pos = jwm::trackpadTouchPos(touch);
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchStart::make(
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTouchStart::make(
             fWindow->fEnv,
             (jint)[touchId unsignedIntegerValue],
             pos.x,
             pos.y,
             (jint)[deviceId unsignedIntegerValue],
             size.width,
-            size.height));
+            size.height,
+            jwm::kTouchTypes[touch.type]));
         fWindow->dispatch(eventObj.get());
     }
 }
@@ -354,7 +359,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     for (NSTouch *touch in touches) {
         const NSUInteger touchId = [[fTouchIds objectForKey:touch.identity] unsignedIntegerValue];
         const NSPoint pos = jwm::trackpadTouchPos(touch);
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchMove::make(
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTouchMove::make(
             fWindow->fEnv,
             (jint)touchId,
             pos.x,
@@ -372,7 +377,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
             fTouchCount = 0;
         }
         const NSPoint pos = [touch normalizedPosition];
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchEnd::make(
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTouchEnd::make(
             fWindow->fEnv,
             (jint)touchId));
         fWindow->dispatch(eventObj.get());
@@ -387,7 +392,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         if ([fTouchIds count] == 0) {
             fTouchCount = 0;
         }
-        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTrackpadTouchCancel::make(
+        jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventTouchCancel::make(
             fWindow->fEnv,
             (jint)touchId));
         fWindow->dispatch(eventObj.get());

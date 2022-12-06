@@ -4,6 +4,6 @@ import lombok.*;
 import org.jetbrains.annotations.*;
 
 @Data
-public class EventTrackpadTouchEnd implements Event {
+public class EventTouchEnd implements Event {
     @ApiStatus.Internal public final int _id; 
 }
