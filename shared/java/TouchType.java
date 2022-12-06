@@ -4,8 +4,8 @@ import org.jetbrains.annotations.*;
 
 // must be kept in sync with TouchType.hh
 public enum TouchType {
-    DIRECT,
-    INDIRECT;
+    DIRECT,   // a direct touch from a user’s finger on a screen
+    INDIRECT; // an indirect touch that is not on a screen (e.g. trackpad)
 
     @ApiStatus.Internal public static final TouchType[] _values = values();
 
