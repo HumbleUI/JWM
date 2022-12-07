@@ -4,6 +4,7 @@
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "KeyModifier.hh"
+#include "Log.hh"
 #include "JWMMainView.hh"
 #include "WindowMac.hh"
 #include "Util.hh"
@@ -241,12 +242,12 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
-void onTouch(jwm::WindowMac* window, NSEvent* event, NSMutableDictionary* touchIds, NSMutableDictionary* touchDeviceIds, NSUInteger &touchCount) {
+void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutableDictionary* touchIds, NSMutableDictionary* touchDeviceIds, NSUInteger &touchCount) {
     // NOTE:  Mouse events originating outside the view are still tracked if the window is in focus.
     //        But touch events here are only triggered if the cursor originates inside the view.
     //        Is this related to fTrackingArea?
 
-    NSSet *touches = [event touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    NSSet *touches = [event touchesMatchingPhase:phase inView:nil];
     for (NSTouch *touch in touches) {
         const NSPoint _pos = [touch normalizedPosition];
 
@@ -278,15 +279,13 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSMutableDictionary* touchI
                 size.height,
                 jwm::kTouchTypes[touch.type]));
             window->dispatch(eventObj.get());
-
-            printf("TOUCH %lu START\n", touchId);
         } else {
             // NOTE: Here, touch has existing ID
             const NSUInteger touchId = [[touchIds objectForKey:touch.identity] unsignedIntegerValue];
+
             if (touch.phase == NSTouchPhaseStationary) {
                 // PHASE: STATIONARY
                 // NOTE: we do nothing with stationary touches
-                // printf("TOUCH %lu STATIONARY\n", touchId);
             } else if (touch.phase == NSTouchPhaseMoved) {
                 // PHASE: MOVE
                 jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchMove::make(window->fEnv, (jint)touchId, x, y));
@@ -297,19 +296,15 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSMutableDictionary* touchI
                 if ([touchIds count] == 0) {
                     touchCount = 0;
                 }
-                printf("TOUCH %lu REMOVE\n", touchId);
                 if (touch.phase == NSTouchPhaseEnded) {
                     // PHASE: END
                     jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchEnd::make(window->fEnv, (jint)touchId));
                     window->dispatch(eventObj.get());
-                    printf("TOUCH %lu END\n", touchId);
                 } else if (touch.phase == NSTouchPhaseCancelled) {
                     // PHASE: CANCEL
                     jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchCancel::make(window->fEnv, (jint)touchId));
                     window->dispatch(eventObj.get());
-                    printf("TOUCH %lu CANCEL\n", touchId);
                 } else {
-                    printf("TOUCH %lu UNKNOWN %lu\n", touchId, touch.phase);
                 }
             }
         }
@@ -390,19 +385,19 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)touchesBeganWithEvent:(NSEvent *)event {
-    jwm::onTouch(fWindow, event, fTouchIds, fTouchDeviceIds, fTouchCount);
+    jwm::onTouch(fWindow, event, NSTouchPhaseBegan, fTouchIds, fTouchDeviceIds, fTouchCount);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event {
-    jwm::onTouch(fWindow, event, fTouchIds, fTouchDeviceIds, fTouchCount);
+    jwm::onTouch(fWindow, event, NSTouchPhaseMoved, fTouchIds, fTouchDeviceIds, fTouchCount);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event {
-    jwm::onTouch(fWindow, event, fTouchIds, fTouchDeviceIds, fTouchCount);
+    jwm::onTouch(fWindow, event, NSTouchPhaseEnded, fTouchIds, fTouchDeviceIds, fTouchCount);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event {
-    jwm::onTouch(fWindow, event, fTouchIds, fTouchDeviceIds, fTouchCount);
+    jwm::onTouch(fWindow, event, NSTouchPhaseCancelled, fTouchIds, fTouchDeviceIds, fTouchCount);
 }
 
 - (void)updateTrackingAreas {
