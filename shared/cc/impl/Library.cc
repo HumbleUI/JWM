@@ -4,6 +4,7 @@
 #include <cassert>
 #include "Key.hh"
 #include "MouseButton.hh"
+#include "TouchType.hh"
 #include "JNILocal.hh"
 #include "StringUTF16.hh"
 
@@ -292,6 +293,78 @@ namespace jwm {
 
             jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint x, jint y, jint modifiers) {
                 jobject res = env->NewObject(kCls, kCtor, deltaX, deltaY, deltaChars, deltaLines, deltaPages, x, y, modifiers);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTouchStart {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTouchStart"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IFFIFFI)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jint deviceId, jfloat deviceWidth, jfloat deviceHeight, TouchType touchType) {
+                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY, deviceId, deviceWidth, deviceHeight, touchType);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTouchMove {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTouchMove"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(IFF)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY) {
+                jobject res = env->NewObject(kCls, kCtor, id, fracX, fracY);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTouchCancel {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTouchCancel"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(I)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id) {
+                jobject res = env->NewObject(kCls, kCtor, id);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
+        namespace EventTouchEnd {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTouchEnd"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "(I)V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env, jint id) {
+                jobject res = env->NewObject(kCls, kCtor, id);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }
@@ -588,6 +661,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventMouseButton::onLoad(env);
     jwm::classes::EventMouseMove::onLoad(env);
     jwm::classes::EventMouseScroll::onLoad(env);
+    jwm::classes::EventTouchStart::onLoad(env);
+    jwm::classes::EventTouchMove::onLoad(env);
+    jwm::classes::EventTouchCancel::onLoad(env);
+    jwm::classes::EventTouchEnd::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
     jwm::classes::EventWindowCloseRequest::onLoad(env);

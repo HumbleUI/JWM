@@ -4,6 +4,7 @@
 #include "Key.hh"
 #include "KeyLocation.hh"
 #include "MouseButton.hh"
+#include "TouchType.hh"
 #include "Types.hh"
 
 namespace jwm {
@@ -105,6 +106,30 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jfloat deltaX, jfloat deltaY, jfloat deltaChars, jfloat deltaLines, jfloat deltaPages, jint x, jint y, jint modifiers);
+        }
+
+        namespace EventTouchStart {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY, jint deviceId, jfloat deviceWidth, jfloat deviceHeight, TouchType touchType);
+        }
+
+        namespace EventTouchMove {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id, jfloat fracX, jfloat fracY);
+        }
+
+        namespace EventTouchCancel {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id);
+        }
+
+        namespace EventTouchEnd {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env, jint id);
         }
 
         namespace EventTextInput {

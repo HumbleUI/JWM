@@ -29,6 +29,7 @@ public class Example implements Consumer<Event> {
     public PanelRendering panelRendering;
     public PanelEvents panelEvents;
     public PanelTheme panelTheme;
+    public PanelTouch panelTouch;
     public boolean initialized = false;
 
     public Window window;
@@ -50,6 +51,7 @@ public class Example implements Consumer<Event> {
         panelRendering = new PanelRendering(window);
         panelEvents = new PanelEvents(window);
         panelTheme = new PanelTheme(window);
+        panelTouch = new PanelTouch(window);
 
         var scale = window.getScreen().getScale();
         int count = App._windows.size() - 1;
@@ -105,14 +107,15 @@ public class Example implements Consumer<Event> {
 
         // First row
         panelMouse.paint        (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
-        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight * 3 + PADDING * 2, scale);
+        panelTouch.paint     (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelTextInput.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
+        panelMouseCursors.paint (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 0, panelWidth, panelHeight, scale);
 
         // Second row
         panelScreens.paint      (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelAnimation.paint    (canvas, PADDING + (panelWidth + PADDING) * 1, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
         panelRendering.paint    (canvas, PADDING + (panelWidth + PADDING) * 2, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight, scale);
+        panelLegend.paint       (canvas, PADDING + (panelWidth + PADDING) * 3, PADDING + (panelHeight + PADDING) * 1, panelWidth, panelHeight * 2 + PADDING, scale);
         
         // Third row
         panelEvents.paint       (canvas, PADDING + (panelWidth + PADDING) * 0, PADDING + (panelHeight + PADDING) * 2, panelWidth * 2 + PADDING, panelHeight, scale);
@@ -167,6 +170,7 @@ public class Example implements Consumer<Event> {
         panelRendering.accept(e);
         panelEvents.accept(e);
         panelTheme.accept(e);
+        panelTouch.accept(e);
 
         float scale = window.getScreen().getScale();
         if (e instanceof EventKey eventKey) {

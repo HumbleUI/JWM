@@ -4,6 +4,7 @@
 #include "impl/JNILocal.hh"
 #include "impl/Library.hh"
 #include "KeyModifier.hh"
+#include "Log.hh"
 #include "JWMMainView.hh"
 #include "WindowMac.hh"
 #include "Util.hh"
@@ -13,6 +14,7 @@
 namespace jwm {
 Key kKeyTable[128];
 KeyLocation kKeyLocations[128];
+TouchType kTouchTypes[2];
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
@@ -183,6 +185,9 @@ void initKeyTable() {
     kKeyLocations[kVK_ANSI_KeypadMinus] = KeyLocation::KEYPAD;
     kKeyLocations[kVK_ANSI_KeypadDecimal] = KeyLocation::KEYPAD;
     kKeyLocations[kVK_ANSI_KeypadDivide] = KeyLocation::KEYPAD;
+
+    kTouchTypes[NSTouchTypeDirect] = TouchType::DIRECT;
+    kTouchTypes[NSTouchTypeIndirect] = TouchType::INDIRECT;
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -237,6 +242,70 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
+void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutableDictionary* touchIds, NSMutableDictionary* touchDeviceIds, NSUInteger& touchCount) {
+    // NOTE:  Mouse events originating outside the view are still tracked if the window is in focus.
+    //        But touch events here are only triggered if the cursor originates inside the view.
+    //        Is this related to fTrackingArea?
+
+    NSSet* touches = [event touchesMatchingPhase:phase inView:nil];
+    for (NSTouch* touch in touches) {
+        const NSPoint _pos = [touch normalizedPosition];
+
+        // Keep convention: (0, 0) in top left corner
+        const CGFloat x = _pos.x;
+        const CGFloat y = 1.0 - _pos.y;
+
+        if (phase == NSTouchPhaseBegan) {
+            // create a Touch ID number and associate it with this touch’s identity object
+            const NSUInteger touchId = ++touchCount;
+            const NSNumber* touchIdNum = [NSNumber numberWithUnsignedInteger:touchId];
+            [touchIds setObject:touchIdNum forKey:touch.identity];
+            [touchIdNum release];
+
+            // create a Device ID number and associate it with this touch’s device object address
+            const NSNumber* deviceKey = [NSNumber numberWithUnsignedInteger:(NSUInteger)touch.device];
+            NSNumber* deviceId = [touchDeviceIds objectForKey:deviceKey];
+            if (deviceId == nil) {
+                const NSUInteger deviceCount = [touchDeviceIds count];
+                deviceId = [NSNumber numberWithUnsignedInteger:deviceCount + 1];
+                [touchDeviceIds setObject:deviceId forKey:deviceKey];
+            }
+
+            const NSSize size = [touch deviceSize];
+            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchStart::make(
+                window->fEnv, (jint)touchId, x, y,
+                (jint)[deviceId unsignedIntegerValue],
+                size.width,
+                size.height,
+                jwm::kTouchTypes[touch.type]));
+            window->dispatch(eventObj.get());
+
+            [deviceKey release];
+            [deviceId release];
+        } else {
+            const NSUInteger touchId = [[touchIds objectForKey:touch.identity] unsignedIntegerValue];
+
+            if (phase == NSTouchPhaseStationary) {
+            } else if (phase == NSTouchPhaseMoved) {
+                jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchMove::make(window->fEnv, (jint)touchId, x, y));
+                window->dispatch(eventObj.get());
+            } else {
+                [touchIds removeObjectForKey:touch.identity];
+                if ([touchIds count] == 0) {
+                    touchCount = 0;
+                }
+                if (phase == NSTouchPhaseEnded) {
+                    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchEnd::make(window->fEnv, (jint)touchId));
+                    window->dispatch(eventObj.get());
+                } else if (phase == NSTouchPhaseCancelled) {
+                    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchCancel::make(window->fEnv, (jint)touchId));
+                    window->dispatch(eventObj.get());
+                }
+            }
+        }
+    }
+}
+
 } // namespace jwm
 
 static const NSRange kEmptyRange = { NSNotFound, 0 };
@@ -251,6 +320,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     NSEventModifierFlags fLastFlags;
     NSUInteger fLastPressedButtons;
     CGPoint fLastPos;
+    NSMutableDictionary* fTouchIds;
+    NSMutableDictionary* fTouchDeviceIds;
+    NSUInteger fTouchCount;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow {
@@ -261,6 +333,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fMarkedText = [[NSMutableAttributedString alloc] init];
     fLastFlags = 0;
 
+    fTouchIds = [NSMutableDictionary dictionary];
+    fTouchDeviceIds = [NSMutableDictionary dictionary];
+    fTouchCount = 0;
+
     [self updateTrackingAreas];
 
     return self;
@@ -269,6 +345,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)dealloc {
     [fTrackingArea release];
     [fMarkedText release];
+    [fTouchIds release];
+    [fTouchDeviceIds release];
     [super dealloc];
 }
 
@@ -282,6 +360,39 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (BOOL)acceptsFirstResponder {
     return YES;
+}
+
+- (NSTouchTypeMask)allowedTouchTypes {
+    // Direct = on-screen
+    // Indirect = off-screen (e.g. trackpad)
+    return NSTouchTypeMaskIndirect; // | NSTouchTypeMaskDirect;
+}
+
+- (BOOL)wantsRestingTouches {
+    // we set this to YES to prevent resting touches from triggering the cancel event
+    return YES;
+}
+
+- (BOOL)acceptsTouchEvents {
+    // deprecated according to: https://developer.apple.com/documentation/appkit/nsview/1483739-acceptstouchevents?language=objc
+    // but touch events are not caught unless this property is set to YES
+    return YES;
+}
+
+- (void)touchesBeganWithEvent:(NSEvent *)event {
+    jwm::onTouch(fWindow, event, NSTouchPhaseBegan, fTouchIds, fTouchDeviceIds, fTouchCount);
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event {
+    jwm::onTouch(fWindow, event, NSTouchPhaseMoved, fTouchIds, fTouchDeviceIds, fTouchCount);
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event {
+    jwm::onTouch(fWindow, event, NSTouchPhaseEnded, fTouchIds, fTouchDeviceIds, fTouchCount);
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event {
+    jwm::onTouch(fWindow, event, NSTouchPhaseCancelled, fTouchIds, fTouchDeviceIds, fTouchCount);
 }
 
 - (void)updateTrackingAreas {

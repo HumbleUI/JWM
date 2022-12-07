@@ -85,7 +85,7 @@ namespace jwm {
     do {                                                    \
         auto& __log = ::jwm::Log::getInstance();            \
         if (__log.checkLevel(verbose)) {                    \
-            LogBuilder __builder(                           \
+            ::jwm::LogBuilder __builder(                           \
                 __FILE__,                                   \
                 __FUNCTION__,                               \
                 static_cast<unsigned long int>(__LINE__),   \
