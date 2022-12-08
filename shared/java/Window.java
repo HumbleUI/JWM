@@ -251,6 +251,25 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public abstract Window hideMouseCursorUntilMoved(boolean value);
 
     /**
+     * <p>Locks and hides mouse cursor</p>
+     *
+     * @return  this
+     */
+    @NotNull @Contract("-> this")
+    public Window lockMouseCursor() {
+        return lockMouseCursor(true);
+    }
+
+    /**
+     * <p>Locks and hides mouse cursor. Call with `false` to unlock and unhide.</p>
+     *
+     * @param value  true to lock/hide, false to unlock/unhide
+     * @return       this
+     */
+    @NotNull @Contract("_ -> this")
+    public abstract Window lockMouseCursor(boolean value);
+
+    /**
      * <p>Set window visibility.</p>
      *
      * <p>If passed `true`, the window will be visible for the user.</p>

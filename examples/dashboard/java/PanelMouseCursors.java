@@ -14,6 +14,7 @@ public class PanelMouseCursors extends Panel {
     public boolean lastInside = false;
     public boolean keepCursor = false;
     public boolean cursorHidden = false;
+    public boolean cursorLocked = false;
 
     public PanelMouseCursors(Window window) {
         super(window);
@@ -27,6 +28,10 @@ public class PanelMouseCursors extends Panel {
                     case Y -> {
                         window.hideMouseCursorUntilMoved(!cursorHidden);
                         cursorHidden = !cursorHidden;
+                    }
+                    case U -> {
+                        window.lockMouseCursor(!cursorLocked);
+                        cursorLocked = !cursorLocked;
                     }
                 }
             }

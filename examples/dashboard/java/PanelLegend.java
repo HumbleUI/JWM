@@ -18,6 +18,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("F", "Fullscreen");
         shortcuts.put("X", "Clipboard formats");
         shortcuts.put("Y", "Hide mouse cursor");
+        shortcuts.put("U", "Lock mouse cursor");
         shortcuts.put("Z", "Toggle Z-order");
         shortcuts.put("B", "Toggle Progress Bar");
         shortcuts.put("O", "Opacity");
