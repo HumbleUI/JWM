@@ -88,6 +88,12 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window lockMouseCursor(boolean value) {
+        // TODO impl me!
+        return this;
+    }
+
+    @Override
     public Window setVisible(boolean isVisible) {
        assert _onUIThread();
        _nSetVisible(isVisible);
