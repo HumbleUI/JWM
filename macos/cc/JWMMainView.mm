@@ -242,26 +242,61 @@ void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPress
     *lastPressedButtons = after;
 }
 
+void removeTouch(jwm::WindowMac* window, NSTouchPhase phase, id identity, NSUInteger touchId, NSMutableDictionary* touchIds, NSUInteger& touchCount) {
+    [touchIds removeObjectForKey:identity];
+    if ([touchIds count] == 0) {
+        touchCount = 0;
+    }
+    if (phase == NSTouchPhaseEnded) {
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchEnd::make(window->fEnv, (jint)touchId));
+        window->dispatch(eventObj.get());
+    } else if (phase == NSTouchPhaseCancelled) {
+        jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchCancel::make(window->fEnv, (jint)touchId));
+        window->dispatch(eventObj.get());
+    }
+}
+
 void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutableDictionary* touchIds, NSMutableDictionary* touchDeviceIds, NSUInteger& touchCount) {
     // NOTE:  Mouse events originating outside the view are still tracked if the window is in focus.
     //        But touch events here are only triggered if the cursor originates inside the view.
     //        Is this related to fTrackingArea?
 
+    // Cancel absent touches
+    NSSet* activeTouches = [event touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    for (id identity in [touchIds allKeys]) {
+        BOOL present = NO;
+        for (NSTouch* activeTouch in activeTouches) {
+            if (identity == activeTouch.identity) {
+                present = YES;
+                break;
+            }
+        }
+        if (!present) {
+            NSUInteger touchId = [[touchIds objectForKey:identity] unsignedIntegerValue];
+            removeTouch(window, NSTouchPhaseCancelled, identity, touchId, touchIds, touchCount);
+        }
+    }
+
     NSSet* touches = [event touchesMatchingPhase:phase inView:nil];
     for (NSTouch* touch in touches) {
-        const NSPoint _pos = [touch normalizedPosition];
-
         // Keep convention: (0, 0) in top left corner
+        const NSPoint _pos = [touch normalizedPosition];
         const CGFloat x = _pos.x;
         const CGFloat y = 1.0 - _pos.y;
 
-        if (phase == NSTouchPhaseBegan) {
-            // create a Touch ID number and associate it with this touch’s identity object
-            const NSUInteger touchId = ++touchCount;
-            const NSNumber* touchIdNum = [NSNumber numberWithUnsignedInteger:touchId];
+        // Get or create new touch ID
+        NSNumber* touchIdNum = [touchIds objectForKey:touch.identity];
+        NSUInteger touchId;
+        if (touchIdNum) {
+            touchId = [touchIdNum unsignedIntegerValue];
+        } else {
+            touchId = ++touchCount;
+            touchIdNum = [NSNumber numberWithUnsignedInteger:touchId];
             [touchIds setObject:touchIdNum forKey:touch.identity];
-            [touchIdNum release];
+        }
+        [touchIdNum release];
 
+        if (phase == NSTouchPhaseBegan) {
             // create a Device ID number and associate it with this touch’s device object address
             const NSNumber* deviceKey = [NSNumber numberWithUnsignedInteger:(NSUInteger)touch.device];
             NSNumber* deviceId = [touchDeviceIds objectForKey:deviceKey];
@@ -282,26 +317,11 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutab
 
             [deviceKey release];
             [deviceId release];
-        } else {
-            const NSUInteger touchId = [[touchIds objectForKey:touch.identity] unsignedIntegerValue];
-
-            if (phase == NSTouchPhaseStationary) {
-            } else if (phase == NSTouchPhaseMoved) {
-                jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchMove::make(window->fEnv, (jint)touchId, x, y));
-                window->dispatch(eventObj.get());
-            } else {
-                [touchIds removeObjectForKey:touch.identity];
-                if ([touchIds count] == 0) {
-                    touchCount = 0;
-                }
-                if (phase == NSTouchPhaseEnded) {
-                    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchEnd::make(window->fEnv, (jint)touchId));
-                    window->dispatch(eventObj.get());
-                } else if (phase == NSTouchPhaseCancelled) {
-                    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchCancel::make(window->fEnv, (jint)touchId));
-                    window->dispatch(eventObj.get());
-                }
-            }
+        } else if (phase == NSTouchPhaseMoved) {
+            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchMove::make(window->fEnv, (jint)touchId, x, y));
+            window->dispatch(eventObj.get());
+        } else if (phase != NSTouchPhaseStationary) {
+            removeTouch(window, phase, touch.identity, touchId, touchIds, touchCount);
         }
     }
 }
