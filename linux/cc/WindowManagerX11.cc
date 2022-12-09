@@ -413,13 +413,14 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                             XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
                             lastMousePosX = deviceEvent->event_x;
                             lastMousePosY = deviceEvent->event_y;
+                            int movementX = 0, movementY = 0; // TODO: impl me!
                             jwm::JNILocal<jobject> eventMove(
                                 app.getJniEnv(),
                                 EventMouseMove::make(app.getJniEnv(),
                                     deviceEvent->event_x,
                                     deviceEvent->event_y,
-                                    0,
-                                    0,
+                                    movementX,
+                                    movementY,
                                     jwm::MouseButtonX11::fromNativeMask(mask),
                                     jwm::KeyX11::getModifiers()
                                 )
