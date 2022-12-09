@@ -9,7 +9,7 @@ import io.github.humbleui.skija.*;
 import io.github.humbleui.types.*;
 
 public class PanelMouseCursors extends Panel {
-    public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
+    public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0, 0, 0);
     public Map<IRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
     public boolean keepCursor = false;

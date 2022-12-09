@@ -418,6 +418,8 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                 EventMouseMove::make(app.getJniEnv(),
                                     deviceEvent->event_x,
                                     deviceEvent->event_y,
+                                    0,
+                                    0,
                                     jwm::MouseButtonX11::fromNativeMask(mask),
                                     jwm::KeyX11::getModifiers()
                                 )

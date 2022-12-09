@@ -7,6 +7,8 @@ import org.jetbrains.annotations.*;
 public class EventMouseMove implements Event {
     @ApiStatus.Internal public final int _x;
     @ApiStatus.Internal public final int _y;
+    @ApiStatus.Internal public final int _movementX; // for when cursor is locked
+    @ApiStatus.Internal public final int _movementY;
     @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _buttons;
     @ApiStatus.Internal @Getter(AccessLevel.NONE) public final int _modifiers;
 

@@ -220,6 +220,8 @@ void onMouseMoved(jwm::WindowMac* window, NSEvent* event, CGPoint* lastPos) {
         window->fEnv,
         (jint) lastPos->x,
         (jint) lastPos->y,
+        (jint)[event deltaX],
+        (jint)[event deltaY],
         [NSEvent pressedMouseButtons],
         jwm::modifierMask([event modifierFlags])));
     window->dispatch(eventObj.get());

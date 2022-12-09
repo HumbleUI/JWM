@@ -373,7 +373,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int buttons = _getMouseButtons();
             int modifiers = _getModifiers();
 
-            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, _lastMousePosX, _lastMousePosY, buttons, modifiers));
+            JNILocal<jobject> eventMouseMove(env, classes::EventMouseMove::make(env, _lastMousePosX, _lastMousePosY, 0, 0, buttons, modifiers));
             dispatch(eventMouseMove.get());
             return 0;
         }
