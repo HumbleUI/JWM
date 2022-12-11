@@ -1,3 +1,10 @@
+# 0.4.11 - Dec 11, 2022
+
+Added:
+
+- macOS: EventTouchStart, EventTouchMove, EventTouchCancel, EventTouchEnd #249 #251 #254 via @shaunlebron
+- macOS: Window::lockMouseCursor #253 via @shaunlebron
+
 # 0.4.10 - Sep 27, 2022
 
 Added:
