@@ -96,6 +96,12 @@ public class WindowX11 extends Window {
     }
 
     @Override
+    public Window lockMouseCursor(boolean value) {
+        // TODO impl me!
+        return this;
+    }
+
+    @Override
     public Window setOpacity(float opacity) {
         // TODO: impl me!
         return this;

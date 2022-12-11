@@ -268,12 +268,12 @@ namespace jwm {
                 JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventMouseMove"));
                 Throwable::exceptionThrown(env);
                 kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
-                kCtor = env->GetMethodID(kCls, "<init>", "(IIII)V");
+                kCtor = env->GetMethodID(kCls, "<init>", "(IIIIII)V");
                 Throwable::exceptionThrown(env);
             }
 
-            jobject make(JNIEnv* env, jint x, jint y, jint buttons, jint modifiers) {
-                jobject res = env->NewObject(kCls, kCtor, x, y, buttons, modifiers);
+            jobject make(JNIEnv* env, jint x, jint y, jint movementX, jint movementY, jint buttons, jint modifiers) {
+                jobject res = env->NewObject(kCls, kCtor, x, y, movementX, movementY, buttons, modifiers);
                 return Throwable::exceptionThrown(env) ? nullptr : res;
             }
         }

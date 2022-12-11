@@ -9,11 +9,12 @@ import io.github.humbleui.skija.*;
 import io.github.humbleui.types.*;
 
 public class PanelMouseCursors extends Panel {
-    public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0);
+    public EventMouseMove lastMove = new EventMouseMove(0, 0, 0, 0, 0, 0);
     public Map<IRect, MouseCursor> rects = new HashMap<>();
     public boolean lastInside = false;
     public boolean keepCursor = false;
     public boolean cursorHidden = false;
+    public boolean cursorLocked = false;
 
     public PanelMouseCursors(Window window) {
         super(window);
@@ -27,6 +28,10 @@ public class PanelMouseCursors extends Panel {
                     case Y -> {
                         window.hideMouseCursorUntilMoved(!cursorHidden);
                         cursorHidden = !cursorHidden;
+                    }
+                    case U -> {
+                        window.lockMouseCursor(!cursorLocked);
+                        cursorLocked = !cursorLocked;
                     }
                 }
             }
