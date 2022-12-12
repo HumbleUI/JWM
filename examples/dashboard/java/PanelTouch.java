@@ -25,15 +25,13 @@ public class PanelTouch extends Panel {
             touchDevices.put(ee.getDeviceId(), ee.getId());
             devices.put(ee.getDeviceId(), new Point(ee.getDeviceWidth(), ee.getDeviceHeight()));
             touches.put(ee.getId(), new Point(ee.getFracX(), ee.getFracY()));
-            window.requestFrame();
         } else if (e instanceof EventTouchMove ee) {
             touches.put(ee.getId(), new Point(ee.getFracX(), ee.getFracY()));
-            window.requestFrame();
         } else if (e instanceof EventTouchCancel ee) {
             touches.remove(ee.getId());
-            window.requestFrame();
         } else if (e instanceof EventTouchEnd ee) {
             touches.remove(ee.getId());
+        } else if (e instanceof EventTouchFrame ee) {
             window.requestFrame();
         }
     }

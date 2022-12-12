@@ -326,6 +326,9 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutab
             removeTouch(window, phase, touch.identity, touchId, touchIds, touchCount);
         }
     }
+    // signal end of batched touch frame
+    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchFrame::make(window->fEnv));
+    window->dispatch(eventObj.get());
 }
 
 } // namespace jwm

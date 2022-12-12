@@ -369,6 +369,24 @@ namespace jwm {
             }
         }
 
+        namespace EventTouchFrame {
+            jclass kCls;
+            jmethodID kCtor;
+
+            void onLoad(JNIEnv* env) {
+                JNILocal<jclass> cls(env, env->FindClass("io/github/humbleui/jwm/EventTouchFrame"));
+                Throwable::exceptionThrown(env);
+                kCls = static_cast<jclass>(env->NewGlobalRef(cls.get()));
+                kCtor = env->GetMethodID(kCls, "<init>", "()V");
+                Throwable::exceptionThrown(env);
+            }
+
+            jobject make(JNIEnv* env) {
+                jobject res = env->NewObject(kCls, kCtor);
+                return Throwable::exceptionThrown(env) ? nullptr : res;
+            }
+        }
+
         namespace EventTextInput {
             jclass kCls;
             jmethodID kCtor;
@@ -665,6 +683,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_impl_Library__1nAf
     jwm::classes::EventTouchMove::onLoad(env);
     jwm::classes::EventTouchCancel::onLoad(env);
     jwm::classes::EventTouchEnd::onLoad(env);
+    jwm::classes::EventTouchFrame::onLoad(env);
     jwm::classes::EventTextInput::onLoad(env);
     jwm::classes::EventTextInputMarked::onLoad(env);
     jwm::classes::EventWindowCloseRequest::onLoad(env);

@@ -132,6 +132,12 @@ namespace jwm {
             jobject make(JNIEnv* env, jint id);
         }
 
+        namespace EventTouchFrame {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            jobject make(JNIEnv* env);
+        }
+
         namespace EventTextInput {
             extern jclass kCls;
             extern jmethodID kCtor;
