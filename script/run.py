@@ -5,8 +5,10 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--example', default='dashboard')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.98.0')
+  parser.add_argument('--skija-version', default='0.106.0')
   parser.add_argument('--skija-dir', default=None)
+  parser.add_argument('--skija-shared-jar', default=None)
+  parser.add_argument('--skija-platform-jar', default=None)
   parser.add_argument('--types-dir', default=None)
   args = parser.parse_args()
 
@@ -15,6 +17,9 @@ def main():
 
   if args.skija_dir:
     skija_dir = os.path.abspath(args.skija_dir)
+
+  if args.skija_platform_jar:
+    skija_platform_jar = os.path.abspath(args.skija_platform_jar)
   
   os.chdir(common.basedir)
 
@@ -35,12 +40,14 @@ def main():
     classpath += [
       skija_dir + '/platform/build',
       skija_dir + '/platform/target/classes',
-      skija_dir + '/shared/target/classes',
+    ]
+  elif args.skija_platform_jar:
+    classpath += [
+      skija_platform_jar
     ]
   else:
     skija_native = 'skija-' + build_utils.system + (('-' + build_utils.arch) if 'macos' == build_utils.system else '')
     classpath += [
-      build_utils.fetch_maven('io.github.humbleui', 'skija-shared', args.skija_version),
       build_utils.fetch_maven('io.github.humbleui', skija_native, args.skija_version),
     ]
   sources = build_utils.files(f'examples/{args.example}/java/**/*.java')
