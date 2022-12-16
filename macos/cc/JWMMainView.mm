@@ -355,8 +355,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fMarkedText = [[NSMutableAttributedString alloc] init];
     fLastFlags = 0;
 
-    fTouchIds = [NSMutableDictionary dictionary];
-    fTouchDeviceIds = [NSMutableDictionary dictionary];
+    fTouchIds = [[NSMutableDictionary alloc] init];
+    fTouchDeviceIds = [[NSMutableDictionary alloc] init];
     fTouchCount = 0;
 
     [self updateTrackingAreas];
