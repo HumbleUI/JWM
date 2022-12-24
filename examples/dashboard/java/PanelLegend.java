@@ -15,7 +15,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("N", "New Window");
         shortcuts.put("T", "Toggle Titlebar");
         shortcuts.put("W", "Close Window");
-        shortcuts.put("F", "Fullscreen");
+        shortcuts.put("F", "Toggle Fullscreen");
         shortcuts.put("X", "Clipboard formats");
         shortcuts.put("Y", "Hide mouse cursor");
         shortcuts.put("U", "Lock mouse cursor");
