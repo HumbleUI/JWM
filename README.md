@@ -128,7 +128,7 @@ Alpha. Expect API breakages.
 | openFile            | ❌   | ❌   | ❌   |
 | openFolder          | ❌   | ❌   | ❌   |
 | Transparency        | ✅   | ❌   | ❌   |
-| Toggle Fullscreen   | ❌   | ✅   | ❌   |
+| Toggle Fullscreen   | ❌   | ✅   | ✅   |
 | setMinimumSize      | ❌   | ❌   | ❌   |
 | setMaximumSize      | ❌   | ❌   | ❌   |
 | setResizable        | ❌   | ❌   | ❌   |
