@@ -44,6 +44,9 @@ namespace jwm {
         void minimize();
         void restore();
 
+        void setFullScreen(bool isFullScreen);
+        bool isFullScreen();
+
         XIC getIC() const {
             return _ic;
         }
@@ -69,6 +72,8 @@ namespace jwm {
         int _posY = -1;
         int _width = -1;
         int _height = -1;
+        int _WM_ADD = 1L;
+        int _WM_REMOVE = 0L;
         bool _visible = false;
 
         bool _isRedrawRequested = false;
@@ -77,6 +82,5 @@ namespace jwm {
         ILayer* _layer = nullptr;
         ::Window _x11Window = 0;
         XIC _ic;
-
     };
 }

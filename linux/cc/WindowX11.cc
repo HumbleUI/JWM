@@ -1,6 +1,7 @@
 #include "WindowX11.hh"
 #include <jni.h>
 #include <memory>
+#include <cstring>
 #include "AppX11.hh"
 #include "impl/Library.hh"
 #include "impl/JNILocal.hh"
@@ -163,6 +164,125 @@ void WindowX11::restore() {
                             1,
                             0);
     }
+}
+
+void WindowX11::setFullScreen(bool isFullScreen) {
+    // NOTE: Largely borrowed from https://github.com/godotengine/godot/blob/f7cf9fb148140b86ee5795110373a0d55ff32860/platform/linuxbsd/x11/display_server_x11.cpp
+    Display* display = _windowManager.display;
+
+    // Should the window be exclusively full screen (i.e. block out other popups).
+    // There isn't a HumbleUI setting for this, and my WM defaults to exclusive full-screen,
+    // (as does Windows, as I recall) so let's assume that we want the window to be exclusively fullscreen.
+    bool isExclusiveFullScreen = true;
+
+    if (isFullScreen) { // and the window is not borderless:
+        // Remove window decorations to simulate full screen
+        MotifHints hints;
+        Atom property;
+        hints.flags = 2;
+        hints.decorations = 0;
+        property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
+        if (property != None) {
+            XChangeProperty(display, _x11Window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+        }
+    }
+
+    XEvent xev;
+
+    memset(&xev, 0, sizeof(xev));
+    xev.type = ClientMessage;
+    xev.xclient.window = _x11Window;
+    xev.xclient.message_type = _windowManager._atoms._NET_WM_STATE;
+    xev.xclient.format = 32;
+    xev.xclient.data.l[0] = isFullScreen ? _WM_ADD : _WM_REMOVE;
+    xev.xclient.data.l[1] = _windowManager._atoms._NET_WM_STATE_FULLSCREEN;
+    xev.xclient.data.l[2] = 0;
+
+    XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
+    // set bypass compositor hint
+    Atom bypass_compositor = XInternAtom(display, "_NET_WM_BYPASS_COMPOSITOR", True);
+    unsigned long compositing_disable_on = 0; // By default, don't allow window compositing
+
+    if (isFullScreen) {
+        // NOTE: Compositor flickers. May be an issue.
+        if (isExclusiveFullScreen) {
+            compositing_disable_on = 1; // Force compositing to disable for efficiency
+        } else {
+            compositing_disable_on = 2; // Force composition on to allow pop-up windows
+        }
+    }
+
+    if (bypass_compositor != None) {
+        XChangeProperty(display,
+                        _x11Window,
+                        bypass_compositor,
+                        XA_CARDINAL,
+                        32,
+                        PropModeReplace,
+                        (unsigned char *)&compositing_disable_on,
+                        1);
+    }
+
+    XFlush(display);
+
+    if (!isFullScreen) {
+        // Reset window decorations to their previous states
+        MotifHints hints;
+        Atom property;
+        hints.flags = 2;
+        hints.decorations = 1; // Add window borders back
+        property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
+        if (property != None) {
+            XChangeProperty(display,
+                            _x11Window,
+                            property,
+                            property,
+                            32,
+                            PropModeReplace,
+                            (unsigned char *)&hints,
+                            5);
+        }
+    }
+}
+
+bool WindowX11::isFullScreen() {
+    // NOTE: Largely borrowed from https://github.com/godotengine/godot/blob/f7cf9fb148140b86ee5795110373a0d55ff32860/platform/linuxbsd/x11/display_server_x11.cpp
+    Display* display = _windowManager.display;
+
+    Atom type;
+    int format;
+    unsigned long len;
+    unsigned long remaining;
+    unsigned char *data = nullptr;
+    bool retval = false;
+
+    int result = XGetWindowProperty(
+        display,
+        _x11Window,
+        _windowManager._atoms._NET_WM_STATE,
+        0,
+        1024,
+        False,
+        XA_ATOM,
+        &type,
+        &format,
+        &len,
+        &remaining,
+        &data);
+
+    if (result == Success) {
+        Atom *atoms = (Atom *)data;
+        for (uint64_t i = 0; i < len; i++) {
+            if (atoms[i] == _windowManager._atoms._NET_WM_STATE_FULLSCREEN) {
+                retval = true;
+                break;
+            }
+        }
+        XFree(data);
+    }
+
+    return retval;
 }
 
 void WindowX11::getDecorations(int& left, int& top, int& right, int& bottom) {
@@ -452,4 +572,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetMo
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
 
     instance->setCursor(static_cast<jwm::MouseCursor>(idx));
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetFullScreen
+        (JNIEnv* env, jobject obj, jboolean isFullScreen) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setFullScreen(isFullScreen);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL Java_io_github_humbleui_jwm_WindowX11__1nIsFullScreen
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->isFullScreen();
 }
