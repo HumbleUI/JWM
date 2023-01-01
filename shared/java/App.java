@@ -52,6 +52,8 @@ public class App {
             window = new WindowMac();
         else if (Platform.CURRENT == Platform.X11)
             window = new WindowX11();
+        else if (Platform.CURRENT == Platform.WAYLAND)
+            window = new WindowWayland();
         else
             throw new RuntimeException("Unsupported platform: " + Platform.CURRENT);
         _windows.add(window);
