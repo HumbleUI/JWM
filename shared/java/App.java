@@ -32,6 +32,7 @@ public class App {
             Log.setVerbose("true".equals(System.getenv("JWM_VERBOSE")));
             long t0 = System.currentTimeMillis();
             Log.setLogger((s) -> System.out.println("[ " + (System.currentTimeMillis() - t0) + " ] " + s));
+            Platform.update();
             launcher.run();
         });
     }
