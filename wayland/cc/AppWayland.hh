@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WindowManagerX11.hh"
+#include "WindowManagerWayland.hh"
 #include <jni.h>
 #include "Types.hh"
 #include <vector>
@@ -8,14 +8,14 @@
 #include "ScreenInfo.hh"
 
 namespace jwm {
-    extern class AppX11 {
+    extern class AppWayland {
     public:
 
         void init(JNIEnv* jniEnv);
         void start();
         void terminate();
 
-        WindowManagerX11& getWindowManager() {
+        WindowManagerWayland& getWindowManager() {
             return wm;
         }
 
@@ -28,7 +28,7 @@ namespace jwm {
         float getScale();
 
         JNIEnv* _jniEnv;
-        WindowManagerX11 wm;
+        WindowManagerWayland wm;
         std::vector<ScreenInfo> _screens;
 
     } app;

@@ -4,16 +4,16 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include "Window.hh"
-#include "WindowManagerX11.hh"
-#include "WindowX11MotifHints.hh"
+#include "WindowManagerWayland.hh"
+#include "WindowWaylandMotifHints.hh"
 #include "ILayer.hh"
 #include "ScreenInfo.hh"
 
 namespace jwm {
-    class WindowX11: public jwm::Window {
+    class WindowWayland: public jwm::Window {
     public:
-        WindowX11(JNIEnv* env, WindowManagerX11& windowManager);
-        ~WindowX11() override;
+        WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager);
+        ~WindowWayland() override;
 
         void getDecorations(int& left, int& top, int& right, int& bottom);
         void getContentPosition(int& posX, int& posY);
@@ -78,7 +78,7 @@ namespace jwm {
 
         bool _isRedrawRequested = false;
 
-        WindowManagerX11& _windowManager;
+        WindowManagerWayland& _windowManager;
         ILayer* _layer = nullptr;
         ::Window _x11Window = 0;
         XIC _ic;

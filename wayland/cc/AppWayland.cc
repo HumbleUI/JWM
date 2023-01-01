@@ -7,10 +7,10 @@
 #include <X11/extensions/sync.h>
 #include <X11/extensions/Xrandr.h>
 
-jwm::AppX11 jwm::app;
+jwm::AppWayland jwm::app;
 
 
-float jwm::AppX11::getScale() {
+float jwm::AppWayland::getScale() {
     char *resourceString = XResourceManagerString(wm.display);
     XrmDatabase db;
     XrmValue value;
@@ -34,19 +34,19 @@ float jwm::AppX11::getScale() {
     return 1.f;
 }
 
-void jwm::AppX11::init(JNIEnv* jniEnv) {
+void jwm::AppWayland::init(JNIEnv* jniEnv) {
     _jniEnv = jniEnv;
 }
 
-void jwm::AppX11::start() {
+void jwm::AppWayland::start() {
     wm.runLoop();
 }
 
-void jwm::AppX11::terminate() {
+void jwm::AppWayland::terminate() {
     wm.terminate();
 }
 
-const std::vector<jwm::ScreenInfo>& jwm::AppX11::getScreens() {
+const std::vector<jwm::ScreenInfo>& jwm::AppWayland::getScreens() {
     if (_screens.empty()) {
         Display* display = getWindowManager().getDisplay();
         XRRScreenResources* resources = XRRGetScreenResources(display, getWindowManager().getRootWindow());

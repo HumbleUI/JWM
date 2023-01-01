@@ -1,5 +1,5 @@
-#include "WindowManagerX11.hh"
-#include "WindowX11.hh"
+#include "WindowManagerWayland.hh"
+#include "WindowWayland.hh"
 #include <cstdio>
 #include <limits>
 #include <impl/Library.hh>
@@ -21,7 +21,7 @@
 
 using namespace jwm;
 
-int WindowManagerX11::_xerrorhandler(Display* dsp, XErrorEvent* error) {
+int WindowManagerWayland::_xerrorhandler(Display* dsp, XErrorEvent* error) {
     char errorstring[0x100];
     XGetErrorText(dsp, error->error_code, errorstring, sizeof(errorstring));
     fprintf(stderr, "X Error: %s\n", errorstring);
@@ -29,7 +29,7 @@ int WindowManagerX11::_xerrorhandler(Display* dsp, XErrorEvent* error) {
     return 0;
 }
 
-WindowManagerX11::WindowManagerX11():
+WindowManagerWayland::WindowManagerWayland():
     display(XOpenDisplay(nullptr)),
     _atoms(display) {
 
@@ -179,7 +179,7 @@ WindowManagerX11::WindowManagerX11():
     }
 }
 
-void WindowManagerX11::_xi2IterateDevices() {
+void WindowManagerWayland::_xi2IterateDevices() {
     int deviceCount;
     XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &deviceCount);
     for (int i = 0; i < deviceCount; ++i) {
@@ -208,12 +208,12 @@ void WindowManagerX11::_xi2IterateDevices() {
     XIFreeDeviceInfo(devices);
 }
 
-::Window WindowManagerX11::getRootWindow() const {
+::Window WindowManagerWayland::getRootWindow() const {
     return XDefaultRootWindow(display);
 }
 
 
-void WindowManagerX11::runLoop() {
+void WindowManagerWayland::runLoop() {
     _runLoop = true;
     XEvent ev;
 
@@ -260,7 +260,7 @@ void WindowManagerX11::runLoop() {
     close(pipes[1]);
 }
 
-void WindowManagerX11::notifyLoop() {
+void WindowManagerWayland::notifyLoop() {
     if (notifyFD==-1) return;
     // fast notifyBool path to not make system calls when not necessary
     if (!notifyBool.exchange(true)) {
@@ -269,7 +269,7 @@ void WindowManagerX11::notifyLoop() {
     }
 }
 
-void WindowManagerX11::_processCallbacks() {
+void WindowManagerWayland::_processCallbacks() {
     {
         // process ui thread callbacks
         std::unique_lock<std::mutex> lock(_taskQueueLock);
@@ -284,7 +284,7 @@ void WindowManagerX11::_processCallbacks() {
     }
     {
         // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
-        std::vector<WindowX11*> copy;
+        std::vector<WindowWayland*> copy;
         for (auto& p : _nativeWindowToMy) {
             copy.push_back(p.second);
         }
@@ -301,10 +301,10 @@ void WindowManagerX11::_processCallbacks() {
     }
 }
 
-void WindowManagerX11::_processXEvent(XEvent& ev) {
+void WindowManagerWayland::_processXEvent(XEvent& ev) {
     using namespace classes;
 
-    WindowX11* myWindow = nullptr;
+    WindowWayland* myWindow = nullptr;
     auto it = _nativeWindowToMy.find(ev.xkey.window);
     if (it != _nativeWindowToMy.end()) {
         myWindow = it->second;
@@ -455,7 +455,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             break;
         }
         case ConfigureNotify: { // resize and move
-            WindowX11* except = nullptr;
+            WindowWayland* except = nullptr;
             int posX, posY;
             myWindow->getContentPosition(posX, posY);
             
@@ -723,7 +723,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
 }
 
 
-std::vector<std::string> WindowManagerX11::getClipboardFormats() {
+std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     auto owner = XGetSelectionOwner(display, _atoms.CLIPBOARD);
     if (owner == None)
     {
@@ -795,7 +795,7 @@ std::vector<std::string> WindowManagerX11::getClipboardFormats() {
     return result;
 }
 
-jwm::ByteBuf WindowManagerX11::getClipboardContents(const std::string& type) {
+jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type) {
     auto nativeHandle = _nativeWindowToMy.begin()->first;
 
     XConvertSelection(display,
@@ -849,7 +849,7 @@ jwm::ByteBuf WindowManagerX11::getClipboardContents(const std::string& type) {
     return {};
 }
 
-void WindowManagerX11::registerWindow(WindowX11* window) {
+void WindowManagerWayland::registerWindow(WindowWayland* window) {
     _nativeWindowToMy[window->_x11Window] = window;
 
     // XInput
@@ -867,19 +867,19 @@ void WindowManagerX11::registerWindow(WindowX11* window) {
     }
 }
 
-void WindowManagerX11::unregisterWindow(WindowX11* window) {
+void WindowManagerWayland::unregisterWindow(WindowWayland* window) {
     auto it = _nativeWindowToMy.find(window->_x11Window);
     if (it != _nativeWindowToMy.end()) {
         _nativeWindowToMy.erase(it);
     }
 }
 
-void WindowManagerX11::terminate() {
+void WindowManagerWayland::terminate() {
     _runLoop = false;
     notifyLoop();
 }
 
-void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
+void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
     ::Window window = _nativeWindowToMy.begin()->first;
@@ -887,7 +887,7 @@ void WindowManagerX11::setClipboardContents(std::map<std::string, ByteBuf>&& c) 
     XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
 }
 
-void WindowManagerX11::enqueueTask(const std::function<void()>& task) {
+void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {
     std::unique_lock<std::mutex> lock(_taskQueueLock);
     _taskQueue.push(task);
     _taskQueueNotify.notify_one();

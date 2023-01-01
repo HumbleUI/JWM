@@ -15,17 +15,17 @@
 #include "MouseCursor.hh"
 
 namespace jwm {
-    class WindowX11;
-    class WindowManagerX11 {
+    class WindowWayland;
+    class WindowManagerWayland {
     public:
-        WindowManagerX11();
+        WindowManagerWayland();
 
         void runLoop();
         void notifyLoop();
         void terminate();
 
-        void registerWindow(WindowX11* window);
-        void unregisterWindow(WindowX11* window);
+        void registerWindow(WindowWayland* window);
+        void unregisterWindow(WindowWayland* window);
         
         XVisualInfo* pickVisual();
         static int _xerrorhandler(Display* dsp, XErrorEvent* error);
@@ -69,7 +69,7 @@ namespace jwm {
         int lastMousePosX = 0;
         int lastMousePosY = 0;
 
-        std::map<::Window, WindowX11*> _nativeWindowToMy;
+        std::map<::Window, WindowWayland*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
 
 
@@ -111,7 +111,7 @@ namespace jwm {
             #define DEFINE_ATOM(name) Atom name = XInternAtom(_display, #name, 0)
             
             // protocols
-            // NOTE: WM_DELETE_WINDOW should be the first protocol because WindowX11 references to this variable
+            // NOTE: WM_DELETE_WINDOW should be the first protocol because WindowWayland references to this variable
             const static int PROTOCOL_COUNT = 2;
             DEFINE_ATOM(WM_DELETE_WINDOW);
             DEFINE_ATOM(_NET_WM_SYNC_REQUEST);

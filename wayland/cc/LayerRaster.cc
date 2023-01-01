@@ -3,12 +3,12 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
-#include "WindowX11.hh"
+#include "WindowWayland.hh"
 
 namespace jwm {
     class LayerRaster: public RefCounted, public ILayer {
     public:
-        WindowX11* fWindow;
+        WindowWayland* fWindow;
         size_t _width = 0, _height = 0;
         XImage* _xImage = nullptr;
         GC _graphicsContext;
@@ -22,7 +22,7 @@ namespace jwm {
         LayerRaster() = default;
         virtual ~LayerRaster() = default;
 
-        void attach(WindowX11* window) {
+        void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
 
@@ -83,7 +83,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nMa
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nAttach
         (JNIEnv* env, jobject obj, jobject windowObj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
-    jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
+    jwm::WindowWayland* window = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, windowObj));
     instance->attach(window);
 }
 
@@ -120,4 +120,4 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nGe
         (JNIEnv* env, jobject obj) {
     jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
     return static_cast<jint>(instance->getRowBytes());
-} 
+}

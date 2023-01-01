@@ -3,14 +3,14 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
-#include "WindowX11.hh"
+#include "WindowWayland.hh"
 #include <GL/gl.h>
 
 namespace jwm {
 
     class LayerGL: public RefCounted, public ILayer {
     public:
-        WindowX11* fWindow;
+        WindowWayland* fWindow;
         GLXContext _context = nullptr;
         using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
         glXSwapIntervalEXT_t _glXSwapIntervalEXT;
@@ -18,7 +18,7 @@ namespace jwm {
         LayerGL() = default;
         virtual ~LayerGL() = default;
 
-        void attach(WindowX11* window) {
+        void attach(WindowWayland* window) {
             if (window->_windowManager.getVisualInfo() == nullptr) {
                 throw std::runtime_error("layer not supported");             
             }
@@ -89,7 +89,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     try {
         jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
-        jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
+        jwm::WindowWayland* window = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, windowObj));
         instance->attach(window);
     } catch (const std::exception& e) {
         jwm::classes::Throwable::throwLayerNotSupportedException(env, "Failed to init OpenGL");
