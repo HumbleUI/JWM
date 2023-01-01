@@ -51,6 +51,7 @@ in
             gcc
           ];
 
+          CMAKE_MAKE_PROGRAM = pkgs.ninja;
           LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (with pkgs; [ libGL ] ++ xDependencies)}:$LD_LIBRARY_PATH";
         };
 
