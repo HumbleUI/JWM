@@ -2,7 +2,7 @@
 #include <StringUTF16.hh>
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
-#include "AppX11.hh"
+#include "AppWayland.hh"
 #include <cstring>
 
 namespace jwm {

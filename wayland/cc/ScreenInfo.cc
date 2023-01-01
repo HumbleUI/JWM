@@ -1,5 +1,5 @@
 #include "ScreenInfo.hh"
-#include "AppX11.hh"
+#include "AppWayland.hh"
 
 
 jobject jwm::ScreenInfo::asJavaObject(JNIEnv* env) const {

@@ -2,7 +2,7 @@
 #include <jni.h>
 #include <memory>
 #include <cstring>
-#include "AppX11.hh"
+#include "AppWayland.hh"
 #include "impl/Library.hh"
 #include "impl/JNILocal.hh"
 #include <X11/Xatom.h>

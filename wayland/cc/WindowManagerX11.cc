@@ -4,7 +4,7 @@
 #include <limits>
 #include <impl/Library.hh>
 #include <impl/JNILocal.hh>
-#include "AppX11.hh"
+#include "AppWayland.hh"
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>

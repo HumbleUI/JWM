@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "AppX11.hh"
+#include "AppWayland.hh"
 #include <X11/Xresource.h>
 #include <cstdlib>
 #include <impl/Library.hh>
