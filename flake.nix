@@ -36,12 +36,16 @@ in
           libXcursor
           libXi
         ];
+
+        waylandDependencies = with pkgs; [
+          wayland
+        ];
       in rec {
         devShells.default = pkgs.mkShell {
           inherit name description;
           nativeBuildInputs = with pkgs; [
             jdk17
-          ] ++ xDependencies;
+          ] ++ xDependencies ++ waylandDependencies;
 
           buildInputs = with pkgs; [
             python3
@@ -52,7 +56,7 @@ in
           ];
 
           CMAKE_MAKE_PROGRAM = pkgs.ninja;
-          LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (with pkgs; [ libGL ] ++ xDependencies)}:$LD_LIBRARY_PATH";
+          LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (with pkgs; [ libGL ] ++ xDependencies ++ waylandDependencies)}:$LD_LIBRARY_PATH";
         };
 
         # For compatibility with older versions of the `nix` binary

@@ -78,13 +78,13 @@ public class WindowWayland extends Window {
 
     @Override
     public Window setTitlebarVisible(boolean value) {
-        _nSetTitlebarVisible(value);
+        throw new UnsupportedOperationException("impl me!");
         return this;
     }
 
     @Override
     public Window setVisible(boolean isVisible) {
-        assert _onUIThread();
+        throw new UnsupportedOperationException("impl me!");
         _nSetVisible(isVisible);
         return super.setVisible(true);
     }
@@ -131,41 +131,33 @@ public class WindowWayland extends Window {
 
     @Override
     public void close() {
-        assert _onUIThread() && !isClosed();
-        _nClose();
+        throw new UnsupportedOperationException("impl me!");
         super.close();
     }
 
     @Override
     public Window maximize() {
-        _nMaximize();
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public Window minimize() {
-        _nMinimize();
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public Window focus() {
-        assert _onUIThread();
-        // TODO implement
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public ZOrder getZOrder() {
-        assert _onUIThread();
-        return ZOrder.NORMAL;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public Window setZOrder(ZOrder order) {
-        assert _onUIThread();
-        // TODO implement
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
@@ -180,39 +172,35 @@ public class WindowWayland extends Window {
 
     @Override
     public Window restore() {
-        _nRestore();
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public Window setFullScreen(boolean value) {
-        assert _onUIThread();
-        _nSetFullScreen(value);
-        return this;
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @Override
     public boolean isFullScreen() {
-        assert _onUIThread();
-        return _nIsFullScreen();
+        throw new UnsupportedOperationException("impl me!");
     }
 
     @ApiStatus.Internal public static native long _nMake();
-    @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
-    @ApiStatus.Internal public native IRect _nGetWindowRect();
-    @ApiStatus.Internal public native IRect _nGetContentRect();
-    @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
-    @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
-    @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
-    @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
-    @ApiStatus.Internal public native Screen _nGetScreen();
-    @ApiStatus.Internal public native void _nRequestFrame();
-    @ApiStatus.Internal public native void _nClose();
-    @ApiStatus.Internal public native void _nMaximize();
-    @ApiStatus.Internal public native void _nMinimize();
-    @ApiStatus.Internal public native void _nRestore();
-    @ApiStatus.Internal public native Screen _nSetTitle(byte[] title);
-    @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
-    @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
-    @ApiStatus.Internal public native boolean _nIsFullScreen();
+    // @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
+    // @ApiStatus.Internal public native IRect _nGetWindowRect();
+    // @ApiStatus.Internal public native IRect _nGetContentRect();
+    // @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
+    // @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
+    // @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
+    // @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
+    // @ApiStatus.Internal public native Screen _nGetScreen();
+    // @ApiStatus.Internal public native void _nRequestFrame();
+    // @ApiStatus.Internal public native void _nClose();
+    // @ApiStatus.Internal public native void _nMaximize();
+    // @ApiStatus.Internal public native void _nMinimize();
+    // @ApiStatus.Internal public native void _nRestore();
+    // @ApiStatus.Internal public native Screen _nSetTitle(byte[] title);
+    // @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
+    // @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
+    // @ApiStatus.Internal public native boolean _nIsFullScreen();
 }
