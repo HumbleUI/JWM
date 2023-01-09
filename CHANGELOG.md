@@ -1,3 +1,15 @@
+# 0.4.13 - Jan 9, 2023
+
+Added:
+
+- Support fullscreen on X11 #259 by @jakeisnt
+
+# 0.4.12 - Dec 16, 2022
+
+Fixed:
+
+- NSMutableDictionary allocation
+
 # 0.4.11 - Dec 11, 2022
 
 Added:
