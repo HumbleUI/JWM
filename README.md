@@ -70,9 +70,10 @@ groupId    | io.github.humbleui
 artifactId | jwm
 version    | ![version](https://img.shields.io/maven-central/v/io.github.humbleui/jwm)
 
-## Getting started
+## Resources
 
-See [Getting Started](https://github.com/HumbleUI/JWM/blob/main/docs/Getting%20Started.md)
+- [Getting Started](https://github.com/HumbleUI/JWM/blob/main/docs/Getting%20Started.md)
+- [Jetpack Compose on JWM](https://github.com/smallshen/JWM-Compose/)
 
 ## Status
 
