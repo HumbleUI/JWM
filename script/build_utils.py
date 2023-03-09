@@ -145,6 +145,7 @@ def javadoc(dirs: List[str], target: str, classpath: List[str] = [], modulepath:
     subprocess.check_call(["javadoc",
       *(["--class-path", classpath_join(classpath)] if classpath else []),
       *(["--module-path", classpath_join(modulepath)] if modulepath else []),
+      "-encoding", "UTF-8",
       "-d", target,
       "-quiet",
       "-Xdoclint:all,-missing",

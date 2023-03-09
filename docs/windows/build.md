@@ -41,7 +41,7 @@ Then, run `C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe` a
 
 After reboot, open one of the command prompts for VS 2019 matching your arch.
 
-Usually, you can open command prompt for VS from `C:\path\to\Start Menu\Programs\Visual Studio 2019\Visual Studio Tools\VC`.
+For a standard 64-bit build, try the VS `x64` command prompt, usually located at `C:\path\to\Start Menu\Programs\Visual Studio 2019\Visual Studio Tools\VC`.
 
 ### Configure path and env (optional)
 
@@ -88,10 +88,8 @@ You will get something like this.
 
 ![example application](./example_app.jpg)
 
-## troubleshooting
+## Troubleshooting
 - disable other c++ compilers like minGW
 - try removing windows/build directory and re-run command
-- run `python ./script/crean.py`
+- run `python ./script/clean.py`
 - check environment variables and paths (`echo`, `where <cmd>` in power shell or `which <cmd>` in unix-like shell)
-
-
