@@ -249,6 +249,20 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public Window setActiveWindow() {
+        assert _onUIThread();
+        // TODO: impl me
+        return this;
+    }
+
+    @Override
+    public Window setForegroundWindow() {
+        assert _onUIThread();
+        // TODO: impl me
+        return this;
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder._values[_nGetZOrder()];
@@ -308,6 +322,8 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetFullScreen(boolean value);
     @ApiStatus.Internal public native boolean _nIsFullScreen();
     @ApiStatus.Internal public native void _nFocus();
+    @ApiStatus.Internal public native void _nSetActiveWindow();
+    @ApiStatus.Internal public native void _nSetForegroundWindow();
     @ApiStatus.Internal public native int _nGetZOrder();
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
     @ApiStatus.Internal public native void _nSetProgressBar(float value);

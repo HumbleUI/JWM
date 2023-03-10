@@ -348,10 +348,24 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
 
     /**
      * Focus current window
-     * 
+     *
      * @return  this
      */
     public abstract Window focus();
+
+    /**
+     * Set current window to active
+     *
+     * @return  this
+     */
+    public abstract Window setActiveWindow();
+
+    /**
+     * Set current window to foreground
+     *
+     * @return  this
+     */
+    public abstract Window setForegroundWindow();
 
     /**
      * @return  current Z order

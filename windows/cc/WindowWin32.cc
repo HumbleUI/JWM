@@ -190,6 +190,16 @@ void jwm::WindowWin32::focus() {
     SetFocus(_hWnd);
 }
 
+void jwm::WindowWin32::setActiveWindow() {
+    JWM_VERBOSE("Setting active on window 0x" << this);
+    SetActiveWindow(_hWnd);
+}
+
+void jwm::WindowWin32::setForegroundWindow() {
+    JWM_VERBOSE("Setting foreground on window 0x" << this);
+    SetForegroundWindow(_hWnd);
+}
+
 void jwm::WindowWin32::requestSwap() {
     if (testFlag(Flag::HasAttachedLayer)) {
         setFlag(Flag::RequestSwap);
@@ -1054,6 +1064,18 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nFoc
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->focus();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetActiveWindow
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setActiveWindow();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetForegroundWindow
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setForegroundWindow();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nClose

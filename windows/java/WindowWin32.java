@@ -167,6 +167,20 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window setActiveWindow() {
+        assert _onUIThread();
+        _nSetForegroundWindow();
+        return this;
+    }
+
+    @Override
+    public Window setForegroundWindow() {
+        assert _onUIThread();
+        _nSetForegroundWindow();
+        return this;
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder.NORMAL;
@@ -222,6 +236,8 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nFocus();
+    @ApiStatus.Internal public native void _nSetActiveWindow();
+    @ApiStatus.Internal public native void _nSetForegroundWindow();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }
