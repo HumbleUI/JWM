@@ -156,14 +156,7 @@ public class WindowX11 extends Window {
     }
 
     @Override
-    public Window setActiveWindow() {
-        assert _onUIThread();
-        // TODO implement
-        return this;
-    }
-
-    @Override
-    public Window setForegroundWindow() {
+    public Window stealFocus() {
         assert _onUIThread();
         // TODO implement
         return this;

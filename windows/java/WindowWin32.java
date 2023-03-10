@@ -166,17 +166,22 @@ public class WindowWin32 extends Window {
         return this;
     }
 
-    @Override
     public Window setActiveWindow() {
         assert _onUIThread();
         _nSetForegroundWindow();
         return this;
     }
 
-    @Override
     public Window setForegroundWindow() {
         assert _onUIThread();
         _nSetForegroundWindow();
+        return this;
+    }
+
+    @Override
+    public Window stealFocus() {
+        assert _onUIThread();
+        _nStealFocus();
         return this;
     }
 
@@ -238,6 +243,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nFocus();
     @ApiStatus.Internal public native void _nSetActiveWindow();
     @ApiStatus.Internal public native void _nSetForegroundWindow();
+    @ApiStatus.Internal public native void _nStealFocus();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }

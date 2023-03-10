@@ -200,6 +200,14 @@ void jwm::WindowWin32::setForegroundWindow() {
     SetForegroundWindow(_hWnd);
 }
 
+void jwm::WindowWin32::stealFocus() {
+    JWM_VERBOSE("Set focus on window 0x" << this);
+    restore();
+    setForegroundWindow();
+    setActiveWindow();
+    focus();
+}
+
 void jwm::WindowWin32::requestSwap() {
     if (testFlag(Flag::HasAttachedLayer)) {
         setFlag(Flag::RequestSwap);
@@ -1076,6 +1084,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setForegroundWindow();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nStealFocus
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->stealFocus();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nClose

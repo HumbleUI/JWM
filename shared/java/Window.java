@@ -354,18 +354,11 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public abstract Window focus();
 
     /**
-     * Set current window to active
+     * Try to steal operating-system level focus onto current window
      *
      * @return  this
      */
-    public abstract Window setActiveWindow();
-
-    /**
-     * Set current window to foreground
-     *
-     * @return  this
-     */
-    public abstract Window setForegroundWindow();
+    public abstract Window stealFocus();
 
     /**
      * @return  current Z order

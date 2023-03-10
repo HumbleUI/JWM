@@ -63,6 +63,7 @@ namespace jwm {
         void focus();
         void setActiveWindow();
         void setForegroundWindow();
+        void stealFocus();
         void requestSwap();
         void requestFrame();
         IRect getWindowRect() const;
