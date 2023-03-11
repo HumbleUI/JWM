@@ -62,7 +62,11 @@ namespace jwm {
         void restore();
         void focus();
         void setActiveWindow();
+        HWND getForegroundWindow(); // Note asymmetry between get/setForegroundWindow
         void setForegroundWindow();
+        long getCurrentThreadId();
+        long getWindowThreadProcessId(HWND hWnd);
+        void attachThreadInput(long parentThreadId, long childThreadId, bool attachOrDetach);
         void stealFocus();
         void requestSwap();
         void requestFrame();

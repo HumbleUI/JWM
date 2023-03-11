@@ -195,17 +195,43 @@ void jwm::WindowWin32::setActiveWindow() {
     SetActiveWindow(_hWnd);
 }
 
+HWND jwm::WindowWin32::getForegroundWindow() {
+    JWM_VERBOSE("Getting system foreground window");
+    return GetForegroundWindow();
+}
+
 void jwm::WindowWin32::setForegroundWindow() {
     JWM_VERBOSE("Setting foreground on window 0x" << this);
     SetForegroundWindow(_hWnd);
 }
 
+long jwm::WindowWin32::getCurrentThreadId() {
+    JWM_VERBOSE("Getting current thread ID of window 0x" << this);
+    return GetCurrentThreadId();
+}
+
+long jwm::WindowWin32::getWindowThreadProcessId(HWND hWnd) {
+    JWM_VERBOSE("Getting thread ID of window 0x" << hWnd);
+    return GetWindowThreadProcessId(hWnd, NULL);
+}
+
+void jwm::WindowWin32::attachThreadInput(long parentThreadId, long childThreadId, bool attachOrDetach) {
+    if (attachOrDetach) {
+        JWM_VERBOSE("Attaching thread input of thread " << childThreadId << " to " << parentThreadId);
+    } else {
+        JWM_VERBOSE("Detaching thread input of thread " << childThreadId << " from " << parentThreadId);
+    }
+    AttachThreadInput(parentThreadId, childThreadId, attachOrDetach);
+}
+
 void jwm::WindowWin32::stealFocus() {
-    JWM_VERBOSE("Set focus on window 0x" << this);
-    restore();
+    JWM_VERBOSE("Stealing system focus onto window 0x" << this);
+    HWND hCurrentWindow = getForegroundWindow();
+    long currentThreadId = getWindowThreadProcessId(hCurrentWindow);
+    long jwmThreadId = getCurrentThreadId();
+    attachThreadInput(currentThreadId, jwmThreadId, true);
     setForegroundWindow();
-    setActiveWindow();
-    focus();
+    attachThreadInput(currentThreadId, jwmThreadId, false);
 }
 
 void jwm::WindowWin32::requestSwap() {
@@ -1080,10 +1106,34 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
     instance->setActiveWindow();
 }
 
+extern "C" JNIEXPORT HWND JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetForegroundWindow
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getForegroundWindow();
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetForegroundWindow
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->setForegroundWindow();
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetCurrentThreadId
+        (JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getCurrentThreadId();
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nGetWindowThreadProcessId
+        (JNIEnv* env, jobject obj, HWND hwnd) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getWindowThreadProcessId(hwnd);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nAttachThreadInput
+(JNIEnv* env, jobject obj, long parentThreadId, long childThreadId, bool attachOrDetach) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->attachThreadInput(parentThreadId, childThreadId, attachOrDetach);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nStealFocus
