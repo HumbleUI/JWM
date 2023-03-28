@@ -227,21 +227,12 @@ void onMouseMoved(jwm::WindowMac* window, NSEvent* event, CGPoint* lastPos) {
     window->dispatch(eventObj.get());
 }
 
-void onMouseButton(jwm::WindowMac* window, NSEvent* event, NSUInteger* lastPressedButtons, CGPoint& lastPos) {
-    NSUInteger before = *lastPressedButtons;
-    NSUInteger after = [NSEvent pressedMouseButtons];
+void onMouseButton(jwm::WindowMac* window, NSEvent* event, CGPoint& lastPos) {
+    jwm::MouseButton button = jwm::kMouseButtonValues.begin()[[event buttonNumber]];
+    bool clicked = [event pressure] == 1;
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
-    for (jwm::MouseButton button: jwm::kMouseButtonValues) {
-        int mask = static_cast<int>(button);
-        if ((before & mask) == 0 && (after & mask) != 0) {
-            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, true, lastPos.x, lastPos.y, modifierMask));
-            window->dispatch(eventObj.get());
-        } else if ((before & mask) != 0 && (after & mask) == 0) {
-            jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, false, lastPos.x, lastPos.y, modifierMask));
-            window->dispatch(eventObj.get());
-        }
-    }
-    *lastPressedButtons = after;
+    jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventMouseButton::make(window->fEnv, button, clicked, lastPos.x, lastPos.y, modifierMask));
+    window->dispatch(eventObj.get());
 }
 
 void removeTouch(jwm::WindowMac* window, NSTouchPhase phase, id identity, NSUInteger touchId, NSMutableDictionary* touchIds, NSUInteger& touchCount) {
@@ -340,7 +331,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     // We keep track of the state of the modifier keys on each event in order to synthesize
     // key-up/down events for each modifier.
     NSEventModifierFlags fLastFlags;
-    NSUInteger fLastPressedButtons;
     CGPoint fLastPos;
     NSMutableDictionary* fTouchIds;
     NSMutableDictionary* fTouchDeviceIds;
@@ -456,27 +446,27 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)mouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)mouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)otherMouseUp:(NSEvent *)event {
-    onMouseButton(fWindow, event, &fLastPressedButtons, fLastPos);
+    onMouseButton(fWindow, event, fLastPos);
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
