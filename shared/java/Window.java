@@ -354,13 +354,19 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public abstract Window focus();
 
     /**
-     * <p>Try to steal operating-system level focus onto current window.</p>
-     * <p>This can bring the window to the foreground in situations where</p>
-     * <p>plain focus() might be suppressed by the operating system.</p>
+     * <p>Bring window to front-most position in operating-system.</p>
+     * <p>This can bring the window out of the system's backgrounded apps.</p>
      *
      * @return  this
      */
-    public abstract Window stealFocus();
+    public abstract Window bringToFront();
+
+    /**
+     * Checks if window is currently the front-most one in the parent operating system.
+     *
+     * @return  boolean
+     */
+    public abstract boolean isFront();
 
     /**
      * @return  current Z order

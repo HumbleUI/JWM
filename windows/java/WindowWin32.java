@@ -166,43 +166,17 @@ public class WindowWin32 extends Window {
         return this;
     }
 
-    public Window setActiveWindow() {
+    @Override
+    public Window bringToFront() {
         assert _onUIThread();
-        _nSetForegroundWindow();
+        _nBringToFront();
         return this;
-    }
-
-    public long getForegroundWindow() {
-        assert _onUIThread();
-        return _nGetForegroundWindow();
-    }
-
-    public Window setForegroundWindow() {
-        assert _onUIThread();
-        _nSetForegroundWindow();
-        return this;
-    }
-
-    public long getCurrentThreadId() {
-        assert _onUIThread();
-        return _nGetCurrentThreadId();
-    }
-
-    public long attachThreadInput(long parentThreadId, long childThreadId, boolean attachOrDetach) {
-        assert _onUIThread();
-        return _nAttachThreadInput(parentThreadId, childThreadId, attachOrDetach);
-    }
-
-    public long getWindowThreadProcessId(long hWnd) {
-        assert _onUIThread();
-        return _nGetWindowThreadProcessId(hWnd);
     }
 
     @Override
-    public Window stealFocus() {
+    public boolean isFront() {
         assert _onUIThread();
-        _nStealFocus();
-        return this;
+        return _nIsFront();
     }
 
     @Override
@@ -261,13 +235,8 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nFocus();
-    @ApiStatus.Internal public native void _nSetActiveWindow();
-    @ApiStatus.Internal public native long _nGetForegroundWindow();
-    @ApiStatus.Internal public native void _nSetForegroundWindow();
-    @ApiStatus.Internal public native long _nGetCurrentThreadId();
-    @ApiStatus.Internal public native long _nGetWindowThreadProcessId(long hwnd);
-    @ApiStatus.Internal public native long _nAttachThreadInput(long parentThreadId, long childThreadId, boolean attachOrDetach);
-    @ApiStatus.Internal public native void _nStealFocus();
+    @ApiStatus.Internal public native void _nBringToFront();
+    @ApiStatus.Internal public native boolean _nIsFront();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }

@@ -156,10 +156,17 @@ public class WindowX11 extends Window {
     }
 
     @Override
-    public Window stealFocus() {
+    public Window bringToFront() {
         assert _onUIThread();
         // TODO implement
         return this;
+    }
+
+    @Override
+    public boolean isFront() {
+        assert _onUIThread();
+        // TODO: impl me
+        return false;
     }
 
     @Override
