@@ -17,5 +17,18 @@ public interface TextInputClient {
      */
     IRect getRectForMarkedRange(int selectionStart, int selectionEnd);
 
-    // todo: remove default int characterIndexForPoint(int x, int y) { return 0; }
+    /**
+     * Returns the range of selected text
+     */
+    IRange getSelectedRange();
+
+    /**
+     * Returns the range of marked text
+     */
+    IRange getMarkedRange();
+
+    /**
+     * Returns part of the edited string
+     */
+    String getSubstring(int start, int end);
 }

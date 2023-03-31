@@ -34,10 +34,15 @@ public class PanelTextInput extends Panel implements TextInputClient {
     @Override
     public void accept(Event e) {
         if (e instanceof EventTextInput ee) {
-            text += ee.getText();
+            int start = ee.getReplacementStart() == -1 ? text.length() : ee.getReplacementStart();
+            int end = start + ee.getReplacementEnd() - ee.getReplacementStart();
+            text = text.substring(0, start) + ee.getText() + text.substring(end);
             lastMarked = null;
             window.requestFrame();
         } else if (e instanceof EventTextInputMarked ee) {
+            int start = ee.getReplacementStart() == -1 ? text.length() : ee.getReplacementStart();
+            int end = start + ee.getReplacementEnd() - ee.getReplacementStart();
+            text = text.substring(0, start) + text.substring(end);
             lastMarked = ee;
             window.requestFrame();
         } else if (e instanceof EventMouseButton ee) {
@@ -63,6 +68,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
             if (ee.isPressed()) {
                 switch (key) {
                     case ENTER -> text += "\n";
+
                     case BACKSPACE -> {
                         if (lastMarked == null && text.length() > 0) {
                             try (var iter = BreakIterator.makeCharacterInstance();) {
@@ -71,6 +77,7 @@ public class PanelTextInput extends Panel implements TextInputClient {
                             }
                         }
                     }
+                    
                     case SPACE -> {
                         if (Platform.CURRENT == Platform.MACOS
                             && ee.isModifierDown(KeyModifier.CONTROL)
@@ -205,5 +212,24 @@ public class PanelTextInput extends Panel implements TextInputClient {
             } else
                 return IRect.makeXYWH((int) left, (int) top, 0, (int) metrics.getHeight());
         }
+    }
+
+    @Override
+    public IRange getSelectedRange() {
+        int len = text.length();
+        return new IRange(len, len);
+    }
+
+    @Override
+    public IRange getMarkedRange() {
+        return new IRange(-1, -1);
+    }
+
+    @Override
+    public String getSubstring(int start, int end) {
+        int len = text.length();
+        int start2 = Math.min(start, len);
+        int end2 = Math.min(end, start2);
+        return text.substring(start2, end2);
     }
 }

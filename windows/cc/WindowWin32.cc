@@ -906,7 +906,15 @@ bool jwm::WindowWin32::_imeGetRectForMarkedRange(IRect &rect) const {
     // If composition starts, Pos will be always 0
     auto selectionStart = static_cast<int>(_compositionPos);
     auto selectionEnd = selectionStart + 0;
-    return getRectForMarkedRange(selectionStart, selectionEnd, rect);
+
+    JNILocal<jobject> client(fEnv, fEnv->GetObjectField(fWindow, jwm::classes::Window::kTextInputClient));
+    jwm::classes::Throwable::exceptionThrown(fEnv);
+    if (client.get()) {
+        rect = jwm::classes::TextInputClient::getRectForMarkedRange(fEnv, client.get(), selectionStart, selectionEnd);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 std::wstring jwm::WindowWin32::_imeGetCompositionString(HIMC hImc, DWORD compType) const {

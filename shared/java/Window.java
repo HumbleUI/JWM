@@ -84,7 +84,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      * <p>Unmark currently marked and edited text region.</p>
      *
      * <p>Call to this function terminates current IME editing mode and causes close of the
-     * system IME window. This function must be called in genera if user finishes
+     * system IME window. This function must be called in general if user finishes
      * text editing because of context change, clicking somewhere else, opening another tab and etc.</p>
      *
      * @see <a href="https://github.com/HumbleUI/JWM/blob/main/examples/java/io/github/humbleui/jwm/examples/PanelTextInput.java">Text input example</a>

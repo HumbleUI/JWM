@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-method-access"
+
 #include <algorithm>
 #include <Carbon/Carbon.h>
 #include <jni.h>
@@ -15,6 +18,7 @@ namespace jwm {
 Key kKeyTable[128];
 KeyLocation kKeyLocations[128];
 TouchType kTouchTypes[2];
+BOOL kPressAndHoldEnabled;
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
@@ -188,6 +192,9 @@ void initKeyTable() {
 
     kTouchTypes[NSTouchTypeDirect] = TouchType::DIRECT;
     kTouchTypes[NSTouchTypeIndirect] = TouchType::INDIRECT;
+
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    kPressAndHoldEnabled = nullptr == [userDefaults objectForKey:@"ApplePressAndHoldEnabled"] ? YES : [userDefaults boolForKey:@"ApplePressAndHoldEnabled"];
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -493,15 +500,46 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)keyDown:(NSEvent *)event {
+    fKeyEventsNeeded = YES;
     unsigned short keyCode = [event keyCode];
+
+    [NSCursor setHiddenUntilMouseMoves:YES];
+
+    if (jwm::kPressAndHoldEnabled && [event willBeHandledByComplexInputMethod] && !fInPressAndHold) {
+        fInPressAndHold = YES;
+    }
+
+    BOOL wasInPressAndHold = fInPressAndHold;
+
+    if (wasInPressAndHold) {
+        fKeyEventsNeeded = NO;
+    }
+
+    // Allow TSM to look at the event and potentially send back NSTextInputClient messages.
+    [self interpretKeyEvents:[NSArray arrayWithObject:event]];
+
+    if (wasInPressAndHold) {
+        switch(keyCode) {
+        case kVK_Return:
+        case kVK_Escape:
+        case kVK_PageUp:
+        case kVK_PageDown:
+        case kVK_DownArrow:
+        case kVK_UpArrow:
+        case kVK_Home:
+        case kVK_End:
+            [self abandonInput];
+        default:
+            if (!fKeyEventsNeeded)
+                return;
+        }
+    }
+
     jwm::Key key = keyCode < 128 ? jwm::kKeyTable[keyCode] : jwm::Key::UNDEFINED;
     jint modifierMask = jwm::modifierMask([event modifierFlags]);
     jwm::KeyLocation location = keyCode < 128 ? jwm::kKeyLocations[keyCode] : jwm::KeyLocation::DEFAULT;
     jwm::JNILocal<jobject> eventObj(fWindow->fEnv, jwm::classes::EventKey::make(fWindow->fEnv, key, (jboolean) true, modifierMask, location));
     fWindow->dispatch(eventObj.get());
-
-    [self interpretKeyEvents:@[event]];
-    // [[self inputContext] handleEvent:event];
 }
 
 - (void)keyUp:(NSEvent *)event {
@@ -596,28 +634,40 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     else
         return kEmptyRange;
 }
+
 // watasinonamaehanakanodesu
 - (NSRange)selectedRange {
-    // printf("selectedRange\n");
-    // fflush(stdout);
-    return kEmptyRange;
+    JNIEnv* env = fWindow->fEnv;
+    jwm::JNILocal<jobject> client(env, fWindow->getTextInputClient());
+    if (!client.get()) {
+        return kEmptyRange;
+    } else {
+        jwm::IRange range = jwm::classes::TextInputClient::getSelectedRange(env, client.get());
+        NSRange result = NSMakeRange(range.fStart, range.getLength());
+        return result;
+    }
 }
 
 - (void)setMarkedText:(id)string
         selectedRange:(NSRange)selectedRange
      replacementRange:(NSRange)replacementRange {
+    // NSLog(@"setMarkedText: %@ start: %lu len: %lu", string, replacementRange.location, replacementRange.length);
     [fMarkedText release];
     if ([string isKindOfClass:[NSAttributedString class]])
         fMarkedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
     else
         fMarkedText = [[NSMutableAttributedString alloc] initWithString:string];
-    // printf("setMarkedText '%s' sel: %lu..%lu repl: %lu..%lu\n", [[fMarkedText string] UTF8String], selectedRange.location, selectedRange.length, replacementRange.location, replacementRange.length);
-    // fflush(stdout);
 
     JNIEnv* env = fWindow->fEnv;
     jwm::JNILocal<jstring> jtext(env, jwm::nsStringToJava(env, [fMarkedText string]));
-    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInputMarked::make(env, jtext.get(), selectedRange.location, selectedRange.location + selectedRange.length));
+    jint replacementStart = replacementRange.location == LONG_MAX ? -1 : replacementRange.location;
+    jint replacementEnd = replacementStart + replacementRange.length;
+    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInputMarked::make(env, jtext.get(), selectedRange.location, selectedRange.location + selectedRange.length, replacementStart, replacementEnd));
     fWindow->dispatch(inputEvent.get());
+
+    if ([fMarkedText length] == 0) {
+        fKeyEventsNeeded = NO;
+    }
 }
 
 - (void)unmarkText {
@@ -636,7 +686,22 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
                                                actualRange:(NSRangePointer)actualRange {
     // printf("attributedSubstringForProposedRange (%lu %lu)\n", range.location, range.length);
     // fflush(stdout);
-    return nil;
+    JNIEnv* env = fWindow->fEnv;
+    jwm::JNILocal<jobject> client(env, fWindow->getTextInputClient());
+    if (!client.get()) {
+        return nil;
+    }
+    jint start = range.location;
+    jint end = start + range.length;
+    jwm::JNILocal<jstring> substring(env, jwm::classes::TextInputClient::getSubstring(env, client.get(), start, end));
+    if (!substring.get()) {
+        return nil;
+    }
+    NSString* nsSubstring = jwm::nsStringFromJava(env, substring.get());
+    if (actualRange) {
+        *actualRange = NSMakeRange(start, [nsSubstring length]);
+    }
+    return [[[NSAttributedString alloc] initWithString:nsSubstring] autorelease];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point {
@@ -647,27 +712,29 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range
                          actualRange:(NSRangePointer)actualRange {
-    jwm::IRect rect{};
-    if (fWindow->getRectForMarkedRange(range.location, range.location + range.length, rect)) {
-        JNIEnv* env = fWindow->fEnv;
-        const NSRect frame = [fWindow->fNSWindow.contentView frame];
-        CGFloat scale = fWindow->getScale();
-        const NSRect res = NSMakeRect(
+    JNIEnv* env = fWindow->fEnv;
+    const NSRect frame = [fWindow->fNSWindow.contentView frame];
+    CGFloat scale = fWindow->getScale();
+    jwm::JNILocal<jobject> client(env, fWindow->getTextInputClient());
+
+    NSRect nsRect;
+    if (!client.get()) {
+        nsRect = NSMakeRect(frame.size.width / 2.0, frame.size.height / 2.0, 0.0, 0.0);
+    } else {
+        jwm::IRect rect = jwm::classes::TextInputClient::getRectForMarkedRange(env, client.get(), range.location, range.location + range.length);
+        nsRect = NSMakeRect(
             rect.fLeft / scale,
             frame.size.height - rect.fBottom / scale,
             (rect.fRight - rect.fLeft) / scale,
             (rect.fBottom - rect.fTop) / scale
         );
-        return [fWindow->fNSWindow convertRectToScreen:res];
-    } else {
-        const NSRect frame = [fWindow->fNSWindow.contentView frame];
-        const NSRect res = NSMakeRect(frame.size.width / 2.0, frame.size.height / 2.0, 0.0, 0.0);
-        return [fWindow->fNSWindow convertRectToScreen:res];
     }
+    return [fWindow->fNSWindow convertRectToScreen:nsRect];
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
-    [self unmarkText];
+    // NSLog(@"insertText: %@ start: %lu len: %lu", string, replacementRange.location, replacementRange.length);
+    fInPressAndHold = NO;
 
     NSString* characters;
     NSEvent* event = [NSApp currentEvent];
@@ -677,19 +744,29 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     else
         characters = (NSString*) string;
 
-    // printf("insertText '%s' (%lu %lu)\n", [characters UTF8String], replacementRange.location, replacementRange.length);
-    // fflush(stdout);
-
     JNIEnv* env = fWindow->fEnv;
     jwm::JNILocal<jstring> jtext(env, jwm::nsStringToJava(env, characters));
-    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInput::make(env, jtext.get()));
+    jint replacementStart = replacementRange.location == LONG_MAX ? -1 : replacementRange.location;
+    jint replacementEnd = replacementStart + replacementRange.length;
+    jwm::JNILocal<jobject> inputEvent(env, jwm::classes::EventTextInput::make(env, jtext.get(), replacementStart, replacementEnd));
     fWindow->dispatch(inputEvent.get());
+
+    // Abandon input to reset IM and unblock input after entering accented
+    // symbols
+    [self abandonInput];
 }
 
 - (void)doCommandBySelector:(SEL)selector {
     // printf("doCommandBySelector %s\n", [NSStringFromSelector(selector) UTF8String]);
     // fflush(stdout);
     // [super doCommandBySelector:selector];
+    if (@selector(insertNewline:) == selector || @selector(insertTab:) == selector || @selector(deleteBackward:) == selector) {
+        fKeyEventsNeeded = YES;
+    }
+}
+
+- (void)abandonInput {
+    [self unmarkText];
 }
 
 @end

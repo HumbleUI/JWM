@@ -13,7 +13,7 @@ namespace jwm {
 
         void dispatch(jobject event);
 
-        bool getRectForMarkedRange(jint selectionStart, jint selectionEnd, jwm::IRect& rect) const;
+        jobject getTextInputClient() const;
 
         JNIEnv* fEnv = nullptr;
         jobject fWindow = nullptr;

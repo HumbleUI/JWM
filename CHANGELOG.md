@@ -1,3 +1,13 @@
+# 0.4.14 - Mar 31, 2023
+
+Added:
+
+- TextInputClient::getSelectedRange, ::getMarkedRange and ::getSubstring #136
+
+Fixed:
+
+- macOS: Missed clicks when tap to click is enabled #267
+
 # 0.4.13 - Jan 9, 2023
 
 Added:

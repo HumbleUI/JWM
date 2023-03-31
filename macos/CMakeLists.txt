@@ -26,4 +26,5 @@ target_link_libraries(jwm
     "-framework Metal"
     "-framework OpenGL"
     "-framework QuartzCore"
+    "-framework JavaRuntimeSupport"
 )

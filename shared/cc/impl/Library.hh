@@ -29,6 +29,12 @@ namespace jwm {
         }
     };
 
+    struct IRange {
+        int32_t fStart;
+        int32_t fEnd;
+        int32_t getLength() const { return fEnd - fStart; }
+    };
+
     namespace classes {
         namespace Throwable {
             extern jclass kClsRuntimeException;
@@ -136,12 +142,14 @@ namespace jwm {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jstring text);
+            jobject make(JNIEnv* env, jstring text, jint replaceFrom, jint replaceTo);
         }
 
         namespace EventTextInputMarked {
             extern jclass kCls;
             extern jmethodID kCtor;
             jobject make(JNIEnv* env, jstring text, jint selectionStart, jint selectionEnd);
+            jobject make(JNIEnv* env, jstring text, jint selectionStart, jint selectionEnd, jint replaceStart, jint replaceEnd);
         }
 
         namespace EventWindowCloseRequest {
@@ -188,6 +196,16 @@ namespace jwm {
             extern jobject kInstance;
         }
         
+        namespace IRange {
+            extern jclass kCls;
+            extern jmethodID kCtor;
+            extern jfieldID kStart;
+            extern jfieldID kEnd;
+            jwm::IRange fromJava(JNIEnv* env, jobject range);
+            jobject toJava(JNIEnv* env, const struct IRange& range);
+            jobject toJava(JNIEnv* env, jint start, jint end);
+        }
+
         namespace IRect {
             extern jclass kCls;
             extern jmethodID kCtor;
@@ -195,7 +213,7 @@ namespace jwm {
             extern jfieldID kTop;
             extern jfieldID kRight;
             extern jfieldID kBottom;
-            jwm::IRect fromJava(JNIEnv* env, jobject IRect);
+            jwm::IRect fromJava(JNIEnv* env, jobject rect);
             jobject toJava(JNIEnv* env, const struct IRect& rect);
             jobject toJavaXYWH(JNIEnv* env, jint left, jint top, jint width, jint height);
         }
@@ -208,7 +226,14 @@ namespace jwm {
 
         namespace TextInputClient {
             extern jmethodID kGetRectForMarkedRange;
+            extern jmethodID kGetSelectedRange;
+            extern jmethodID kGetMarkedRange;
+            extern jmethodID kGetSubstring;
+
             jwm::IRect getRectForMarkedRange(JNIEnv* env, jobject client, jint selectionStart, jint selectionEnd);
+            jwm::IRange getSelectedRange(JNIEnv* env, jobject client);
+            jwm::IRange getMarkedRange(JNIEnv* env, jobject client);
+            jstring getSubstring(JNIEnv* env, jobject client, jint start, jint end);
         }
 
         namespace Window {
