@@ -190,6 +190,23 @@ void jwm::WindowWin32::focus() {
     SetFocus(_hWnd);
 }
 
+void jwm::WindowWin32::bringToFront() {
+    JWM_VERBOSE("Bring to front on window 0x" << this);
+    HWND hCurrentWindow = GetForegroundWindow();
+    long currentThreadId = GetWindowThreadProcessId(hCurrentWindow, NULL);
+    long jwmThreadId = GetCurrentThreadId();
+    AttachThreadInput(currentThreadId, jwmThreadId, true);
+    SetForegroundWindow(_hWnd);
+    AttachThreadInput(currentThreadId, jwmThreadId, false);
+}
+
+bool jwm::WindowWin32::isFront() {
+    HWND hCurrentWindow = GetForegroundWindow();
+    long currentThreadId = GetWindowThreadProcessId(hCurrentWindow, NULL);
+    long jwmThreadId = GetCurrentThreadId();
+    return currentThreadId == jwmThreadId;
+}
+
 void jwm::WindowWin32::requestSwap() {
     if (testFlag(Flag::HasAttachedLayer)) {
         setFlag(Flag::RequestSwap);
@@ -1062,6 +1079,18 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nFoc
         (JNIEnv* env, jobject obj) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
     instance->focus();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nBringToFront
+(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->bringToFront();
+}
+
+extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nIsFront
+(JNIEnv* env, jobject obj) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->isFront();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nClose

@@ -249,6 +249,20 @@ public class WindowMac extends Window {
     }
 
     @Override
+    public Window bringToFront() {
+        assert _onUIThread();
+        // TODO: impl me
+        return this;
+    }
+
+    @Override
+    public boolean isFront() {
+        assert _onUIThread();
+        // TODO: impl me
+        return false;
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder._values[_nGetZOrder()];

@@ -167,6 +167,19 @@ public class WindowWin32 extends Window {
     }
 
     @Override
+    public Window bringToFront() {
+        assert _onUIThread();
+        _nBringToFront();
+        return this;
+    }
+
+    @Override
+    public boolean isFront() {
+        assert _onUIThread();
+        return _nIsFront();
+    }
+
+    @Override
     public ZOrder getZOrder() {
         assert _onUIThread();
         return ZOrder.NORMAL;
@@ -222,6 +235,8 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
     @ApiStatus.Internal public native void _nFocus();
+    @ApiStatus.Internal public native void _nBringToFront();
+    @ApiStatus.Internal public native boolean _nIsFront();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nWinSetParent(long hwnd);
 }
