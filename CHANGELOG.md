@@ -1,3 +1,9 @@
+# 0.4.15 - Apr 3, 2023
+
+Added:
+
+- Windows: Window::bringToFront & ::isFront #266 via @Quezion
+
 # 0.4.14 - Mar 31, 2023
 
 Added:
