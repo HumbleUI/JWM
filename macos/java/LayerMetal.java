@@ -14,20 +14,20 @@ public class LayerMetal extends RefCounted implements Layer {
 
     @Override
     public void attach(Window window) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nAttach(window);
         _window = window;
     }
 
     @Override
     public void reconfigure() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nReconfigure();
     }
 
     @Override
     public void resize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _width = width;
         _height = height;
         _nResize(width, height);
@@ -35,19 +35,19 @@ public class LayerMetal extends RefCounted implements Layer {
 
     @Override
     public int getWidth() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _width;
     }
 
     @Override
     public int getHeight() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _height;
     }
 
     @Override
     public void swapBuffers() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSwapBuffers();
     }
 
@@ -59,17 +59,17 @@ public class LayerMetal extends RefCounted implements Layer {
     }
 
     public long getDevicePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetDevicePtr();
     }
 
     public long getQueuePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetQueuePtr();
     }
 
     public long nextDrawableTexturePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nNextDrawableTexturePtr();
     }
 

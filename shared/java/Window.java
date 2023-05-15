@@ -55,7 +55,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
 
     @NotNull @Contract("-> this")
     public Window setLayer(@Nullable Layer layer) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (_layer != null) {
             _layer.close();
             _layer = null;
@@ -223,7 +223,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     @NotNull @Contract("-> this")
     public Window setMouseCursor(MouseCursor cursor) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (cursor != _lastCursor) {
             _lastCursor = cursor;
             _nSetMouseCursor(cursor.ordinal());
@@ -433,7 +433,8 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
      */
     @Override
     public void close() {
-        assert _onUIThread() && !isClosed();
+        assert _onUIThread() : "Should be run on UI thread";
+        assert !isClosed() : "Window is already closed";
         setLayer(null);
         Consumer<Event> eventListener = _eventListener;
         setEventListener(null);

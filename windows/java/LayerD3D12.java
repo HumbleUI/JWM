@@ -14,20 +14,20 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public void attach(Window window) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nAttach(window);
         _window = window;
     }
 
     @Override
     public void reconfigure() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nReconfigure();
     }
 
     @Override
     public void resize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _width = width;
         _height = height;
         _nResize(width, height);
@@ -35,61 +35,62 @@ public class LayerD3D12 extends RefCounted implements Layer {
 
     @Override
     public int getWidth() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _width;
     }
 
     @Override
     public int getHeight() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _height;
     }
 
     @Override
     public void swapBuffers() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSwapBuffers();
     }
 
     @Override
     public void close() {
-        assert _onUIThread() && !isClosed();
+        assert _onUIThread() : "Should be run on UI thread";
+        assert !isClosed() : "Layer is already closed";
         _nClose();
         super.close();
     }
 
     public long getAdapterPtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetAdapterPtr();
     }
 
     public long getDevicePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetDevicePtr();
     }
 
     public long getQueuePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetQueuePtr();
     }
 
     public int getFormat() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetFormat();
     }
 
     public int getSampleCount() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetSampleCount();
     }
 
     public int getLevelCount() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetLevelCount();
     }
 
     public long nextDrawableTexturePtr() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nNextDrawableTexturePtr();
     }
 

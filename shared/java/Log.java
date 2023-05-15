@@ -15,7 +15,7 @@ public class Log {
      * @param message       message to log
      */
     public static void log(Object message) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (_listener != null) {
             if (message instanceof Throwable) {
                 StringWriter sw = new StringWriter();
@@ -35,7 +35,7 @@ public class Log {
      * @param message       message to log
      */
     public static void verbose(Object message) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (_listener != null && _verbose)
             _listener.accept(message);
     }
@@ -45,7 +45,7 @@ public class Log {
      * <p>Accepts default and verbose log messages.</p>
      */
     public static void setLogger(@Nullable Consumer<Object> listener) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _listener = listener;
         _nSetListener(listener);
     }
@@ -57,7 +57,7 @@ public class Log {
      * @param enabled       flag to enable or disable verbose messages
      */
     public static void setVerbose(boolean enabled) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _verbose = enabled;
         _nSetVerbose(enabled);
     }

@@ -62,7 +62,7 @@ public class LayerGLSkija extends LayerGL {
 
     @Override
     public void close() {
-        assert !isClosed();
+        assert !isClosed() : "Layer is already closed";
         if (_directContext != null) {
             // https://bugs.chromium.org/p/skia/issues/detail?id=12814
             // _directContext.abandon();

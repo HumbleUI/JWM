@@ -5,7 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--example', default='dashboard')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.106.0')
+  parser.add_argument('--skija-version', default='0.109.2')
   parser.add_argument('--skija-dir', default=None)
   parser.add_argument('--skija-shared-jar', default=None)
   parser.add_argument('--skija-platform-jar', default=None)

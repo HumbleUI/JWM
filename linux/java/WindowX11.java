@@ -17,53 +17,53 @@ public class WindowX11 extends Window {
 
     @Override
     public Window setTextInputEnabled(boolean enabled) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me
         return this;
     }
 
     @Override
     public void unmarkText() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me!
     }
 
     @Override 
     public IRect getWindowRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetWindowRect();
     }
 
     @Override 
     public IRect getContentRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetContentRect();
     }
 
     @Override
     public Window setWindowPosition(int left, int top) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetWindowPosition(left, top);
         return this;
     }
 
     @Override
     public Window setWindowSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetWindowSize(width, height);
         return this;
     }
 
     @Override
     public Window setContentSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetContentSize(width, height);
         return this;
     }
 
     @Override
     public Window setTitle(String title) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         try {
             _nSetTitle(title.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ignored) {}
@@ -84,7 +84,7 @@ public class WindowX11 extends Window {
 
     @Override
     public Window setVisible(boolean isVisible) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetVisible(isVisible);
         return super.setVisible(true);
     }
@@ -114,7 +114,7 @@ public class WindowX11 extends Window {
 
     @Override
     public Screen getScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetScreen();
     }
 
@@ -150,34 +150,34 @@ public class WindowX11 extends Window {
 
     @Override
     public Window focus() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO implement
         return this;
     }
 
     @Override
     public Window bringToFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO implement
         return this;
     }
 
     @Override
     public boolean isFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me
         return false;
     }
 
     @Override
     public ZOrder getZOrder() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return ZOrder.NORMAL;
     }
 
     @Override
     public Window setZOrder(ZOrder order) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO implement
         return this;
     }
@@ -200,14 +200,14 @@ public class WindowX11 extends Window {
 
     @Override
     public Window setFullScreen(boolean value) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetFullScreen(value);
         return this;
     }
 
     @Override
     public boolean isFullScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nIsFullScreen();
     }
 

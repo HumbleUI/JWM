@@ -16,32 +16,32 @@ public class WindowMac extends Window {
 
     @Override
     public Window setTextInputEnabled(boolean enabled) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me
         return this;
     }
 
     @Override
     public void unmarkText() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me!
     }
 
     @Override 
     public IRect getWindowRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetWindowRect();
     }
 
     @Override 
     public IRect getContentRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetContentRect();
     }
 
     @Override
     public Window setWindowPosition(int left, int top) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (_nSetWindowPosition(left, top))
             return this;
         else
@@ -50,21 +50,21 @@ public class WindowMac extends Window {
 
     @Override
     public Window setWindowSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetWindowSize(width, height);
         return this;
     }
 
     @Override
     public Window setContentSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetContentSize(width, height);
         return this;
     }
 
     @Override
     public Window setTitle(String title) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTitle(title);
         return this;
     }
@@ -77,14 +77,14 @@ public class WindowMac extends Window {
      */
     @NotNull @Contract("-> this")
     public Window setTitleVisible(boolean isVisible) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTitleVisible(isVisible);
         return this;
     }
 
     @NotNull @Contract("-> this")
     public Window setSubtitle(@NotNull String title) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetSubtitle(title);
         return this;
     }
@@ -97,14 +97,14 @@ public class WindowMac extends Window {
      */
     @NotNull @Contract("-> this")
     public Window setRepresentedFilename(@NotNull String filename) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetRepresentedFilename(filename);
         return this;
     }
 
     @Override
     public Window setIcon(File icon) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
@@ -119,7 +119,7 @@ public class WindowMac extends Window {
      */
     @Override
     public Window setTitlebarVisible(boolean isVisible) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         setTitleVisible(isVisible);
         setFullSizeContentView(!isVisible);
         setTrafficLightsVisible(isVisible);
@@ -128,7 +128,7 @@ public class WindowMac extends Window {
 
     @NotNull @Contract("_ -> this")
     public WindowMac setFullSizeContentView(boolean isFullSizeContentView) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetFullSizeContentView(isFullSizeContentView);
         accept(new EventWindowResize(this));
         return this;
@@ -136,7 +136,7 @@ public class WindowMac extends Window {
 
     @NotNull @Contract("_, -> this")
     public WindowMac setTitlebarStyle(WindowMacTitlebarStyle titlebarStyle) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTitlebarStyle(titlebarStyle.ordinal());
         accept(new EventWindowResize(this));
         return this;
@@ -144,14 +144,14 @@ public class WindowMac extends Window {
 
     @NotNull @Contract("_, _ -> this")
     public WindowMac setTrafficLightPosition(int left, int top) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTrafficLightPosition(left, top);
         return this;
     }
 
     @NotNull @Contract("_ -> this")
     public WindowMac setTrafficLightsVisible(boolean isVisible) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTrafficLightsVisible(isVisible);
         return this;
     }
@@ -161,21 +161,21 @@ public class WindowMac extends Window {
 
     @Override
     public Window hideMouseCursorUntilMoved(boolean value) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nHideMouseCursorUntilMoved(value);
         return this;
     }
 
     @Override
     public Window lockMouseCursor(boolean value) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nLockMouseCursor(value);
         return this;
     }
 
     @Override
     public Window setVisible(boolean value) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetVisible(value);
         return super.setVisible(true);
     }
@@ -192,7 +192,7 @@ public class WindowMac extends Window {
 
     @Override
     public Screen getScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetScreen();
     }
 
@@ -209,81 +209,81 @@ public class WindowMac extends Window {
 
     @Override
     public Window maximize() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nMaximize();
         return this;
     }
 
     @Override
     public Window minimize() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nMinimize();
         return this;
     }
 
     @Override
     public Window restore() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nRestore();
         return this;
     }
 
     @Override
     public Window setFullScreen(boolean value) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetFullScreen(value);
         return this;
     }
 
     @Override
     public boolean isFullScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nIsFullScreen();
     }
 
     @Override
     public Window focus() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nFocus();
         return this;
     }
 
     @Override
     public Window bringToFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me
         return this;
     }
 
     @Override
     public boolean isFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO: impl me
         return false;
     }
 
     @Override
     public ZOrder getZOrder() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return ZOrder._values[_nGetZOrder()];
     }
 
     @Override
     public Window setZOrder(ZOrder order) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetZOrder(order.ordinal());
         return this;
     }
 
     @Override
     public float getProgressBar() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _lastProgressBarValue;
     }
 
     @Override
     public Window setProgressBar(float progress) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetProgressBar(progress);
         _lastProgressBarValue = progress;
         return this;
@@ -291,7 +291,8 @@ public class WindowMac extends Window {
 
     @Override
     public void close() {
-        assert _onUIThread() && !isClosed();
+        assert _onUIThread() : "Should be run on UI thread";
+        assert !isClosed() : "Window is already closed";
         _nClose();
         super.close();
     }

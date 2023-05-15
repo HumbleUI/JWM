@@ -17,53 +17,53 @@ public class WindowWin32 extends Window {
 
     @Override
     public Window setTextInputEnabled(boolean enabled) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTextInputEnabled(enabled);
         return this;
     }
 
     @Override
     public void unmarkText() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nUnmarkText();
     }
 
     @Override
     public IRect getWindowRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetWindowRect();
     }
 
     @Override
     public IRect getContentRect() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetContentRect();
     }
 
     @Override
     public Window setWindowPosition(int left, int top) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetWindowPosition(left, top);
         return this;
     }
 
     @Override
     public Window setWindowSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetWindowSize(width, height);
         return this;
     }
 
     @Override
     public Window setContentSize(int width, int height) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetContentSize(width, height);
         return this;
     }
 
     @Override
     public Window setTitle(String title) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTitle(title);
         return this;
     }
@@ -71,7 +71,7 @@ public class WindowWin32 extends Window {
 
     @Override
     public Window setIcon(File icon){
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetIcon(icon.getAbsolutePath().toString());
         return this;
     }
@@ -95,28 +95,28 @@ public class WindowWin32 extends Window {
 
     @Override
     public Window setVisible(boolean isVisible) {
-       assert _onUIThread();
+       assert _onUIThread() : "Should be run on UI thread";
        _nSetVisible(isVisible);
        return super.setVisible(true);
     }
 
     @Override
     public Window setOpacity(float opacity) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetOpacity(opacity);
         return this;
     }
 
     @Override
     public float getOpacity() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetOpacity();
     }
 
 
     @Override
     public Screen getScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetScreen();
     }
 
@@ -132,19 +132,19 @@ public class WindowWin32 extends Window {
     }
 
     public Window maximize() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nMaximize();
         return this;
     }
 
     public Window minimize() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nMinimize();
         return this;
     }
 
     public Window restore() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nRestore();
         return this;
     }
@@ -161,33 +161,33 @@ public class WindowWin32 extends Window {
 
     @Override
     public Window focus() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nFocus();
         return this;
     }
 
     @Override
     public Window bringToFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nBringToFront();
         return this;
     }
 
     @Override
     public boolean isFront() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nIsFront();
     }
 
     @Override
     public ZOrder getZOrder() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return ZOrder.NORMAL;
     }
 
     @Override
     public Window setZOrder(ZOrder order) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         // TODO implement
         return this;
     }
@@ -204,13 +204,14 @@ public class WindowWin32 extends Window {
 
     @Override
     public void close() {
-        assert _onUIThread() && !isClosed();
+        assert _onUIThread() : "Should be run on UI thread";
+        assert !isClosed() : "Window is already closed";
         _nClose();
         super.close();
     }
 
     public Window winSetParent(long hwnd) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nWinSetParent(hwnd);
         return this;
     }

@@ -10,21 +10,21 @@ public class Theme {
      * @return  bool on Windows macOS, false otherwise
      */
     public static boolean isHighContrast() {
-        assert App._onUIThread();
+        assert App._onUIThread() : "Should be run on UI thread";
         if (Platform.CURRENT != Platform.WINDOWS && Platform.CURRENT != Platform.MACOS)
             return false;
         return _nIsHighContrast();
     }
 
     public static boolean isDark() {
-        assert App._onUIThread();
+        assert App._onUIThread() : "Should be run on UI thread";
         if (Platform.CURRENT != Platform.WINDOWS && Platform.CURRENT != Platform.MACOS)
             return false;
         return _nIsDark();
     }
 
     public static boolean isInverted() {
-        assert App._onUIThread();
+        assert App._onUIThread() : "Should be run on UI thread";
         if (Platform.CURRENT != Platform.MACOS)
             return false;
         return _nIsInverted();

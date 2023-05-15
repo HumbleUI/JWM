@@ -44,7 +44,7 @@ public class App {
      */
     @NotNull @SneakyThrows
     public static Window makeWindow() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         Window window;
         if (Platform.CURRENT == Platform.WINDOWS)
             window = new WindowWin32();
@@ -63,7 +63,7 @@ public class App {
      * <p>Note: must be called only after or inside {@link #start(Runnable)} successful method call.</p>
      */
     public static void terminate() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nTerminate();
     }
 
@@ -88,7 +88,7 @@ public class App {
      * @return          list of desktop screens
      */
     public static Screen[] getScreens() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetScreens();
     }
 
@@ -99,7 +99,7 @@ public class App {
      * @return          primary desktop screen
      */
     public static Screen getPrimaryScreen() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         for (Screen s: getScreens())
             if (s.isPrimary())
                 return s;
@@ -107,7 +107,7 @@ public class App {
     }
 
     public static void openSymbolsPalette() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         if (Platform.CURRENT == Platform.MACOS)
             _nOpenSymbolsPalette();
         else

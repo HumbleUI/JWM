@@ -21,7 +21,7 @@ public class Clipboard {
      * @param entries   List if clipboard entries to set
      */
     public static void set(ClipboardEntry... entries) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         assert entries.length > 0;
         _nSet(entries);
     }
@@ -41,7 +41,7 @@ public class Clipboard {
      */
     @Nullable
     public static ClipboardEntry get(ClipboardFormat... formats) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         assert formats.length > 0: "must contain at least one format entry";
         return _nGet(formats);
     }
@@ -58,7 +58,7 @@ public class Clipboard {
      */
     @Nullable
     public static ClipboardFormat[] getFormats() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _nGetFormats();
     }
 
@@ -66,7 +66,7 @@ public class Clipboard {
      * <p>Clear system clipboard content.</p>
      */
     public static void clear() {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         _nClear();
     }
 
@@ -82,7 +82,7 @@ public class Clipboard {
      */
     @NotNull @SneakyThrows
     public static ClipboardFormat registerFormat(String formatId) {
-        assert _onUIThread();
+        assert _onUIThread() : "Should be run on UI thread";
         return _registerFormatInternal(formatId, true);
     }
 
