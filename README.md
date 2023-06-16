@@ -226,6 +226,21 @@ Run examples without building (use version from the table above):
 ./script/run.py --jwm-version <version>
 ```
 
+Generate & install a local .jar file:
+
+```
+./script/install.py
+```
+
+This outputs `target/jwm-0.0.0-SNAPSHOT.jar` for use in testing (e.g. `io.github.humbleui/jwm {:local/root "..."}` if using deps.edn)
+
+### MacOS
+
+Before running the build, ensure you've installed:
+* XCode Developer Tools (`xcode-select --install`)
+* Ninja (`brew install ninja`)
+* Python 3 (`brew install python`)
+
 # Contributing
 
 PRs & issue reports are welcome!
