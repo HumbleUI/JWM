@@ -525,8 +525,20 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nFocus
     [nsWindow makeKeyAndOrderFront:nil];
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetZOrder
+extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_WindowMac__1nIsFront
   (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    return [nsWindow isMainWindow];
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nBringToFront
+  (JNIEnv* env, jobject obj) {
+    [NSApp activateIgnoringOtherApps:YES];
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_github_humbleui_jwm_WindowMac__1nGetZOrder
+(JNIEnv* env, jobject obj) {
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     NSWindow* nsWindow = instance->fNSWindow;
     NSWindowLevel level = [nsWindow level];

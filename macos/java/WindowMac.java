@@ -251,15 +251,14 @@ public class WindowMac extends Window {
     @Override
     public Window bringToFront() {
         assert _onUIThread() : "Should be run on UI thread";
-        // TODO: impl me
+        _nBringToFront();
         return this;
     }
 
     @Override
     public boolean isFront() {
         assert _onUIThread() : "Should be run on UI thread";
-        // TODO: impl me
-        return false;
+        return _nIsFront();
     }
 
     @Override
@@ -315,6 +314,8 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nHideMouseCursorUntilMoved(boolean value);
     @ApiStatus.Internal public native void _nLockMouseCursor(boolean value);
     @ApiStatus.Internal public native void _nSetVisible(boolean value);
+    @ApiStatus.Internal public native boolean _nIsFront();
+    @ApiStatus.Internal public native void _nBringToFront();
     @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nMinimize();
