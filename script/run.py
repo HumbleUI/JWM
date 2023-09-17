@@ -5,7 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--example', default='dashboard')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.109.2')
+  parser.add_argument('--skija-version', default='0.116.1')
   parser.add_argument('--skija-dir', default=None)
   parser.add_argument('--skija-shared-jar', default=None)
   parser.add_argument('--skija-platform-jar', default=None)
@@ -46,7 +46,7 @@ def main():
       skija_platform_jar
     ]
   else:
-    skija_native = 'skija-' + build_utils.system + (('-' + build_utils.arch) if 'macos' == build_utils.system else '')
+    skija_native = 'skija-' + build_utils.system + '-' + build_utils.arch
     classpath += [
       build_utils.fetch_maven('io.github.humbleui', skija_native, args.skija_version),
     ]
