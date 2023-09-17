@@ -8,7 +8,7 @@ def deps_compile():
   parser = argparse.ArgumentParser()
   parser.add_argument('--skija-dir', default=None)
   parser.add_argument('--skija-shared-jar', default=None)
-  parser.add_argument('--skija-version', default='0.109.2')
+  parser.add_argument('--skija-version', default='0.116.1')
   (args, _) = parser.parse_known_args()
 
   deps = [
