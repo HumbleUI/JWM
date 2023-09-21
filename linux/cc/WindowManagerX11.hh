@@ -68,6 +68,7 @@ namespace jwm {
         std::atomic_bool notifyBool{false};
         int lastMousePosX = 0;
         int lastMousePosY = 0;
+        void mouseUpdate(WindowX11* myWindow);
 
         std::map<::Window, WindowX11*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;

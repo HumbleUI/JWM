@@ -301,6 +301,32 @@ void WindowManagerX11::_processCallbacks() {
     }
 }
 
+void WindowManagerX11::mouseUpdate(WindowX11* myWindow) {
+    using namespace classes;
+    ::Window unused1;
+    int unused2;
+    int mouseX, mouseY;
+    unsigned mask;
+    XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &mouseX, &mouseY, &mask);
+    
+    if (lastMousePosX == mouseX && lastMousePosY == mouseY) return;
+    lastMousePosX = mouseX;
+    lastMousePosY = mouseY;
+    int movementX = 0, movementY = 0; // TODO: impl me!
+    jwm::JNILocal<jobject> eventMove(
+        app.getJniEnv(),
+        EventMouseMove::make(app.getJniEnv(),
+            mouseX,
+            mouseY,
+            movementX,
+            movementY,
+            jwm::MouseButtonX11::fromNativeMask(mask),
+            jwm::KeyX11::getModifiers()
+        )
+    );
+    myWindow->dispatch(eventMove.get());
+}
+
 void WindowManagerX11::_processXEvent(XEvent& ev) {
     using namespace classes;
 
@@ -336,10 +362,12 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                 valuator.previousValue = 0;
                             }
                         }
+
+                        mouseUpdate(myWindow);
                         break;
                     }
 
-                    case XI_Motion: {
+                    case XI_Motion: { // mouse move or scroll
                         XIDeviceEvent* deviceEvent = reinterpret_cast<XIDeviceEvent*>(xiEvent);
                         
                         it = _nativeWindowToMy.find(deviceEvent->event);
@@ -407,27 +435,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                             );
                             myWindow->dispatch(eventMouseScroll.get());
                         } else {
-                            unsigned mask;
-                            ::Window unused1;
-                            int unused2;
-                            int mouseCurrX, mouseCurrY;
-                            XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &mouseCurrX, &mouseCurrY, &mask);
-
-                            lastMousePosX = mouseCurrX;
-                            lastMousePosY = mouseCurrY;
-                            int movementX = 0, movementY = 0; // TODO: impl me!
-                            jwm::JNILocal<jobject> eventMove(
-                                app.getJniEnv(),
-                                EventMouseMove::make(app.getJniEnv(),
-                                    mouseCurrX,
-                                    mouseCurrY,
-                                    movementX,
-                                    movementY,
-                                    jwm::MouseButtonX11::fromNativeMask(mask),
-                                    jwm::KeyX11::getModifiers()
-                                )
-                            );
-                            myWindow->dispatch(eventMove.get());
+                            mouseUpdate(myWindow);
                         }
 
                         break;
@@ -515,22 +523,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
         }
 
         case MotionNotify: { // mouse move
-            unsigned mask;
-            ::Window unused1;
-            int unused2;
-            XQueryPointer(display, myWindow->_x11Window, &unused1, &unused1, &unused2, &unused2, &unused2, &unused2, &mask);
-            lastMousePosX = ev.xmotion.x;
-            lastMousePosY = ev.xmotion.y;
-            jwm::JNILocal<jobject> eventMove(
-                app.getJniEnv(),
-                EventMouseMove::make(app.getJniEnv(),
-                    ev.xmotion.x,
-                    ev.xmotion.y,
-                    jwm::MouseButtonX11::fromNativeMask(mask),
-                    jwm::KeyX11::getModifiers()
-                )
-            );
-            myWindow->dispatch(eventMove.get());
+            mouseUpdate(myWindow);
             break;
         }
 
