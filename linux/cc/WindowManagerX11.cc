@@ -321,7 +321,7 @@ void WindowManagerX11::mouseUpdate(WindowX11* myWindow) {
             movementX,
             movementY,
             jwm::MouseButtonX11::fromNativeMask(mask),
-            jwm::KeyX11::getModifiers()
+            jwm::KeyX11::getModifiersFromMask(mask)
         )
     );
     myWindow->dispatch(eventMove.get());
@@ -430,7 +430,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
                                     0.0f,
                                     lastMousePosX,
                                     lastMousePosY,
-                                    jwm::KeyX11::getModifiers()
+                                    jwm::KeyX11::getModifiersFromMask(deviceEvent->mods.effective)
                                 )
                             );
                             myWindow->dispatch(eventMouseScroll.get());

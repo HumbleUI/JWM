@@ -28,6 +28,16 @@ int jwm::KeyX11::getModifiers() {
     return m;
 }
 
+int jwm::KeyX11::getModifiersFromMask(int mask) {
+    int m = getModifiers();
+
+    if (mask & ShiftMask  ) m |= (int)jwm::KeyModifier::SHIFT;
+    if (mask & ControlMask) m |= (int)jwm::KeyModifier::CONTROL;
+    if (mask & Mod1Mask   ) m |= (int)jwm::KeyModifier::ALT;
+
+    return m;
+}
+
 jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
     switch (v) {
         // Modifiers
