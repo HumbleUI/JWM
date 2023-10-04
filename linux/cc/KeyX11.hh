@@ -9,5 +9,6 @@ namespace jwm {
         bool getKeyState(jwm::Key key);
         void setKeyState(jwm::Key key, bool isDown);
         int getModifiers();
+        int getModifiersFromMask(int mask);
     }
 }
