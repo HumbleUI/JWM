@@ -161,6 +161,12 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nGet
     return reinterpret_cast<jlong>(instance->fQueue);
 }
 
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nGetMetalLayer
+  (JNIEnv* env, jobject obj) {
+    jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
+    return reinterpret_cast<jlong>(instance->fMetalLayer);
+}
+
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerMetal__1nNextDrawableTexturePtr
   (JNIEnv* env, jobject obj) {
     jwm::LayerMetal* instance = reinterpret_cast<jwm::LayerMetal*>(jwm::classes::Native::fromJava(env, obj));
