@@ -7,6 +7,7 @@ public class LayerMetal extends RefCounted implements Layer {
     @ApiStatus.Internal public Window _window;
     @ApiStatus.Internal public int _width;
     @ApiStatus.Internal public int _height;
+    
 
     public LayerMetal() {
         super(_nMake());
@@ -82,6 +83,7 @@ public class LayerMetal extends RefCounted implements Layer {
     @ApiStatus.Internal public native void _nReconfigure();
     @ApiStatus.Internal public native void _nResize(int width, int height);
     @ApiStatus.Internal public native void _nSwapBuffers();
+    @ApiStatus.Internal public native long _nGetMetalLayer();
     @ApiStatus.Internal public native long _nGetDevicePtr();
     @ApiStatus.Internal public native long _nGetQueuePtr();
     @ApiStatus.Internal public native long _nNextDrawableTexturePtr();
