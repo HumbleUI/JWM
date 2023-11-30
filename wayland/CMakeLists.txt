@@ -15,7 +15,9 @@ if(NOT JWM_ARCH)
     endif()
 endif()
 
-find_package(X11 REQUIRED)
+find_package(wayland-client REQUIRED)
+find_package(decor REQUIRED)
+find_package(wayland-cursor REQUIRED)
 find_package(OpenGL REQUIRED)
 
 file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc)
@@ -33,9 +35,9 @@ if (NOT JAVA_HOME)
     endif()
 endif()
 
-target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc ${JAVA_HOME}/include ${JAVA_HOME}/include/linux)
+target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc ../shared/linux ${JAVA_HOME}/include ${JAVA_HOME}/include/linux)
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
 
-target_link_libraries(jwm PRIVATE X11::X11 X11::Xrandr X11::Xcursor X11::Xi)
+target_link_libraries(jwm PRIVATE wayland-client::wayland-client, decor::decor, wayland-cursor::wayland-cursor)
 target_link_libraries(jwm PRIVATE OpenGL::GL)
