@@ -3,6 +3,7 @@
 #include <string>
 #include <jni.h>
 #include <impl/JNILocal.hh>
+#include <cstdint>
 
 namespace jwm
 {

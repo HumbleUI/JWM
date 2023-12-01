@@ -3,50 +3,59 @@
 #include <jni.h>
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
-#include "WindowX11.hh"
-#include <GL/gl.h>
+#include "WindowWayland.hh"
+#include <EGL/egl.h>
+#include <wayland-egl.h>
 
 namespace jwm {
 
     class LayerGL: public RefCounted, public ILayer {
     public:
-        WindowX11* fWindow;
-        GLXContext _context = nullptr;
-        using glXSwapIntervalEXT_t = void (*)(Display*, GLXDrawable, int);   
-        glXSwapIntervalEXT_t _glXSwapIntervalEXT;
+        WindowWayland* fWindow;
+        wl_egl_window* _eglWindow = nullptr;
+        EGLContext _context = nullptr;
+        EGLDisplay _display = nullptr;
+        EGLSurface _surface = nullptr;
 
-        LayerGL() = default;
-        virtual ~LayerGL() = default;
+        LayerGLWayland() = default;
+        virtual ~LayerGLWayland() = default;
 
-        void attach(WindowX11* window) {
-            if (window->_windowManager.getVisualInfo() == nullptr) {
-                throw std::runtime_error("layer not supported");             
-            }
-
+        void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+            if (_display == nullptr) {
+              _display = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_KHR, window->_windowManager.display, EGL_NONE);
 
+              eglInitialize(_display, nullptr, nullptr);
+
+            }
             if (_context == nullptr) {
-                _context = glXCreateContext(window->_windowManager.getDisplay(),
-                                            window->_windowManager.getVisualInfo(),
-                                            nullptr,
-                                            true);
-                                    
+                EGLint attrList[] = {
+                  EGL_ALPHA_SIZE, 8,
+                  EGL_BLUE_SIZE, 8,
+                  EGL_GREEN_SIZE, 8,
+                  EGL_RED_SIZE, 8,
+                  EGL_NONE
+                };
+                EGLConfig config;
+                EGLint numConfig;
+                eglChooseConfig(_display, attrList, &config, 1, &numConfig);
+                // :troll:
+                _context = eglCreateContext(_display,
+                                            config,
+                                            EGL_NO_CONTEXT,
+                                            nullptr);
+                _eglWindow = wl_egl_window_create(window->_waylandWindow, window->getWidth(), window->getHeight());
+
+                _surface = eglCreatePlatformWindowSurface(_display, config, _eglWindow, nullptr);
             }
             
             makeCurrentForced();
 
-            _glXSwapIntervalEXT = reinterpret_cast<glXSwapIntervalEXT_t>(glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
-            setVsyncMode(VSYNC_ADAPTIVE);
         }
 
         void setVsyncMode(VSync v) override {
-
-            if (_glXSwapIntervalEXT) {
-                _glXSwapIntervalEXT(fWindow->_windowManager.getDisplay(),
-                                    fWindow->_x11Window,
-                                    v);
-            }
+          // vsync? what vsync?
         }
 
         void resize(int width, int height) {
@@ -55,22 +64,25 @@ namespace jwm {
             glStencilMask(0xffffffff);
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-            glViewport(0, 0, width, height);
+            // ???
+            // glViewport(0, 0, width, height);
+            wl_egl_window_resize(_eglWindow, width, height, 0, 0);
         }
 
         void swapBuffers() {
-            glXSwapBuffers(fWindow->_windowManager.getDisplay(), fWindow->_x11Window);
+            eglSwapBuffers(fWindow->_windowManager.getDisplay(), _surface);
         }
 
         void close() override {
-            glXDestroyContext(fWindow->_windowManager.getDisplay(), _context);
+            eglDestroyContext(_display, _context);
             jwm::unref(&fWindow);
         }
 
         void makeCurrentForced() override {
             ILayer::makeCurrentForced();
-            glXMakeCurrent(fWindow->_windowManager.getDisplay(),
-                          fWindow->_x11Window,
+            eglMakeCurrent(_display,
+                          _surface,
+                          _surface,
                           _context);
         }
     };
@@ -89,7 +101,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     try {
         jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
-        jwm::WindowX11* window = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, windowObj));
+        jwm::WindowWayland* window = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, windowObj));
         instance->attach(window);
     } catch (const std::exception& e) {
         jwm::classes::Throwable::throwLayerNotSupportedException(env, "Failed to init OpenGL");

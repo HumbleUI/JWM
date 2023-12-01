@@ -13,7 +13,7 @@
 #include "MouseCursor.hh"
 #include <wayland-client.h>
 #include <wayland-cursor.h>
-#include "xdg_shell.h"
+#include "xdg-shell.hh"
 
 namespace jwm {
     class WindowWayland;
@@ -55,6 +55,18 @@ namespace jwm {
         void registryHandleGlobalRemove(void* data, wl_registry *registry,
                 uint32_t name);
 
+        void pointerHandleEnter(void* data, wl_pointer *pointer, 
+                uint32_t serial, wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
+        void pointerHandleLeave(void* data, wl_pointer *pointer,
+                uint32_t serial, wl_surface* surface);
+        void pointerHandleMotion(void* data, wl_pointer *pointer,
+                uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
+        void pointerHandleButton(void* data, wl_pointer *pointer,
+                uint32_t serial, uint32_t time, uint32_t button,
+                uint32_t state);
+        void pointerHandleAxis(void* data, wl_pointer *pointer,
+                uint32_t time, uint32_t axis, wl_fixed_t value);
+
        
 
         ByteBuf getClipboardContents(const std::string& type);
@@ -63,10 +75,12 @@ namespace jwm {
         wl_display* display = nullptr
         wl_registry* registry = nullptr
         wl_shm* shm = nullptr;
-        zxdg_shell_v6* xdgShell = nullptr;
+        xdg_wm_base* xdgShell = nullptr;
         wl_compositor* compositor = nullptr;
         wl_data_device_manager* deviceManager = nullptr;
         wl_seat* seat = nullptr;
+        wl_pointer* pointer = nullptr;
+
 
         // XVisualInfo* x11VisualInfo;
         // XSetWindowAttributes x11SWA;
@@ -75,15 +89,17 @@ namespace jwm {
         std::atomic_bool notifyBool{false};
         int lastMousePosX = 0;
         int lastMousePosY = 0;
-        void mouseUpdate(WindowWayland* myWindow);
+        int mouseMask = 0;
+        void mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask);
 
-        std::map<::Window, WindowWayland*> _nativeWindowToMy;
+        std::map<wl_surface*, WindowWayland*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
 
 
         wl_surface* cursorSurface;
+        wl_surface* focusedSurface = nullptr;
         // Is holding all cursors in memory a good idea?
-        wl_buffer _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
+        wl_cursor_image* _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
 
 
         std::mutex _taskQueueLock;

@@ -4,9 +4,9 @@
 #include <wayland-client.h>
 #include "Window.hh"
 #include "WindowManagerWayland.hh"
-#include "ILayer.hh"
+#include <ILayer.hh>
 #include "ScreenInfo.hh"
-
+#include "xdg-shell.hh"
 namespace jwm {
     class WindowWayland: public jwm::Window {
     public:
@@ -78,7 +78,8 @@ namespace jwm {
 
         WindowManagerWayland& _windowManager;
         ILayer* _layer = nullptr;
-        ::Window _waylandWindow = 0;
-        XIC _ic;
+        wl_surface* _waylandWindow = nullptr;
+        xdg_surface* xdgSurface = nullptr;
+        xdg_toplevel* xdgToplevel = nullptr;
     };
 }

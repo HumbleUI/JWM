@@ -31,13 +31,15 @@ public class WindowWayland extends Window {
     @Override 
     public IRect getWindowRect() {
         assert _onUIThread() : "Should be run on UI thread";
-        return _nGetWindowRect();
+        // very very bad!
+        return IRect.makeXYWH(0, 0, 0, 0);
     }
 
     @Override 
     public IRect getContentRect() {
         assert _onUIThread() : "Should be run on UI thread";
-        return _nGetContentRect();
+        // stop!
+        return IRect.makeXYWH(0, 0, 0, 0);
     }
 
     @Override
@@ -118,7 +120,7 @@ public class WindowWayland extends Window {
     @Override
     public Screen getScreen() {
         assert _onUIThread() : "Should be run on UI thread";
-        return _nGetScreen();
+        return new Screen(0, false, IRect.makeXYWH(0, 0, 0, 0), IRect.makeXYWH(0, 0, 0, 0), 1);
     }
 
     @Override
@@ -214,6 +216,12 @@ public class WindowWayland extends Window {
         return _nIsFullScreen();
     }
 
+    @Override
+    public float getScale() {
+        assert _onUIThread() : "Should be run on UI Thread";
+        return _nGetScale();
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native IRect _nGetWindowRect();
@@ -222,7 +230,7 @@ public class WindowWayland extends Window {
     // @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
     // @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
-    @ApiStatus.Internal public native Screen _nGetScreen();
+    // @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nMaximize();
@@ -232,4 +240,5 @@ public class WindowWayland extends Window {
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
     @ApiStatus.Internal public native boolean _nIsFullScreen();
+    @ApiStatus.Internal public native float _nGetScale();
 }

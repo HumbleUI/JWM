@@ -24,7 +24,7 @@ def build_native_system(system):
     build_utils.copy_newer('build/jwm_x64.dll', '../target/classes/jwm_x64.dll')
 
   return 0
-def build_system():
+def build_native():
   cur_system = build_utils.system;
   if cur_system == "linux":
     build_native_system("x11")

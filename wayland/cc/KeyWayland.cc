@@ -1,22 +1,17 @@
-#include "KeyX11.hh"
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
-#include <X11/keysymdef.h>
+#include "KeyWayland.hh"
 #include "KeyModifier.hh"
-
 
 bool gKeyStates[(size_t) jwm::Key::_KEY_COUNT] = {0};
 
-bool jwm::KeyX11::getKeyState(jwm::Key key) {
+bool jwm::KeyWayland::getKeyState(jwm::Key key) {
     return gKeyStates[(size_t) key];
 }
 
-void jwm::KeyX11::setKeyState(jwm::Key key, bool isDown) {
+void jwm::KeyWayland::setKeyState(jwm::Key key, bool isDown) {
     gKeyStates[(size_t) key] = isDown;
 }
 
-int jwm::KeyX11::getModifiers() {
+int jwm::KeyWayland::getModifiers() {
     int m = 0;
 
     if (getKeyState(jwm::Key::SHIFT      )) m |= (int)jwm::KeyModifier::SHIFT;
@@ -28,7 +23,7 @@ int jwm::KeyX11::getModifiers() {
     return m;
 }
 
-int jwm::KeyX11::getModifiersFromMask(int mask) {
+int jwm::KeyWayland::getModifiersFromMask(int mask) {
     int m = getModifiers();
 
     if (mask & ShiftMask  ) m |= (int)jwm::KeyModifier::SHIFT;
@@ -38,7 +33,7 @@ int jwm::KeyX11::getModifiersFromMask(int mask) {
     return m;
 }
 
-jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
+jwm::Key jwm::KeyWayland::fromNative(uint32_t v) { /*
     switch (v) {
         // Modifiers
         case XK_Caps_Lock: return Key::CAPS_LOCK;
@@ -174,5 +169,7 @@ jwm::Key jwm::KeyX11::fromNative(uint32_t v) {
         // Key::VOLUME_DOWN
         // Key::MUTE
         default: return Key::UNDEFINED;
-    }
+    } */
+    // IMPL ME!
+    return Key::UNDEFINED:
 }

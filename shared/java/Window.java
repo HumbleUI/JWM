@@ -68,6 +68,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
         return this;
     }
 
+    public abstract float getScale();
     /**
      * <p>Enables complex text input on this window.</p>
      * <p>Passed value `true` or `false` enables or disables complex text input and IME on this window respectively.</p>

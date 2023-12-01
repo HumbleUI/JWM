@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <system_error>
 #include "Log.hh"
+#include "xdg-shell.hh"
+#include <cstring>
 
 using namespace jwm;
 
@@ -35,13 +37,15 @@ WindowManagerWayland::WindowManagerWayland():
             throw std::system_error(1, std::system_category);
         }
 
+        
+
         {
             wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
             // TODO: what about if missing : (
             auto loadCursor = [&](const char* name) {
                 wl_cursor* cursor = wl_cursor_theme_get_cursor(cursor_theme, name);
                 wl_cursor_image* cursorImage = cursor->images[0];
-                return wl_cursor_image_get_buffer(cursorImage);
+                return cursorImage;
             }
 
             _cursors[static_cast<int>(jwm::MouseCursor::ARROW         )] = loadCursor("default");
@@ -55,7 +59,27 @@ WindowManagerWayland::WindowManagerWayland():
             _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_WE     )] = loadCursor("ew-resize");
             _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NESW   )] = loadCursor("nesw-resize");
             _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NWSE   )] = loadCursor("nwse-resize");
+            
+            cursorSurface = wl_compositor_create_surface(compositor);
+
+            wl_surface_attach(cursorSurface, 
+                    wl_cursor_get_image_buffer(_cursors[static_cast<int>(jwm::MouseCursor::ARROW)]), 0, 0);
+            wl_surface_commit(cursorSurface);
         }
+
+        {
+            pointer = wl_seat_get_pointer(seat);
+            wl_pointer_listener pointerListener = {
+              .enter = pointerHandleEnter,
+              .leave = pointerHandleLeave,
+              .motion = pointerHandleMotion,
+              .button = pointerHandleButton,
+              .axis = pointerHandleAxis
+            };
+            wl_pointer_add_listener(pointer, &pointerListener, nullptr);
+        }
+
+
 
 }
 
@@ -64,58 +88,11 @@ WindowManagerWayland::WindowManagerWayland():
 
 void WindowManagerWayland::runLoop() {
     _runLoop = true;
-    XEvent ev;
 
-    // buffer to read into; really only needs to be two characters long due to the notifyBool fast path, but longer doesn't hurt
-    char buf[100];
-    // initialize a pipe to write to whenever this loop needs to process something new
-    int pipes[2];
-    if (pipe(pipes)) {
-        printf("Failed to open pipe\n");
-        return;
-    }
-
-    notifyFD = pipes[1];
-    fcntl(pipes[1], F_SETFL, O_NONBLOCK); // make sure notifyLoop doesn't block
-    // two polled items - the X11 event queue, and our event queue
-    struct pollfd ps[] = {{.fd=XConnectionNumber(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
-
+    // who be out here running they loop
     while (_runLoop) {
-        while (XPending(display)) {
-            XNextEvent(display, &ev);
-            _processXEvent(ev);
-            if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
-                _runLoop = false;
-        }
-        _processCallbacks();
-
-        // block until the next X11 or our event
-        if (poll(&ps[0], 2, -1) < 0) {
-            printf("Error during poll\n");
-            break;
-        }
-
-        // clear pipe
-        if (ps[1].revents & POLLIN) {
-            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
-        }
-        // clear fast path boolean; done after clearing the pipe so that, during event execution, new notifyLoop calls can still function
-        notifyBool.store(false);
-        // The events causing a notifyLoop anywhere between poll() end and here will be processed in all cases, as that's the next thing that happens
     }
     
-    notifyFD = -1;
-    close(pipes[0]);
-    close(pipes[1]);
-}
-
-void WindowManagerWayland::notifyLoop() {
-    if (notifyFD==-1) return;
-    // fast notifyBool path to not make system calls when not necessary
-    if (!notifyBool.exchange(true)) {
-        char dummy[1] = {0};
-        int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
-    }
 }
 
 void WindowManagerWayland::_processCallbacks() {
@@ -133,7 +110,7 @@ void WindowManagerWayland::_processCallbacks() {
     }
     {
         // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
-        std::vector<WindowX11*> copy;
+        std::vector<WindowWindow*> copy;
         for (auto& p : _nativeWindowToMy) {
             copy.push_back(p.second);
         }
@@ -153,37 +130,123 @@ void WindowManagerWayland::_processCallbacks() {
 void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registry,
         uint32_t name, const char* interface, uint32_t version) {
     if (strcmp(interface, "wl_compositor") == 0) {
-        compositor = wl_registry_bind(registry, name,
+        compositor = (wl_compositor*)wl_registry_bind(registry, name,
                 &wl_compositor_interface, 3);
     } else if (strcmp(interface, "wl_shm") == 0) {
-        shm = wl_registry_bind(registry, name,
+        shm = (wl_shm*)wl_registry_bind(registry, name,
                 &wl_shm_interface, 1);
-    } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-        xdgShell = wl_registry_bind(registry, name,
-                &zxdg_shell_v6_interface, 1);
+    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+        xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
+                &xdg_wm_base_interface, 1);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
-        deviceManager = wl_registry_bind(registry, name,
+        deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
-        seat = wl_registry_bind(registry, name,
+        seat = (wl_seat*)wl_registry_bind(registry, name,
                 &wl_seat_interface, 1);
     }
 }
 void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *registry, uint32_t name) {
     // i do nothing : )
 }
-std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
-    auto owner = XGetSelectionOwner(display, _atoms.CLIPBOARD);
-    if (owner == None)
-    {
-        return {};
+
+void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
+        wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+    wl_cursor_image* image = _cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
+    wl_pointer_set_cursor(cursor, serial, cursorSurface,  image->hotspot_x, image->hotspot_y);
+    focusedSurface = surface;
+}
+void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
+        wl_surface *surface) {
+    focusedSurface = nullptr;
+    // ???
+    mouseMask = 0;
+}
+void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
+        uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+    lastMousePosX = surface_x;
+    lastMousePosY = surface_y;
+    if (focusedSurface) {
+        ::WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
+        mouseUpdate(window, wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), mouseMask);
     }
     
-    assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
-
-    auto nativeHandle = _nativeWindowToMy.begin()->first;
-    assert(nativeHandle);
-
+}
+void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer, 
+        uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
+    using namespace classes;
+    if (state == 0) {
+        // release
+        switch (button) {
+            // primary
+            case 0x110:
+                mouseMask &= ~0x100;
+                break;
+            // secondary
+            case 0x111:
+                mouseMask &= ~0x400;
+                break;
+            // middle
+            case 0x112:
+                mouseMask &= ~0x200;
+                break;
+            default:
+                break;
+        }
+        
+        if (MouseButtonWayland::isButton(button) && focusedSurface) {
+            jwm::JNILocal<jobject> eventButton(
+                    app.getJniEnv(),
+                    EventMouseButton::make(
+                            app.getJniEnv(),
+                            MouseButtonWayland::fromNative(button),
+                            false,
+                            lastMousePosX,
+                            lastMousePosY,
+                            jwm::KeyWayland::getModifiers()
+                        )
+                    );
+            WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
+            window->dispatch(eventButton.get());
+        }
+    } else {
+        // down
+        switch (button) {
+            // primary
+            case 0x110:
+                mouseMask |= 0x100;
+                break;
+            // secondary
+            case 0x111:
+                mouseMask |= 0x400;
+                break;
+            // middle
+            case 0x112:
+                mouseMask |= 0x200;
+                break;
+            default:
+                break;
+        }
+        
+        if (MouseButtonWayland::isButton(button) && focusedSurface) {
+            jwm::JNILocal<jobject> eventButton(
+                    app.getJniEnv(),
+                    EventMouseButton::make(
+                            app.getJniEnv(),
+                            MouseButtonWayland::fromNative(button),
+                            true,
+                            lastMousePosX,
+                            lastMousePosY,
+                            jwm::KeyWayland::getModifiers()
+                        )
+                    );
+            WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
+            window->dispatch(eventButton.get());
+        }
+    }
+}
+std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
+    /*
     XConvertSelection(display,
                       _atoms.CLIPBOARD,
                       _atoms.TARGETS,
@@ -241,12 +304,32 @@ std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     // fetching data
 
     XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+    */
+    std::vector<std::string> result;
     return result;
 }
+void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask) {
+    using namespace classes;
 
+    // impl me : )
+    int movementX = 0, movementY = 0;
+    jwm::JNILocal<jobject> eventMove(
+        app.getJniEnv(),
+        EventMouseMove::make(app.getJniEnv(),
+            x,
+            y,
+            movementX,
+            movementY,
+            jwm::MouseButtonWayland::fromNativeMask(mask),
+            // impl me!
+            jwm::KeyWayland::getModifiersFromMask(0)
+            )
+        );
+    myWindow->dispatch(eventMove.get());
+}
 jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type) {
     auto nativeHandle = _nativeWindowToMy.begin()->first;
-
+    /*
     XConvertSelection(display,
                       _atoms.CLIPBOARD,
                       XInternAtom(display, type.c_str(), false),
@@ -295,6 +378,7 @@ jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type)
     }
 
     XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
+    */
     return {};
 }
 
@@ -302,7 +386,7 @@ void WindowManagerWayland::registerWindow(WindowWayland* window) {
     _nativeWindowToMy[window->_waylandWindow] = window;
 }
 
-void WindowManagerWayland::unregisterWindow(WindowX11* window) {
+void WindowManagerWayland::unregisterWindow(WindowWayland* window) {
     auto it = _nativeWindowToMy.find(window->_waylandWindow);
     if (it != _nativeWindowToMy.end()) {
         _nativeWindowToMy.erase(it);
@@ -311,15 +395,15 @@ void WindowManagerWayland::unregisterWindow(WindowX11* window) {
 
 void WindowManagerWayland::terminate() {
     _runLoop = false;
-    notifyLoop();
 }
 
 void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
-    ::Window window = _nativeWindowToMy.begin()->first;
-    XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
-    XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
+    // impl me : )
+    auto window = _nativeWindowToMy.begin()->first;
+    // XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
+    // XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
 }
 
 void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {
