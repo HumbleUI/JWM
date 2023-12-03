@@ -15,6 +15,7 @@ public:
     virtual void makeCurrentForced();
     virtual void setVsyncMode(VSync v) = 0;
     virtual void close() = 0;
+    virtual void resize(int width, int height);
 
 
     static ILayer* _ourCurrentLayer;

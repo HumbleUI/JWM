@@ -213,7 +213,8 @@ public class WindowX11 extends Window {
 
     @Override
     public float getScale() {
-        return ;
+        assert _onUIThread() : "Should be run on UI thread";
+        return _nGetScale();
     }
 
     @ApiStatus.Internal public static native long _nMake();

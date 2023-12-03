@@ -30,7 +30,7 @@ namespace jwm {
             _graphicsContext = DefaultGC(d, DefaultScreen(d));
         }
 
-        void resize(int width, int height) {
+        void resize(int width, int height) override {
             Display* d = fWindow->_windowManager.getDisplay();
             _width = width;
             _height = height;

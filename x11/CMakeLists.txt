@@ -19,8 +19,8 @@ find_package(X11 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc 
-    ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc
-    ${CMAKE_CURRENT_LIST_DIR}/../linux/cc/*.cc)
+    ${CMAKE_CURRENT_LIST_DIR}/../linux/cc/*.cc
+    ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc)
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 

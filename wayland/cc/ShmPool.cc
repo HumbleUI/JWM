@@ -4,6 +4,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
+#include <system_error>
 
 using namespace jwm;
 
@@ -22,10 +23,10 @@ ShmPool::ShmPool(wl_shm* shm, size_t size):
         _fd = _allocateShmFile(size);
         if (_fd < 0) {
             // why : (
-            throw std::system_error(EIO, "Couldn't allocate buffer");
+            throw std::system_error(EIO, std::generic_category(), "Couldn't allocate buffer");
         }
         _pool = wl_shm_create_pool(shm, _fd, size);
-        _rawData = mmap(nullptr, size,
+        _rawData = (uint8_t*)mmap(nullptr, size,
                 PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
 
     }
@@ -43,9 +44,9 @@ void ShmPool::grow(size_t size) {
     } while (ret < 0 && errno == EINTR);
     if (ret < 0) {
         // AAHHHHH!
-        throw std::system_error(EIO, "Couldn't grow buffer");
+        throw std::system_error(EIO, std::generic_category(), "Couldn't grow buffer");
     }
-    uint8_t* newData = mmap(nullptr, size,
+    uint8_t* newData = (uint8_t*)mmap(nullptr, size,
             PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
     // do I need to memcpy??? lets say no :troll:
     // TODO: error checking :troll:
@@ -85,8 +86,8 @@ int ShmPool::_allocateShmFile(size_t size) {
     return fd;
 }
 
-std::pair<wl_buffer*, uint8_t*> createBuffer(int offset, int width, int height, int stride, uint32_t format) {
+std::pair<wl_buffer*, uint8_t*> ShmPool::createBuffer(int offset, int width, int height, int stride, uint32_t format) {
    wl_buffer* buffer = wl_shm_pool_create_buffer(_pool, offset, width, height, stride, format);
-   uint32_t* data = &_rawData[offset];
+   uint8_t* data = &_rawData[offset];
    return std::pair(buffer, data);
 }

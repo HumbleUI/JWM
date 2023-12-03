@@ -5,6 +5,7 @@
 #include "impl/RefCounted.hh"
 #include "WindowWayland.hh"
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <wayland-egl.h>
 
 namespace jwm {
@@ -17,14 +18,19 @@ namespace jwm {
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
 
-        LayerGLWayland() = default;
-        virtual ~LayerGLWayland() = default;
+        LayerGL() = default;
+        virtual ~LayerGL() = default;
 
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
+            if (window->_layer) {
+              // HACK: close window and reopen
+              window->close();
+              window->init();
+            }
             fWindow->setLayer(this);
             if (_display == nullptr) {
-              _display = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_KHR, window->_windowManager.display, EGL_NONE);
+              _display = eglGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, window->_windowManager.display, nullptr);
 
               eglInitialize(_display, nullptr, nullptr);
 
@@ -58,7 +64,7 @@ namespace jwm {
           // vsync? what vsync?
         }
 
-        void resize(int width, int height) {
+        void resize(int width, int height) override {
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);
@@ -70,7 +76,7 @@ namespace jwm {
         }
 
         void swapBuffers() {
-            eglSwapBuffers(fWindow->_windowManager.getDisplay(), _surface);
+            eglSwapBuffers(_display, _surface);
         }
 
         void close() override {

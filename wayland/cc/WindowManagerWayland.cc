@@ -17,6 +17,7 @@
 #include "xdg-shell.hh"
 #include <cstring>
 
+
 using namespace jwm;
 
 
@@ -24,17 +25,17 @@ WindowManagerWayland::WindowManagerWayland():
     display(wl_display_connect(nullptr)) {
         registry = wl_display_get_registry(display);
         wl_registry_listener registry_listener = {
-            .global = registryGlobalHandler,
-            .global_remove = registryGlobalHandlerRemove
+            .global = WindowManagerWayland::registryHandleGlobal,
+            .global_remove = WindowManagerWayland::registryHandleGlobalRemove
         };
-        wl_registry_add_listener(registry, &registry_listener, nullptr);
+        wl_registry_add_listener(registry, &registry_listener, this);
 
         wl_display_roundtrip(display);
 
         if (!(shm && xdgShell && compositor && deviceManager && seat)) {
             // ???
             // Bad. Means our compositor no supportie : (
-            throw std::system_error(1, std::system_category);
+            throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
         }
 
         
@@ -46,7 +47,7 @@ WindowManagerWayland::WindowManagerWayland():
                 wl_cursor* cursor = wl_cursor_theme_get_cursor(cursor_theme, name);
                 wl_cursor_image* cursorImage = cursor->images[0];
                 return cursorImage;
-            }
+            };
 
             _cursors[static_cast<int>(jwm::MouseCursor::ARROW         )] = loadCursor("default");
             _cursors[static_cast<int>(jwm::MouseCursor::CROSSHAIR     )] = loadCursor("crosshair");
@@ -63,20 +64,20 @@ WindowManagerWayland::WindowManagerWayland():
             cursorSurface = wl_compositor_create_surface(compositor);
 
             wl_surface_attach(cursorSurface, 
-                    wl_cursor_get_image_buffer(_cursors[static_cast<int>(jwm::MouseCursor::ARROW)]), 0, 0);
+                    wl_cursor_image_get_buffer(_cursors[static_cast<int>(jwm::MouseCursor::ARROW)]), 0, 0);
             wl_surface_commit(cursorSurface);
         }
 
         {
             pointer = wl_seat_get_pointer(seat);
             wl_pointer_listener pointerListener = {
-              .enter = pointerHandleEnter,
-              .leave = pointerHandleLeave,
-              .motion = pointerHandleMotion,
-              .button = pointerHandleButton,
-              .axis = pointerHandleAxis
+              .enter = WindowManagerWayland::pointerHandleEnter,
+              .leave = WindowManagerWayland::pointerHandleLeave,
+              .motion = WindowManagerWayland::pointerHandleMotion,
+              .button = WindowManagerWayland::pointerHandleButton,
+              .axis = WindowManagerWayland::pointerHandleAxis
             };
-            wl_pointer_add_listener(pointer, &pointerListener, nullptr);
+            wl_pointer_add_listener(pointer, &pointerListener, this);
         }
 
 
@@ -88,10 +89,37 @@ WindowManagerWayland::WindowManagerWayland():
 
 void WindowManagerWayland::runLoop() {
     _runLoop = true;
+    int pipes[2];
 
+    char buf[100];
+    if (pipe(pipes)) {
+        printf("failed to open pipe\n");
+        return;
+    }
+    notifyFD = pipes[1];
+    fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
+    struct pollfd myPoll = {.fd=pipes[0], .events=POLLIN};
     // who be out here running they loop
     while (_runLoop) {
+        if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
+            _runLoop = false;
+        _processCallbacks();
+
+        // block until event : )
+        if (poll(&myPoll, 1, -1) < 0) {
+            printf("error with pipe\n");
+            break;
+        }
+
+        if (myPoll.revents & POLLIN) {
+            while (read(pipes[0], buf, sizeof(buf) == sizeof(buf))) {}
+        }
+        notifyBool.store(false);
     }
+
+    notifyFD = -1;
+    close(pipes[0]);
+    close(pipes[1]);
     
 }
 
@@ -110,7 +138,7 @@ void WindowManagerWayland::_processCallbacks() {
     }
     {
         // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
-        std::vector<WindowWindow*> copy;
+        std::vector<WindowWayland*> copy;
         for (auto& p : _nativeWindowToMy) {
             copy.push_back(p.second);
         }
@@ -129,20 +157,21 @@ void WindowManagerWayland::_processCallbacks() {
 
 void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registry,
         uint32_t name, const char* interface, uint32_t version) {
+    WindowManagerWayland* self = (WindowManagerWayland*)data;
     if (strcmp(interface, "wl_compositor") == 0) {
-        compositor = (wl_compositor*)wl_registry_bind(registry, name,
+        self->compositor = (wl_compositor*)wl_registry_bind(registry, name,
                 &wl_compositor_interface, 3);
     } else if (strcmp(interface, "wl_shm") == 0) {
-        shm = (wl_shm*)wl_registry_bind(registry, name,
+        self->shm = (wl_shm*)wl_registry_bind(registry, name,
                 &wl_shm_interface, 1);
     } else if (strcmp(interface, "xdg_wm_base") == 0) {
-        xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
-                &xdg_wm_base_interface, 1);
+        self->xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
+                &xdg_wm_base_interface, 2);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
-        deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
+        self->deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
-        seat = (wl_seat*)wl_registry_bind(registry, name,
+        self->seat = (wl_seat*)wl_registry_bind(registry, name,
                 &wl_seat_interface, 1);
     }
 }
@@ -152,61 +181,65 @@ void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *r
 
 void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-    wl_cursor_image* image = _cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
-    wl_pointer_set_cursor(cursor, serial, cursorSurface,  image->hotspot_x, image->hotspot_y);
-    focusedSurface = surface;
+    WindowManagerWayland* self = (WindowManagerWayland*)data;
+    wl_cursor_image* image = self->_cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
+    wl_pointer_set_cursor(pointer, serial, self->cursorSurface,  image->hotspot_x, image->hotspot_y);
+    self->focusedSurface = surface;
 }
 void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface) {
-    focusedSurface = nullptr;
+    WindowManagerWayland* self = (WindowManagerWayland*)data;
+    self->focusedSurface = nullptr;
     // ???
-    mouseMask = 0;
+    self->mouseMask = 0;
 }
 void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
         uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-    lastMousePosX = surface_x;
-    lastMousePosY = surface_y;
-    if (focusedSurface) {
-        ::WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
-        mouseUpdate(window, wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), mouseMask);
+    WindowManagerWayland* self = (WindowManagerWayland*)data;
+    self->lastMousePosX = surface_x;
+    self->lastMousePosY = surface_y;
+    if (self->focusedSurface) {
+        ::WindowWayland* window = self->_nativeWindowToMy.find(self->focusedSurface)->second;
+        self->mouseUpdate(window, wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->mouseMask);
     }
     
 }
 void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer, 
         uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
     using namespace classes;
+    WindowManagerWayland* self = (WindowManagerWayland*)data;
     if (state == 0) {
         // release
         switch (button) {
             // primary
             case 0x110:
-                mouseMask &= ~0x100;
+                self->mouseMask &= ~0x100;
                 break;
             // secondary
             case 0x111:
-                mouseMask &= ~0x400;
+                self->mouseMask &= ~0x400;
                 break;
             // middle
             case 0x112:
-                mouseMask &= ~0x200;
+                self->mouseMask &= ~0x200;
                 break;
             default:
                 break;
         }
         
-        if (MouseButtonWayland::isButton(button) && focusedSurface) {
+        if (MouseButtonWayland::isButton(button) && self->focusedSurface) {
             jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
                     EventMouseButton::make(
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             false,
-                            lastMousePosX,
-                            lastMousePosY,
+                            self->lastMousePosX,
+                            self->lastMousePosY,
                             jwm::KeyWayland::getModifiers()
                         )
                     );
-            WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
+            WindowWayland* window = self->_nativeWindowToMy.find(self->focusedSurface)->second;
             window->dispatch(eventButton.get());
         }
     } else {
@@ -214,33 +247,33 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
         switch (button) {
             // primary
             case 0x110:
-                mouseMask |= 0x100;
+                self->mouseMask |= 0x100;
                 break;
             // secondary
             case 0x111:
-                mouseMask |= 0x400;
+                self->mouseMask |= 0x400;
                 break;
             // middle
             case 0x112:
-                mouseMask |= 0x200;
+                self->mouseMask |= 0x200;
                 break;
             default:
                 break;
         }
         
-        if (MouseButtonWayland::isButton(button) && focusedSurface) {
+        if (MouseButtonWayland::isButton(button) && self->focusedSurface) {
             jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
                     EventMouseButton::make(
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             true,
-                            lastMousePosX,
-                            lastMousePosY,
+                            self->lastMousePosX,
+                            self->lastMousePosY,
                             jwm::KeyWayland::getModifiers()
                         )
                     );
-            WindowWayland* window = _nativeWindowToMy.find(focusedSurface)->second;
+            WindowWayland* window = self->_nativeWindowToMy.find(self->focusedSurface)->second;
             window->dispatch(eventButton.get());
         }
     }
@@ -411,4 +444,13 @@ void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {
     _taskQueue.push(task);
     _taskQueueNotify.notify_one();
     notifyLoop();
+}
+
+void WindowManagerWayland::notifyLoop() {
+    if (notifyFD==-1) return;
+    // fast notifyBool path to not make system calls when not necessary
+    if (!notifyBool.exchange(true)) {
+        char dummy[1] = {0};
+        int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
+    }
 }

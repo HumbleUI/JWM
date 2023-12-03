@@ -45,7 +45,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nRunOnUIThre
 }
 
 // how awful
-extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens(JNIEnv env*, jobject cls) noexcept {
+extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens(JNIEnv* env, jobject cls) noexcept {
     jobjectArray array = env->NewObjectArray(0, jwm::classes::Screen::kCls, 0);
 
     return array;

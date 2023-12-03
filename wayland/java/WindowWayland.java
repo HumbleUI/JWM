@@ -45,16 +45,14 @@ public class WindowWayland extends Window {
     @Override
     public Window setWindowPosition(int left, int top) {
         assert _onUIThread() : "Should be run on UI thread";
-        // _nSetWindowPosition(left, top);
-        // Unsupported under wayland rn
+        // no : )
         return this;
     }
 
     @Override
     public Window setWindowSize(int width, int height) {
         assert _onUIThread() : "Should be run on UI thread";
-        // _nSetWindowSize(width, height);
-        // Possibly unsupported? Hinting is possibly supported
+        // no : )
         return this;
     }
 
@@ -120,7 +118,7 @@ public class WindowWayland extends Window {
     @Override
     public Screen getScreen() {
         assert _onUIThread() : "Should be run on UI thread";
-        return new Screen(0, false, IRect.makeXYWH(0, 0, 0, 0), IRect.makeXYWH(0, 0, 0, 0), 1);
+        return new Screen(0, false, IRect.makeXYWH(0, 0, 0, 0), IRect.makeXYWH(0, 0, 0, 0), getScale());
     }
 
     @Override

@@ -48,23 +48,25 @@ namespace jwm {
             return DefaultVisual(display, 0);
         }
         */
+        void _processCallbacks();
+        void notifyLoop();
         void enqueueTask(const std::function<void()>& task);
 
-        void registryHandleGlobal(void* data, wl_registry *registry,
+        static void registryHandleGlobal(void* data, wl_registry *registry,
                 uint32_t name, const char* interface, uint32_t version);
-        void registryHandleGlobalRemove(void* data, wl_registry *registry,
+        static void registryHandleGlobalRemove(void* data, wl_registry *registry,
                 uint32_t name);
 
-        void pointerHandleEnter(void* data, wl_pointer *pointer, 
+        static void pointerHandleEnter(void* data, wl_pointer *pointer, 
                 uint32_t serial, wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
-        void pointerHandleLeave(void* data, wl_pointer *pointer,
+        static void pointerHandleLeave(void* data, wl_pointer *pointer,
                 uint32_t serial, wl_surface* surface);
-        void pointerHandleMotion(void* data, wl_pointer *pointer,
+        static void pointerHandleMotion(void* data, wl_pointer *pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
-        void pointerHandleButton(void* data, wl_pointer *pointer,
+        static void pointerHandleButton(void* data, wl_pointer *pointer,
                 uint32_t serial, uint32_t time, uint32_t button,
                 uint32_t state);
-        void pointerHandleAxis(void* data, wl_pointer *pointer,
+        static void pointerHandleAxis(void* data, wl_pointer *pointer,
                 uint32_t time, uint32_t axis, wl_fixed_t value);
 
        
@@ -72,8 +74,8 @@ namespace jwm {
         ByteBuf getClipboardContents(const std::string& type);
         std::vector<std::string> getClipboardFormats();
 
-        wl_display* display = nullptr
-        wl_registry* registry = nullptr
+        wl_display* display = nullptr;
+        wl_registry* registry = nullptr;
         wl_shm* shm = nullptr;
         xdg_wm_base* xdgShell = nullptr;
         wl_compositor* compositor = nullptr;

@@ -5,6 +5,8 @@
 #include "impl/RefCounted.hh"
 #include "WindowWayland.hh"
 #include "ShmPool.hh"
+#include <optional>
+
 namespace jwm {
     class LayerRaster: public RefCounted, public ILayer {
     public:
@@ -12,7 +14,7 @@ namespace jwm {
         size_t _width = 0, _height = 0;
         wl_buffer* _buffer = nullptr;
         uint8_t* _imageData = nullptr;
-        ShmPool _pool = nullptr;
+        ShmPool* _pool = nullptr;
         VSync _vsync = VSYNC_ENABLED;
 
         LayerRaster() = default;
@@ -23,17 +25,17 @@ namespace jwm {
             fWindow->setLayer(this);
         }
 
-        void resize(int width, int height) {
+        void resize(int width, int height) override {
             wl_display* d = fWindow->_windowManager.display;
             _width = width;
             _height = height;
             int bufSize = width * height * sizeof(uint32_t) * 2;
             if (!_pool) {
-                _pool = new ShmPool(fWindow->_windowManager->shm, bufSize);
+                _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
             }
-            _pool.grow(bufSize);
+            _pool->grow(bufSize);
             // LSBFirst means Little endian : )
-            auto buf = _pool.createBuffer(0, width, height, width * sizeof(uint32_t), WL_SHM_FORMAT_ABRG8888);
+            auto buf = _pool->createBuffer(0, width, height, width * sizeof(uint32_t), WL_SHM_FORMAT_ABGR8888);
             
             _buffer = buf.first;
             _imageData = buf.second;
@@ -58,7 +60,8 @@ namespace jwm {
                 wl_buffer_destroy(_buffer);
                 _buffer = nullptr;
             }
-            destroy _pool;
+            // ???
+            // destroy _pool;
             jwm::unref(&fWindow);
         }
 

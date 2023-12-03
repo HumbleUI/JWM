@@ -5,7 +5,6 @@
 #include "AppWayland.hh"
 #include "impl/Library.hh"
 #include "impl/JNILocal.hh"
-#include <libdecor.h>
 
 using namespace jwm;
 
@@ -19,6 +18,7 @@ WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
 WindowWayland::~WindowWayland() {
     close();
 }
+
 
 void WindowWayland::setTitle(const std::string& title) {
     // impl me : )
@@ -57,6 +57,11 @@ bool WindowWayland::isFullScreen() {
 
 void WindowWayland::getDecorations(int& left, int& top, int& right, int& bottom) {
     // impl me : )
+    left = 0;
+    right = 0;
+    top = 0;
+    bottom = 0;
+
 }
 
 void WindowWayland::getContentPosition(int& posX, int& posY) {
@@ -86,40 +91,52 @@ int WindowWayland::getHeight() {
 }
 
 float WindowWayland::getScale() {
-    // TODO: use surface scaling
-    return jwm::app.getScale();
+    return _scale;
 }
 
 bool WindowWayland::init()
 {
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
-    
-    xdgSurface = xdg_wm_base_get_xdg_surface(_windowManager.xdgShell, _waylandWindow);
-    xdgTopLevel = xdg_surface_get_toplevel(xdgSurface);
+    wl_surface_listener surfaceListener = {
+        .enter = WindowWayland::surfaceEnter,
+        .leave = WindowWayland::surfaceLeave,
+        .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
+        .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
+    };
+    wl_surface_add_listener(_waylandWindow, &surfaceListener, this);
 
+    xdgSurface = xdg_wm_base_get_xdg_surface(_windowManager.xdgShell, _waylandWindow);
+    xdg_surface_listener xdgSurfaceListener = {
+        .configure = WindowWayland::xdgSurfaceConfigure
+    };
+    xdg_surface_add_listener(xdgSurface, &xdgSurfaceListener, this);
+
+    xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
+    xdg_toplevel_listener xdgToplevelListener = {
+        .configure = WindowWayland::xdgToplevelConfigure,
+        .close = WindowWayland::xdgToplevelClose,
+        .configure_bounds = WindowWayland::xdgToplevelConfigureBounds,
+        .wm_capabilities = WindowWayland::xdgToplevelWmCapabilities
+    };
+    xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this); 
     _windowManager.registerWindow(this);
     return true;
 }
 
-void WindowWayland::move(int left, int top) {
-    // NO HAVING FUN!
-}
-
-void WindowWayland::resize(int width, int height) {
-    // BOO!
+// ???
+void WindowWayland::recreate()
+{
+    close();
+    init();
 }
 
 void WindowWayland::setVisible(bool isVisible) {
     if (_visible != isVisible) {
         _visible = isVisible;
         if (_visible) {
-            XMapWindow(_windowManager.getDisplay(), _x11Window);
-            if (_posX > 0 && _posY > 0)
-                move(_posX, _posY);
-            if (_width > 0 && _height > 0)
-                resize(_width, _height);
+            // impl me :troll:
         } else {
-            XUnmapWindow(_windowManager.getDisplay(), _x11Window);
+            // impl me :troll:
         }
     }
 }
@@ -127,18 +144,84 @@ void WindowWayland::setVisible(bool isVisible) {
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
     if (auto wayCursor = _windowManager._cursors[static_cast<int>(cursor)]) {
         wl_surface_attach(_windowManager.cursorSurface, 
-                wl_cursor_image_get_buffer(wayCursor->images[0]),
+                wl_cursor_image_get_buffer(wayCursor),
                 0, 0);
         wl_surface_commit(_windowManager.cursorSurface);
         // TODO: hotspots?
     } else {
-        auto wayCursor = _windowManager.cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
+        auto otherCursor = _windowManager._cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
         wl_surface_attach(_windowManager.cursorSurface,
-                wl_cursor_image_get_buffer(wayCursor->images[0]), 0, 0);
+                wl_cursor_image_get_buffer(otherCursor), 0, 0);
         wl_surface_commit(_windowManager.cursorSurface);
     }
 }
 
+// what do???
+void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output* output) {}
+void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {}
+void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* surface, int factor) {
+    WindowWayland* self = (WindowWayland*) data;
+    if (factor < 1) {
+        return;
+    }
+    self->_scale = factor;
+    // do I pinky promise here?
+    // yes : )
+    if (self->_layer) {
+        self->_layer->resize(self->_width * factor, self->_height * factor); 
+    }
+    wl_surface_set_buffer_scale(surface, factor);
+}
+void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
+
+void jwm::WindowWayland::xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial) {
+    WindowWayland* self = (WindowWayland*) data;
+    // Commit state
+    if (self->_newWidth > 0 || self->_newHeight > 0) {
+        int goodWidth = self->_width, goodHeight = self->_height;
+        if (self->_newWidth > 0)
+            goodWidth = self->_newWidth;
+        if (self->_newHeight > 0)
+            goodHeight = self->_newHeight;
+        self->_adaptSize(goodWidth, goodHeight);
+    }
+    self->_newWidth = -1;
+    self->_newHeight = -1;
+    xdg_surface_ack_configure(surface, serial);
+}
+void jwm::WindowWayland::xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width, int height, wl_array* states) {
+    WindowWayland* self = (WindowWayland*) data;
+    if (width > 0) {
+        self->_newWidth = width;
+    }
+    if (height > 0) {
+        self->_newHeight = height;
+    }
+    // honestly idrc about the state
+}
+void jwm::WindowWayland::xdgToplevelClose(void* data, xdg_toplevel* toplevel) {
+    // ???
+    // Request close EVENTUALLY:TM:
+}
+void jwm::WindowWayland::xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height) {
+    WindowWayland* self = (WindowWayland*) data;
+    if (width > 0) {
+        self->_newWidth = width;
+    }
+    if (height > 0) {
+        self->_newHeight = height;
+    }
+}
+void jwm::WindowWayland::xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* array) {
+    // impl me : )
+}
+void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
+    _width = newWidth;
+    _height = newHeight;
+    if (_layer) {
+        _layer->resize(_width * _scale, _height * _scale);
+    }
+}
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nMake
@@ -186,24 +269,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWayland__
     );
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nSetWindowPosition
-        (JNIEnv* env, jobject obj, int left, int top) {
-    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
-    instance->move(left, top);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nSetWindowSize
-        (JNIEnv* env, jobject obj, int width, int height) {
-    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
-    // TODO https://github.com/HumbleUI/JWM/issues/109
-    instance->resize(width, height);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nSetContentSize
-        (JNIEnv* env, jobject obj, int width, int height) {
-    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
-    instance->resize(width, height);
-}
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nRequestFrame
   (JNIEnv* env, jobject obj) {

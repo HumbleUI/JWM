@@ -7,6 +7,7 @@
 #include <ILayer.hh>
 #include "ScreenInfo.hh"
 #include "xdg-shell.hh"
+#include <libdecor-0/libdecor.h>
 namespace jwm {
     class WindowWayland: public jwm::Window {
     public:
@@ -18,13 +19,12 @@ namespace jwm {
         void setVisible(bool isVisible);
         void close();
         bool init();
+        void recreate();
         int getLeft();
         int getTop();
         int getWidth();
         int getHeight();
         float getScale();
-        void move(int left, int top);
-        void resize(int width, int height);
         void requestRedraw() {
             _isRedrawRequested = true;
             _windowManager.notifyLoop();
@@ -45,33 +45,41 @@ namespace jwm {
         void setFullScreen(bool isFullScreen);
         bool isFullScreen();
 
-        XIC getIC() const {
-            return _ic;
-        }
         void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayer* layer) {
             _layer = layer;
         }
-        void _xSendEventToWM(Atom atom, long a, long b, long c, long d, long e) const;
-        unsigned long _xGetWindowProperty(Atom property, Atom type, unsigned char** value) const;
+
 
         const ScreenInfo& getScreen();
 
-        /**
-         * _NET_WM_SYNC_REQUEST (resize flicker fix) update request counter
-         */
-        struct {
-            uint32_t lo = 0;
-            uint32_t hi = 0;
-            XID counter;
-        } _xsyncRequestCounter;
+        static void surfaceEnter(void* data, wl_surface* surface, wl_output* output);
+        static void surfaceLeave(void* data, wl_surface* surface, wl_output* output);
+        static void surfacePreferredBufferScale(void* data, wl_surface* surface, int factor);
+        static void surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform);
+
+        static void xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial);
+
+        static void xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width, int height, wl_array* states);
+        static void xdgToplevelClose(void* data, xdg_toplevel* toplevel);
+        static void xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height);
+        static void xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* capabilities);
+
+        void _adaptSize(int newWidth, int newHeight);
+
 
         int _posX = -1;
         int _posY = -1;
         int _width = -1;
+        int _newWidth = -1;
+        int _scale = 1;
         int _height = -1;
+        int _newHeight = -1;
         int _WM_ADD = 1L;
         int _WM_REMOVE = 0L;
+        bool _canMinimize = false;
+        bool _canMaximize = false;
+        bool _canFullscreen = false;
         bool _visible = false;
 
         bool _isRedrawRequested = false;
@@ -81,5 +89,6 @@ namespace jwm {
         wl_surface* _waylandWindow = nullptr;
         xdg_surface* xdgSurface = nullptr;
         xdg_toplevel* xdgToplevel = nullptr;
+        libdecor_frame* _frame = nullptr;
     };
 }

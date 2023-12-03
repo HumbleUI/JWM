@@ -35,7 +35,7 @@ namespace jwm {
             */
             // impl me : )
             jobjectArray formats = env->NewObjectArray(0, classes::ClipboardFormat::kCls, nullptr);
-            return format;
+            return formats;
         }
 
         jobject get(JNIEnv* env, jobjectArray formats) {

@@ -1,14 +1,14 @@
 #include "KeyWayland.hh"
 #include "KeyModifier.hh"
 
-bool gKeyStates[(size_t) jwm::Key::_KEY_COUNT] = {0};
+bool gKeyStates[(std::size_t) jwm::Key::_KEY_COUNT] = {0};
 
 bool jwm::KeyWayland::getKeyState(jwm::Key key) {
-    return gKeyStates[(size_t) key];
+    return gKeyStates[(std::size_t) key];
 }
 
 void jwm::KeyWayland::setKeyState(jwm::Key key, bool isDown) {
-    gKeyStates[(size_t) key] = isDown;
+    gKeyStates[(std::size_t) key] = isDown;
 }
 
 int jwm::KeyWayland::getModifiers() {
@@ -25,10 +25,10 @@ int jwm::KeyWayland::getModifiers() {
 
 int jwm::KeyWayland::getModifiersFromMask(int mask) {
     int m = getModifiers();
-
-    if (mask & ShiftMask  ) m |= (int)jwm::KeyModifier::SHIFT;
-    if (mask & ControlMask) m |= (int)jwm::KeyModifier::CONTROL;
-    if (mask & Mod1Mask   ) m |= (int)jwm::KeyModifier::ALT;
+    // ???
+    // if (mask & ShiftMask  ) m |= (int)jwm::KeyModifier::SHIFT;
+    // if (mask & ControlMask) m |= (int)jwm::KeyModifier::CONTROL;
+    // if (mask & Mod1Mask   ) m |= (int)jwm::KeyModifier::ALT;
 
     return m;
 }
@@ -171,5 +171,5 @@ jwm::Key jwm::KeyWayland::fromNative(uint32_t v) { /*
         default: return Key::UNDEFINED;
     } */
     // IMPL ME!
-    return Key::UNDEFINED:
+    return Key::UNDEFINED;
 }

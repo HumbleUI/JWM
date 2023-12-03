@@ -19,6 +19,9 @@ def build_native_system(system):
   
   if os.path.exists('build/libjwm_x64.so'):
     build_utils.copy_newer('build/libjwm_x64.so', '../target/classes/libjwm_x64.so')
+
+  if os.path.exists('build/libjwm_x64_wayland.so'):
+    build_utils.copy_newer('build/libjwm_x64_wayland.so', '../target/classes/libjwm_x64_wayland.so')
   
   if os.path.exists('build/jwm_x64.dll'):
     build_utils.copy_newer('build/jwm_x64.dll', '../target/classes/jwm_x64.dll')
@@ -34,8 +37,12 @@ def build_native():
   return 0
 def build_java():
   os.chdir(common.basedir)
-  sources = build_utils.files("x11/java/**/*.java", "macos/java/**/*.java", "shared/java/**/*.java",  "windows/java/**/*.java",)
-  build_utils.javac(sources, "target/classes", classpath=common.deps_compile())
+  sources = build_utils.files("x11/java/**/*.java", 
+                              "macos/java/**/*.java", 
+                              "shared/java/**/*.java",  
+                              "windows/java/**/*.java",
+                              "wayland/java/**/*.java")
+  build_utils.javac(sources, "target/classes", classpath=common.deps_compile(), release="16")
   return 0
 
 def main():

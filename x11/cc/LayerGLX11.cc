@@ -49,7 +49,7 @@ namespace jwm {
             }
         }
 
-        void resize(int width, int height) {
+        void resize(int width, int height) override {
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);

@@ -32,9 +32,17 @@ def main():
     ]
   else:
     classpath += [
-      'target/classes',
-      build_utils.system + '/build'
-    ]
+          'target/classes'
+        ]
+    if build_utils.system == "linux":
+        classpath += [
+          "wayland/build",
+          "x11/build"
+        ]
+    else:
+      classpath += [
+        build_utils.system + '/build'
+      ]
 
   if args.skija_dir:
     classpath += [
