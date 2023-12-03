@@ -32,14 +32,14 @@ public class WindowWayland extends Window {
     public IRect getWindowRect() {
         assert _onUIThread() : "Should be run on UI thread";
         // very very bad!
-        return IRect.makeXYWH(0, 0, 0, 0);
+        return IRect.makeXYWH(0, 0, 100, 100);
     }
 
     @Override 
     public IRect getContentRect() {
         assert _onUIThread() : "Should be run on UI thread";
         // stop!
-        return IRect.makeXYWH(0, 0, 0, 0);
+        return IRect.makeXYWH(0, 0, 100, 100);
     }
 
     @Override

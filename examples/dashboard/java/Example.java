@@ -53,10 +53,11 @@ public class Example implements Consumer<Event> {
         panelTheme = new PanelTheme(window);
         panelTouch = new PanelTouch(window);
 
-        var scale = window.getScreen().getScale();
+        var scale = window.getScale();
         int count = App._windows.size() - 1;
-        Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
-        IRect bounds = screen.getWorkArea();
+        // Screen screen = App.getScreens()[(count / 5) % App.getScreens().length];
+        // IRect bounds = screen.getWorkArea();
+        IRect bounds = new IRect(0, 0, 100, 100);
 
         window.setTitle("JWM Window #" + count);
         if (window instanceof WindowMac windowMac) {

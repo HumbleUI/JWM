@@ -100,8 +100,10 @@ bool WindowWayland::init()
     wl_surface_listener surfaceListener = {
         .enter = WindowWayland::surfaceEnter,
         .leave = WindowWayland::surfaceLeave,
+    #ifdef HAVE_WAYLAND_1_22
         .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
         .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
+    #endif
     };
     wl_surface_add_listener(_waylandWindow, &surfaceListener, this);
 

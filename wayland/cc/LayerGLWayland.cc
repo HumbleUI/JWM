@@ -72,7 +72,9 @@ namespace jwm {
 
             // ???
             // glViewport(0, 0, width, height);
-            wl_egl_window_resize(_eglWindow, width, height, 0, 0);
+            // God is dead if _eglWindow is null 
+            if (_eglWindow)
+              wl_egl_window_resize(_eglWindow, width, height, 0, 0);
         }
 
         void swapBuffers() {

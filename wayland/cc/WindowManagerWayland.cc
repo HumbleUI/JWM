@@ -75,7 +75,7 @@ WindowManagerWayland::WindowManagerWayland():
               .leave = WindowManagerWayland::pointerHandleLeave,
               .motion = WindowManagerWayland::pointerHandleMotion,
               .button = WindowManagerWayland::pointerHandleButton,
-              .axis = WindowManagerWayland::pointerHandleAxis
+              //.axis = WindowManagerWayland::pointerHandleAxis
             };
             wl_pointer_add_listener(pointer, &pointerListener, this);
         }
@@ -112,7 +112,7 @@ void WindowManagerWayland::runLoop() {
         }
 
         if (myPoll.revents & POLLIN) {
-            while (read(pipes[0], buf, sizeof(buf) == sizeof(buf))) {}
+            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) {}
         }
         notifyBool.store(false);
     }
@@ -166,7 +166,7 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
                 &wl_shm_interface, 1);
     } else if (strcmp(interface, "xdg_wm_base") == 0) {
         self->xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
-                &xdg_wm_base_interface, 2);
+                &xdg_wm_base_interface, 1);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         self->deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
