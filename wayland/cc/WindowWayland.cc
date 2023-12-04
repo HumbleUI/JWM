@@ -136,9 +136,6 @@ void WindowWayland::show()
     xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this); 
     _windowManager.registerWindow(this);
 
-    wl_display_roundtrip(_windowManager.display);
-    if (_layer)
-        _layer->attachBuffer();
 }
 
 // ???
@@ -217,6 +214,9 @@ void jwm::WindowWayland::xdgSurfaceConfigure(void* data, xdg_surface* surface, u
     self->_newWidth = -1;
     self->_newHeight = -1;
     xdg_surface_ack_configure(surface, serial);
+    if (self->_layer) {
+        self->_layer->attachBuffer();
+    }
 }
 void jwm::WindowWayland::xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width, int height, wl_array* states) {
     WindowWayland* self = (WindowWayland*) data;
