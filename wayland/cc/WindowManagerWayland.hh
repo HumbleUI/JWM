@@ -69,6 +69,7 @@ namespace jwm {
         static void pointerHandleAxis(void* data, wl_pointer *pointer,
                 uint32_t time, uint32_t axis, wl_fixed_t value);
 
+        static void xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial);
        
 
         ByteBuf getClipboardContents(const std::string& type);

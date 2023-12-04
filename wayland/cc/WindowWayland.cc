@@ -28,11 +28,22 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
     // impl me : )
 }
 
+// Closing is like... the exact same as being visible. WTH
 void WindowWayland::close() {
     if (_waylandWindow) {
         _windowManager.unregisterWindow(this);
         wl_surface_destroy(_waylandWindow);
     }
+    _waylandWindow = nullptr;
+    if (xdgSurface) {
+        xdg_surface_destroy(xdgSurface);
+    }
+    xdgSurface = nullptr;
+    if (xdgToplevel) {
+        xdg_toplevel_destroy(xdgToplevel);
+    }
+    xdgToplevel = nullptr;
+
 }
 void WindowWayland::maximize() {
     // impl me :) 
@@ -93,8 +104,10 @@ int WindowWayland::getHeight() {
 float WindowWayland::getScale() {
     return _scale;
 }
-
-bool WindowWayland::init()
+bool WindowWayland::init() {
+    return true;
+}
+void WindowWayland::show()
 {
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
     wl_surface_listener surfaceListener = {
@@ -122,7 +135,6 @@ bool WindowWayland::init()
     };
     xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this); 
     _windowManager.registerWindow(this);
-    return true;
 }
 
 // ???
@@ -136,9 +148,9 @@ void WindowWayland::setVisible(bool isVisible) {
     if (_visible != isVisible) {
         _visible = isVisible;
         if (_visible) {
-            // impl me :troll:
+            show();
         } else {
-            // impl me :troll:
+            close();
         }
     }
 }
@@ -159,7 +171,17 @@ void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
 }
 
 // what do???
-void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output* output) {}
+void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output* output) {
+    wl_output_listener listener = {
+      .geometry = WindowWayland::outputGeometry,
+      .mode = WindowWayland::outputMode,
+      .done = WindowWayland::outputDone,
+      .scale = WindowWayland::outputScale,
+      .name = WindowWayland::outputName,
+      .description = WindowWayland::outputDescription
+    };
+    wl_output_add_listener(output, &listener, data);
+}
 void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {}
 void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* surface, int factor) {
     WindowWayland* self = (WindowWayland*) data;
@@ -217,6 +239,23 @@ void jwm::WindowWayland::xdgToplevelConfigureBounds(void* data, xdg_toplevel* to
 void jwm::WindowWayland::xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* array) {
     // impl me : )
 }
+void jwm::WindowWayland::outputGeometry(void* data, wl_output* output, int x, int y, int pWidth, int pHeight,
+        int subpixel, const char* make, const char* model, int transform) {}
+void jwm::WindowWayland::outputMode(void* data, wl_output* output, uint32_t flags, int width, int height,
+        int refresh) {}
+void jwm::WindowWayland::outputDone(void* data, wl_output* output) {}
+void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) {
+    WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
+    self->_scale = factor;
+    if (self->_layer) {
+        self->_layer->resize(self->_width * factor, self->_height * factor);
+        if (self->_waylandWindow) {
+            wl_surface_set_buffer_scale(self->_waylandWindow, factor);
+        }
+    }
+}
+void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
+void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     _width = newWidth;
     _height = newHeight;

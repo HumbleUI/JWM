@@ -32,14 +32,20 @@ WindowManagerWayland::WindowManagerWayland():
 
         wl_display_roundtrip(display);
 
+
+
         if (!(shm && xdgShell && compositor && deviceManager && seat)) {
             // ???
             // Bad. Means our compositor no supportie : (
             throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
         }
-
-        
-
+       
+        xdg_wm_base_listener xdgListener = {
+            .ping = WindowManagerWayland::xdgWmBasePing
+        };
+        // frankly `this` is not needed here, but it needs a pointer anyway and it's
+        // good to have consistentcy. 
+        xdg_wm_base_add_listener(xdgShell, &xdgListener, this);
         {
             wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
             // TODO: what about if missing : (
@@ -98,22 +104,29 @@ void WindowManagerWayland::runLoop() {
     }
     notifyFD = pipes[1];
     fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
-    struct pollfd myPoll = {.fd=pipes[0], .events=POLLIN};
+    struct pollfd ps[] = {{.fd=wl_display_get_fd(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
     // who be out here running they loop
     while (_runLoop) {
+        printf("gi huys\n");
+        wl_display_flush(display);
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
+        printf("try guys\n");
         _processCallbacks();
 
         // block until event : )
-        if (poll(&myPoll, 1, -1) < 0) {
+        if (poll(&ps[0], 2, -1) < 0) {
             printf("error with pipe\n");
             break;
         }
-
-        if (myPoll.revents & POLLIN) {
-            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) {}
+        printf("why guys\n");
+        if (ps[1].revents & POLLIN) {
+            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
+        if (ps[0].revents & POLLIN) {
+            wl_display_dispatch(display);
+        }
+        printf("hi guys? %i\n", _runLoop);
         notifyBool.store(false);
     }
 
@@ -159,8 +172,9 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
         uint32_t name, const char* interface, uint32_t version) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
     if (strcmp(interface, "wl_compositor") == 0) {
+        // EGL apparently requires at least a version of 4 here : )
         self->compositor = (wl_compositor*)wl_registry_bind(registry, name,
-                &wl_compositor_interface, 3);
+                &wl_compositor_interface, 4);
     } else if (strcmp(interface, "wl_shm") == 0) {
         self->shm = (wl_shm*)wl_registry_bind(registry, name,
                 &wl_shm_interface, 1);
@@ -277,6 +291,9 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
             window->dispatch(eventButton.get());
         }
     }
+}
+void WindowManagerWayland::xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial) {
+    xdg_wm_base_pong(base, serial);
 }
 std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     /*
@@ -447,10 +464,13 @@ void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {
 }
 
 void WindowManagerWayland::notifyLoop() {
+    // maybe just do nothing?
+    /*
     if (notifyFD==-1) return;
     // fast notifyBool path to not make system calls when not necessary
     if (!notifyBool.exchange(true)) {
         char dummy[1] = {0};
         int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }
+    */
 }

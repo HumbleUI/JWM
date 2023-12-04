@@ -23,22 +23,35 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+            // a default size : )
+            resize(100, 100);
         }
 
         void resize(int width, int height) override {
             wl_display* d = fWindow->_windowManager.display;
             _width = width;
             _height = height;
-            int bufSize = width * height * sizeof(uint32_t) * 2;
-            if (!_pool) {
-                _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
+            int stride = width * sizeof(uint32_t);
+            int bufSize = stride * height * 2;
+            // TODO: better pool impl
+            if (_pool) {
+                delete _pool;
             }
+            _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
+            if (_buffer) {
+                wl_buffer_destroy(_buffer);
+                _imageData = nullptr;
+            }
+
             _pool->grow(bufSize);
             // LSBFirst means Little endian : )
-            auto buf = _pool->createBuffer(0, width, height, width * sizeof(uint32_t), WL_SHM_FORMAT_ABGR8888);
-            
+            // This will highly likely cause issues : )
+            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_ABGR8888);
+         
             _buffer = buf.first;
             _imageData = buf.second;
+
+
         }
 
         const void* getPixelsPtr() const {
@@ -52,7 +65,8 @@ namespace jwm {
 
         void swapBuffers() {
             // : )
-            wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, UINT32_MAX, UINT32_MAX);
+            if (fWindow->_waylandWindow)
+                wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, UINT32_MAX, UINT32_MAX);
         }
 
         void close() override {
@@ -61,7 +75,7 @@ namespace jwm {
                 _buffer = nullptr;
             }
             // ???
-            // destroy _pool;
+            delete _pool;
             jwm::unref(&fWindow);
         }
 
@@ -70,6 +84,7 @@ namespace jwm {
         }
         
         void setVsyncMode(VSync v) override {
+            // srsly, why do I need this
             _vsync = v;
         }
     };

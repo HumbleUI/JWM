@@ -19,6 +19,7 @@ namespace jwm {
         void setVisible(bool isVisible);
         void close();
         bool init();
+        void show();
         void recreate();
         int getLeft();
         int getTop();
@@ -64,6 +65,15 @@ namespace jwm {
         static void xdgToplevelClose(void* data, xdg_toplevel* toplevel);
         static void xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height);
         static void xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* capabilities);
+
+        static void outputGeometry(void* data, wl_output* output, int x, int y, int physWidth, int physHeight,
+                int subpixelOrient, const char* make, const char* model, int transform);
+        static void outputMode(void* data, wl_output* output, uint32_t flags, int width, int height, int refresh);
+        static void outputDone(void* data, wl_output* output);
+        // YEAH THAT'S WHAT I'VE BEEN WAITING FOR
+        static void outputScale(void* data, wl_output* output, int factor);
+        static void outputName(void* data, wl_output* output, const char* name);
+        static void outputDescription(void* data, wl_output* output, const char* desc);
 
         void _adaptSize(int newWidth, int newHeight);
 
