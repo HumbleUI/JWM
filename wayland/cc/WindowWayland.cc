@@ -135,6 +135,10 @@ void WindowWayland::show()
     };
     xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this); 
     _windowManager.registerWindow(this);
+
+    wl_display_roundtrip(_windowManager.display);
+    if (_layer)
+        _layer->attachBuffer();
 }
 
 // ???
@@ -200,6 +204,7 @@ void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface*
 
 void jwm::WindowWayland::xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial) {
     WindowWayland* self = (WindowWayland*) data;
+    printf("hi guys");
     // Commit state
     if (self->_newWidth > 0 || self->_newHeight > 0) {
         int goodWidth = self->_width, goodHeight = self->_height;

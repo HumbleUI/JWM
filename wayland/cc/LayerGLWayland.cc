@@ -7,16 +7,18 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <wayland-egl.h>
+#include "ILayerWayland.hh"
 
 namespace jwm {
 
-    class LayerGL: public RefCounted, public ILayer {
+    class LayerGL: public RefCounted, public ILayerWayland {
     public:
         WindowWayland* fWindow;
         wl_egl_window* _eglWindow = nullptr;
         EGLContext _context = nullptr;
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
+        EGLConfig _config = nullptr;
 
         LayerGL() = default;
         virtual ~LayerGL() = default;
@@ -44,17 +46,13 @@ namespace jwm {
                   EGL_RED_SIZE, 8,
                   EGL_NONE
                 };
-                EGLConfig config;
                 EGLint numConfig;
-                eglChooseConfig(_display, attrList, &config, 1, &numConfig);
+                eglChooseConfig(_display, attrList, &_config, 1, &numConfig);
                 // :troll:
                 _context = eglCreateContext(_display,
-                                            config,
+                                            _config,
                                             EGL_NO_CONTEXT,
                                             nullptr);
-                _eglWindow = wl_egl_window_create(window->_waylandWindow, window->getWidth(), window->getHeight());
-                // TODO: closed windows?
-                _surface = eglCreatePlatformWindowSurface(_display, config, _eglWindow, nullptr);
             }
             
             makeCurrentForced();
@@ -93,6 +91,14 @@ namespace jwm {
                           _surface,
                           _surface,
                           _context);
+        }
+        void attachBuffer() override {
+          if (fWindow && fWindow->_waylandWindow) {
+            if (!_eglWindow) {
+              _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
+              _surface = eglCreatePlatformWindowSurface(_display, _config, _eglWindow, nullptr);
+            }
+          }
         }
     };
 

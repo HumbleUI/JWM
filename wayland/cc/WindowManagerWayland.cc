@@ -107,11 +107,9 @@ void WindowManagerWayland::runLoop() {
     struct pollfd ps[] = {{.fd=wl_display_get_fd(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
     // who be out here running they loop
     while (_runLoop) {
-        printf("gi huys\n");
         wl_display_flush(display);
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
-        printf("try guys\n");
         _processCallbacks();
 
         // block until event : )
@@ -119,14 +117,12 @@ void WindowManagerWayland::runLoop() {
             printf("error with pipe\n");
             break;
         }
-        printf("why guys\n");
         if (ps[1].revents & POLLIN) {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
         if (ps[0].revents & POLLIN) {
             wl_display_dispatch(display);
         }
-        printf("hi guys? %i\n", _runLoop);
         notifyBool.store(false);
     }
 
@@ -465,12 +461,10 @@ void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {
 
 void WindowManagerWayland::notifyLoop() {
     // maybe just do nothing?
-    /*
     if (notifyFD==-1) return;
     // fast notifyBool path to not make system calls when not necessary
     if (!notifyBool.exchange(true)) {
         char dummy[1] = {0};
         int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }
-    */
 }

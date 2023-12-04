@@ -4,7 +4,7 @@
 #include <wayland-client.h>
 #include "Window.hh"
 #include "WindowManagerWayland.hh"
-#include <ILayer.hh>
+#include "ILayerWayland.hh"
 #include "ScreenInfo.hh"
 #include "xdg-shell.hh"
 #include <libdecor-0/libdecor.h>
@@ -47,8 +47,10 @@ namespace jwm {
         bool isFullScreen();
 
         void setCursor(jwm::MouseCursor cursor);
-        void setLayer(ILayer* layer) {
+        void setLayer(ILayerWayland* layer) {
             _layer = layer;
+            if (_visible)
+                _layer->attachBuffer();
         }
 
 
@@ -95,7 +97,7 @@ namespace jwm {
         bool _isRedrawRequested = false;
 
         WindowManagerWayland& _windowManager;
-        ILayer* _layer = nullptr;
+        ILayerWayland* _layer = nullptr;
         wl_surface* _waylandWindow = nullptr;
         xdg_surface* xdgSurface = nullptr;
         xdg_toplevel* xdgToplevel = nullptr;

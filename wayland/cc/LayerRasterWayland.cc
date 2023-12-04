@@ -8,7 +8,7 @@
 #include <optional>
 
 namespace jwm {
-    class LayerRaster: public RefCounted, public ILayer {
+    class LayerRaster: public RefCounted, public ILayerWayland {
     public:
         WindowWayland* fWindow;
         size_t _width = 0, _height = 0;
@@ -50,8 +50,6 @@ namespace jwm {
          
             _buffer = buf.first;
             _imageData = buf.second;
-
-
         }
 
         const void* getPixelsPtr() const {
@@ -65,8 +63,10 @@ namespace jwm {
 
         void swapBuffers() {
             // : )
-            if (fWindow->_waylandWindow)
+            if (fWindow->_waylandWindow) {
                 wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, UINT32_MAX, UINT32_MAX);
+                wl_surface_commit(fWindow->_waylandWindow);
+            }
         }
 
         void close() override {
@@ -86,6 +86,15 @@ namespace jwm {
         void setVsyncMode(VSync v) override {
             // srsly, why do I need this
             _vsync = v;
+        }
+
+        void attachBuffer() override {
+            if (fWindow) {
+                if (fWindow->_waylandWindow) {
+                    wl_surface_attach(fWindow->_waylandWindow, _buffer, 0, 0);
+                    wl_surface_commit(fWindow->_waylandWindow);
+                }
+            }
         }
     };
 }
