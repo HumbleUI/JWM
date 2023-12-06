@@ -35,7 +35,7 @@ public class PanelRendering extends Panel {
         else if (Platform.CURRENT == Platform.X11)
             layers = new String[] { "LayerGLSkija", "LayerRasterSkija" };
         else if (Platform.CURRENT == Platform.WAYLAND)
-            layers = new String[] { "LayerGLSkija", "LayerRasterSkija" };
+            layers = new String[] { "LayerRasterSkija" };
 
         for (var layerName: layers)
             layersStatus.put(layerName, UNKNOWN);

@@ -16,6 +16,7 @@ namespace jwm {
         uint8_t* _imageData = nullptr;
         ShmPool* _pool = nullptr;
         VSync _vsync = VSYNC_ENABLED;
+        bool _attached = false;
 
         LayerRaster() = default;
         virtual ~LayerRaster() = default;
@@ -35,21 +36,26 @@ namespace jwm {
             int bufSize = stride * height * 2;
             // TODO: better pool impl
             if (_pool) {
-                delete _pool;
+                _pool->close();
             }
             _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
+            if (fWindow->_waylandWindow) {
+                wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
+            }
             if (_buffer) {
                 wl_buffer_destroy(_buffer);
                 _imageData = nullptr;
             }
 
-            _pool->grow(bufSize);
             // LSBFirst means Little endian : )
             // This will highly likely cause issues : )
-            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_ABGR8888);
+            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
          
             _buffer = buf.first;
             _imageData = buf.second;
+            if (_attached) {
+                attachBuffer();
+            }
         }
 
         const void* getPixelsPtr() const {
@@ -63,8 +69,8 @@ namespace jwm {
 
         void swapBuffers() {
             // : )
-            if (fWindow->_waylandWindow) {
-                wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, UINT32_MAX, UINT32_MAX);
+            if (fWindow->_waylandWindow && _attached) {
+                wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
                 wl_surface_commit(fWindow->_waylandWindow);
             }
         }
@@ -75,7 +81,9 @@ namespace jwm {
                 _buffer = nullptr;
             }
             // ???
-            delete _pool;
+            if (_pool) {
+                _pool->close();
+            }
             jwm::unref(&fWindow);
         }
 
@@ -93,10 +101,12 @@ namespace jwm {
                 if (fWindow->_waylandWindow) {
                     wl_surface_attach(fWindow->_waylandWindow, _buffer, 0, 0);
                     wl_surface_commit(fWindow->_waylandWindow);
+                    _attached = true;
                 }
             }
         }
     };
+
 }
 
 

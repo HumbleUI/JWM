@@ -49,8 +49,6 @@ namespace jwm {
         void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayerWayland* layer) {
             _layer = layer;
-            if (_visible)
-                _layer->attachBuffer();
         }
 
 

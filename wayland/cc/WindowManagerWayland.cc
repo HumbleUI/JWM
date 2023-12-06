@@ -16,7 +16,7 @@
 #include "Log.hh"
 #include "xdg-shell.hh"
 #include <cstring>
-
+#include <cerrno>
 
 using namespace jwm;
 
@@ -40,12 +40,13 @@ WindowManagerWayland::WindowManagerWayland():
             throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
         }
        
-        xdg_wm_base_listener xdgListener = {
+        struct xdg_wm_base_listener xdgListener = {
             .ping = WindowManagerWayland::xdgWmBasePing
         };
+
         // frankly `this` is not needed here, but it needs a pointer anyway and it's
-        // good to have consistentcy. 
-        xdg_wm_base_add_listener(xdgShell, &xdgListener, this);
+        // good to have consistentcy.
+        // xdg_wm_base_add_listener(xdgShell, &xdgListener, this);
         {
             wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
             // TODO: what about if missing : (
@@ -76,12 +77,12 @@ WindowManagerWayland::WindowManagerWayland():
 
         {
             pointer = wl_seat_get_pointer(seat);
-            wl_pointer_listener pointerListener = {
+            struct wl_pointer_listener pointerListener = {
               .enter = WindowManagerWayland::pointerHandleEnter,
               .leave = WindowManagerWayland::pointerHandleLeave,
               .motion = WindowManagerWayland::pointerHandleMotion,
               .button = WindowManagerWayland::pointerHandleButton,
-              //.axis = WindowManagerWayland::pointerHandleAxis
+              .axis = WindowManagerWayland::pointerHandleAxis
             };
             wl_pointer_add_listener(pointer, &pointerListener, this);
         }
@@ -104,26 +105,56 @@ void WindowManagerWayland::runLoop() {
     }
     notifyFD = pipes[1];
     fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
+    struct pollfd wayland_out = {.fd=wl_display_get_fd(display),.events=POLLOUT};
     struct pollfd ps[] = {{.fd=wl_display_get_fd(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
     // who be out here running they loop
     while (_runLoop) {
-        wl_display_flush(display);
+        printf(": (\n");
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
         _processCallbacks();
+        while(wl_display_prepare_read(display) != 0)
+            wl_display_dispatch_pending(display);
+        // adapted from Waylock
+        while (true) {
+            int res = wl_display_flush(display);
+            if (res >= 0)
+                break;
+            
+            switch (errno) {
+                case EPIPE:
+                    wl_display_read_events(display);
+                    throw std::system_error(errno, std::generic_category(), "connection to wayland server unexpectedly terminated");
+                    break;
+                case EAGAIN:
+                    if (poll(&wayland_out, 1, -1) < 0) {
+                        throw std::system_error(EPIPE, std::generic_category(), "poll failed");
+                    }
+                    break;
+                default: 
+                    throw std::system_error(errno, std::generic_category(), "failed to flush requests");
+                    break;
+            }
 
+        }
         // block until event : )
         if (poll(&ps[0], 2, -1) < 0) {
             printf("error with pipe\n");
             break;
         }
+        printf(": |\n"); 
         if (ps[1].revents & POLLIN) {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
         if (ps[0].revents & POLLIN) {
-            wl_display_dispatch(display);
+            // WHY IN THE WORLD IS THIS CRASHING
+            wl_display_read_events(display);
+        } else {
+            wl_display_cancel_read(display);
         }
+        wl_display_dispatch_pending(display);
         notifyBool.store(false);
+        printf(": )\n");
     }
 
     notifyFD = -1;
@@ -155,7 +186,7 @@ void WindowManagerWayland::_processCallbacks() {
         for (auto p : copy) {
             if (p->isRedrawRequested()) {
                 p->unsetRedrawRequest();
-                if (p->_layer) {
+                if (p->_layer && p->_visible) {
                     p->_layer->makeCurrent();
                 }
                 p->dispatch(classes::EventFrame::kInstance);
@@ -166,7 +197,7 @@ void WindowManagerWayland::_processCallbacks() {
 
 void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registry,
         uint32_t name, const char* interface, uint32_t version) {
-    WindowManagerWayland* self = (WindowManagerWayland*)data;
+    WindowManagerWayland* self = reinterpret_cast<WindowManagerWayland*>(data);
     if (strcmp(interface, "wl_compositor") == 0) {
         // EGL apparently requires at least a version of 4 here : )
         self->compositor = (wl_compositor*)wl_registry_bind(registry, name,
@@ -176,7 +207,7 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
                 &wl_shm_interface, 1);
     } else if (strcmp(interface, "xdg_wm_base") == 0) {
         self->xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
-                &xdg_wm_base_interface, 1);
+                &xdg_wm_base_interface, 2);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         self->deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
@@ -288,6 +319,8 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
         }
     }
 }
+void WindowManagerWayland::pointerHandleAxis(void* data, wl_pointer* pointer, 
+        uint32_t time, uint32_t axis, wl_fixed_t value) {}
 void WindowManagerWayland::xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial) {
     xdg_wm_base_pong(base, serial);
 }

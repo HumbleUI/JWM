@@ -31,8 +31,11 @@ ShmPool::ShmPool(wl_shm* shm, size_t size):
 
     }
 ShmPool::~ShmPool() {
+
+}
+void ShmPool::close() {
     wl_shm_pool_destroy(_pool);
-    close(_fd);
+    ::close(_fd);
 }
 
 void ShmPool::grow(size_t size) {
@@ -80,7 +83,7 @@ int ShmPool::_allocateShmFile(size_t size) {
         ret = ftruncate(fd, size);
     } while (ret < 0 && errno == EINTR);
     if (ret < 0) {
-        close(fd);
+        ::close(fd);
         return -1;
     }
     return fd;

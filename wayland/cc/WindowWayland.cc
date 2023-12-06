@@ -11,7 +11,10 @@ using namespace jwm;
 
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
-    _windowManager(windowManager)
+    _windowManager(windowManager),
+    // HACK: have a default height bc some compositors won't hecking tell me :sob:
+    _width(100),
+    _height(100)
 {
 }
 
@@ -28,7 +31,7 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
     // impl me : )
 }
 
-// Closing is like... the exact same as being visible. WTH
+// Closing is like... the exact same as hiding. WTH
 void WindowWayland::close() {
     if (_waylandWindow) {
         _windowManager.unregisterWindow(this);
@@ -113,10 +116,8 @@ void WindowWayland::show()
     wl_surface_listener surfaceListener = {
         .enter = WindowWayland::surfaceEnter,
         .leave = WindowWayland::surfaceLeave,
-    #ifdef HAVE_WAYLAND_1_22
         .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
         .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
-    #endif
     };
     wl_surface_add_listener(_waylandWindow, &surfaceListener, this);
 
@@ -133,9 +134,9 @@ void WindowWayland::show()
         .configure_bounds = WindowWayland::xdgToplevelConfigureBounds,
         .wm_capabilities = WindowWayland::xdgToplevelWmCapabilities
     };
-    xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this); 
+    xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this);
     _windowManager.registerWindow(this);
-
+    wl_surface_commit(_waylandWindow);
 }
 
 // ???
@@ -173,6 +174,7 @@ void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
 
 // what do???
 void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output* output) {
+    // doesn't crash : )
     wl_output_listener listener = {
       .geometry = WindowWayland::outputGeometry,
       .mode = WindowWayland::outputMode,
@@ -192,16 +194,13 @@ void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* sur
     self->_scale = factor;
     // do I pinky promise here?
     // yes : )
-    if (self->_layer) {
-        self->_layer->resize(self->_width * factor, self->_height * factor); 
-    }
     wl_surface_set_buffer_scale(surface, factor);
+    self->_adaptSize(self->_width, self->_height);
 }
 void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
 
 void jwm::WindowWayland::xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial) {
     WindowWayland* self = (WindowWayland*) data;
-    printf("hi guys");
     // Commit state
     if (self->_newWidth > 0 || self->_newHeight > 0) {
         int goodWidth = self->_width, goodHeight = self->_height;
@@ -229,8 +228,8 @@ void jwm::WindowWayland::xdgToplevelConfigure(void* data, xdg_toplevel* toplevel
     // honestly idrc about the state
 }
 void jwm::WindowWayland::xdgToplevelClose(void* data, xdg_toplevel* toplevel) {
-    // ???
-    // Request close EVENTUALLY:TM:
+    WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
+    self->dispatch(classes::EventWindowCloseRequest::kInstance);
 }
 void jwm::WindowWayland::xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height) {
     WindowWayland* self = (WindowWayland*) data;

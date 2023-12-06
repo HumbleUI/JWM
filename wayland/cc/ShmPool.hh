@@ -21,5 +21,6 @@ namespace jwm {
 
         int _createShmFile();
         int _allocateShmFile(size_t size);
+        void close();
     };
 }
