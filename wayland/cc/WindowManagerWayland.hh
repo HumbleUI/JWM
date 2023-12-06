@@ -13,7 +13,7 @@
 #include "MouseCursor.hh"
 #include <wayland-client.h>
 #include <wayland-cursor.h>
-#include "xdg-shell.hh"
+#include "xdg-shell/xdg-shell.h"
 
 namespace jwm {
     class WindowWayland;
@@ -52,10 +52,14 @@ namespace jwm {
         void notifyLoop();
         void enqueueTask(const std::function<void()>& task);
 
+        static wl_registry_listener _registryListener;
+
         static void registryHandleGlobal(void* data, wl_registry *registry,
                 uint32_t name, const char* interface, uint32_t version);
         static void registryHandleGlobalRemove(void* data, wl_registry *registry,
                 uint32_t name);
+
+        static wl_pointer_listener _pointerListener;
 
         static void pointerHandleEnter(void* data, wl_pointer *pointer, 
                 uint32_t serial, wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
@@ -69,6 +73,7 @@ namespace jwm {
         static void pointerHandleAxis(void* data, wl_pointer *pointer,
                 uint32_t time, uint32_t axis, wl_fixed_t value);
 
+        static xdg_wm_base_listener _xdgWmBaseListener;
         static void xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial);
        
 

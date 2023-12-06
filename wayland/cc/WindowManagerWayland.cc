@@ -14,21 +14,30 @@
 #include <algorithm>
 #include <system_error>
 #include "Log.hh"
-#include "xdg-shell.hh"
 #include <cstring>
 #include <cerrno>
 
 using namespace jwm;
 
+wl_registry_listener WindowManagerWayland::_registryListener = {
+    .global = WindowManagerWayland::registryHandleGlobal,
+    .global_remove = WindowManagerWayland::registryHandleGlobalRemove
+};
+wl_pointer_listener WindowManagerWayland::_pointerListener = {
+  .enter = WindowManagerWayland::pointerHandleEnter,
+  .leave = WindowManagerWayland::pointerHandleLeave,
+  .motion = WindowManagerWayland::pointerHandleMotion,
+  .button = WindowManagerWayland::pointerHandleButton,
+  .axis = WindowManagerWayland::pointerHandleAxis
+};
+xdg_wm_base_listener WindowManagerWayland::_xdgWmBaseListener = {
+    .ping = WindowManagerWayland::xdgWmBasePing
+};
 
 WindowManagerWayland::WindowManagerWayland():
     display(wl_display_connect(nullptr)) {
         registry = wl_display_get_registry(display);
-        wl_registry_listener registry_listener = {
-            .global = WindowManagerWayland::registryHandleGlobal,
-            .global_remove = WindowManagerWayland::registryHandleGlobalRemove
-        };
-        wl_registry_add_listener(registry, &registry_listener, this);
+        wl_registry_add_listener(registry, &_registryListener, this);
 
         wl_display_roundtrip(display);
 
@@ -40,13 +49,11 @@ WindowManagerWayland::WindowManagerWayland():
             throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
         }
        
-        struct xdg_wm_base_listener xdgListener = {
-            .ping = WindowManagerWayland::xdgWmBasePing
-        };
+      
 
         // frankly `this` is not needed here, but it needs a pointer anyway and it's
         // good to have consistentcy.
-        // xdg_wm_base_add_listener(xdgShell, &xdgListener, this);
+        xdg_wm_base_add_listener(xdgShell, &_xdgWmBaseListener, this);
         {
             wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
             // TODO: what about if missing : (
@@ -77,14 +84,8 @@ WindowManagerWayland::WindowManagerWayland():
 
         {
             pointer = wl_seat_get_pointer(seat);
-            struct wl_pointer_listener pointerListener = {
-              .enter = WindowManagerWayland::pointerHandleEnter,
-              .leave = WindowManagerWayland::pointerHandleLeave,
-              .motion = WindowManagerWayland::pointerHandleMotion,
-              .button = WindowManagerWayland::pointerHandleButton,
-              .axis = WindowManagerWayland::pointerHandleAxis
-            };
-            wl_pointer_add_listener(pointer, &pointerListener, this);
+
+            wl_pointer_add_listener(pointer, &_pointerListener, this);
         }
 
 
@@ -109,7 +110,6 @@ void WindowManagerWayland::runLoop() {
     struct pollfd ps[] = {{.fd=wl_display_get_fd(display), .events=POLLIN}, {.fd=pipes[0], .events=POLLIN}};
     // who be out here running they loop
     while (_runLoop) {
-        printf(": (\n");
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
         _processCallbacks();
@@ -142,7 +142,6 @@ void WindowManagerWayland::runLoop() {
             printf("error with pipe\n");
             break;
         }
-        printf(": |\n"); 
         if (ps[1].revents & POLLIN) {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
@@ -154,7 +153,6 @@ void WindowManagerWayland::runLoop() {
         }
         wl_display_dispatch_pending(display);
         notifyBool.store(false);
-        printf(": )\n");
     }
 
     notifyFD = -1;
@@ -198,20 +196,20 @@ void WindowManagerWayland::_processCallbacks() {
 void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registry,
         uint32_t name, const char* interface, uint32_t version) {
     WindowManagerWayland* self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (strcmp(interface, "wl_compositor") == 0) {
+    if (strcmp(interface, wl_compositor_interface.name) == 0) {
         // EGL apparently requires at least a version of 4 here : )
         self->compositor = (wl_compositor*)wl_registry_bind(registry, name,
                 &wl_compositor_interface, 4);
-    } else if (strcmp(interface, "wl_shm") == 0) {
+    } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         self->shm = (wl_shm*)wl_registry_bind(registry, name,
                 &wl_shm_interface, 1);
-    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
         self->xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
-                &xdg_wm_base_interface, 2);
-    } else if (strcmp(interface, "wl_data_device_manager") == 0) {
+                &xdg_wm_base_interface, 1);
+    } else if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
         self->deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
-    } else if (strcmp(interface, "wl_seat") == 0) {
+    } else if (strcmp(interface,  wl_seat_interface.name) == 0) {
         self->seat = (wl_seat*)wl_registry_bind(registry, name,
                 &wl_seat_interface, 1);
     }

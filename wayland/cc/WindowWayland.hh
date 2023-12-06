@@ -6,7 +6,7 @@
 #include "WindowManagerWayland.hh"
 #include "ILayerWayland.hh"
 #include "ScreenInfo.hh"
-#include "xdg-shell.hh"
+#include "xdg-shell/xdg-shell.h"
 #include <libdecor-0/libdecor.h>
 namespace jwm {
     class WindowWayland: public jwm::Window {
@@ -100,5 +100,12 @@ namespace jwm {
         xdg_surface* xdgSurface = nullptr;
         xdg_toplevel* xdgToplevel = nullptr;
         libdecor_frame* _frame = nullptr;
+
+        static wl_surface_listener _surfaceListener;
+        static xdg_surface_listener _xdgSurfaceListener;
+        static xdg_toplevel_listener _xdgToplevelListener;
+
+        static wl_output_listener _outputListener;
+
     };
 }

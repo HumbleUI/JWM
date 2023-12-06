@@ -9,6 +9,31 @@
 using namespace jwm;
 
 
+wl_surface_listener WindowWayland::_surfaceListener = {
+    .enter = WindowWayland::surfaceEnter,
+    .leave = WindowWayland::surfaceLeave,
+    .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
+    .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
+};
+xdg_surface_listener WindowWayland::_xdgSurfaceListener = {
+    .configure = WindowWayland::xdgSurfaceConfigure
+};
+        
+xdg_toplevel_listener WindowWayland::_xdgToplevelListener = {
+    .configure = WindowWayland::xdgToplevelConfigure,
+    .close = WindowWayland::xdgToplevelClose,
+    .configure_bounds = WindowWayland::xdgToplevelConfigureBounds,
+    .wm_capabilities = WindowWayland::xdgToplevelWmCapabilities
+};
+        
+wl_output_listener WindowWayland::_outputListener = {
+  .geometry = WindowWayland::outputGeometry,
+  .mode = WindowWayland::outputMode,
+  .done = WindowWayland::outputDone,
+  .scale = WindowWayland::outputScale,
+  .name = WindowWayland::outputName,
+  .description = WindowWayland::outputDescription
+};
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
     _windowManager(windowManager),
@@ -113,28 +138,13 @@ bool WindowWayland::init() {
 void WindowWayland::show()
 {
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
-    wl_surface_listener surfaceListener = {
-        .enter = WindowWayland::surfaceEnter,
-        .leave = WindowWayland::surfaceLeave,
-        .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
-        .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
-    };
-    wl_surface_add_listener(_waylandWindow, &surfaceListener, this);
+    wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
 
     xdgSurface = xdg_wm_base_get_xdg_surface(_windowManager.xdgShell, _waylandWindow);
-    xdg_surface_listener xdgSurfaceListener = {
-        .configure = WindowWayland::xdgSurfaceConfigure
-    };
-    xdg_surface_add_listener(xdgSurface, &xdgSurfaceListener, this);
+    xdg_surface_add_listener(xdgSurface, &_xdgSurfaceListener, this);
 
     xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
-    xdg_toplevel_listener xdgToplevelListener = {
-        .configure = WindowWayland::xdgToplevelConfigure,
-        .close = WindowWayland::xdgToplevelClose,
-        .configure_bounds = WindowWayland::xdgToplevelConfigureBounds,
-        .wm_capabilities = WindowWayland::xdgToplevelWmCapabilities
-    };
-    xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, this);
+    xdg_toplevel_add_listener(xdgToplevel, &_xdgToplevelListener, this);
     _windowManager.registerWindow(this);
     wl_surface_commit(_waylandWindow);
 }
@@ -175,15 +185,7 @@ void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
 // what do???
 void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output* output) {
     // doesn't crash : )
-    wl_output_listener listener = {
-      .geometry = WindowWayland::outputGeometry,
-      .mode = WindowWayland::outputMode,
-      .done = WindowWayland::outputDone,
-      .scale = WindowWayland::outputScale,
-      .name = WindowWayland::outputName,
-      .description = WindowWayland::outputDescription
-    };
-    wl_output_add_listener(output, &listener, data);
+    wl_output_add_listener(output, &_outputListener, data);
 }
 void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {}
 void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* surface, int factor) {

@@ -20,8 +20,8 @@ file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/../linux/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc )
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
-file(GLOB SOURCES_C ${CMAKE_CURRENT_LIST_DIR}/cc/*.c)
-add_library(xdgShell STATIC ${SOURCES_C})
+file(GLOB SOURCES_XDG ${CMAKE_CURRENT_LIST_DIR}/cc/xdg-shell/*.c)
+add_library(xdgShell STATIC ${SOURCES_XDG})
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 find_library(WAYLAND_CLIENT_LIB wayland-client)
 find_library(DECOR_LIB decor-0)
