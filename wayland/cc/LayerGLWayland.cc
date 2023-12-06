@@ -6,6 +6,7 @@
 #include "WindowWayland.hh"
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include <GL/gl.h>
 #include <wayland-egl.h>
 #include "ILayerWayland.hh"
 
@@ -26,12 +27,15 @@ namespace jwm {
         void attach(WindowWayland* window) {
             eglBindAPI(EGL_OPENGL_API);
             fWindow = jwm::ref(window);
+            bool shouldReopen = false;
             if (window->_layer) {
               // HACK: close window and reopen
               window->close();
-              window->init();
+              shouldReopen = window->_visible;
             }
             fWindow->setLayer(this);
+            if (shouldReopen)
+              window->show();
             if (_display == nullptr) {
               _display = eglGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, window->_windowManager.display, nullptr);
 

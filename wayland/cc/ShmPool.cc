@@ -31,11 +31,12 @@ ShmPool::ShmPool(wl_shm* shm, size_t size):
 
     }
 ShmPool::~ShmPool() {
-
+    close();
 }
 void ShmPool::close() {
     wl_shm_pool_destroy(_pool);
     ::close(_fd);
+    // munmap(_rawData, _size);
 }
 
 void ShmPool::grow(size_t size) {

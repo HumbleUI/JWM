@@ -15,7 +15,6 @@ namespace jwm {
         wl_buffer* _buffer = nullptr;
         uint8_t* _imageData = nullptr;
         ShmPool* _pool = nullptr;
-        VSync _vsync = VSYNC_ENABLED;
         bool _attached = false;
 
         LayerRaster() = default;
@@ -36,6 +35,8 @@ namespace jwm {
             int bufSize = stride * height * 2;
             // TODO: better pool impl
             if (_pool) {
+                // TODO: don't mem leak : )
+                // This memleaks - munmap causes skija to error out : /
                 _pool->close();
             }
             _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
@@ -47,8 +48,7 @@ namespace jwm {
                 _imageData = nullptr;
             }
 
-            // LSBFirst means Little endian : )
-            // This will highly likely cause issues : )
+            // : )
             auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
          
             _buffer = buf.first;
@@ -68,7 +68,6 @@ namespace jwm {
         }
 
         void swapBuffers() {
-            // : )
             if (fWindow->_waylandWindow && _attached) {
                 wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
                 wl_surface_commit(fWindow->_waylandWindow);
@@ -92,8 +91,6 @@ namespace jwm {
         }
         
         void setVsyncMode(VSync v) override {
-            // srsly, why do I need this
-            _vsync = v;
         }
 
         void attachBuffer() override {
