@@ -20,7 +20,6 @@ namespace jwm {
         void close();
         bool init();
         void show();
-        void recreate();
         int getLeft();
         int getTop();
         int getWidth();
@@ -99,6 +98,7 @@ namespace jwm {
         bool _canMaximize = false;
         bool _canFullscreen = false;
         bool _visible = false;
+        bool _configured = false;
 
         bool _isRedrawRequested = false;
 
@@ -115,6 +115,8 @@ namespace jwm {
 
         static wl_output_listener _outputListener;
         static libdecor_frame_interface _libdecorFrameInterface;
+
+        static wl_callback_listener _frameCallback;
 
     };
 }

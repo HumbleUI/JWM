@@ -75,7 +75,11 @@ void WindowWayland::close() {
         xdg_toplevel_destroy(xdgToplevel);
     }
     xdgToplevel = nullptr;
-
+    if (_frame) {
+        libdecor_frame_unref(_frame);
+    }
+    _frame = nullptr;
+    _configured = false;
 }
 void WindowWayland::maximize() {
     // impl me :) 
@@ -126,11 +130,11 @@ int WindowWayland::getTop() {
 }
 
 int WindowWayland::getWidth() {
-    return _width;
+    return _width <= 0 ? _floatingWidth : _width;
 }
 
 int WindowWayland::getHeight() {
-    return _height;
+    return _height <= 0 ? _floatingHeight : _height;
 }
 
 float WindowWayland::getScale() {
@@ -152,16 +156,11 @@ void WindowWayland::show()
     // xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
     // xdg_toplevel_add_listener(xdgToplevel, &_xdgToplevelListener, this);
 
-    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     _windowManager.registerWindow(this);
-    wl_surface_commit(_waylandWindow);
-}
-
-// ???
-void WindowWayland::recreate()
-{
-    close();
-    init();
+    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
+    _configured = false;
+    libdecor_frame_map(_frame);
+    libdecor_dispatch(_windowManager.decorCtx, -1);
 }
 
 void WindowWayland::setVisible(bool isVisible) {
@@ -195,8 +194,6 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
     // doesn't crash : )
     WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
     
-    Output* good;
-
     for (auto o : self->_windowManager.outputs) {
         if (o->_output == output) {
             self->_scale = o->scale;
@@ -282,6 +279,12 @@ void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) 
 void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
 void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
 
+wl_callback_listener jwm::WindowWayland::_frameCallback = {
+    .done = [](void* data, wl_callback* cb, uint32_t cb_data) {
+        auto self = reinterpret_cast<WindowWayland*>(data);
+        self->_adaptSize(self->_newWidth, self->_newHeight);
+    }
+};
 void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* configuration,
         void *userData) {
     auto self = reinterpret_cast<WindowWayland*>(userData);
@@ -301,10 +304,15 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
         self->_floatingHeight = height;
     }
 
-    if (self->_layer) {
+    if (!self->_configured && self->_layer) {
         self->_layer->attachBuffer();
     }
-    self->_adaptSize(width, height);
+    self->_newWidth = width;
+    self->_newHeight = height;
+    wl_callback* callback = wl_surface_frame(self->_waylandWindow);
+    // Throttle frame
+    wl_callback_add_listener(callback, &_frameCallback, self);
+    self->_configured = true;
 }
 void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
@@ -313,7 +321,7 @@ void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) 
 void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
     if (self->_layer)
-        self->dispatch(classes::EventFrame::kInstance);
+        self->_layer->swapBuffers();
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {

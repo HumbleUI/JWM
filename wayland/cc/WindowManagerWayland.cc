@@ -115,41 +115,16 @@ void WindowManagerWayland::runLoop() {
     fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
     struct pollfd wayland_out = {.fd=wl_display_get_fd(display),.events=POLLOUT};
     struct pollfd ps[] = {
-        {.fd=wl_display_get_fd(display), .events=POLLIN}, 
+        {.fd=libdecor_get_fd(decorCtx), .events=POLLIN}, 
         {.fd=pipes[0], .events=POLLIN},
-        {.fd=libdecor_get_fd(decorCtx), .events=POLLIN}
     };
     // who be out here running they loop
     while (_runLoop) {
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
         _processCallbacks();
-        while(wl_display_prepare_read(display) != 0)
-            wl_display_dispatch_pending(display);
-        // adapted from Waylock
-        while (true) {
-            int res = wl_display_flush(display);
-            if (res >= 0)
-                break;
-            
-            switch (errno) {
-                case EPIPE:
-                    wl_display_read_events(display);
-                    throw std::system_error(errno, std::generic_category(), "connection to wayland server unexpectedly terminated");
-                    break;
-                case EAGAIN:
-                    if (poll(&wayland_out, 1, -1) < 0) {
-                        throw std::system_error(EPIPE, std::generic_category(), "poll failed");
-                    }
-                    break;
-                default: 
-                    throw std::system_error(errno, std::generic_category(), "failed to flush requests");
-                    break;
-            }
-
-        }
         // block until event : )
-        if (poll(&ps[0], 3, -1) < 0) {
+        if (poll(&ps[0], 2, -1) < 0) {
             printf("error with pipe\n");
             break;
         }
@@ -157,15 +132,8 @@ void WindowManagerWayland::runLoop() {
             while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
         }
         if (ps[0].revents & POLLIN) {
-            // WHY IN THE WORLD IS THIS CRASHING
-            wl_display_read_events(display);
-        } else {
-            wl_display_cancel_read(display);
-        }
-        if (ps[2].revents & POLLIN) {
             libdecor_dispatch(decorCtx, -1);
         }
-        wl_display_dispatch_pending(display);
         notifyBool.store(false);
     }
 
@@ -248,13 +216,20 @@ void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *r
         ++it;
     }
 }
-
+WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
+    WindowWayland* myWindow = nullptr;
+    auto it = _nativeWindowToMy.find(surface);
+    if (it != _nativeWindowToMy.end())
+        myWindow = it->second;
+    return myWindow;
+}
 void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
     wl_cursor_image* image = self->_cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
     wl_pointer_set_cursor(pointer, serial, self->cursorSurface,  image->hotspot_x, image->hotspot_y);
-    self->focusedSurface = surface;
+    if (self->getWindowForNative(surface))
+        self->focusedSurface = surface;
 }
 void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface) {
@@ -267,7 +242,7 @@ void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
         uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
     if (self->focusedSurface) {
-        ::WindowWayland* window = reinterpret_cast<::WindowWayland*>(wl_surface_get_user_data(self->focusedSurface));
+        ::WindowWayland* window = self->getWindowForNative(self->focusedSurface);
         // God is dead if window is null
         if (window)
             self->mouseUpdate(window, wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->mouseMask);
@@ -310,7 +285,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                             jwm::KeyWayland::getModifiers()
                         )
                     );
-            WindowWayland* window = reinterpret_cast<WindowWayland*>(wl_surface_get_user_data(self->focusedSurface));
+            WindowWayland* window = self->getWindowForNative(self->focusedSurface);
             if (window)
                 window->dispatch(eventButton.get());
         }
@@ -346,7 +321,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                         )
                     );
             // me when this stuff is NULL : (
-            WindowWayland* window = reinterpret_cast<WindowWayland*>(wl_surface_get_user_data(self->focusedSurface));
+            WindowWayland* window = self->getWindowForNative(self->focusedSurface);
             if (window)
                 window->dispatch(eventButton.get());
         }
@@ -429,7 +404,6 @@ void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint
     lastMousePosX = x;
     lastMousePosY = y;
     int movementX = 0, movementY = 0;
-    printf("mouse update: %i %i\n", x, y);
     jwm::JNILocal<jobject> eventMove(
         app.getJniEnv(),
         EventMouseMove::make(app.getJniEnv(),
@@ -443,9 +417,7 @@ void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint
             )
         );
     auto foo = eventMove.get();
-    printf("??? %x\n", foo);
     myWindow->dispatch(foo);
-    printf("??????\n");
 }
 jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type) {
     auto nativeHandle = _nativeWindowToMy.begin()->first;

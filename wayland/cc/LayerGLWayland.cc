@@ -27,28 +27,21 @@ namespace jwm {
         virtual ~LayerGL() = default;
 
         void attach(WindowWayland* window) {
-            eglBindAPI(EGL_OPENGL_API);
             fWindow = jwm::ref(window);
-            bool shouldReopen = false;
-            if (window->_layer) {
-              // HACK: close window and reopen
-              window->close();
-              shouldReopen = window->_visible;
-            }
             fWindow->setLayer(this);
-            if (shouldReopen)
-              window->show();
             if (_display == nullptr) {
               _display = eglGetDisplay(window->_windowManager.display);
 
               eglInitialize(_display, nullptr, nullptr);
 
             }
+            if ( eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
+              throw new std::runtime_error("Cannot bind EGL Api");
+            }
             if (_context == nullptr) {
                 EGLint attrList[] = {
                   EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
                   EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-                  EGL_ALPHA_SIZE, 8,
                   EGL_BLUE_SIZE, 8,
                   EGL_GREEN_SIZE, 8,
                   EGL_RED_SIZE, 8,
@@ -74,7 +67,7 @@ namespace jwm {
                 }
             }
             
-
+            makeCurrentForced();
         }
 
         void setVsyncMode(VSync v) override {
@@ -88,7 +81,7 @@ namespace jwm {
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // ???
-            glViewport(0, 0, width, height);
+            // glViewport(0, 0, width, height);
             // God is dead if _eglWindow is null 
             if (_eglWindow)
               wl_egl_window_resize(_eglWindow, width, height, 0, 0);
@@ -99,7 +92,16 @@ namespace jwm {
         }
 
         void close() override {
+            eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            if (_surface) {
+              eglDestroySurface(_display, _surface);
+            }
+            if (_eglWindow) {
+              wl_egl_window_destroy(_eglWindow);
+            }
             eglDestroyContext(_display, _context);
+            eglTerminate(_display);
+
             jwm::unref(&fWindow);
         }
 
@@ -116,15 +118,15 @@ namespace jwm {
               // _region = wl_compositor_create_region(fWindow->_windowManager.compositor);
               // wl_region_add(_region, 0, 0, fWindow->getWidth(), fWindow->getHeight());
               // wl_surface_set_opaque_region(fWindow->_waylandWindow, _region);
-
+              printf("%i %i\n", fWindow->getWidth(), fWindow->getHeight());
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
               _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
              
               if ( _eglWindow == EGL_NO_SURFACE ) {
                   throw std::runtime_error("couldn't get surface");
               } 
-              makeCurrentForced();
             }
+            makeCurrentForced();
           }
         }
     };
@@ -143,9 +145,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     try {
         jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
-        printf("instance good : )\n");
         jwm::WindowWayland* window = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, windowObj));
-        printf("window good : )\n");
         instance->attach(window);
     } catch (const std::exception& e) {
         printf("%s\n", e.what());

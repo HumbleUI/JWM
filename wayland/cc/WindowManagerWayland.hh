@@ -55,6 +55,8 @@ namespace jwm {
         void notifyLoop();
         void enqueueTask(const std::function<void()>& task);
 
+        WindowWayland* getWindowForNative(wl_surface* surface);
+
         static wl_registry_listener _registryListener;
 
         static void registryHandleGlobal(void* data, wl_registry *registry,
