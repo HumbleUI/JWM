@@ -5,7 +5,7 @@
 #include "impl/RefCounted.hh"
 #include "WindowWayland.hh"
 #include "ShmPool.hh"
-#include <optional>
+#include <cstring>
 
 namespace jwm {
     class LayerRaster: public RefCounted, public ILayerWayland {
@@ -47,9 +47,8 @@ namespace jwm {
                 wl_buffer_destroy(_buffer);
                 _imageData = nullptr;
             }
-
             // : )
-            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
+            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_XRGB8888);
          
             _buffer = buf.first;
             _imageData = buf.second;
@@ -67,7 +66,7 @@ namespace jwm {
             return _width * sizeof(uint32_t);
         }
 
-        void swapBuffers() {
+        void swapBuffers() override {
             if (fWindow->_waylandWindow && _attached) {
                 wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
                 wl_surface_commit(fWindow->_waylandWindow);
@@ -97,6 +96,7 @@ namespace jwm {
             if (fWindow) {
                 if (fWindow->_waylandWindow) {
                     wl_surface_attach(fWindow->_waylandWindow, _buffer, 0, 0);
+                    wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
                     wl_surface_commit(fWindow->_waylandWindow);
                     _attached = true;
                 }

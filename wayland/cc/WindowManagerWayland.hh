@@ -14,6 +14,9 @@
 #include <wayland-client.h>
 #include <wayland-cursor.h>
 #include "xdg-shell/xdg-shell.h"
+#include <list>
+#include "Output.hh"
+#include <libdecor-0/libdecor.h>
 
 namespace jwm {
     class WindowWayland;
@@ -76,6 +79,8 @@ namespace jwm {
         static xdg_wm_base_listener _xdgWmBaseListener;
         static void xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial);
        
+        static libdecor_interface _decorInterface;
+        static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
 
         ByteBuf getClipboardContents(const std::string& type);
         std::vector<std::string> getClipboardFormats();
@@ -88,7 +93,8 @@ namespace jwm {
         wl_data_device_manager* deviceManager = nullptr;
         wl_seat* seat = nullptr;
         wl_pointer* pointer = nullptr;
-
+        libdecor* decorCtx = nullptr;
+        std::list<Output*> outputs;
 
         // XVisualInfo* x11VisualInfo;
         // XSetWindowAttributes x11SWA;

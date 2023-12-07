@@ -4,10 +4,11 @@
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
 #include "WindowWayland.hh"
+#include <wayland-egl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
 #include <GL/gl.h>
-#include <wayland-egl.h>
 #include "ILayerWayland.hh"
 
 namespace jwm {
@@ -16,6 +17,7 @@ namespace jwm {
     public:
         WindowWayland* fWindow;
         wl_egl_window* _eglWindow = nullptr;
+        wl_region* _region = nullptr;
         EGLContext _context = nullptr;
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
@@ -37,29 +39,41 @@ namespace jwm {
             if (shouldReopen)
               window->show();
             if (_display == nullptr) {
-              _display = eglGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, window->_windowManager.display, nullptr);
+              _display = eglGetDisplay(window->_windowManager.display);
 
               eglInitialize(_display, nullptr, nullptr);
 
             }
             if (_context == nullptr) {
                 EGLint attrList[] = {
+                  EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+                  EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
                   EGL_ALPHA_SIZE, 8,
                   EGL_BLUE_SIZE, 8,
                   EGL_GREEN_SIZE, 8,
                   EGL_RED_SIZE, 8,
                   EGL_NONE
                 };
+                EGLint contextAttr[] = {
+                  EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE
+                };
                 EGLint numConfig;
-                eglChooseConfig(_display, attrList, &_config, 1, &numConfig);
+                if ( ( eglGetConfigs(_display, nullptr, 0, &numConfig) != EGL_TRUE) || (numConfig == 0) ) {
+                    throw std::runtime_error("No configuration");
+                }
+                if ( ( eglChooseConfig(_display, attrList, &_config, 1, &numConfig) != EGL_TRUE) || (numConfig != 1)) {
+                    throw std::runtime_error("No/Amibguous configuration");
+                }
                 // :troll:
                 _context = eglCreateContext(_display,
                                             _config,
                                             EGL_NO_CONTEXT,
-                                            nullptr);
+                                            contextAttr);
+                if ( _context == EGL_NO_CONTEXT ) {
+                    throw std::runtime_error("Couldn't make context");
+                }
             }
             
-            makeCurrentForced();
 
         }
 
@@ -80,7 +94,7 @@ namespace jwm {
               wl_egl_window_resize(_eglWindow, width, height, 0, 0);
         }
 
-        void swapBuffers() {
+        void swapBuffers() override {
             eglSwapBuffers(_display, _surface);
         }
 
@@ -99,8 +113,17 @@ namespace jwm {
         void attachBuffer() override {
           if (fWindow && fWindow->_waylandWindow) {
             if (!_eglWindow) {
+              // _region = wl_compositor_create_region(fWindow->_windowManager.compositor);
+              // wl_region_add(_region, 0, 0, fWindow->getWidth(), fWindow->getHeight());
+              // wl_surface_set_opaque_region(fWindow->_waylandWindow, _region);
+
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
-              _surface = eglCreatePlatformWindowSurface(_display, _config, _eglWindow, nullptr);
+              _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
+             
+              if ( _eglWindow == EGL_NO_SURFACE ) {
+                  throw std::runtime_error("couldn't get surface");
+              } 
+              makeCurrentForced();
             }
           }
         }
@@ -120,9 +143,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
   (JNIEnv* env, jobject obj, jobject windowObj) {
     try {
         jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+        printf("instance good : )\n");
         jwm::WindowWayland* window = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, windowObj));
+        printf("window good : )\n");
         instance->attach(window);
     } catch (const std::exception& e) {
+        printf("%s\n", e.what());
         jwm::classes::Throwable::throwLayerNotSupportedException(env, "Failed to init OpenGL");
     }
 }

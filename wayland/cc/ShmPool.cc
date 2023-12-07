@@ -25,9 +25,9 @@ ShmPool::ShmPool(wl_shm* shm, size_t size):
             // why : (
             throw std::system_error(EIO, std::generic_category(), "Couldn't allocate buffer");
         }
-        _pool = wl_shm_create_pool(shm, _fd, size);
         _rawData = (uint8_t*)mmap(nullptr, size,
                 PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
+        _pool = wl_shm_create_pool(shm, _fd, size);
 
     }
 ShmPool::~ShmPool() {

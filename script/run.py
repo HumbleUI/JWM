@@ -47,8 +47,7 @@ def main():
 
   if args.skija_dir:
     classpath += [
-      skija_dir + '/platform/build',
-      skija_dir + '/platform/target/classes',
+      skija_dir + '/platform/target/' + build_utils.system + '-' + build_utils.arch + '/classes',
     ]
   elif args.skija_platform_jar:
     classpath += [

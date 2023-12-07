@@ -75,6 +75,12 @@ namespace jwm {
         static void outputName(void* data, wl_output* output, const char* name);
         static void outputDescription(void* data, wl_output* output, const char* desc);
 
+
+        static void decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* config, void* userData);
+        static void decorFrameClose(libdecor_frame* frame, void* userData);
+        static void decorFrameCommit(libdecor_frame* frame, void* userData);
+        static void decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData);
+
         void _adaptSize(int newWidth, int newHeight);
 
 
@@ -87,6 +93,8 @@ namespace jwm {
         int _newHeight = -1;
         int _WM_ADD = 1L;
         int _WM_REMOVE = 0L;
+        int _floatingWidth = 400;
+        int _floatingHeight = 400;
         bool _canMinimize = false;
         bool _canMaximize = false;
         bool _canFullscreen = false;
@@ -106,6 +114,7 @@ namespace jwm {
         static xdg_toplevel_listener _xdgToplevelListener;
 
         static wl_output_listener _outputListener;
+        static libdecor_frame_interface _libdecorFrameInterface;
 
     };
 }
