@@ -7,6 +7,7 @@
 #include "ILayerWayland.hh"
 #include "ScreenInfo.hh"
 #include <libdecor-0/libdecor.h>
+#include <string>
 namespace jwm {
     class WindowWayland: public jwm::Window {
     public:
@@ -95,7 +96,7 @@ namespace jwm {
         bool _fullscreen = false;
         bool _floating = false;
         bool _isRedrawRequested = false;
-        const char* _title = "";
+        std::string _title;
         bool _titlebarVisible = true;
 
         WindowManagerWayland& _windowManager;

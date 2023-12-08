@@ -50,7 +50,8 @@ public class WindowWayland extends Window {
     @Override
     public Window setWindowSize(int width, int height) {
         assert _onUIThread() : "Should be run on UI thread";
-        // no : )
+        // TODO: don't assume bounds 
+        setContentSize(width, height);
         return this;
     }
 
@@ -64,9 +65,7 @@ public class WindowWayland extends Window {
     @Override
     public Window setTitle(String title) {
         assert _onUIThread() : "Should be run on UI thread";
-        try {
-            _nSetTitle(title.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ignored) {}
+        _nSetTitle(title);
         return this;
     }
 
@@ -231,7 +230,7 @@ public class WindowWayland extends Window {
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
-    @ApiStatus.Internal public native Screen _nSetTitle(byte[] title);
+    @ApiStatus.Internal public native Screen _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
     @ApiStatus.Internal public native boolean _nIsFullScreen();

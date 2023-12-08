@@ -5,6 +5,8 @@
 #include "AppWayland.hh"
 #include "impl/Library.hh"
 #include "impl/JNILocal.hh"
+#include <locale>
+#include <codecvt>
 
 using namespace jwm;
 
@@ -36,7 +38,9 @@ const char* WindowWayland::_windowTag = "WindowWayland";
 
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
-    _windowManager(windowManager)
+    _windowManager(windowManager),
+    _title("")
+
 {
 }
 
@@ -46,9 +50,9 @@ WindowWayland::~WindowWayland() {
 
 
 void WindowWayland::setTitle(const std::string& title) {
-    _title = title.c_str();
+    _title = title;
     if (_frame)
-        libdecor_frame_set_title(_frame, _title);
+        libdecor_frame_set_title(_frame, _title.c_str());
 }
 
 void WindowWayland::setTitlebarVisible(bool isVisible) {
@@ -418,13 +422,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nC
     instance->close();
 }
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nSetTitle
-        (JNIEnv* env, jobject obj, jbyteArray title) {
+        (JNIEnv* env, jobject obj, jstring title) {
     jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
 
-    jbyte* bytes = env->GetByteArrayElements(title, nullptr);
-    std::string titleS((const char*) bytes, env->GetArrayLength(title));
-    env->ReleaseByteArrayElements(title, bytes, 0);
+    const jchar* bytes = env->GetStringChars(title, nullptr);
+    jsize length = env->GetStringLength(title);
+    std::u16string thingie = {reinterpret_cast<const char16_t*>(bytes), length};
 
+    std::string titleS = std::wstring_convert<
+            std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(thingie);
+    env->ReleaseStringChars(title, bytes);
     instance->setTitle(titleS);
 }
 

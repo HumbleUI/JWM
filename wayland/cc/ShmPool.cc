@@ -93,5 +93,5 @@ int ShmPool::_allocateShmFile(size_t size) {
 std::pair<wl_buffer*, uint8_t*> ShmPool::createBuffer(int offset, int width, int height, int stride, uint32_t format) {
    wl_buffer* buffer = wl_shm_pool_create_buffer(_pool, offset, width, height, stride, format);
    uint8_t* data = &_rawData[offset];
-   return std::pair(buffer, data);
+   return std::pair<wl_buffer*, uint8_t*>(buffer, data);
 }
