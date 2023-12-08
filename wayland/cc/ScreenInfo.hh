@@ -8,6 +8,7 @@ namespace jwm
         long id;
         IRect bounds;
         bool isPrimary;
+        int scale;
         jobject asJavaObject(JNIEnv* env) const;
     };
 } // namespace jwm

@@ -81,7 +81,7 @@ namespace jwm {
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // ???
-            // glViewport(0, 0, width, height);
+            glViewport(0, 0, width, height);
             // God is dead if _eglWindow is null 
             if (_eglWindow)
               wl_egl_window_resize(_eglWindow, width, height, 0, 0);

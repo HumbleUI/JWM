@@ -17,6 +17,7 @@ namespace jwm {
         void getDecorations(int& left, int& top, int& right, int& bottom);
         void getContentPosition(int& posX, int& posY);
         void setVisible(bool isVisible);
+        bool resize(int width, int height);
         void close();
         bool init();
         void show();
@@ -51,7 +52,7 @@ namespace jwm {
         }
 
 
-        const ScreenInfo& getScreen();
+        ScreenInfo getScreen();
 
         static void surfaceEnter(void* data, wl_surface* surface, wl_output* output);
         static void surfaceLeave(void* data, wl_surface* surface, wl_output* output);
@@ -108,6 +109,7 @@ namespace jwm {
         xdg_surface* xdgSurface = nullptr;
         xdg_toplevel* xdgToplevel = nullptr;
         libdecor_frame* _frame = nullptr;
+        Output* _output = nullptr;
 
         static wl_surface_listener _surfaceListener;
         static xdg_surface_listener _xdgSurfaceListener;

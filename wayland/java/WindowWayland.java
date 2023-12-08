@@ -31,15 +31,13 @@ public class WindowWayland extends Window {
     @Override 
     public IRect getWindowRect() {
         assert _onUIThread() : "Should be run on UI thread";
-        // very very bad!
-        return IRect.makeXYWH(0, 0, 100, 100);
+        return _nGetWindowRect();
     }
 
     @Override 
     public IRect getContentRect() {
         assert _onUIThread() : "Should be run on UI thread";
-        // stop!
-        return IRect.makeXYWH(0, 0, 100, 100);
+        return _nGetContentRect();
     }
 
     @Override
@@ -59,8 +57,7 @@ public class WindowWayland extends Window {
     @Override
     public Window setContentSize(int width, int height) {
         assert _onUIThread() : "Should be run on UI thread";
-        // _nSetContentSize(width, height);
-        // Possibly unsupported
+        _nSetContentSize(width, height);
         return this;
     }
 
@@ -118,7 +115,7 @@ public class WindowWayland extends Window {
     @Override
     public Screen getScreen() {
         assert _onUIThread() : "Should be run on UI thread";
-        return new Screen(0, false, IRect.makeXYWH(0, 0, 0, 0), IRect.makeXYWH(0, 0, 0, 0), getScale());
+        return _nGetScreen();
     }
 
     @Override
@@ -227,8 +224,8 @@ public class WindowWayland extends Window {
     // @ApiStatus.Internal public native void _nSetWindowPosition(int left, int top);
     // @ApiStatus.Internal public native void _nSetWindowSize(int width, int height);
     @ApiStatus.Internal public native void _nSetMouseCursor(int cursorId);
-    // @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
-    // @ApiStatus.Internal public native Screen _nGetScreen();
+    @ApiStatus.Internal public native void _nSetContentSize(int width, int height);
+    @ApiStatus.Internal public native Screen _nGetScreen();
     @ApiStatus.Internal public native void _nRequestFrame();
     @ApiStatus.Internal public native void _nClose();
     @ApiStatus.Internal public native void _nMaximize();

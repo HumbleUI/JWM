@@ -16,9 +16,22 @@ Output::Output(wl_output* output, uint32_t name):
     {
         wl_output_add_listener(output, &_outputListener, this);
     }
+
+ScreenInfo Output::getScreenInfo() const {
+    return {
+        .id = _name,
+        .bounds = jwm::IRect::makeXYWH(0, 0, width, height),
+        .isPrimary = false,
+        .scale = scale
+    };
+}
 void Output::outputGeometry(void* data, wl_output* output, int x, int y, int physWidth, int physHeight,
             int subPixel, const char* make, const char* model, int transform) {}
-void Output::outputMode(void* data, wl_output* output, uint32_t flags, int width, int height, int refresh) {}
+void Output::outputMode(void* data, wl_output* output, uint32_t flags, int width, int height, int refresh) {
+    Output* self = reinterpret_cast<Output*>(data);
+    self->width = width;
+    self->height = height;
+}
 void Output::outputDone(void* data, wl_output* output) {}
 void Output::outputScale(void* data, wl_output* output, int factor) {
     Output* self = reinterpret_cast<Output*>(data);

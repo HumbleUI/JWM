@@ -23,8 +23,6 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            // a default size : )
-            resize(100, 100);
         }
 
         void resize(int width, int height) override {

@@ -17,6 +17,7 @@
 #include <list>
 #include "Output.hh"
 #include <libdecor-0/libdecor.h>
+#include <xkbcommon/xkbcommon.h>
 
 namespace jwm {
     class WindowWayland;
@@ -84,6 +85,25 @@ namespace jwm {
         static libdecor_interface _decorInterface;
         static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
 
+        static wl_keyboard_listener _keyboardListener;
+        static void keyboardKeymap(void* data, wl_keyboard* keyboard,
+                        uint32_t format, int32_t fd, uint32_t size);
+        static void keyboardEnter(void* data, wl_keyboard* keyboard,
+                        uint32_t serial, wl_surface* surface, wl_array* keys);
+        static void keyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial,
+                        wl_surface* surface);
+        static void keyboardKey(void* data, wl_keyboard* keyboard, uint32_t serial,
+                        uint32_t time, uint32_t key, uint32_t state);
+        static void keyboardModifiers(void* data, wl_keyboard* keyboard, uint32_t serial,
+                        uint32_t modsDepressed, uint32_t modsLatched, uint32_t modLocked,
+                        uint32_t group);
+        static void keyboardRepeatInfo(void* data, wl_keyboard* keyboard, int32_t rate, int32_t delay);
+
+        static wl_seat_listener _seatListener;
+
+        static void seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities);
+        static void seatName(void* data, wl_seat* seat, const char* name);
+
         ByteBuf getClipboardContents(const std::string& type);
         std::vector<std::string> getClipboardFormats();
 
@@ -95,7 +115,10 @@ namespace jwm {
         wl_data_device_manager* deviceManager = nullptr;
         wl_seat* seat = nullptr;
         wl_pointer* pointer = nullptr;
+        wl_keyboard* keyboard = nullptr;
         libdecor* decorCtx = nullptr;
+        xkb_context* _xkbContext = nullptr;
+        xkb_state* _xkbState = nullptr;
         std::list<Output*> outputs;
 
         // XVisualInfo* x11VisualInfo;
@@ -114,6 +137,7 @@ namespace jwm {
 
         wl_surface* cursorSurface;
         wl_surface* focusedSurface = nullptr;
+        wl_surface* keyboardFocus = nullptr;
         // Is holding all cursors in memory a good idea?
         wl_cursor_image* _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
 

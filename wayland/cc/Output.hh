@@ -2,6 +2,7 @@
 
 #include <wayland-client.h>
 #include <cstdint>
+#include "ScreenInfo.hh"
 
 namespace jwm {
     class Output {
@@ -11,6 +12,10 @@ namespace jwm {
         wl_output* _output;
         uint32_t _name;
         int scale = 1;
+        int width = 0;
+        int height = 0;
+
+        ScreenInfo getScreenInfo() const;
 
         static wl_output_listener _outputListener;
         static void outputGeometry(void* data, wl_output* output, int x, int y, int physWidth, int physHeight,

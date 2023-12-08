@@ -117,6 +117,21 @@ void WindowWayland::getContentPosition(int& posX, int& posY) {
     
 }
 
+bool WindowWayland::resize(int width, int height) {
+    // Width and height are in absolute pixel units, and wayland will
+    // complain if you try to set a width/height that isn't a multiple of scale.
+    if ((width % _scale) != 0 || (height % _scale) != 0)
+        return false;
+    _width = width / _scale;
+    _height = height / _scale;
+    if (_visible) {
+        // HACK: while I could just dispatch here and save some cpu time,
+        // it's easier to just lease it out
+        _adaptSize(_width, _height);    
+    }
+    return true;
+}
+
 int WindowWayland::getLeft() {
     int x, y;
     getContentPosition(x, y);
@@ -130,11 +145,11 @@ int WindowWayland::getTop() {
 }
 
 int WindowWayland::getWidth() {
-    return _width <= 0 ? _floatingWidth : _width;
+    return (_width <= 0 ? _floatingWidth : _width) * _scale;
 }
 
 int WindowWayland::getHeight() {
-    return _height <= 0 ? _floatingHeight : _height;
+    return (_height <= 0 ? _floatingHeight : _height) * _scale;
 }
 
 float WindowWayland::getScale() {
@@ -163,6 +178,18 @@ void WindowWayland::show()
     libdecor_dispatch(_windowManager.decorCtx, -1);
 }
 
+ScreenInfo WindowWayland::getScreen() {
+    if (_output) {
+        return _output->getScreenInfo();
+    } else {
+        return {
+            .id = -1,
+            .bounds = jwm::IRect::makeXYWH(0, 0, _width, _height),
+            .isPrimary = false,
+            .scale = _scale
+        };
+    }
+}
 void WindowWayland::setVisible(bool isVisible) {
     if (_visible != isVisible) {
         _visible = isVisible;
@@ -196,6 +223,7 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
     
     for (auto o : self->_windowManager.outputs) {
         if (o->_output == output) {
+            self->_output = o;
             self->_scale = o->scale;
             wl_surface_set_buffer_scale(surface, o->scale);
             self->_adaptSize(self->_width, self->_height);
@@ -325,11 +353,26 @@ void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData)
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
+    using namespace classes;
     _width = newWidth;
     _height = newHeight;
+    int scaledWidth = _width * _scale;
+    int scaledHeight = _height * _scale;
     if (_layer) {
-        _layer->resize(_width * _scale, _height * _scale);
+        _layer->resize(scaledWidth, scaledHeight);
     }
+
+    jwm::JNILocal<jobject> eventWindowResize(
+               app.getJniEnv(),
+               EventWindowResize::make(
+                        app.getJniEnv(),
+                        scaledWidth,
+                        scaledHeight,
+                        scaledWidth,
+                        scaledHeight
+                   )
+            );
+    dispatch(eventWindowResize.get());
 }
 // JNI
 
@@ -346,6 +389,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nS
   (JNIEnv* env, jobject obj, jboolean isVisible) {
       
     reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj))->setVisible(isVisible);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nSetContentSize
+    (JNIEnv* env, jobject obj, jint width, jint height) {
+    reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj))->resize(width, height);    
+}
+extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nGetScreen
+    (JNIEnv* env, jobject obj) {
+    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
+    return instance->getScreen().asJavaObject(env);
 }
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nGetWindowRect
