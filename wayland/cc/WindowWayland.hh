@@ -46,9 +46,7 @@ namespace jwm {
         bool isFullScreen();
 
         void setCursor(jwm::MouseCursor cursor);
-        void setLayer(ILayerWayland* layer) {
-            _layer = layer;
-        }
+        void setLayer(ILayerWayland* layer);
 
 
         ScreenInfo getScreen();
@@ -92,8 +90,13 @@ namespace jwm {
         bool _canFullscreen = false;
         bool _visible = false;
         bool _configured = false;
-
+        bool _active = false;
+        bool _maximized = false;
+        bool _fullscreen = false;
+        bool _floating = false;
         bool _isRedrawRequested = false;
+        const char* _title = "";
+        bool _titlebarVisible = true;
 
         WindowManagerWayland& _windowManager;
         ILayerWayland* _layer = nullptr;
@@ -107,6 +110,8 @@ namespace jwm {
         static libdecor_frame_interface _libdecorFrameInterface;
 
         static wl_callback_listener _frameCallback;
+
+        static const char* _windowTag;
 
     };
 }

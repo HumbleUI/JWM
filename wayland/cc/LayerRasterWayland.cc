@@ -24,11 +24,10 @@ namespace jwm {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
             // must have a default size for pointer initing : )
-            resize(400, 400);
+            resize(window->getWidth(), window->getHeight());
         }
 
         void resize(int width, int height) override {
-            printf("???\n");
             wl_display* d = fWindow->_windowManager.display;
             _width = width;
             _height = height;
@@ -41,9 +40,6 @@ namespace jwm {
                 _pool->close();
             }
             _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
-            if (fWindow->_waylandWindow) {
-                wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
-            }
             if (_buffer) {
                 wl_buffer_destroy(_buffer);
                 _imageData = nullptr;
@@ -56,7 +52,7 @@ namespace jwm {
             if (_attached) {
                 attachBuffer();
             }
-            makeCurrentForced();
+            // makeCurrentForced();
         }
 
         const void* getPixelsPtr() const {
@@ -69,7 +65,7 @@ namespace jwm {
         }
 
         void swapBuffers() override {
-            if (fWindow->_waylandWindow && _attached) {
+            if (fWindow->_waylandWindow) {
                 wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
                 wl_surface_commit(fWindow->_waylandWindow);
             }
@@ -97,8 +93,10 @@ namespace jwm {
         void attachBuffer() override {
             if (fWindow) {
                 if (fWindow->_waylandWindow) {
+                    printf("gataching \n");
                     wl_surface_attach(fWindow->_waylandWindow, _buffer, 0, 0);
                     wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
+                    wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
                     wl_surface_commit(fWindow->_waylandWindow);
                     _attached = true;
                 }

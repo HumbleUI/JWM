@@ -220,11 +220,19 @@ void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *r
     }
 }
 WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
+    // the tag makes it safe. Should:TM: be faster than searching a list every time
+    const char* const* tag = wl_proxy_get_tag((wl_proxy*) surface);
+    if (tag != &WindowWayland::_windowTag) {
+        return nullptr;
+    }
+    return reinterpret_cast<WindowWayland*>(wl_surface_get_user_data(surface));
+    /*
     WindowWayland* myWindow = nullptr;
     auto it = _nativeWindowToMy.find(surface);
     if (it != _nativeWindowToMy.end())
         myWindow = it->second;
     return myWindow;
+    */
 }
 void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -447,7 +455,6 @@ void WindowManagerWayland::keyboardRepeatInfo(void* data, wl_keyboard* keyboard,
 
 void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    printf("%i", capabilities & WL_SEAT_CAPABILITY_POINTER);
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) &&
             !self->pointer) {
         self->pointer = wl_seat_get_pointer(seat);
@@ -459,7 +466,6 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
             !self->keyboard) {
-        printf("got da keyboard\n");
         self->keyboard = wl_seat_get_keyboard(seat);
         self->_xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
         wl_keyboard_add_listener(self->keyboard, &_keyboardListener, self);

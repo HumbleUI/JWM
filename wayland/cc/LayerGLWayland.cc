@@ -118,7 +118,6 @@ namespace jwm {
               // _region = wl_compositor_create_region(fWindow->_windowManager.compositor);
               // wl_region_add(_region, 0, 0, fWindow->getWidth(), fWindow->getHeight());
               // wl_surface_set_opaque_region(fWindow->_waylandWindow, _region);
-              printf("%i %i\n", fWindow->getWidth(), fWindow->getHeight());
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
               _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
              

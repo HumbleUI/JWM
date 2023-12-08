@@ -32,6 +32,8 @@ libdecor_frame_interface WindowWayland::_libdecorFrameInterface = {
     .dismiss_popup = WindowWayland::decorFrameDismissPopup
 };
 
+const char* WindowWayland::_windowTag = "WindowWayland";
+
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
     _windowManager(windowManager)
@@ -44,11 +46,15 @@ WindowWayland::~WindowWayland() {
 
 
 void WindowWayland::setTitle(const std::string& title) {
-    // impl me : )
+    _title = title.c_str();
+    if (_frame)
+        libdecor_frame_set_title(_frame, _title);
 }
 
 void WindowWayland::setTitlebarVisible(bool isVisible) {
-    // impl me : )
+    _titlebarVisible = isVisible;
+    if (_frame)
+        libdecor_frame_set_visibility(_frame, isVisible);
 }
 
 // Closing is like... the exact same as hiding. WTH
@@ -85,6 +91,11 @@ bool WindowWayland::isFullScreen() {
     return false;
 }
 
+void WindowWayland::setLayer(ILayerWayland* layer) {
+    _layer = layer;
+    if (_visible)
+        _layer->attachBuffer();
+}
 void WindowWayland::getDecorations(int& left, int& top, int& right, int& bottom) {
     // impl me : )
     left = 0;
@@ -101,6 +112,9 @@ void WindowWayland::getContentPosition(int& posX, int& posY) {
 }
 
 bool WindowWayland::resize(int width, int height) {
+    // don't allow size to be set if currently tiled
+    if (!_floating && !_visible)
+        return false;
     // Width and height are in absolute pixel units, and wayland will
     // complain if you try to set a width/height that isn't a multiple of scale.
     if ((width % _scale) != 0 || (height % _scale) != 0)
@@ -145,12 +159,7 @@ void WindowWayland::show()
     wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
     // unsure if listener data and user data are the same, so i do this for safety : )
     wl_surface_set_user_data(_waylandWindow, this);
-
-    // xdgSurface = xdg_wm_base_get_xdg_surface(_windowManager.xdgShell, _waylandWindow);
-    // xdg_surface_add_listener(xdgSurface, &_xdgSurfaceListener, this);
-
-    // xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
-    // xdg_toplevel_add_listener(xdgToplevel, &_xdgToplevelListener, this);
+    wl_proxy_set_tag((wl_proxy*) _waylandWindow, &_windowTag);
 
     _windowManager.registerWindow(this);
     _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
@@ -159,6 +168,8 @@ void WindowWayland::show()
     libdecor_dispatch(_windowManager.decorCtx, -1);
     if (_width > 0 && _height > 0)
         resize(_width * _scale, _height * _scale);
+    setTitle(_title);
+    setTitlebarVisible(_titlebarVisible);
 }
 
 ScreenInfo WindowWayland::getScreen() {
@@ -240,19 +251,21 @@ void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) 
 }
 void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
 void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
-
 wl_callback_listener jwm::WindowWayland::_frameCallback = {
     .done = [](void* data, wl_callback* cb, uint32_t cb_data) {
         auto self = reinterpret_cast<WindowWayland*>(data);
         self->_adaptSize(self->_newWidth, self->_newHeight);
     }
 };
+
 void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* configuration,
         void *userData) {
     auto self = reinterpret_cast<WindowWayland*>(userData);
     int width = 0, height = 0;
-    
+    libdecor_window_state winState;
+
     libdecor_configuration_get_content_size(configuration, frame, &width, &height);
+
 
     width = (width <= 0) ? self->_floatingWidth : width;
     height = (height <= 0) ? self->_floatingHeight : height;
@@ -261,21 +274,32 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
     libdecor_frame_commit(frame, state, configuration);
     libdecor_state_free(state);
 
-    if (libdecor_frame_is_floating(frame)) {
-        if (width > 0) 
-            self->_floatingWidth = width;
-        if (height > 0)
-            self->_floatingHeight = height;
+    if (libdecor_configuration_get_window_state(configuration, &winState)) {
+        self->_active = (winState & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
+        self->_maximized = (winState & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
+        self->_fullscreen = (winState & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
+        self->_floating = libdecor_frame_is_floating(frame);
     }
+    if (self->_width != width || self->_height != height) {
+        if (libdecor_frame_is_floating(frame)) {
+            if (width > 0) 
+                self->_floatingWidth = width;
+            if (height > 0)
+                self->_floatingHeight = height;
+        }
 
+
+        self->_newWidth = width;
+        self->_newHeight = height;
+        // This flat out breaks window if it isn't throttled
+        wl_callback* callback = wl_surface_frame(self->_waylandWindow);
+        // Throttle frame
+        wl_callback_add_listener(callback, &_frameCallback, self);
+    }
     if (!self->_configured && self->_layer) {
         self->_layer->attachBuffer();
     }
-    self->_newWidth = width;
-    self->_newHeight = height;
-    wl_callback* callback = wl_surface_frame(self->_waylandWindow);
-    // Throttle frame
-    wl_callback_add_listener(callback, &_frameCallback, self);
+
     self->_configured = true;
 }
 void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
@@ -284,8 +308,7 @@ void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) 
 }
 void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
-    if (self->_layer)
-        self->_layer->swapBuffers();
+    self->requestRedraw();
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
@@ -399,7 +422,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nS
     jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
 
     jbyte* bytes = env->GetByteArrayElements(title, nullptr);
-    std::string titleS = { bytes, bytes + env->GetArrayLength(title) };
+    std::string titleS((const char*) bytes, env->GetArrayLength(title));
     env->ReleaseByteArrayElements(title, bytes, 0);
 
     instance->setTitle(titleS);
