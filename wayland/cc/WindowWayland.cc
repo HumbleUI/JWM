@@ -279,9 +279,30 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
     libdecor_state_free(state);
 
     if (libdecor_configuration_get_window_state(configuration, &winState)) {
-        self->_active = (winState & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
-        self->_maximized = (winState & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
-        self->_fullscreen = (winState & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
+        bool active = (winState & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
+        bool maximized = (winState & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
+        bool fullscreen = (winState & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
+        // Some compositors (like weston) don't actually tell me on focus in and focus out.
+        // Libdecor simply sends an active at the beginning and keeps chugging.
+        if (active != self->_active)
+            if (active)
+                self->dispatch(classes::EventWindowFocusIn::kInstance);
+            else
+                self->dispatch(classes::EventWindowFocusOut::kInstance);
+        self->_active = active;
+        if (maximized != self->_maximized)
+            if (maximized)
+                self->dispatch(classes::EventWindowMaximize::kInstance);
+        self->_maximized = maximized;
+        // ???
+        /*
+        if (fullscreen != self->_fullscreen)
+            if (fullscreen)
+                self->dispatch(classes::EventWindowFullScreenEnter::kInstance);
+            else
+                self->dispatch(classes::EventWindowFullScreenLeave::kInstance);
+                */
+        self->_fullscreen = fullscreen;
         self->_floating = libdecor_frame_is_floating(frame);
     }
     if (self->_width != width || self->_height != height) {
