@@ -15,16 +15,7 @@ wl_surface_listener WindowWayland::_surfaceListener = {
     .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
     .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
 };
-xdg_surface_listener WindowWayland::_xdgSurfaceListener = {
-    .configure = WindowWayland::xdgSurfaceConfigure
-};
         
-xdg_toplevel_listener WindowWayland::_xdgToplevelListener = {
-    .configure = WindowWayland::xdgToplevelConfigure,
-    .close = WindowWayland::xdgToplevelClose,
-    .configure_bounds = WindowWayland::xdgToplevelConfigureBounds,
-    .wm_capabilities = WindowWayland::xdgToplevelWmCapabilities
-};
         
 wl_output_listener WindowWayland::_outputListener = {
   .geometry = WindowWayland::outputGeometry,
@@ -67,14 +58,6 @@ void WindowWayland::close() {
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
-    if (xdgSurface) {
-        xdg_surface_destroy(xdgSurface);
-    }
-    xdgSurface = nullptr;
-    if (xdgToplevel) {
-        xdg_toplevel_destroy(xdgToplevel);
-    }
-    xdgToplevel = nullptr;
     if (_frame) {
         libdecor_frame_unref(_frame);
     }
@@ -125,8 +108,6 @@ bool WindowWayland::resize(int width, int height) {
     _width = width / _scale;
     _height = height / _scale;
     if (_visible) {
-        // HACK: while I could just dispatch here and save some cpu time,
-        // it's easier to just lease it out
         _adaptSize(_width, _height);    
     }
     return true;
@@ -176,6 +157,8 @@ void WindowWayland::show()
     _configured = false;
     libdecor_frame_map(_frame);
     libdecor_dispatch(_windowManager.decorCtx, -1);
+    if (_width > 0 && _height > 0)
+        resize(_width * _scale, _height * _scale);
 }
 
 ScreenInfo WindowWayland::getScreen() {
@@ -245,50 +228,6 @@ void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* sur
 }
 void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
 
-void jwm::WindowWayland::xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial) {
-    WindowWayland* self = (WindowWayland*) data;
-    // Commit state
-    if (self->_newWidth > 0 || self->_newHeight > 0) {
-        int goodWidth = self->_width, goodHeight = self->_height;
-        if (self->_newWidth > 0)
-            goodWidth = self->_newWidth;
-        if (self->_newHeight > 0)
-            goodHeight = self->_newHeight;
-        self->_adaptSize(goodWidth, goodHeight);
-    }
-    self->_newWidth = -1;
-    self->_newHeight = -1;
-    xdg_surface_ack_configure(surface, serial);
-    if (self->_layer) {
-        self->_layer->attachBuffer();
-    }
-}
-void jwm::WindowWayland::xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width, int height, wl_array* states) {
-    WindowWayland* self = (WindowWayland*) data;
-    if (width > 0) {
-        self->_newWidth = width;
-    }
-    if (height > 0) {
-        self->_newHeight = height;
-    }
-    // honestly idrc about the state
-}
-void jwm::WindowWayland::xdgToplevelClose(void* data, xdg_toplevel* toplevel) {
-    WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
-    self->dispatch(classes::EventWindowCloseRequest::kInstance);
-}
-void jwm::WindowWayland::xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height) {
-    WindowWayland* self = (WindowWayland*) data;
-    if (width > 0) {
-        self->_newWidth = width;
-    }
-    if (height > 0) {
-        self->_newHeight = height;
-    }
-}
-void jwm::WindowWayland::xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* array) {
-    // impl me : )
-}
 void jwm::WindowWayland::outputGeometry(void* data, wl_output* output, int x, int y, int pWidth, int pHeight,
         int subpixel, const char* make, const char* model, int transform) {}
 void jwm::WindowWayland::outputMode(void* data, wl_output* output, uint32_t flags, int width, int height,
@@ -297,12 +236,7 @@ void jwm::WindowWayland::outputDone(void* data, wl_output* output) {}
 void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
     self->_scale = factor;
-    if (self->_layer) {
-        self->_layer->resize(self->_width * factor, self->_height * factor);
-        if (self->_waylandWindow) {
-            wl_surface_set_buffer_scale(self->_waylandWindow, factor);
-        }
-    }
+    self->dispatch(classes::EventWindowScreenChange::kInstance);
 }
 void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
 void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
@@ -320,16 +254,18 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
     
     libdecor_configuration_get_content_size(configuration, frame, &width, &height);
 
-    width = (width == 0) ? self->_floatingWidth : width;
-    height = (height == 0) ? self->_floatingHeight : height;
+    width = (width <= 0) ? self->_floatingWidth : width;
+    height = (height <= 0) ? self->_floatingHeight : height;
 
     libdecor_state* state = libdecor_state_new(width, height);
     libdecor_frame_commit(frame, state, configuration);
     libdecor_state_free(state);
 
     if (libdecor_frame_is_floating(frame)) {
-        self->_floatingWidth = width;
-        self->_floatingHeight = height;
+        if (width > 0) 
+            self->_floatingWidth = width;
+        if (height > 0)
+            self->_floatingHeight = height;
     }
 
     if (!self->_configured && self->_layer) {
@@ -358,9 +294,6 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     _height = newHeight;
     int scaledWidth = _width * _scale;
     int scaledHeight = _height * _scale;
-    if (_layer) {
-        _layer->resize(scaledWidth, scaledHeight);
-    }
 
     jwm::JNILocal<jobject> eventWindowResize(
                app.getJniEnv(),

@@ -20,8 +20,6 @@ file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/../linux/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc )
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
-file(GLOB SOURCES_XDG ${CMAKE_CURRENT_LIST_DIR}/cc/xdg-shell/*.c)
-add_library(xdgShell STATIC ${SOURCES_XDG})
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 find_library(WAYLAND_CLIENT_LIB wayland-client)
 find_library(DECOR_LIB decor-0)
@@ -45,7 +43,6 @@ endif()
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc ${CMAKE_CURRENT_LIST_DIR}/../linux/cc ${JAVA_HOME}/include ${JAVA_HOME}/include/linux)
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}_wayland")
 
-target_link_libraries(jwm PUBLIC xdgShell)
 target_link_libraries(jwm PRIVATE ${WAYLAND_CLIENT_LIB} ${DECOR_LIB}
     ${WAYLAND_CURSOR} ${XKBCOMMON})
 target_link_libraries(jwm PRIVATE ${EGL} ${WAYLAND_EGL})

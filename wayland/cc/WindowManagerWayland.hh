@@ -13,7 +13,6 @@
 #include "MouseCursor.hh"
 #include <wayland-client.h>
 #include <wayland-cursor.h>
-#include "xdg-shell/xdg-shell.h"
 #include <list>
 #include "Output.hh"
 #include <libdecor-0/libdecor.h>
@@ -79,8 +78,6 @@ namespace jwm {
         static void pointerHandleAxis(void* data, wl_pointer *pointer,
                 uint32_t time, uint32_t axis, wl_fixed_t value);
 
-        static xdg_wm_base_listener _xdgWmBaseListener;
-        static void xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial);
        
         static libdecor_interface _decorInterface;
         static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
@@ -110,7 +107,6 @@ namespace jwm {
         wl_display* display = nullptr;
         wl_registry* registry = nullptr;
         wl_shm* shm = nullptr;
-        xdg_wm_base* xdgShell = nullptr;
         wl_compositor* compositor = nullptr;
         wl_data_device_manager* deviceManager = nullptr;
         wl_seat* seat = nullptr;

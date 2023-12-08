@@ -36,9 +36,6 @@ wl_pointer_listener WindowManagerWayland::_pointerListener = {
   .button = WindowManagerWayland::pointerHandleButton,
   .axis = WindowManagerWayland::pointerHandleAxis
 };
-xdg_wm_base_listener WindowManagerWayland::_xdgWmBaseListener = {
-    .ping = WindowManagerWayland::xdgWmBasePing
-};
 
 libdecor_interface WindowManagerWayland::_decorInterface = {
     .error = WindowManagerWayland::libdecorError
@@ -64,7 +61,7 @@ WindowManagerWayland::WindowManagerWayland():
         
 
 
-        if (!(shm && xdgShell && compositor && deviceManager && seat)) {
+        if (!(shm && compositor && deviceManager && seat)) {
             // ???
             // Bad. Means our compositor no supportie : (
             throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
@@ -77,9 +74,6 @@ WindowManagerWayland::WindowManagerWayland():
 
 
         wl_display_roundtrip(display);
-        // frankly `this` is not needed here, but it needs a pointer anyway and it's
-        // good to have consistentcy.
-        xdg_wm_base_add_listener(xdgShell, &_xdgWmBaseListener, this);
         {
             wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
             // TODO: what about if missing : (
@@ -202,9 +196,6 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
     } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         self->shm = (wl_shm*)wl_registry_bind(registry, name,
                 &wl_shm_interface, 1);
-    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-        self->xdgShell = (xdg_wm_base*)wl_registry_bind(registry, name,
-                &xdg_wm_base_interface, 1);
     } else if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
         self->deviceManager = (wl_data_device_manager*)wl_registry_bind(registry, name,
                 &wl_data_device_manager_interface, 1);
@@ -395,10 +386,9 @@ void WindowManagerWayland::keyboardKey(void* data, wl_keyboard* keyboard, uint32
     if (xkb_state_key_get_syms(self->_xkbState, key + 8, &syms) != 1)
         return;
     jwm::Key jwmKey = KeyWayland::fromNative(syms[0]);
-
     // TODO: while unlikely, it could be possible that you can be entering text even if the 
     // pointer hasn't entered
-    if (self->focusedSurface) {
+    if (self->keyboardFocus && jwmKey != jwm::Key::UNDEFINED) {
         jwm::KeyLocation location;
         JNILocal<jobject> keyEvent(
             app.getJniEnv(),
@@ -413,6 +403,30 @@ void WindowManagerWayland::keyboardKey(void* data, wl_keyboard* keyboard, uint32
         auto window = self->getWindowForNative(self->keyboardFocus);
         if (window)
             window->dispatch(keyEvent.get());
+    }
+    if (state != WL_KEYBOARD_KEY_STATE_PRESSED) return;
+
+    char textBuffer[0x40];
+    int count = xkb_state_key_get_utf8(self->_xkbState, key + 8, textBuffer, sizeof(textBuffer)-1);
+    // ???
+    if (count >= sizeof(textBuffer) - 1) {
+        return;
+    }
+    if (count > 0) {
+        // ignore sinful control symbols
+        if (textBuffer[0] != 127 && textBuffer[0] > 0x1f) {
+            JNIEnv* env = app.getJniEnv();
+
+            jwm::StringUTF16 converted = reinterpret_cast<const char*>(textBuffer);
+            jwm::JNILocal<jstring> jtext = converted.toJString(env);
+
+            jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
+            
+
+            auto window = self->getWindowForNative(self->keyboardFocus);
+            if (window)
+                window->dispatch(eventTextInput.get());
+        }
     }
 
 }
@@ -458,9 +472,6 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
 }
 void WindowManagerWayland::seatName(void* data, wl_seat* seat, const char* name) {
     // who cares
-}
-void WindowManagerWayland::xdgWmBasePing(void* data, xdg_wm_base* base, uint32_t serial) {
-    xdg_wm_base_pong(base, serial);
 }
 std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     /*

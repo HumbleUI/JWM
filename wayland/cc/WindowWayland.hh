@@ -6,7 +6,6 @@
 #include "WindowManagerWayland.hh"
 #include "ILayerWayland.hh"
 #include "ScreenInfo.hh"
-#include "xdg-shell/xdg-shell.h"
 #include <libdecor-0/libdecor.h>
 namespace jwm {
     class WindowWayland: public jwm::Window {
@@ -59,13 +58,6 @@ namespace jwm {
         static void surfacePreferredBufferScale(void* data, wl_surface* surface, int factor);
         static void surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform);
 
-        static void xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial);
-
-        static void xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width, int height, wl_array* states);
-        static void xdgToplevelClose(void* data, xdg_toplevel* toplevel);
-        static void xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height);
-        static void xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* capabilities);
-
         static void outputGeometry(void* data, wl_output* output, int x, int y, int physWidth, int physHeight,
                 int subpixelOrient, const char* make, const char* model, int transform);
         static void outputMode(void* data, wl_output* output, uint32_t flags, int width, int height, int refresh);
@@ -106,14 +98,10 @@ namespace jwm {
         WindowManagerWayland& _windowManager;
         ILayerWayland* _layer = nullptr;
         wl_surface* _waylandWindow = nullptr;
-        xdg_surface* xdgSurface = nullptr;
-        xdg_toplevel* xdgToplevel = nullptr;
         libdecor_frame* _frame = nullptr;
         Output* _output = nullptr;
 
         static wl_surface_listener _surfaceListener;
-        static xdg_surface_listener _xdgSurfaceListener;
-        static xdg_toplevel_listener _xdgToplevelListener;
 
         static wl_output_listener _outputListener;
         static libdecor_frame_interface _libdecorFrameInterface;

@@ -23,9 +23,12 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+            // must have a default size for pointer initing : )
+            resize(400, 400);
         }
 
         void resize(int width, int height) override {
+            printf("???\n");
             wl_display* d = fWindow->_windowManager.display;
             _width = width;
             _height = height;
@@ -53,6 +56,7 @@ namespace jwm {
             if (_attached) {
                 attachBuffer();
             }
+            makeCurrentForced();
         }
 
         const void* getPixelsPtr() const {
