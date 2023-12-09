@@ -596,7 +596,6 @@ void WindowManagerWayland::notifyLoop() {
     if (notifyFD==-1) return;
     // fast notifyBool path to not make system calls when not necessary
     if (!notifyBool.exchange(true)) {
-        printf(" : )\n");
         char dummy[1] = {0};
         int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }
