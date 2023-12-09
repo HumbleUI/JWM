@@ -403,7 +403,7 @@ void WindowManagerWayland::keyboardKey(void* data, wl_keyboard* keyboard, uint32
     // TODO: while unlikely, it could be possible that you can be entering text even if the 
     // pointer hasn't entered
     if (self->keyboardFocus && jwmKey != jwm::Key::UNDEFINED) {
-        jwm::KeyLocation location;
+        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
         JNILocal<jobject> keyEvent(
             app.getJniEnv(),
             classes::EventKey::make(

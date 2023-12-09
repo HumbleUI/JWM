@@ -14,10 +14,12 @@ using namespace jwm;
 wl_surface_listener WindowWayland::_surfaceListener = {
     .enter = WindowWayland::surfaceEnter,
     .leave = WindowWayland::surfaceLeave,
+#ifdef HAVE_WAYLAND_1_22
     .preferred_buffer_scale = WindowWayland::surfacePreferredBufferScale,
     .preferred_buffer_transform = WindowWayland::surfacePreferredBufferTransform
+#endif
 };
-        
+ 
         
 wl_output_listener WindowWayland::_outputListener = {
   .geometry = WindowWayland::outputGeometry,
@@ -181,7 +183,7 @@ void WindowWayland::show()
 {
     _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     libdecor_frame_map(_frame);
-    libdecor_dispatch(_windowManager.decorCtx, -1);
+    wl_display_roundtrip(_windowManager.display);
     setTitle(_title);
     setTitlebarVisible(_titlebarVisible);
     _visible = true;
@@ -345,6 +347,7 @@ void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) 
 void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
     wl_surface_commit(self->_waylandWindow);
+    wl_display_roundtrip(self->_windowManager.display);
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
@@ -353,7 +356,6 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     _height = newHeight;
     int scaledWidth = _width * _scale;
     int scaledHeight = _height * _scale;
-    printf("%i %i\n", scaledWidth, scaledHeight);
     jwm::JNILocal<jobject> eventWindowResize(
                app.getJniEnv(),
                EventWindowResize::make(
@@ -462,7 +464,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nS
 
     const jchar* bytes = env->GetStringChars(title, nullptr);
     jsize length = env->GetStringLength(title);
-    std::u16string thingie = {reinterpret_cast<const char16_t*>(bytes), length};
+    std::u16string thingie = {reinterpret_cast<const char16_t*>(bytes), static_cast<size_t>(length)};
 
     std::string titleS = std::wstring_convert<
             std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(thingie);

@@ -65,9 +65,10 @@ namespace jwm {
             if (_attached && fWindow->_waylandWindow) {
                 // all impls that I've seen have to make a new buffer every frame.
                 // God awful. Never use raster if you value performance.
-                // wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
-                // wl_callback_add_listener(cb, &_frameCallback, this);
-                swapNow();
+                wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
+                wl_callback_add_listener(cb, &_frameCallback, this);
+                wl_display_roundtrip(fWindow->_windowManager.display);
+                // swapNow();
             }
         }
 
