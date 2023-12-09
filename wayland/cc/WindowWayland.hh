@@ -19,12 +19,15 @@ namespace jwm {
         void setVisible(bool isVisible);
         bool resize(int width, int height);
         void close();
+        void hide();
         bool init();
         void show();
         int getLeft();
         int getTop();
         int getWidth();
+        int getUnscaledWidth();
         int getHeight();
+        int getUnscaledHeight();
         float getScale();
         void requestRedraw() {
             _isRedrawRequested = true;

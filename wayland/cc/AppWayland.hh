@@ -19,11 +19,9 @@ namespace jwm {
             return wm;
         }
 
-        JNIEnv* getJniEnv() {
-            return _jniEnv;
-        }
+        JNIEnv* getJniEnv();
 
-        JNIEnv* _jniEnv;
+        JavaVM* _javaVM;
         WindowManagerWayland wm;
     } app;
 }

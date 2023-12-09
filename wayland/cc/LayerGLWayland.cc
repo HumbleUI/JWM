@@ -29,6 +29,11 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+            // HACK: reopen
+            bool visible = fWindow->_visible;
+            if (visible) {
+              fWindow->hide();
+            }
             if (_display == nullptr) {
               _display = eglGetDisplay(window->_windowManager.display);
 
@@ -66,6 +71,8 @@ namespace jwm {
                     throw std::runtime_error("Couldn't make context");
                 }
             }
+            if (visible)
+              fWindow->show();
             
             makeCurrentForced();
         }
@@ -92,13 +99,7 @@ namespace jwm {
         }
 
         void close() override {
-            eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-            if (_surface) {
-              eglDestroySurface(_display, _surface);
-            }
-            if (_eglWindow) {
-              wl_egl_window_destroy(_eglWindow);
-            }
+            detach();
             eglDestroyContext(_display, _context);
             eglTerminate(_display);
 
@@ -127,6 +128,17 @@ namespace jwm {
             }
             makeCurrentForced();
           }
+        }
+        void detach() override {
+            eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            if (_surface) {
+              eglDestroySurface(_display, _surface);
+            }
+            _surface = nullptr;
+            if (_eglWindow) {
+              wl_egl_window_destroy(_eglWindow);
+            }
+            _eglWindow = nullptr;
         }
     };
 

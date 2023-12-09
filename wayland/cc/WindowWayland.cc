@@ -61,13 +61,20 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
         libdecor_frame_set_visibility(_frame, isVisible);
 }
 
-// Closing is like... the exact same as hiding. WTH
 void WindowWayland::close() {
     if (_waylandWindow) {
         _windowManager.unregisterWindow(this);
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
+    hide();
+    // TODO: more destruction!
+}
+void WindowWayland::hide() {
+    _visible = false;
+    if (_layer) {
+        _layer->detach();
+    }
     if (_frame) {
         libdecor_frame_unref(_frame);
     }
@@ -91,14 +98,12 @@ void WindowWayland::setFullScreen(bool isFullScreen) {
 }
 
 bool WindowWayland::isFullScreen() {
-    // impl me : )
-    return false;
+    return _fullscreen;
 }
 
 void WindowWayland::setLayer(ILayerWayland* layer) {
     _layer = layer;
-    if (_visible)
-        _layer->attachBuffer();
+
 }
 void WindowWayland::getDecorations(int& left, int& top, int& right, int& bottom) {
     // impl me : )
@@ -116,8 +121,10 @@ void WindowWayland::getContentPosition(int& posX, int& posY) {
 }
 
 bool WindowWayland::resize(int width, int height) {
+    if (width < 0 || height < 0)
+        return false;
     // don't allow size to be set if currently tiled
-    if (!_floating && !_visible)
+    if (!_floating)
         return false;
     // Width and height are in absolute pixel units, and wayland will
     // complain if you try to set a width/height that isn't a multiple of scale.
@@ -144,21 +151,22 @@ int WindowWayland::getTop() {
 }
 
 int WindowWayland::getWidth() {
-    return (_width <= 0 ? _floatingWidth : _width) * _scale;
+    return getUnscaledWidth() * _scale;
 }
-
+int WindowWayland::getUnscaledWidth() {
+    return _width <= 0 ? _floatingWidth : _width;
+}
 int WindowWayland::getHeight() {
-    return (_height <= 0 ? _floatingHeight : _height) * _scale;
+    return getUnscaledHeight() * _scale;
+}
+int WindowWayland::getUnscaledHeight() {
+    return _height <= 0 ? _floatingHeight : _height;
 }
 
 float WindowWayland::getScale() {
     return _scale;
 }
 bool WindowWayland::init() {
-    return true;
-}
-void WindowWayland::show()
-{
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
     wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
     // unsure if listener data and user data are the same, so i do this for safety : )
@@ -166,14 +174,17 @@ void WindowWayland::show()
     wl_proxy_set_tag((wl_proxy*) _waylandWindow, &_windowTag);
 
     _windowManager.registerWindow(this);
-    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     _configured = false;
+    return true;
+}
+void WindowWayland::show()
+{
+    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     libdecor_frame_map(_frame);
     libdecor_dispatch(_windowManager.decorCtx, -1);
-    if (_width > 0 && _height > 0)
-        resize(_width * _scale, _height * _scale);
     setTitle(_title);
     setTitlebarVisible(_titlebarVisible);
+    _visible = true;
 }
 
 ScreenInfo WindowWayland::getScreen() {
@@ -194,7 +205,7 @@ void WindowWayland::setVisible(bool isVisible) {
         if (_visible) {
             show();
         } else {
-            close();
+            hide();
         }
     }
 }
@@ -224,7 +235,7 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
             self->_output = o;
             self->_scale = o->scale;
             wl_surface_set_buffer_scale(surface, o->scale);
-            self->_adaptSize(self->_width, self->_height);
+            self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
             break;
         }
     }
@@ -239,7 +250,7 @@ void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* sur
     // do I pinky promise here?
     // yes : )
     wl_surface_set_buffer_scale(surface, factor);
-    self->_adaptSize(self->_width, self->_height);
+    self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
 }
 void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
 
@@ -321,10 +332,10 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
         // Throttle frame
         wl_callback_add_listener(callback, &_frameCallback, self);
     }
-    if (!self->_configured && self->_layer) {
-        self->_layer->attachBuffer();
+    if (!self->_configured && self->_visible) {
+        if (self->_layer)
+            self->_layer->attachBuffer();
     }
-
     self->_configured = true;
 }
 void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
@@ -333,7 +344,7 @@ void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) 
 }
 void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
-    self->requestRedraw();
+    wl_surface_commit(self->_waylandWindow);
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
@@ -342,7 +353,7 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     _height = newHeight;
     int scaledWidth = _width * _scale;
     int scaledHeight = _height * _scale;
-
+    printf("%i %i\n", scaledWidth, scaledHeight);
     jwm::JNILocal<jobject> eventWindowResize(
                app.getJniEnv(),
                EventWindowResize::make(
@@ -354,6 +365,9 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
                    )
             );
     dispatch(eventWindowResize.get());
+    // In Java Wayland doesn't actually cause a frame:
+    // however decorFrameCommit will cause a redraw anyway.
+    // Not doing it in wayland lets me not cause an exception on hide.
 }
 // JNI
 

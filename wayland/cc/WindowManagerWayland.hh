@@ -101,6 +101,10 @@ namespace jwm {
         static void seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities);
         static void seatName(void* data, wl_seat* seat, const char* name);
 
+        static wl_data_source_listener _sourceListener;
+        static wl_data_offer_listener _offerListener;
+        static wl_data_device_listener _deviceListener;
+
         ByteBuf getClipboardContents(const std::string& type);
         std::vector<std::string> getClipboardFormats();
 
@@ -109,16 +113,18 @@ namespace jwm {
         wl_shm* shm = nullptr;
         wl_compositor* compositor = nullptr;
         wl_data_device_manager* deviceManager = nullptr;
+        // no multiseat?
         wl_seat* seat = nullptr;
         wl_pointer* pointer = nullptr;
         wl_keyboard* keyboard = nullptr;
+        wl_data_device* dataDevice = nullptr;
+        wl_data_source* currentSource = nullptr;
+        uint32_t keyboardSerial = -1;
         libdecor* decorCtx = nullptr;
         xkb_context* _xkbContext = nullptr;
         xkb_state* _xkbState = nullptr;
         std::list<Output*> outputs;
 
-        // XVisualInfo* x11VisualInfo;
-        // XSetWindowAttributes x11SWA;
         bool _runLoop;
         int notifyFD = -1;
         std::atomic_bool notifyBool{false};
@@ -129,6 +135,7 @@ namespace jwm {
 
         std::map<wl_surface*, WindowWayland*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
+        std::list<std::string> _currentMimeTypes;
 
 
         wl_surface* cursorSurface;

@@ -7,5 +7,6 @@ namespace jwm {
     public:
         virtual void attachBuffer() = 0;
         virtual void swapBuffers() = 0;
+        virtual void detach() = 0;
     };
 }

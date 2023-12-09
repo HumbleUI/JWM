@@ -4,59 +4,41 @@
 #include "impl/Library.hh"
 #include "impl/RefCounted.hh"
 #include "WindowWayland.hh"
-#include "ShmPool.hh"
+#include "Buffer.hh"
 #include <cstring>
+#include <vector>
 
 namespace jwm {
     class LayerRaster: public RefCounted, public ILayerWayland {
     public:
         WindowWayland* fWindow;
         size_t _width = 0, _height = 0;
-        wl_buffer* _buffer = nullptr;
-        uint8_t* _imageData = nullptr;
-        ShmPool* _pool = nullptr;
+        std::vector<uint8_t> _imageData;
         bool _attached = false;
 
         LayerRaster() = default;
         virtual ~LayerRaster() = default;
 
         void attach(WindowWayland* window) {
+            // HACK: close and reopen
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            // must have a default size for pointer initing : )
-            resize(window->getWidth(), window->getHeight());
+            if (fWindow->_visible) {
+                fWindow->hide();
+                fWindow->show();
+            }
+
         }
 
         void resize(int width, int height) override {
-            wl_display* d = fWindow->_windowManager.display;
+            // god is dead
             _width = width;
             _height = height;
-            int stride = width * sizeof(uint32_t);
-            int bufSize = stride * height * 2;
-            // TODO: better pool impl
-            if (_pool) {
-                // TODO: don't mem leak : )
-                // This memleaks - munmap causes skija to error out : /
-                _pool->close();
-            }
-            _pool = new ShmPool(fWindow->_windowManager.shm, bufSize);
-            if (_buffer) {
-                wl_buffer_destroy(_buffer);
-                _imageData = nullptr;
-            }
-            // : )
-            auto buf = _pool->createBuffer(0, width, height, stride, WL_SHM_FORMAT_XRGB8888);
-         
-            _buffer = buf.first;
-            _imageData = buf.second;
-            if (_attached) {
-                attachBuffer();
-            }
-            // makeCurrentForced();
+            _imageData = std::vector<uint8_t>(_width * _height * sizeof(uint32_t)); 
         }
 
         const void* getPixelsPtr() const {
-            return _imageData;
+            return _imageData.data();
         }
 
         int getRowBytes() const {
@@ -64,22 +46,33 @@ namespace jwm {
             return _width * sizeof(uint32_t);
         }
 
+        // only way to really be sane with raster
+        // it's SO slow that i'll prob
+        static wl_callback_listener _frameCallback;
+
+        void swapNow() {
+            auto buf = Buffer::createShmBuffer(fWindow->_windowManager.shm, _width, _height, WL_SHM_FORMAT_XRGB8888);
+            void* daData = buf->getData();
+            size_t size = buf->getSize();
+            memcpy(daData, _imageData.data(), size);
+            wl_surface_attach(fWindow->_waylandWindow, buf->getBuffer(), 0, 0);
+            wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
+            wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
+            wl_surface_commit(fWindow->_waylandWindow);
+
+        }
         void swapBuffers() override {
-            if (fWindow->_waylandWindow) {
-                wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
-                wl_surface_commit(fWindow->_waylandWindow);
+            if (_attached && fWindow->_waylandWindow) {
+                // all impls that I've seen have to make a new buffer every frame.
+                // God awful. Never use raster if you value performance.
+                // wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
+                // wl_callback_add_listener(cb, &_frameCallback, this);
+                swapNow();
             }
         }
 
         void close() override {
-            if (_buffer) {
-                wl_buffer_destroy(_buffer);
-                _buffer = nullptr;
-            }
-            // ???
-            if (_pool) {
-                _pool->close();
-            }
+            detach();
             jwm::unref(&fWindow);
         }
 
@@ -91,22 +84,31 @@ namespace jwm {
         }
 
         void attachBuffer() override {
-            if (fWindow) {
-                if (fWindow->_waylandWindow) {
-                    printf("gataching \n");
-                    wl_surface_attach(fWindow->_waylandWindow, _buffer, 0, 0);
-                    wl_surface_damage_buffer(fWindow->_waylandWindow, 0, 0, INT32_MAX, INT32_MAX);
-                    wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
-                    wl_surface_commit(fWindow->_waylandWindow);
-                    _attached = true;
-                }
+            _attached = true;
+            swapBuffers();
+        }
+
+        void detach() override {
+            if (fWindow && fWindow->_waylandWindow) {
+                wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
+                wl_surface_commit(fWindow->_waylandWindow);
             }
+            _attached = false;
+        }
+        void reconfigure() {
+            swapBuffers();
         }
     };
 
 }
+using namespace jwm;
+wl_callback_listener LayerRaster::_frameCallback = {            
+    .done = [](void* data, wl_callback* cb, uint32_t cbData) {
+            auto self = reinterpret_cast<LayerRaster*>(data);
+            self->swapNow();
 
-
+        }
+};
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nMake
         (JNIEnv* env, jclass jclass) {
     jwm::LayerRaster* instance = new jwm::LayerRaster;
@@ -122,7 +124,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nAtt
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nReconfigure
         (JNIEnv* env, jobject obj) {
-    
+    jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
+    instance->reconfigure();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nResize

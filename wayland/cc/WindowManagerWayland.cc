@@ -22,6 +22,7 @@
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon.h>
 #include <sys/mman.h>
+#include <algorithm>
 
 using namespace jwm;
 
@@ -69,7 +70,8 @@ WindowManagerWayland::WindowManagerWayland():
        
         // ???: Moving this after libdecor_new causes input to not work
         wl_seat_add_listener(seat, &_seatListener, this);
-
+        dataDevice = wl_data_device_manager_get_data_device(deviceManager, seat);
+        wl_data_device_add_listener(dataDevice, &_deviceListener, this);
         decorCtx = libdecor_new(display, &_decorInterface);
 
 
@@ -119,7 +121,6 @@ void WindowManagerWayland::runLoop() {
     }
     notifyFD = pipes[1];
     fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
-    struct pollfd wayland_out = {.fd=wl_display_get_fd(display),.events=POLLOUT};
     struct pollfd ps[] = {
         {.fd=libdecor_get_fd(decorCtx), .events=POLLIN}, 
         {.fd=pipes[0], .events=POLLIN},
@@ -128,18 +129,19 @@ void WindowManagerWayland::runLoop() {
     while (_runLoop) {
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
-        _processCallbacks();
         // block until event : )
         if (poll(&ps[0], 2, -1) < 0) {
             printf("error with pipe\n");
             break;
         }
-        if (ps[1].revents & POLLIN) {
-            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
-        }
         if (ps[0].revents & POLLIN) {
             libdecor_dispatch(decorCtx, -1);
         }
+        _processCallbacks();
+        if (ps[1].revents & POLLIN) {
+            while (read(pipes[0], buf, sizeof(buf)) == sizeof(buf)) { }
+        }
+
         notifyBool.store(false);
     }
 
@@ -177,10 +179,12 @@ void WindowManagerWayland::_processCallbacks() {
         for (auto p : copy) {
             if (p->isRedrawRequested()) {
                 p->unsetRedrawRequest();
-                if (p->_layer && p->_visible) {
-                    p->_layer->makeCurrent();
+                if (p->_visible && p->_configured) {
+                    if (p->_layer) {
+                        p->_layer->makeCurrent();
+                    }
+                    p->dispatch(classes::EventFrame::kInstance);
                 }
-                p->dispatch(classes::EventFrame::kInstance);
             }
         }
     }
@@ -377,10 +381,12 @@ void WindowManagerWayland::keyboardKeymap(void* data, wl_keyboard* keyboard, uin
 void WindowManagerWayland::keyboardEnter(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface,
         wl_array *keys) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    self->keyboardSerial = serial;
     self->keyboardFocus = surface;
 }
 void WindowManagerWayland::keyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    self->keyboardSerial = -1;
     self->keyboardFocus = nullptr;
 }
 
@@ -479,68 +485,49 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
 void WindowManagerWayland::seatName(void* data, wl_seat* seat, const char* name) {
     // who cares
 }
-std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
-    /*
-    XConvertSelection(display,
-                      _atoms.CLIPBOARD,
-                      _atoms.TARGETS,
-                      _atoms.JWM_CLIPBOARD,
-                      nativeHandle,
-                      CurrentTime);
-
-    XEvent ev;
-
-    // fetch mime types
-    std::vector<std::string> result;
-    
-    // using lambda here in order to break 2 loops
-    [&]{
-        while (_runLoop) {
-            while (XPending(display)) {
-                XNextEvent(display, &ev);
-                if (ev.type == SelectionNotify) {
-                    int format;
-                    unsigned long count, lengthInBytes;
-                    Atom type;
-                    Atom* properties;
-                    XGetWindowProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD, 0, 1024 * sizeof(Atom), false, XA_ATOM, &type, &format, &count, &lengthInBytes, reinterpret_cast<unsigned char**>(&properties));
-                    
-                    for (unsigned long i = 0; i < count; ++i) {
-                        char* str = XGetAtomName(display, properties[i]);
-                        if (str) {
-                            std::string s = str;
-                            // include only mime types
-                            if (s.find('/') != std::string::npos) {
-                                result.push_back(s);
-                            } else if (s == "UTF8_STRING") {
-                                // HACK: treat UTF8_STRING as text/plain under the hood
-                                // avoid duplicates
-                                std::string textPlain = "text/plain";
-                                if (std::find(result.begin(), result.end(), textPlain) != result.end()) {
-                                    result.push_back(textPlain);
-                                }
-                            }
-                            XFree(str);
-                        }
-                    }
-                    
-                    XFree(properties);
-                    return;
-                } else {
-                    _processXEvent(ev);
-                }
-            
-            }
-            _processCallbacks();
+wl_data_offer_listener WindowManagerWayland::_offerListener = {
+    .offer = [](void* data, wl_data_offer* offer, const char* mimeType) {
+        auto self = reinterpret_cast<WindowManagerWayland*>(data);
+        self->_currentMimeTypes.push_back(std::string(mimeType));
+    }
+};
+wl_data_device_listener WindowManagerWayland::_deviceListener = {
+    .data_offer = [](void* data, wl_data_device* device, wl_data_offer* offer) {
+        auto self = reinterpret_cast<WindowManagerWayland*>(data);
+        self->_currentMimeTypes = {};
+        wl_data_offer_add_listener(offer, &_offerListener, data);
+    },
+    .selection = [](void* data, wl_data_device* device, wl_data_offer* offer) {
+        auto self = reinterpret_cast<WindowManagerWayland*>(data);
+        self->_myClipboardContents = {};
+        if (offer == nullptr) {
+            return;
         }
-    }();
+        for (auto i : self->_currentMimeTypes) {
+            int fds[2];
+            pipe(fds);
+            wl_data_offer_receive(offer, i.c_str(), fds[1]);
+            wl_display_flush(self->display);
+            close(fds[1]);
+            ByteBuf res;
 
-    // fetching data
 
-    XDeleteProperty(display, nativeHandle, _atoms.JWM_CLIPBOARD);
-    */
-    std::vector<std::string> result;
-    return result;
+            while (true) {
+                char buf[1024];
+                ssize_t n = read(fds[0], buf, sizeof(buf));
+                if (n <= 0)
+                    break;
+                res.insert(res.end(), buf, buf + n);
+
+            }
+            self->_myClipboardContents[i] = res;
+            close(fds[0]);
+        }
+        wl_data_offer_destroy(offer);
+    }
+};
+std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
+    return { _currentMimeTypes.begin(), _currentMimeTypes.end()};
 }
 void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask) {
     using namespace classes;
@@ -567,7 +554,10 @@ void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint
     myWindow->dispatch(foo);
 }
 jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type) {
-    auto nativeHandle = _nativeWindowToMy.begin()->first;
+    auto it = _myClipboardContents.find(type);
+    if (it != _myClipboardContents.end()) {
+        return it->second;
+    }
     return {};
 }
 
@@ -590,7 +580,6 @@ void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&&
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
     // impl me : )
-    auto window = _nativeWindowToMy.begin()->first;
     // XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
     // XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
 }
@@ -607,6 +596,7 @@ void WindowManagerWayland::notifyLoop() {
     if (notifyFD==-1) return;
     // fast notifyBool path to not make system calls when not necessary
     if (!notifyBool.exchange(true)) {
+        printf(" : )\n");
         char dummy[1] = {0};
         int unused = write(notifyFD, dummy, 1); // this really shouldn't fail, but if it does, the pipe should either be full (good), or dead (bad, but not our business)
     }

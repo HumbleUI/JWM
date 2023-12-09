@@ -423,7 +423,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
 
         if (e instanceof EventWindowScreenChange) {
             accept(new EventWindowResize(this));
-        } else if (e instanceof EventWindowResize && Platform.CURRENT != Platform.X11) {
+        } else if (e instanceof EventWindowResize && Platform.CURRENT != Platform.X11 && Platform.CURRENT != Platform.WAYLAND) {
             accept(EventFrame.INSTANCE);
         }
     }

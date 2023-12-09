@@ -2,12 +2,13 @@
 #include "AppWayland.hh"
 #include <cstdlib>
 #include <wayland-client.h>
-
+#include <cassert>
 jwm::AppWayland jwm::app;
 
 
 void jwm::AppWayland::init(JNIEnv* jniEnv) {
-    _jniEnv = jniEnv;
+    jint rs = jniEnv->GetJavaVM(&_javaVM);
+    assert(rs == JNI_OK);
 }
 
 void jwm::AppWayland::start() {
@@ -18,6 +19,14 @@ void jwm::AppWayland::terminate() {
     wm.terminate();
 }
 
+JNIEnv* jwm::AppWayland::getJniEnv() {
+    JNIEnv* env;
+    // no-op on an already attached thread, so fast?
+    // makes it thread-safe (?)
+    jint rs = _javaVM->AttachCurrentThread((void**)&env, nullptr);
+    assert(rs == JNI_OK);
+    return env;
+}
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart(JNIEnv* env, jclass jclass, jobject launcher) {
