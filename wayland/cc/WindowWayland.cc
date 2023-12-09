@@ -346,8 +346,10 @@ void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) 
 }
 void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
-    wl_surface_commit(self->_waylandWindow);
-    wl_display_roundtrip(self->_windowManager.display);
+    if (self->_waylandWindow) {
+        wl_surface_commit(self->_waylandWindow);
+        wl_display_roundtrip(self->_windowManager.display);
+    }
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
