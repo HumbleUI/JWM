@@ -82,6 +82,8 @@ namespace jwm {
         }
 
         void resize(int width, int height) override {
+            // Make current to avoid artifacts in other windows
+            makeCurrentForced();
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);
