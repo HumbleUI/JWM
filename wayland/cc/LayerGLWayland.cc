@@ -70,10 +70,11 @@ namespace jwm {
                 if ( _context == EGL_NO_CONTEXT ) {
                     throw std::runtime_error("Couldn't make context");
                 }
+                // Don't block on swap
+                eglSwapInterval(_display, 0); 
             }
             if (visible)
               fWindow->show();
-            
             makeCurrentForced();
         }
 
@@ -97,7 +98,9 @@ namespace jwm {
         }
 
         void swapBuffers() override {
+            printf("before swap\n");
             eglSwapBuffers(_display, _surface);
+            printf("after swap\n");
         }
 
         void close() override {
