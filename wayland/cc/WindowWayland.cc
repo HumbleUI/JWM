@@ -47,7 +47,8 @@ WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
 }
 
 WindowWayland::~WindowWayland() {
-    close();
+    // TODO: close gets called twice?
+    // close();
 }
 
 
@@ -64,12 +65,12 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
 }
 
 void WindowWayland::close() {
+    _windowManager.unregisterWindow(this);
+    hide();
     if (_waylandWindow) {
-        _windowManager.unregisterWindow(this);
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
-    hide();
     // TODO: more destruction!
 }
 void WindowWayland::hide() {
@@ -264,7 +265,8 @@ void jwm::WindowWayland::outputDone(void* data, wl_output* output) {}
 void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
     self->_scale = factor;
-    self->dispatch(classes::EventWindowScreenChange::kInstance);
+    if (self->_waylandWindow)
+        self->dispatch(classes::EventWindowScreenChange::kInstance);
 }
 void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
 void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}

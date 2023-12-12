@@ -22,11 +22,15 @@ namespace jwm {
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
         EGLConfig _config = nullptr;
+        bool _firstAttach = true;
+        bool _closed = false;
 
         LayerGL() = default;
         virtual ~LayerGL() = default;
 
         void attach(WindowWayland* window) {
+            // no idea why you would reopen it???
+            _closed = false;
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
             // HACK: reopen
@@ -34,12 +38,16 @@ namespace jwm {
             if (visible) {
               fWindow->hide();
             }
-            if (_display == nullptr) {
-              _display = eglGetDisplay(window->_windowManager.display);
+            if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
+              fWindow->_windowManager._eglDisplay = eglGetDisplay(window->_windowManager.display);
 
-              eglInitialize(_display, nullptr, nullptr);
+              eglInitialize(fWindow->_windowManager._eglDisplay, nullptr, nullptr);
 
             }
+            if (_firstAttach) {
+              _firstAttach = false;
+            }
+            _display = fWindow->_windowManager._eglDisplay;
             if ( eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
               throw new std::runtime_error("Cannot bind EGL Api");
             }
@@ -71,6 +79,7 @@ namespace jwm {
                     throw std::runtime_error("Couldn't make context");
                 }
                 // Don't block on swap
+                // Blocking here will freeze the app on sway.
                 eglSwapInterval(_display, 0); 
             }
             if (visible)
@@ -84,7 +93,7 @@ namespace jwm {
 
         void resize(int width, int height) override {
             // Make current to avoid artifacts in other windows
-            makeCurrentForced();
+            makeCurrent();
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);
@@ -98,17 +107,19 @@ namespace jwm {
         }
 
         void swapBuffers() override {
-            printf("before swap\n");
             eglSwapBuffers(_display, _surface);
-            printf("after swap\n");
         }
 
         void close() override {
+            if (_closed)
+              return;
+            _closed = true;
             detach();
             eglDestroyContext(_display, _context);
-            eglTerminate(_display);
-
+            
+            _firstAttach = true;
             jwm::unref(&fWindow);
+            fWindow = nullptr;
         }
 
         void makeCurrentForced() override {
@@ -121,9 +132,6 @@ namespace jwm {
         void attachBuffer() override {
           if (fWindow && fWindow->_waylandWindow) {
             if (!_eglWindow) {
-              // _region = wl_compositor_create_region(fWindow->_windowManager.compositor);
-              // wl_region_add(_region, 0, 0, fWindow->getWidth(), fWindow->getHeight());
-              // wl_surface_set_opaque_region(fWindow->_waylandWindow, _region);
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
               _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
              
@@ -181,6 +189,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nResize
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nMakeCurrent
   (JNIEnv* env, jobject obj) {
+    jwm::LayerGL* instance = reinterpret_cast<jwm::LayerGL*>(jwm::classes::Native::fromJava(env, obj));
+    instance->makeCurrent();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nSwapBuffers

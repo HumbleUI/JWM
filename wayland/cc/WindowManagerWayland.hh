@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GL/glx.h>
 #include <atomic>
 #include <map>
 #include <memory>
@@ -17,6 +16,8 @@
 #include "Output.hh"
 #include <libdecor-0/libdecor.h>
 #include <xkbcommon/xkbcommon.h>
+#include <wayland-egl.h>
+#include <EGL/egl.h> 
 
 namespace jwm {
     class WindowWayland;
@@ -123,6 +124,7 @@ namespace jwm {
         libdecor* decorCtx = nullptr;
         xkb_context* _xkbContext = nullptr;
         xkb_state* _xkbState = nullptr;
+        EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;
 
         bool _runLoop;
