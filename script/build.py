@@ -4,7 +4,7 @@ import argparse, build_utils, common, glob, os, platform, subprocess, sys
 def build_native_system(system):
   os.chdir(common.basedir + "/" + system)
   subprocess.check_call(["cmake",
-    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DCMAKE_BUILD_TYPE=Release",
     "-B", "build",
     "-G", "Ninja",
     "-DJWM_ARCH=" + build_utils.arch,
