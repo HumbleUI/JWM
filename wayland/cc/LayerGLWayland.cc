@@ -33,11 +33,6 @@ namespace jwm {
             _closed = false;
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            // HACK: reopen
-            bool visible = fWindow->_visible;
-            if (visible) {
-              fWindow->hide();
-            }
             if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
               fWindow->_windowManager._eglDisplay = eglGetDisplay(window->_windowManager.display);
 
@@ -82,8 +77,8 @@ namespace jwm {
                 // Blocking here will freeze the app on sway.
                 eglSwapInterval(_display, 0); 
             }
-            if (visible)
-              fWindow->show();
+            if (fWindow->_configured)
+              attachBuffer();
             makeCurrentForced();
         }
 

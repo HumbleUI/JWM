@@ -20,14 +20,11 @@ namespace jwm {
         virtual ~LayerRaster() = default;
 
         void attach(WindowWayland* window) {
-            // HACK: close and reopen
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            if (fWindow->_visible) {
-                fWindow->hide();
-                fWindow->show();
-            }
-
+            resize(window->getWidth(), window->getHeight());
+            if (fWindow->_configured)
+                attachBuffer();
         }
 
         void resize(int width, int height) override {
@@ -65,16 +62,17 @@ namespace jwm {
             if (_attached && fWindow->_waylandWindow) {
                 // all impls that I've seen have to make a new buffer every frame.
                 // God awful. Never use raster if you value performance.
-                wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
-                wl_callback_add_listener(cb, &_frameCallback, this);
-                wl_display_roundtrip(fWindow->_windowManager.display);
-                // swapNow();
+                // wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
+                // wl_callback_add_listener(cb, &_frameCallback, this);
+                // wl_display_roundtrip(fWindow->_windowManager.display);
+                swapNow();
             }
         }
 
         void close() override {
             detach();
             jwm::unref(&fWindow);
+            fWindow = nullptr;
         }
 
         void makeCurrentForced() override {
@@ -90,7 +88,7 @@ namespace jwm {
         }
 
         void detach() override {
-            if (fWindow && fWindow->_waylandWindow) {
+            if (_attached && fWindow && fWindow->_waylandWindow) {
                 wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
                 wl_surface_commit(fWindow->_waylandWindow);
             }
