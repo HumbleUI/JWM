@@ -576,12 +576,40 @@ void WindowManagerWayland::terminate() {
     _runLoop = false;
 }
 
+wl_data_source_listener WindowManagerWayland::_sourceListener = {
+    .send = [](void* data, wl_data_source* source,
+                const char* mimeType, int fd) {
+        auto self = reinterpret_cast<WindowManagerWayland*>(data);
+        auto it = self->_myClipboardContents.find(std::string(mimeType));
+        if (it != self->_myClipboardContents.end()) {
+            write(fd, it->second.data(), it->second.size());
+        }
+        close(fd);
+    },
+    .cancelled = [](void* data, wl_data_source* source) {
+        auto self = reinterpret_cast<WindowManagerWayland*>(data);
+        wl_data_source_destroy(source);
+    }
+};
 void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardContents = c;
-    // impl me : )
-    // XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
-    // XSetSelectionOwner(display, _atoms.CLIPBOARD, window, CurrentTime);
+
+    // god is dead if data device manager is null
+    
+    currentSource = wl_data_device_manager_create_data_source(deviceManager);
+    
+    wl_data_source_add_listener(currentSource, &_sourceListener, this);
+
+    _currentMimeTypes = {};
+    for (auto it : c) {
+        _currentMimeTypes.push_back(it.first.c_str());
+        wl_data_source_offer(currentSource, it.first.c_str());
+    }
+
+    if (keyboardSerial >= 0)
+        wl_data_device_set_selection(dataDevice, currentSource, keyboardSerial);
+
 }
 
 void WindowManagerWayland::enqueueTask(const std::function<void()>& task) {

@@ -133,11 +133,18 @@ bool WindowWayland::resize(int width, int height) {
     // complain if you try to set a width/height that isn't a multiple of scale.
     if ((width % _scale) != 0 || (height % _scale) != 0)
         return false;
+
+    // TODO: adapting size while visible causes issues?
+    // I've noticed the frame not updating
+    if (_visible)
+        return false;
     _width = width / _scale;
     _height = height / _scale;
+    /*
     if (_visible) {
         _adaptSize(_width, _height);    
     }
+    */
     return true;
 }
 

@@ -14,7 +14,6 @@ namespace jwm {
         }
         
         jobjectArray getFormats(JNIEnv* env) const {
-            /*
             auto formats = jwm::app.getWindowManager().getClipboardFormats();
             if (formats.empty()) {
                 return nullptr;
@@ -32,14 +31,10 @@ namespace jwm {
             for (jsize i = 0; i < static_cast<jsize>(formatObjs.size()); ++i) {
                 env->SetObjectArrayElement(jniFormats, i, formatObjs[i]);
             }
-            */
-            // impl me : )
-            jobjectArray formats = env->NewObjectArray(0, classes::ClipboardFormat::kCls, nullptr);
-            return formats;
+            return jniFormats;
         }
 
         jobject get(JNIEnv* env, jobjectArray formats) {
-            /*
             jsize formatsSize = env->GetArrayLength(formats);
             for (jsize i = 0; i < formatsSize; ++i) {
                 jobject format = env->GetObjectArrayElement(formats, i);
@@ -49,9 +44,11 @@ namespace jwm {
 
                     ByteBuf contents;
                     // HACK: prefer UTF8_STRING over text/plain and convert it to utf16
+                    /*
                     if (formatId == "text/plain") {
                         contents = app.getWindowManager().getClipboardContents("UTF8_STRING");
                     }
+                    */
                     // TODO add another formats
                     if (contents.empty()) {
                         return nullptr;
@@ -67,8 +64,6 @@ namespace jwm {
                     return env->NewGlobalRef(entry.get());
                 }
             }
-            */
-            // impl me : )
             classes::Throwable::exceptionThrown(env);
             return nullptr;
         }
