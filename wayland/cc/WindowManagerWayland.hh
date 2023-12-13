@@ -120,6 +120,7 @@ namespace jwm {
         wl_keyboard* keyboard = nullptr;
         wl_data_device* dataDevice = nullptr;
         wl_data_source* currentSource = nullptr;
+        uint32_t mouseSerial = -1;
         uint32_t keyboardSerial = -1;
         libdecor* decorCtx = nullptr;
         xkb_context* _xkbContext = nullptr;

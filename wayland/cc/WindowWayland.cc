@@ -44,6 +44,7 @@ WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     _title("")
 
 {
+    _makeCursors();
 }
 
 WindowWayland::~WindowWayland() {
@@ -148,6 +149,49 @@ bool WindowWayland::resize(int width, int height) {
     return true;
 }
 
+
+void WindowWayland::_makeCursors() {
+    
+    if (theme)
+        wl_cursor_theme_destroy(theme);
+    theme = wl_cursor_theme_load(nullptr, 24 * _scale, _windowManager.shm);
+
+}
+// cursed
+wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
+    switch (cursor) {
+        case jwm::MouseCursor::ARROW:
+            // works
+            return wl_cursor_theme_get_cursor(theme, "default");
+        case jwm::MouseCursor::CROSSHAIR:
+            // works
+            return wl_cursor_theme_get_cursor(theme, "crosshair");
+        case jwm::MouseCursor::HELP:
+            // sometimes works?
+            return wl_cursor_theme_get_cursor(theme, "help");
+        case jwm::MouseCursor::POINTING_HAND:
+            // SHOULD work
+            return wl_cursor_theme_get_cursor(theme, "pointer");
+        case jwm::MouseCursor::IBEAM:
+            // doesn't work at all
+            return wl_cursor_theme_get_cursor(theme, "text");
+        case jwm::MouseCursor::NOT_ALLOWED:
+            return wl_cursor_theme_get_cursor(theme, "not-allowed");
+        case jwm::MouseCursor::WAIT:
+            return wl_cursor_theme_get_cursor(theme, "watch");
+        case jwm::MouseCursor::WIN_UPARROW:
+            return wl_cursor_theme_get_cursor(theme, "up-arrow");
+        case jwm::MouseCursor::RESIZE_NS:
+            return wl_cursor_theme_get_cursor(theme, "ns-resize");
+        case jwm::MouseCursor::RESIZE_WE:
+            return wl_cursor_theme_get_cursor(theme, "ew-resize");
+        case jwm::MouseCursor::RESIZE_NESW:
+            return wl_cursor_theme_get_cursor(theme, "nesw-resize");
+        case jwm::MouseCursor::RESIZE_NWSE:
+            return wl_cursor_theme_get_cursor(theme, "nwse-resize");
+    }
+    return nullptr;
+}
 int WindowWayland::getLeft() {
     int x, y;
     getContentPosition(x, y);
@@ -221,18 +265,17 @@ void WindowWayland::setVisible(bool isVisible) {
 }
 
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
-    if (auto wayCursor = _windowManager._cursors[static_cast<int>(cursor)]) {
-        wl_surface_attach(_windowManager.cursorSurface, 
-                wl_cursor_image_get_buffer(wayCursor),
-                0, 0);
-        wl_surface_commit(_windowManager.cursorSurface);
-        // TODO: hotspots?
-    } else {
-        auto otherCursor = _windowManager._cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
-        wl_surface_attach(_windowManager.cursorSurface,
-                wl_cursor_image_get_buffer(otherCursor), 0, 0);
-        wl_surface_commit(_windowManager.cursorSurface);
-    }
+    printf("%s\n", jwm::mouseCursorToStr(cursor));
+    // ?????
+    // Doesn't work for higher numbers???
+    auto wayCursor = _getCursorFor(cursor)->images[0];
+    wl_surface_attach(_windowManager.cursorSurface, 
+            wl_cursor_image_get_buffer(wayCursor),
+            0, 0);
+    wl_surface_set_buffer_scale(_windowManager.cursorSurface, _scale);
+    wl_surface_commit(_windowManager.cursorSurface);
+    wl_pointer_set_cursor(_windowManager.pointer, _windowManager.mouseSerial, _windowManager.cursorSurface, 
+            wayCursor->hotspot_x / _scale, wayCursor->hotspot_y / _scale);
 }
 
 // what do???
@@ -378,6 +421,8 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
                    )
             );
     dispatch(eventWindowResize.get());
+
+    _makeCursors();
     // In Java Wayland doesn't actually cause a frame:
     // however decorFrameCommit will cause a redraw anyway.
     // Not doing it in wayland lets me not cause an exception on hide.

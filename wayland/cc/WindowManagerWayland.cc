@@ -76,34 +76,7 @@ WindowManagerWayland::WindowManagerWayland():
 
 
         wl_display_roundtrip(display);
-        {
-            wl_cursor_theme* cursor_theme = wl_cursor_theme_load(nullptr, 24, shm);
-            // TODO: what about if missing : (
-            auto loadCursor = [&](const char* name) {
-                wl_cursor* cursor = wl_cursor_theme_get_cursor(cursor_theme, name);
-                wl_cursor_image* cursorImage = cursor->images[0];
-                return cursorImage;
-            };
-
-            _cursors[static_cast<int>(jwm::MouseCursor::ARROW         )] = loadCursor("default");
-            _cursors[static_cast<int>(jwm::MouseCursor::CROSSHAIR     )] = loadCursor("crosshair");
-            _cursors[static_cast<int>(jwm::MouseCursor::HELP          )] = loadCursor("help");
-            _cursors[static_cast<int>(jwm::MouseCursor::POINTING_HAND )] = loadCursor("pointer");
-            _cursors[static_cast<int>(jwm::MouseCursor::IBEAM         )] = loadCursor("text");
-            _cursors[static_cast<int>(jwm::MouseCursor::NOT_ALLOWED   )] = loadCursor("not-allowed");
-            _cursors[static_cast<int>(jwm::MouseCursor::WAIT          )] = loadCursor("watch");
-            _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NS     )] = loadCursor("ns-resize");
-            _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_WE     )] = loadCursor("ew-resize");
-            _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NESW   )] = loadCursor("nesw-resize");
-            _cursors[static_cast<int>(jwm::MouseCursor::RESIZE_NWSE   )] = loadCursor("nwse-resize");
-            
-            cursorSurface = wl_compositor_create_surface(compositor);
-
-            wl_surface_attach(cursorSurface, 
-                    wl_cursor_image_get_buffer(_cursors[static_cast<int>(jwm::MouseCursor::ARROW)]), 0, 0);
-            wl_surface_commit(cursorSurface);
-        }
-
+        cursorSurface = wl_compositor_create_surface(compositor);
 
 }
 
@@ -241,10 +214,12 @@ WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
 void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
-    wl_cursor_image* image = self->_cursors[static_cast<int>(jwm::MouseCursor::ARROW)];
-    wl_pointer_set_cursor(pointer, serial, self->cursorSurface,  image->hotspot_x, image->hotspot_y);
-    if (self->getWindowForNative(surface))
+    self->mouseSerial = serial;
+    if (self->getWindowForNative(surface)) {
+        WindowWayland* window = self->getWindowForNative(surface);
+        window->setCursor(jwm::MouseCursor::ARROW);
         self->focusedSurface = surface;
+    }
 }
 void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface) {
@@ -252,6 +227,7 @@ void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, u
     self->focusedSurface = nullptr;
     // ???
     self->mouseMask = 0;
+    self->mouseSerial = -1;
 }
 void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
         uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {

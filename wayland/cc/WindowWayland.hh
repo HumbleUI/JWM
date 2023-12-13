@@ -52,6 +52,8 @@ namespace jwm {
         void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayerWayland* layer);
 
+        void _makeCursors();
+        wl_cursor* _getCursorFor(jwm::MouseCursor cursor);
         ScreenInfo getScreen();
 
         static void surfaceEnter(void* data, wl_surface* surface, wl_output* output);
@@ -106,6 +108,7 @@ namespace jwm {
         wl_surface* _waylandWindow = nullptr;
         libdecor_frame* _frame = nullptr;
         Output* _output = nullptr;
+        wl_cursor_theme* theme = nullptr;
 
         static wl_surface_listener _surfaceListener;
 
