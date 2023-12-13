@@ -8,7 +8,6 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/sync.h>
 
-
 using namespace jwm;
 
 
@@ -307,9 +306,14 @@ void WindowX11::getDecorations(int& left, int& top, int& right, int& bottom) {
 void WindowX11::getContentPosition(int& posX, int& posY) {
     int x, y;
     ::Window child;
+    XWindowAttributes wa;
+
+    XGetWindowAttributes(_windowManager.display, _x11Window, &wa);
+
+
     XTranslateCoordinates(_windowManager.display,
                           _x11Window,
-                          XRootWindow(_windowManager.display, 0),
+                          wa.root,
                           0, 0,
                           &x, &y,
                           &child);
@@ -434,7 +438,8 @@ const ScreenInfo& WindowX11::getScreen() {
         if (screen.bounds.isPointInside(centerX, centerY)) {
             return screen;
         }
-    }
+    } 
+
     return *jwm::app.getScreens().begin();
 }
 

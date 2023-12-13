@@ -86,6 +86,7 @@ jobs:
         name: Deploy to Maven Central
         run: |
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+          gpg --list-keys
           python3 script/release.py --only java --ref ${{ github.ref }}
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}

@@ -588,13 +588,16 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
 
             KeySym s = XLookupKeysym(&ev.xkey, 0);
             if (s != NoSymbol) {
-                jwm::Key key = KeyX11::fromNative(s);
+                int modifiers;
+                jwm::KeyLocation location;
+                jwm::Key key = KeyX11::fromNative(s, location, modifiers);
                 jwm::KeyX11::setKeyState(key, true);
                 jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
                                                         EventKey::make(app.getJniEnv(),
                                                                             key,
                                                                             true,
-                                                                            jwm::KeyX11::getModifiers()));
+                                                                            jwm::KeyX11::getModifiers() | modifiers,
+                                                                            location));
                 myWindow->dispatch(eventKey.get());
             }
 
@@ -630,13 +633,16 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
 
         case KeyRelease: { // keyboard up
             KeySym s = XLookupKeysym(&ev.xkey, 0);
-            jwm::Key key = KeyX11::fromNative(s);
+            int modifiers;
+            jwm::KeyLocation location;
+            jwm::Key key = KeyX11::fromNative(s, location, modifiers);
             jwm::KeyX11::setKeyState(key, false);
             jwm::JNILocal<jobject> eventKey(app.getJniEnv(),
                                                     EventKey::make(app.getJniEnv(),
                                                                         key,
                                                                         false,
-                                                                        jwm::KeyX11::getModifiers()));
+                                                                        jwm::KeyX11::getModifiers() | modifiers,
+                                                                        location));
             myWindow->dispatch(eventKey.get());
             break;
         }

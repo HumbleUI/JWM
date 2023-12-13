@@ -1,3 +1,16 @@
+# 0.4.16 - Dec 1, 2023
+
+Added:
+
+- macOS: Window::bringToFront, ::isFront (#269, thx @Quezion)
+- macOS: LayerMetal::GetMetalLayer (#275, thx @smallshen)
+- X11: add held modifier info on mouse events when window isn't focused (#274, thx @dzaima)
+
+Fixed:
+
+- X11: Use XQueryPointer mouse position instead of XI_Motion fields (#272, thx @dzaima)
+- X11: fix getScreenCoordinates (#218, #276, thx @TheDrawingCoder-Gamer)
+
 # 0.4.15 - Apr 3, 2023
 
 Added:
