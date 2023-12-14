@@ -149,13 +149,11 @@ bool WindowWayland::resize(int width, int height) {
     return true;
 }
 
-
 void WindowWayland::_makeCursors() {
     
     if (theme)
         wl_cursor_theme_destroy(theme);
     theme = wl_cursor_theme_load(nullptr, 24 * _scale, _windowManager.shm);
-
 }
 // cursed
 wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
@@ -265,17 +263,18 @@ void WindowWayland::setVisible(bool isVisible) {
 }
 
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
-    printf("%s\n", jwm::mouseCursorToStr(cursor));
     // ?????
     // Doesn't work for higher numbers???
     auto wayCursor = _getCursorFor(cursor)->images[0];
+    auto buf = wl_cursor_image_get_buffer(wayCursor);
     wl_surface_attach(_windowManager.cursorSurface, 
             wl_cursor_image_get_buffer(wayCursor),
             0, 0);
     wl_surface_set_buffer_scale(_windowManager.cursorSurface, _scale);
-    wl_surface_commit(_windowManager.cursorSurface);
+    wl_surface_damage_buffer(_windowManager.cursorSurface, 0, 0, INT32_MAX, INT32_MAX);
     wl_pointer_set_cursor(_windowManager.pointer, _windowManager.mouseSerial, _windowManager.cursorSurface, 
             wayCursor->hotspot_x / _scale, wayCursor->hotspot_y / _scale);
+    wl_surface_commit(_windowManager.cursorSurface);
 }
 
 // what do???
