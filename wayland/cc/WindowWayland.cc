@@ -420,8 +420,9 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
                    )
             );
     dispatch(eventWindowResize.get());
-
-    _makeCursors();
+    if (_scale != _oldScale)
+        _makeCursors();
+    _oldScale = _scale;
     // In Java Wayland doesn't actually cause a frame:
     // however decorFrameCommit will cause a redraw anyway.
     // Not doing it in wayland lets me not cause an exception on hide.

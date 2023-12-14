@@ -84,6 +84,7 @@ namespace jwm {
         int _width = -1;
         int _newWidth = -1;
         int _scale = 1;
+        int _oldScale = 1;
         int _height = -1;
         int _newHeight = -1;
         int _WM_ADD = 1L;
