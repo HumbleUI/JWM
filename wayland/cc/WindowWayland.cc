@@ -263,8 +263,6 @@ void WindowWayland::setVisible(bool isVisible) {
 }
 
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
-    // ?????
-    // Doesn't work for higher numbers???
     auto wayCursor = _getCursorFor(cursor)->images[0];
     auto buf = wl_cursor_image_get_buffer(wayCursor);
     wl_surface_attach(_windowManager.cursorSurface, 

@@ -133,6 +133,9 @@ namespace jwm {
         std::atomic_bool notifyBool{false};
         int lastMousePosX = 0;
         int lastMousePosY = 0;
+        // god forgive me for using float
+        float _dX = 0.0f;
+        float _dY = 0.0f;
         int mouseMask = 0;
         void mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask);
 

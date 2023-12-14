@@ -35,7 +35,38 @@ wl_pointer_listener WindowManagerWayland::_pointerListener = {
   .leave = WindowManagerWayland::pointerHandleLeave,
   .motion = WindowManagerWayland::pointerHandleMotion,
   .button = WindowManagerWayland::pointerHandleButton,
-  .axis = WindowManagerWayland::pointerHandleAxis
+  .axis = WindowManagerWayland::pointerHandleAxis,
+  .frame = [](void* data, wl_pointer* pointer) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    if (!self->focusedSurface) return;
+    if (self->_dX != 0.0f || self->_dY != 0.0f) {
+        auto env = app.getJniEnv();
+        auto win = self->getWindowForNative(self->focusedSurface);
+        if (win) {
+            jwm::JNILocal<jobject> eventAxis(
+                        env,
+                        jwm::classes::EventMouseScroll::make(
+                                env,
+                                self->_dX * win->_scale,
+                                self->_dY * win->_scale,
+                                0.0f,
+                                0.0f,
+                                0.0f,
+                                self->lastMousePosX,
+                                self->lastMousePosY,
+                                jwm::KeyWayland::getModifiers(self->_xkbState)
+                            )
+                    );
+            win->dispatch(eventAxis.get());
+
+        }
+        self->_dX = 0.0f;
+        self->_dY = 0.0f;
+    }
+  },
+  .axis_source = [](void* data, wl_pointer* pointer, uint32_t source) {},
+  .axis_stop = [](void* data, wl_pointer* pointer, uint32_t time, uint32_t axis) {},
+  .axis_discrete = [](void* data, wl_pointer* pointer, uint32_t axis, int discrete) {}
 };
 
 libdecor_interface WindowManagerWayland::_decorInterface = {
@@ -178,7 +209,7 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
                 &wl_data_device_manager_interface, 1);
     } else if (strcmp(interface,  wl_seat_interface.name) == 0) {
         self->seat = (wl_seat*)wl_registry_bind(registry, name,
-                &wl_seat_interface, 1);
+                &wl_seat_interface, 5);
     } else if (strcmp(interface, wl_output_interface.name) == 0) {
         wl_output* output = (wl_output*)wl_registry_bind(registry, name,
                 &wl_output_interface, 2);
@@ -321,7 +352,21 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
     }
 }
 void WindowManagerWayland::pointerHandleAxis(void* data, wl_pointer* pointer, 
-        uint32_t time, uint32_t axis, wl_fixed_t value) {}
+        uint32_t time, uint32_t axis, wl_fixed_t value) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    if (!self->focusedSurface) return;
+
+    switch (axis) {
+        case WL_POINTER_AXIS_VERTICAL_SCROLL:
+            self->_dY += static_cast<float>(wl_fixed_to_double(value));
+            break;
+        case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+            self->_dX += static_cast<float>(wl_fixed_to_double(value));
+            break;
+        default:
+            break;
+    }
+}
 void WindowManagerWayland::keyboardKeymap(void* data, wl_keyboard* keyboard, uint32_t format,
         int32_t fd, uint32_t size) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
