@@ -134,14 +134,10 @@ void WindowManagerWayland::runLoop() {
         int timeout = -1;
         if (_keyboard && _keyboard->_repeating) {
             if (_keyboard->_repeatRate > 0) {
-                auto target = _keyboard->_nextRepeat;
                 auto now = std::chrono::steady_clock::now();
-                if (now < target) 
-                    timeout = std::chrono::duration_cast<std::chrono::milliseconds>(now - target).count();
-                else {
-                    auto ms = std::chrono::milliseconds(_keyboard->_repeatRate);
-                    _keyboard->_nextRepeat += ms;
-                    timeout = _keyboard->_repeatRate; 
+                auto target = _keyboard->_nextRepeat;
+                if (now < target) {
+                    timeout = std::chrono::duration_cast<std::chrono::milliseconds>(target - now).count();
                 }
             }
         }
@@ -184,9 +180,10 @@ void WindowManagerWayland::_processCallbacks() {
             lock.lock();
         }        
     }
-    if (_keyboard && _keyboard->getFocus() && _keyboard->_repeating) {
+    if (_keyboard && _keyboard->_repeating && _keyboard->getFocus()) {
         auto now = std::chrono::steady_clock::now();
         if (now > _keyboard->_nextRepeat) {
+            _keyboard->_nextRepeat = now + std::chrono::milliseconds(_keyboard->_repeatRate);
             auto focus = _keyboard->getFocus();
             auto env = jwm::app.getJniEnv();
             jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
