@@ -45,8 +45,7 @@ static void kbKeymap(void* data, wl_keyboard* kb, uint32_t format, int32_t fd, u
     }
     self->_state = xkb_state_new(keymap);
 
-    xkb_keymap_unref(keymap);
-
+    self->_keymap = keymap;
 }
 static void kbEnter(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* surface,
         wl_array *keys) {
@@ -70,10 +69,12 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     if (!self->_state || !self->_focus) return;
 
     const xkb_keysym_t *syms;
-
-    if (xkb_state_key_get_syms(self->_state, key + 8, &syms) != 1)
+    
+    uint32_t keyCode = key + 8;
+    if (xkb_state_key_get_syms(self->_state, keyCode, &syms) != 1)
         return;
-    jwm::Key jwmKey = KeyWayland::fromNative(syms[0]);
+    auto lowerSym = xkb_keysym_to_lower(syms[0]);
+    jwm::Key jwmKey = KeyWayland::fromNative(lowerSym);
     if (jwmKey != jwm::Key::UNDEFINED) {
         jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
         JNILocal<jobject> keyEvent(
@@ -98,13 +99,14 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     // ??? 
     self->_lastPress = std::chrono::steady_clock::now();
     self->_repeatKey = jwmKey;
-    if (self->_repeatRate > 0) {
+    bool shouldRepeat = xkb_keymap_key_repeats(self->_keymap, keyCode) && (self->_repeatRate > 0);
+    if (shouldRepeat && (jwmKey != jwm::Key::UNDEFINED)) {
         self->_repeating = true;
         self->_nextRepeat = self->_lastPress + std::chrono::milliseconds(self->_repeatDelay);
     }
     self->_wm.notifyLoop();
     char textBuffer[0x40];
-    int count = xkb_state_key_get_utf8(self->_state, key + 8, textBuffer, sizeof(textBuffer)-1);
+    int count = xkb_state_key_get_utf8(self->_state, keyCode, textBuffer, sizeof(textBuffer)-1);
     // ???
     if (count >= sizeof(textBuffer) - 1) {
         return;
@@ -116,7 +118,7 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
 
             jwm::StringUTF16 converted = reinterpret_cast<const char*>(textBuffer);
             self->_repeatText = converted;
-            if (self->_repeatRate > 0)
+            if (shouldRepeat)
                 self->_repeatingText = true;
             jwm::JNILocal<jstring> jtext = converted.toJString(env);
 
@@ -163,4 +165,6 @@ Keyboard::~Keyboard()
         wl_keyboard_release(_keyboard);
     if (_context)
         xkb_context_unref(_context);
+    if (_keymap)
+        xkb_keymap_unref(_keymap);
 }

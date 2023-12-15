@@ -190,6 +190,17 @@ void WindowManagerWayland::_processCallbacks() {
             auto focus = _keyboard->getFocus();
             auto env = jwm::app.getJniEnv();
             jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+            JNILocal<jobject> keyOffEvent(
+                env,
+                classes::EventKey::make(
+                        env,
+                        _keyboard->_repeatKey,
+                        false,
+                        KeyWayland::getModifiers(_keyboard->_state),
+                        location
+                    )
+                );
+
             JNILocal<jobject> keyEvent(
                 env,
                 classes::EventKey::make(
@@ -200,6 +211,7 @@ void WindowManagerWayland::_processCallbacks() {
                         location
                     )
                 );
+            focus->dispatch(keyOffEvent.get());
             focus->dispatch(keyEvent.get());
             if (_keyboard->_repeatingText) {
                 jwm::JNILocal<jstring> jtext = _keyboard->_repeatText.toJString(env);

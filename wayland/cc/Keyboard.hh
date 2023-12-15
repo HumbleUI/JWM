@@ -20,6 +20,7 @@ namespace jwm {
         }
         xkb_context* _context = nullptr;
         xkb_state* _state = nullptr;
+        xkb_keymap* _keymap = nullptr;
         xkb_state* getState() const {
             return _state;
         }
