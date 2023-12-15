@@ -2,6 +2,7 @@
 
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-compose.h>
 #include <chrono>
 #include "KeyWayland.hh"
 #include "StringUTF16.hh"
@@ -21,6 +22,9 @@ namespace jwm {
         xkb_context* _context = nullptr;
         xkb_state* _state = nullptr;
         xkb_keymap* _keymap = nullptr;
+        xkb_compose_table* _composeTable = nullptr;
+        xkb_compose_state* _composeState = nullptr;
+
         xkb_state* getState() const {
             return _state;
         }

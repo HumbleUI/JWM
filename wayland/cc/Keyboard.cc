@@ -12,13 +12,15 @@
 #include <sys/mman.h>
 #include "AppWayland.hh"
 #include <chrono>
+#include <clocale>
 using namespace jwm;
 
 // I've noticed that pointers to lambdas are null for some reason. 
 // No idea what's wrong. Going to cry myself to sleep tonight.
 static void kbKeymap(void* data, wl_keyboard* kb, uint32_t format, int32_t fd, uint32_t size) {
     auto self = reinterpret_cast<Keyboard*>(data);
-
+    
+    
     if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
         close(fd);
         fprintf(stderr, "no xkb keymap\n");
@@ -46,6 +48,12 @@ static void kbKeymap(void* data, wl_keyboard* kb, uint32_t format, int32_t fd, u
     self->_state = xkb_state_new(keymap);
 
     self->_keymap = keymap;
+   
+    const char* locale = std::setlocale(LC_CTYPE, nullptr);
+
+    self->_composeTable = xkb_compose_table_new_from_locale(self->_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+    self->_composeState = xkb_compose_state_new(self->_composeTable, XKB_COMPOSE_STATE_NO_FLAGS);
+
 }
 static void kbEnter(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* surface,
         wl_array *keys) {
@@ -71,29 +79,70 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     const xkb_keysym_t *syms;
     
     uint32_t keyCode = key + 8;
-    if (xkb_state_key_get_syms(self->_state, keyCode, &syms) != 1)
+    if (xkb_state_key_get_syms(self->_state, keyCode, &syms) != 1) {
+        xkb_compose_state_feed(self->_composeState, XKB_KEY_NoSymbol);
         return;
-    auto lowerSym = xkb_keysym_to_lower(syms[0]);
-    jwm::Key jwmKey = KeyWayland::fromNative(lowerSym);
-    if (jwmKey != jwm::Key::UNDEFINED) {
-        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
-        JNILocal<jobject> keyEvent(
-            jwm::app.getJniEnv(),
-            classes::EventKey::make(
-                    jwm::app.getJniEnv(),
-                    jwmKey,
-                    state == WL_KEYBOARD_KEY_STATE_PRESSED,
-                    KeyWayland::getModifiers(self->_state),
-                    location
-                )
-            );
-        self->_focus->dispatch(keyEvent.get());
     }
+    auto sym = syms[0];
+    auto lowerSym = xkb_keysym_to_lower(sym);
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+        xkb_compose_state_feed(self->_composeState, sym);
+    auto status = xkb_compose_state_get_status(self->_composeState);
+    bool composeRelated = status != XKB_COMPOSE_NOTHING;
+    jwm::Key jwmKey = KeyWayland::fromNative(lowerSym);
     self->_repeatingText = false;
     self->_repeating = false;
+    if (!composeRelated) {
+        if (jwmKey != jwm::Key::UNDEFINED) {
+            jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+            JNILocal<jobject> keyEvent(
+                jwm::app.getJniEnv(),
+                classes::EventKey::make(
+                        jwm::app.getJniEnv(),
+                        jwmKey,
+                        state == WL_KEYBOARD_KEY_STATE_PRESSED,
+                        KeyWayland::getModifiers(self->_state),
+                        location
+                    )
+                );
+            self->_focus->dispatch(keyEvent.get());
+        }
+    } else {
+        int dacount;
+        switch (status) {
+            case XKB_COMPOSE_COMPOSING:
+                break;
+            case XKB_COMPOSE_COMPOSED:
+                // I am going to wager a guess that no one will ever have a compose key that binds to a 
+                // key we actually parse. 
+                // auto keysym = xkb_compose_state_get_one_sym(self->_composeState);
+                char textBuf[0x40];
+
+                dacount = xkb_compose_state_get_utf8(self->_composeState, textBuf, sizeof(textBuf) - 1);
+
+                if (dacount > 0 && (dacount < sizeof(textBuf) - 1)) {
+                    JNIEnv* env = jwm::app.getJniEnv();
+
+                    jwm::StringUTF16 converted = reinterpret_cast<const char*>(textBuf);
+                    jwm::JNILocal<jstring> jtext = converted.toJString(env);
+
+                    jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
+                    
+
+                    self->_focus->dispatch(eventTextInput.get());
+
+                }
+
+
+                xkb_compose_state_reset(self->_composeState);
+                break;
+            case XKB_COMPOSE_CANCELLED:
+                xkb_compose_state_reset(self->_composeState);
+                break;
+        }
+        return;
+    }   
     if (state != WL_KEYBOARD_KEY_STATE_PRESSED) {
-        self->_lastPress = std::chrono::time_point<std::chrono::steady_clock>();
-        self->_nextRepeat = std::chrono::time_point<std::chrono::steady_clock>();
         return;
     }
     // ??? 
