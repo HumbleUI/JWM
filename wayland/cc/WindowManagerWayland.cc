@@ -23,6 +23,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <sys/mman.h>
 #include <algorithm>
+#include <chrono>
 
 using namespace jwm;
 
@@ -30,13 +31,7 @@ wl_registry_listener WindowManagerWayland::_registryListener = {
     .global = WindowManagerWayland::registryHandleGlobal,
     .global_remove = WindowManagerWayland::registryHandleGlobalRemove
 };
-wl_pointer_listener WindowManagerWayland::_pointerListener = {
-  .enter = WindowManagerWayland::pointerHandleEnter,
-  .leave = WindowManagerWayland::pointerHandleLeave,
-  .motion = WindowManagerWayland::pointerHandleMotion,
-  .button = WindowManagerWayland::pointerHandleButton,
-  .axis = WindowManagerWayland::pointerHandleAxis,
-  .frame = [](void* data, wl_pointer* pointer) {
+static void pointerFrame(void* data, wl_pointer* pointer) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     if (!self->focusedSurface) return;
     if (self->_dX != 0.0f || self->_dY != 0.0f) {
@@ -54,7 +49,7 @@ wl_pointer_listener WindowManagerWayland::_pointerListener = {
                                 0.0f,
                                 self->lastMousePosX,
                                 self->lastMousePosY,
-                                jwm::KeyWayland::getModifiers(self->_xkbState)
+                                jwm::KeyWayland::getModifiers(self->getXkbState())
                             )
                     );
             win->dispatch(eventAxis.get());
@@ -63,22 +58,25 @@ wl_pointer_listener WindowManagerWayland::_pointerListener = {
         self->_dX = 0.0f;
         self->_dY = 0.0f;
     }
-  },
-  .axis_source = [](void* data, wl_pointer* pointer, uint32_t source) {},
-  .axis_stop = [](void* data, wl_pointer* pointer, uint32_t time, uint32_t axis) {},
-  .axis_discrete = [](void* data, wl_pointer* pointer, uint32_t axis, int discrete) {}
+}
+static void pointerAxisSource(void* data, wl_pointer* pointer, uint32_t source) {}
+static void pointerAxisStop(void* data, wl_pointer* pointer, uint32_t time, uint32_t axis) {}
+static void pointerAxisDiscrete(void* data, wl_pointer* pointer, uint32_t axis, int discrete) {}
+// Lambdas turn into null pointers at runtime. God knows why.
+wl_pointer_listener WindowManagerWayland::_pointerListener = {
+  .enter = WindowManagerWayland::pointerHandleEnter,
+  .leave = WindowManagerWayland::pointerHandleLeave,
+  .motion = WindowManagerWayland::pointerHandleMotion,
+  .button = WindowManagerWayland::pointerHandleButton,
+  .axis = WindowManagerWayland::pointerHandleAxis,
+  .frame = pointerFrame,
+  .axis_source = pointerAxisSource,
+  .axis_stop = pointerAxisStop,
+  .axis_discrete = pointerAxisDiscrete
 };
 
 libdecor_interface WindowManagerWayland::_decorInterface = {
     .error = WindowManagerWayland::libdecorError
-};
-wl_keyboard_listener WindowManagerWayland::_keyboardListener = {
-    .keymap = WindowManagerWayland::keyboardKeymap,
-    .enter = WindowManagerWayland::keyboardEnter,
-    .leave = WindowManagerWayland::keyboardLeave,
-    .key = WindowManagerWayland::keyboardKey,
-    .modifiers = WindowManagerWayland::keyboardModifiers,
-    .repeat_info = WindowManagerWayland::keyboardRepeatInfo
 };
 wl_seat_listener WindowManagerWayland::_seatListener = {
     .capabilities = WindowManagerWayland::seatCapabilities,
@@ -88,7 +86,6 @@ WindowManagerWayland::WindowManagerWayland():
     display(wl_display_connect(nullptr)) {
         registry = wl_display_get_registry(display);
         wl_registry_add_listener(registry, &_registryListener, this);
-
         wl_display_roundtrip(display);
         
 
@@ -134,7 +131,21 @@ void WindowManagerWayland::runLoop() {
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
         // block until event : )
-        if (poll(&ps[0], 2, -1) < 0) {
+        int timeout = -1;
+        if (_keyboard && _keyboard->_repeating) {
+            if (_keyboard->_repeatRate > 0) {
+                auto target = _keyboard->_nextRepeat;
+                auto now = std::chrono::steady_clock::now();
+                if (now < target) 
+                    timeout = std::chrono::duration_cast<std::chrono::milliseconds>(now - target).count();
+                else {
+                    auto ms = std::chrono::milliseconds(_keyboard->_repeatRate);
+                    _keyboard->_nextRepeat += ms;
+                    timeout = _keyboard->_repeatRate; 
+                }
+            }
+        }
+        if (poll(&ps[0], 2, timeout) < 0) {
             printf("error with pipe\n");
             break;
         }
@@ -172,6 +183,31 @@ void WindowManagerWayland::_processCallbacks() {
             callback();
             lock.lock();
         }        
+    }
+    if (_keyboard && _keyboard->getFocus() && _keyboard->_repeating) {
+        auto now = std::chrono::steady_clock::now();
+        if (now > _keyboard->_nextRepeat) {
+            auto focus = _keyboard->getFocus();
+            auto env = jwm::app.getJniEnv();
+            jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+            JNILocal<jobject> keyEvent(
+                env,
+                classes::EventKey::make(
+                        env,
+                        _keyboard->_repeatKey,
+                        true,
+                        KeyWayland::getModifiers(_keyboard->_state),
+                        location
+                    )
+                );
+            focus->dispatch(keyEvent.get());
+            if (_keyboard->_repeatingText) {
+                jwm::JNILocal<jstring> jtext = _keyboard->_repeatText.toJString(env);
+                jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
+
+                focus->dispatch(eventTextInput.get());
+            }
+        }
     }
     {
         // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
@@ -306,7 +342,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                             false,
                             self->lastMousePosX,
                             self->lastMousePosY,
-                            jwm::KeyWayland::getModifiers(self->_xkbState)
+                            jwm::KeyWayland::getModifiers(self->getXkbState())
                         )
                     );
             WindowWayland* window = self->getWindowForNative(self->focusedSurface);
@@ -341,7 +377,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                             true,
                             self->lastMousePosX,
                             self->lastMousePosY,
-                            jwm::KeyWayland::getModifiers(self->_xkbState)
+                            jwm::KeyWayland::getModifiers(self->getXkbState())
                         )
                     );
             // me when this stuff is NULL : (
@@ -367,118 +403,6 @@ void WindowManagerWayland::pointerHandleAxis(void* data, wl_pointer* pointer,
             break;
     }
 }
-void WindowManagerWayland::keyboardKeymap(void* data, wl_keyboard* keyboard, uint32_t format,
-        int32_t fd, uint32_t size) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-
-    if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
-        close(fd);
-        fprintf(stderr, "no xkb keymap\n");
-        return;
-    }
-
-    char* map_str = reinterpret_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
-    if (map_str == MAP_FAILED) {
-        close(fd);
-        fprintf(stderr, "keymap mmap failed: %s", strerror(errno));
-        return;
-    }
-
-    xkb_keymap* keymap = xkb_keymap_new_from_string(
-                self->_xkbContext, map_str,
-                XKB_KEYMAP_FORMAT_TEXT_V1,
-                XKB_KEYMAP_COMPILE_NO_FLAGS
-            );
-    munmap(map_str, size);
-    close(fd);
-
-    if (!keymap) {
-        return;
-    }
-    self->_xkbState = xkb_state_new(keymap);
-
-    xkb_keymap_unref(keymap);
-}
-void WindowManagerWayland::keyboardEnter(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface,
-        wl_array *keys) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    self->keyboardSerial = serial;
-    self->keyboardFocus = surface;
-}
-void WindowManagerWayland::keyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    self->keyboardSerial = -1;
-    self->keyboardFocus = nullptr;
-}
-
-void WindowManagerWayland::keyboardKey(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t time,
-        uint32_t key, uint32_t state)
-{
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->_xkbState) return;
-    const xkb_keysym_t *syms;
-
-    if (xkb_state_key_get_syms(self->_xkbState, key + 8, &syms) != 1)
-        return;
-    jwm::Key jwmKey = KeyWayland::fromNative(syms[0]);
-    // TODO: while unlikely, it could be possible that you can be entering text even if the 
-    // pointer hasn't entered
-    if (self->keyboardFocus && jwmKey != jwm::Key::UNDEFINED) {
-        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
-        JNILocal<jobject> keyEvent(
-            app.getJniEnv(),
-            classes::EventKey::make(
-                    app.getJniEnv(),
-                    jwmKey,
-                    state == WL_KEYBOARD_KEY_STATE_PRESSED,
-                    KeyWayland::getModifiers(self->_xkbState),
-                    location
-                )
-            );
-        auto window = self->getWindowForNative(self->keyboardFocus);
-        if (window)
-            window->dispatch(keyEvent.get());
-    }
-    if (state != WL_KEYBOARD_KEY_STATE_PRESSED) return;
-
-    char textBuffer[0x40];
-    int count = xkb_state_key_get_utf8(self->_xkbState, key + 8, textBuffer, sizeof(textBuffer)-1);
-    // ???
-    if (count >= sizeof(textBuffer) - 1) {
-        return;
-    }
-    if (count > 0) {
-        // ignore sinful control symbols
-        if (textBuffer[0] != 127 && textBuffer[0] > 0x1f) {
-            JNIEnv* env = app.getJniEnv();
-
-            jwm::StringUTF16 converted = reinterpret_cast<const char*>(textBuffer);
-            jwm::JNILocal<jstring> jtext = converted.toJString(env);
-
-            jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
-            
-
-            auto window = self->getWindowForNative(self->keyboardFocus);
-            if (window)
-                window->dispatch(eventTextInput.get());
-        }
-    }
-
-}
-void WindowManagerWayland::keyboardModifiers(void* data, wl_keyboard* keyboard,
-        uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked,
-        uint32_t group) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->_xkbState) return;
-    xkb_state_update_mask(self->_xkbState,
-            mods_depressed, mods_latched, mods_locked,
-            0, 0, group);
-}
-
-void WindowManagerWayland::keyboardRepeatInfo(void* data, wl_keyboard* keyboard,
-        int32_t rate, int32_t delay) {
-    // TODO: The client (for some godforsaken reason) is expected to handle repeating characters
-}
 
 void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
@@ -492,60 +416,60 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
     }
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
-            !self->keyboard) {
-        self->keyboard = wl_seat_get_keyboard(seat);
-        self->_xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-        wl_keyboard_add_listener(self->keyboard, &_keyboardListener, self);
+            !self->_keyboard) {
+        self->_keyboard = new Keyboard(wl_seat_get_keyboard(seat), self);
     } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
-            self->keyboard) {
-        xkb_context_unref(self->_xkbContext);
-        wl_keyboard_release(self->keyboard);
-        self->keyboard = nullptr;
+            self->_keyboard) {
+        self->_keyboard = nullptr;
     }
 }
 void WindowManagerWayland::seatName(void* data, wl_seat* seat, const char* name) {
     // who cares
 }
+static void offerOffer(void* data, wl_data_offer* offer, const char* mimeType) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    self->_currentMimeTypes.push_back(std::string(mimeType));
+}
 wl_data_offer_listener WindowManagerWayland::_offerListener = {
-    .offer = [](void* data, wl_data_offer* offer, const char* mimeType) {
-        auto self = reinterpret_cast<WindowManagerWayland*>(data);
-        self->_currentMimeTypes.push_back(std::string(mimeType));
-    }
+    .offer = offerOffer
 };
-wl_data_device_listener WindowManagerWayland::_deviceListener = {
-    .data_offer = [](void* data, wl_data_device* device, wl_data_offer* offer) {
-        auto self = reinterpret_cast<WindowManagerWayland*>(data);
-        self->_currentMimeTypes = {};
-        wl_data_offer_add_listener(offer, &_offerListener, data);
-    },
-    .selection = [](void* data, wl_data_device* device, wl_data_offer* offer) {
-        auto self = reinterpret_cast<WindowManagerWayland*>(data);
-        self->_myClipboardContents = {};
-        if (offer == nullptr) {
-            return;
-        }
-        for (auto i : self->_currentMimeTypes) {
-            int fds[2];
-            pipe(fds);
-            wl_data_offer_receive(offer, i.c_str(), fds[1]);
-            wl_display_flush(self->display);
-            close(fds[1]);
-            ByteBuf res;
-
-
-            while (true) {
-                char buf[1024];
-                ssize_t n = read(fds[0], buf, sizeof(buf));
-                if (n <= 0)
-                    break;
-                res.insert(res.end(), buf, buf + n);
-
-            }
-            self->_myClipboardContents[i] = res;
-            close(fds[0]);
-        }
-        wl_data_offer_destroy(offer);
+static void deviceDataOffer(void* data, wl_data_device* device, wl_data_offer* offer) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    self->_currentMimeTypes = {};
+    wl_data_offer_add_listener(offer, &WindowManagerWayland::_offerListener, data);
+}
+static void deviceSelection(void* data, wl_data_device* device, wl_data_offer* offer) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    self->_myClipboardContents = {};
+    if (offer == nullptr) {
+        return;
     }
+    for (auto i : self->_currentMimeTypes) {
+        int fds[2];
+        pipe(fds);
+        wl_data_offer_receive(offer, i.c_str(), fds[1]);
+        wl_display_flush(self->display);
+        close(fds[1]);
+        ByteBuf res;
+
+
+        while (true) {
+            char buf[1024];
+            ssize_t n = read(fds[0], buf, sizeof(buf));
+            if (n <= 0)
+                break;
+            res.insert(res.end(), buf, buf + n);
+
+        }
+        self->_myClipboardContents[i] = res;
+        close(fds[0]);
+    }
+    wl_data_offer_destroy(offer);
+}
+wl_data_device_listener WindowManagerWayland::_deviceListener = {
+    .data_offer = deviceDataOffer,
+    .selection = deviceSelection
+
 };
 std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     return { _currentMimeTypes.begin(), _currentMimeTypes.end()};
@@ -568,7 +492,7 @@ void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint
             movementY,
             jwm::MouseButtonWayland::fromNativeMask(mask),
             // impl me!
-            jwm::KeyWayland::getModifiers(_xkbState)
+            jwm::KeyWayland::getModifiers(getXkbState())
             )
         );
     auto foo = eventMove.get();
@@ -597,20 +521,21 @@ void WindowManagerWayland::terminate() {
     _runLoop = false;
 }
 
-wl_data_source_listener WindowManagerWayland::_sourceListener = {
-    .send = [](void* data, wl_data_source* source,
-                const char* mimeType, int fd) {
-        auto self = reinterpret_cast<WindowManagerWayland*>(data);
-        auto it = self->_myClipboardContents.find(std::string(mimeType));
-        if (it != self->_myClipboardContents.end()) {
-            write(fd, it->second.data(), it->second.size());
-        }
-        close(fd);
-    },
-    .cancelled = [](void* data, wl_data_source* source) {
-        auto self = reinterpret_cast<WindowManagerWayland*>(data);
-        wl_data_source_destroy(source);
+static void dataSourceSend(void* data, wl_data_source* source, const char* mimeType, int fd) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    auto it = self->_myClipboardContents.find(std::string(mimeType));
+    if (it != self->_myClipboardContents.end()) {
+        write(fd, it->second.data(), it->second.size());
     }
+    close(fd);
+}
+static void dataSourceCancelled(void* data, wl_data_source* source) {
+    auto self = reinterpret_cast<WindowManagerWayland*>(data);
+    wl_data_source_destroy(source);
+}
+wl_data_source_listener WindowManagerWayland::_sourceListener = {
+    .send = dataSourceSend,
+    .cancelled = dataSourceCancelled 
 };
 void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
@@ -628,8 +553,8 @@ void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&&
         wl_data_source_offer(currentSource, it.first.c_str());
     }
 
-    if (keyboardSerial >= 0)
-        wl_data_device_set_selection(dataDevice, currentSource, keyboardSerial);
+    if (getKeyboardSerial() > 0)
+        wl_data_device_set_selection(dataDevice, currentSource, getKeyboardSerial());
 
 }
 

@@ -43,10 +43,6 @@ namespace jwm {
             return _width * sizeof(uint32_t);
         }
 
-        // only way to really be sane with raster
-        // it's SO slow that i'll prob
-        static wl_callback_listener _frameCallback;
-
         void swapNow() {
             auto buf = Buffer::createShmBuffer(fWindow->_windowManager.shm, _width, _height, WL_SHM_FORMAT_XRGB8888);
             void* daData = buf->getData();
@@ -62,9 +58,6 @@ namespace jwm {
             if (_attached && fWindow->_waylandWindow) {
                 // all impls that I've seen have to make a new buffer every frame.
                 // God awful. Never use raster if you value performance.
-                // wl_callback* cb = wl_surface_frame(fWindow->_waylandWindow);
-                // wl_callback_add_listener(cb, &_frameCallback, this);
-                // wl_display_roundtrip(fWindow->_windowManager.display);
                 swapNow();
             }
         }
@@ -101,13 +94,6 @@ namespace jwm {
 
 }
 using namespace jwm;
-wl_callback_listener LayerRaster::_frameCallback = {            
-    .done = [](void* data, wl_callback* cb, uint32_t cbData) {
-            auto self = reinterpret_cast<LayerRaster*>(data);
-            self->swapNow();
-
-        }
-};
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nMake
         (JNIEnv* env, jclass jclass) {
     jwm::LayerRaster* instance = new jwm::LayerRaster;

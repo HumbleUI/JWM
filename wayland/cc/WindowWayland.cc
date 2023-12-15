@@ -317,11 +317,13 @@ void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) 
 }
 void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
 void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
+
+static void frameCallbackDone(void* data, wl_callback* cb, uint32_t cb_data) {
+    auto self = reinterpret_cast<WindowWayland*>(data);
+    self->_adaptSize(self->_newWidth, self->_newHeight);
+}
 wl_callback_listener jwm::WindowWayland::_frameCallback = {
-    .done = [](void* data, wl_callback* cb, uint32_t cb_data) {
-        auto self = reinterpret_cast<WindowWayland*>(data);
-        self->_adaptSize(self->_newWidth, self->_newHeight);
-    }
+    .done = frameCallbackDone
 };
 
 void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* configuration,

@@ -18,6 +18,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h> 
+#include "Keyboard.hh"
 
 namespace jwm {
     class WindowWayland;
@@ -83,20 +84,6 @@ namespace jwm {
         static libdecor_interface _decorInterface;
         static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
 
-        static wl_keyboard_listener _keyboardListener;
-        static void keyboardKeymap(void* data, wl_keyboard* keyboard,
-                        uint32_t format, int32_t fd, uint32_t size);
-        static void keyboardEnter(void* data, wl_keyboard* keyboard,
-                        uint32_t serial, wl_surface* surface, wl_array* keys);
-        static void keyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial,
-                        wl_surface* surface);
-        static void keyboardKey(void* data, wl_keyboard* keyboard, uint32_t serial,
-                        uint32_t time, uint32_t key, uint32_t state);
-        static void keyboardModifiers(void* data, wl_keyboard* keyboard, uint32_t serial,
-                        uint32_t modsDepressed, uint32_t modsLatched, uint32_t modLocked,
-                        uint32_t group);
-        static void keyboardRepeatInfo(void* data, wl_keyboard* keyboard, int32_t rate, int32_t delay);
-
         static wl_seat_listener _seatListener;
 
         static void seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities);
@@ -117,14 +104,21 @@ namespace jwm {
         // no multiseat?
         wl_seat* seat = nullptr;
         wl_pointer* pointer = nullptr;
-        wl_keyboard* keyboard = nullptr;
+        Keyboard* _keyboard = nullptr;
         wl_data_device* dataDevice = nullptr;
         wl_data_source* currentSource = nullptr;
-        uint32_t mouseSerial = -1;
-        uint32_t keyboardSerial = -1;
+        uint32_t mouseSerial = 0;
+        uint32_t getKeyboardSerial() const {
+                if (_keyboard)
+                        return _keyboard->getSerial();
+                return 0;
+        }
+        xkb_state* getXkbState() const {
+                if (_keyboard)
+                        return _keyboard->getState();
+                return nullptr;
+        }
         libdecor* decorCtx = nullptr;
-        xkb_context* _xkbContext = nullptr;
-        xkb_state* _xkbState = nullptr;
         EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;
 
@@ -146,7 +140,6 @@ namespace jwm {
 
         wl_surface* cursorSurface;
         wl_surface* focusedSurface = nullptr;
-        wl_surface* keyboardFocus = nullptr;
         // Is holding all cursors in memory a good idea?
         wl_cursor_image* _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
 

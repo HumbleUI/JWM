@@ -6,11 +6,12 @@
 #include <fcntl.h>
 using namespace jwm;
 
+static void bufRelease(void* data, wl_buffer* wlbuffer) {
+    auto buffer = reinterpret_cast<Buffer*>(data);
+    delete buffer;
+}
 wl_buffer_listener Buffer::_bufferListener = {
-    .release = [](void* data, wl_buffer* wlbuffer) {
-        auto buffer = reinterpret_cast<Buffer*>(data);
-        delete buffer;
-    }
+    .release = bufRelease
 };
 static void randname(char *buf)
 {
