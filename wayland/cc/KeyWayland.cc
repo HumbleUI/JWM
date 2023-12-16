@@ -2,6 +2,7 @@
 #include "KeyModifier.hh"
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-names.h>
+#include <linux/input.h>
 
 int jwm::KeyWayland::getModifiers(xkb_state* state) {
 
@@ -29,140 +30,141 @@ int jwm::KeyWayland::getModifiersFromMask(int mask) {
 }*/
 
 jwm::Key jwm::KeyWayland::fromNative(uint32_t v) { 
-    switch (v) {
+    switch (v - 8) {
         // Modifiers
-        case XKB_KEY_Caps_Lock: return Key::CAPS_LOCK;
-        case XKB_KEY_Shift_R:
-        case XKB_KEY_Shift_L: return Key::SHIFT;
-        case XKB_KEY_Control_R:
-        case XKB_KEY_Control_L: return Key::CONTROL;
-        case XKB_KEY_Alt_R:
-        case XKB_KEY_Alt_L: return Key::ALT;
+        case KEY_CAPSLOCK: return Key::CAPS_LOCK;
+        case KEY_RIGHTSHIFT:
+        case KEY_LEFTSHIFT: return Key::SHIFT;
+        case KEY_RIGHTCTRL:
+        case KEY_LEFTCTRL: return Key::CONTROL;
+        case KEY_RIGHTALT:
+        case KEY_LEFTALT: return Key::ALT;
         // Key::WIN_LOGO
-        case XKB_KEY_Super_L:
-        case XKB_KEY_Super_R: return Key::LINUX_SUPER;
-        case XKB_KEY_Meta_L:
-        case XKB_KEY_Meta_R: return Key::LINUX_META;
+        case KEY_LEFTMETA:
+        case KEY_RIGHTMETA: return Key::LINUX_SUPER;
+        // prefer super over meta
+        // KEY::LINUX_META
         // Key::MAC_COMMAND
         // Key::MAC_OPTION
         // Key::MAC_FN
 
         // Rest of the keys
-        case XKB_KEY_Return: return Key::ENTER;
-        case XKB_KEY_BackSpace: return Key::BACKSPACE;
-        case XKB_KEY_Tab: return Key::TAB;
-        case XKB_KEY_Cancel: return Key::CANCEL;
-        case XKB_KEY_Clear: return Key::CLEAR;
-        case XKB_KEY_Pause: return Key::PAUSE;
-        case XKB_KEY_Escape: return Key::ESCAPE;
-        case XKB_KEY_space: return Key::SPACE;
-        case XKB_KEY_Page_Up: return Key::PAGE_UP;
-        case XKB_KEY_Page_Down: return Key::PAGE_DOWN;
-        case XKB_KEY_End: return Key::END;
-        case XKB_KEY_Home: return Key::HOME;
-        case XKB_KEY_Left: return Key::LEFT;
-        case XKB_KEY_Up: return Key::UP;
-        case XKB_KEY_Right: return Key::RIGHT;
-        case XKB_KEY_Down: return Key::DOWN;
-        case XKB_KEY_comma: return Key::COMMA;
-        case XKB_KEY_minus: return Key::MINUS;
-        case XKB_KEY_period: return Key::PERIOD;
-        case XKB_KEY_slash: return Key::SLASH;
-        case XKB_KEY_0: return Key::DIGIT0;
-        case XKB_KEY_1: return Key::DIGIT1;
-        case XKB_KEY_2: return Key::DIGIT2;
-        case XKB_KEY_3: return Key::DIGIT3;
-        case XKB_KEY_4: return Key::DIGIT4;
-        case XKB_KEY_5: return Key::DIGIT5;
-        case XKB_KEY_6: return Key::DIGIT6;
-        case XKB_KEY_7: return Key::DIGIT7;
-        case XKB_KEY_8: return Key::DIGIT8;
-        case XKB_KEY_9: return Key::DIGIT9;
-        case XKB_KEY_semicolon: return Key::SEMICOLON;
-        case XKB_KEY_equal: return Key::EQUALS;
-        case XKB_KEY_a: return Key::A;
-        case XKB_KEY_b: return Key::B;
-        case XKB_KEY_c: return Key::C;
-        case XKB_KEY_d: return Key::D;
-        case XKB_KEY_e: return Key::E;
-        case XKB_KEY_f: return Key::F;
-        case XKB_KEY_g: return Key::G;
-        case XKB_KEY_h: return Key::H;
-        case XKB_KEY_i: return Key::I;
-        case XKB_KEY_j: return Key::J;
-        case XKB_KEY_k: return Key::K;
-        case XKB_KEY_l: return Key::L;
-        case XKB_KEY_m: return Key::M;
-        case XKB_KEY_n: return Key::N;
-        case XKB_KEY_o: return Key::O;
-        case XKB_KEY_p: return Key::P;
-        case XKB_KEY_q: return Key::Q;
-        case XKB_KEY_r: return Key::R;
-        case XKB_KEY_s: return Key::S;
-        case XKB_KEY_t: return Key::T;
-        case XKB_KEY_u: return Key::U;
-        case XKB_KEY_v: return Key::V;
-        case XKB_KEY_w: return Key::W;
-        case XKB_KEY_x: return Key::X;
-        case XKB_KEY_y: return Key::Y;
-        case XKB_KEY_z: return Key::Z;
-        case XKB_KEY_bracketleft: return Key::OPEN_BRACKET;
-        case XKB_KEY_backslash: return Key::BACK_SLASH;
-        case XKB_KEY_bracketright: return Key::CLOSE_BRACKET;
-        case XKB_KEY_KP_0: return Key::DIGIT0;
-        case XKB_KEY_KP_1: return Key::DIGIT1;
-        case XKB_KEY_KP_2: return Key::DIGIT2;
-        case XKB_KEY_KP_3: return Key::DIGIT3;
-        case XKB_KEY_KP_4: return Key::DIGIT4;
-        case XKB_KEY_KP_5: return Key::DIGIT5;
-        case XKB_KEY_KP_6: return Key::DIGIT6;
-        case XKB_KEY_KP_7: return Key::DIGIT7;
-        case XKB_KEY_KP_8: return Key::DIGIT8;
-        case XKB_KEY_KP_9: return Key::DIGIT9;
-        case XKB_KEY_multiply: return Key::MULTIPLY;
-        case XKB_KEY_KP_Add: return Key::ADD;
-        case XKB_KEY_KP_Separator: return Key::SEPARATOR;
-        case XKB_KEY_KP_Subtract: return Key::MINUS;
-        case XKB_KEY_KP_Decimal: return Key::PERIOD;
-        case XKB_KEY_KP_Divide: return Key::SLASH;
-        case XKB_KEY_KP_Delete: return Key::DEL;
-        case XKB_KEY_Delete: return Key::DEL;
-        case XKB_KEY_Num_Lock: return Key::NUM_LOCK;
-        case XKB_KEY_Scroll_Lock: return Key::SCROLL_LOCK;
-        case XKB_KEY_F1: return Key::F1;
-        case XKB_KEY_F2: return Key::F2;
-        case XKB_KEY_F3: return Key::F3;
-        case XKB_KEY_F4: return Key::F4;
-        case XKB_KEY_F5: return Key::F5;
-        case XKB_KEY_F6: return Key::F6;
-        case XKB_KEY_F7: return Key::F7;
-        case XKB_KEY_F8: return Key::F8;
-        case XKB_KEY_F9: return Key::F9;
-        case XKB_KEY_F10: return Key::F10;
-        case XKB_KEY_F11: return Key::F11;
-        case XKB_KEY_F12: return Key::F12;
-        case XKB_KEY_F13: return Key::F13;
-        case XKB_KEY_F14: return Key::F14;
-        case XKB_KEY_F15: return Key::F15;
-        case XKB_KEY_F16: return Key::F16;
-        case XKB_KEY_F17: return Key::F17;
-        case XKB_KEY_F18: return Key::F18;
-        case XKB_KEY_F19: return Key::F19;
-        case XKB_KEY_F20: return Key::F20;
-        case XKB_KEY_F21: return Key::F21;
-        case XKB_KEY_F22: return Key::F22;
-        case XKB_KEY_F23: return Key::F23;
-        case XKB_KEY_F24: return Key::F24;
-        case XKB_KEY_Print: return Key::PRINTSCREEN;
-        case XKB_KEY_Insert: return Key::INSERT;
-        case XKB_KEY_Help: return Key::HELP;
-        case XKB_KEY_grave: return Key::BACK_QUOTE;
-        case XKB_KEY_quoteright: return Key::QUOTE;
-        case XKB_KEY_Menu: return Key::MENU;
+        case KEY_ENTER: return Key::ENTER;
+        case KEY_BACKSPACE: return Key::BACKSPACE;
+        case KEY_TAB: return Key::TAB;
+        case KEY_CANCEL: return Key::CANCEL;
+        case KEY_CLEAR: return Key::CLEAR;
+        case KEY_PAUSE: return Key::PAUSE;
+        case KEY_ESC: return Key::ESCAPE;
+        case KEY_SPACE: return Key::SPACE;
+        case KEY_PAGEUP: return Key::PAGE_UP;
+        case KEY_PAGEDOWN: return Key::PAGE_DOWN;
+        case KEY_END: return Key::END;
+        case KEY_HOME: return Key::HOME;
+        case KEY_LEFT: return Key::LEFT;
+        case KEY_UP: return Key::UP;
+        case KEY_RIGHT: return Key::RIGHT;
+        case KEY_DOWN: return Key::DOWN;
+        case KEY_COMMA: return Key::COMMA;
+        case KEY_MINUS: return Key::MINUS;
+        case KEY_DOT: return Key::PERIOD;
+        case KEY_SLASH: return Key::SLASH;
+        case KEY_0: return Key::DIGIT0;
+        case KEY_1: return Key::DIGIT1;
+        case KEY_2: return Key::DIGIT2;
+        case KEY_3: return Key::DIGIT3;
+        case KEY_4: return Key::DIGIT4;
+        case KEY_5: return Key::DIGIT5;
+        case KEY_6: return Key::DIGIT6;
+        case KEY_7: return Key::DIGIT7;
+        case KEY_8: return Key::DIGIT8;
+        case KEY_9: return Key::DIGIT9;
+        case KEY_SEMICOLON: return Key::SEMICOLON;
+        case KEY_EQUAL: return Key::EQUALS;
+        case KEY_A: return Key::A;
+        case KEY_B: return Key::B;
+        case KEY_C: return Key::C;
+        case KEY_D: return Key::D;
+        case KEY_E: return Key::E;
+        case KEY_F: return Key::F;
+        case KEY_G: return Key::G;
+        case KEY_H: return Key::H;
+        case KEY_I: return Key::I;
+        case KEY_J: return Key::J;
+        case KEY_K: return Key::K;
+        case KEY_L: return Key::L;
+        case KEY_M: return Key::M;
+        case KEY_N: return Key::N;
+        case KEY_O: return Key::O;
+        case KEY_P: return Key::P;
+        case KEY_Q: return Key::Q;
+        case KEY_R: return Key::R;
+        case KEY_S: return Key::S;
+        case KEY_T: return Key::T;
+        case KEY_U: return Key::U;
+        case KEY_V: return Key::V;
+        case KEY_W: return Key::W;
+        case KEY_X: return Key::X;
+        case KEY_Y: return Key::Y;
+        case KEY_Z: return Key::Z;
+        case KEY_LEFTBRACE: return Key::OPEN_BRACKET;
+        case KEY_BACKSLASH: return Key::BACK_SLASH;
+        case KEY_RIGHTBRACE: return Key::CLOSE_BRACKET;
+        case KEY_KP0: return Key::DIGIT0;
+        case KEY_KP1: return Key::DIGIT1;
+        case KEY_KP2: return Key::DIGIT2;
+        case KEY_KP3: return Key::DIGIT3;
+        case KEY_KP4: return Key::DIGIT4;
+        case KEY_KP5: return Key::DIGIT5;
+        case KEY_KP6: return Key::DIGIT6;
+        case KEY_KP7: return Key::DIGIT7;
+        case KEY_KP8: return Key::DIGIT8;
+        case KEY_KP9: return Key::DIGIT9;
+        case KEY_KPASTERISK: return Key::MULTIPLY;
+        case KEY_KPPLUS: return Key::ADD;
+        case KEY_KPCOMMA: return Key::SEPARATOR;
+        case KEY_KPMINUS: return Key::MINUS;
+        case KEY_KPDOT: return Key::PERIOD;
+        case KEY_KPSLASH: return Key::SLASH;
+        // no kp delete?
+        // case KEY_: return Key::DEL;
+        case KEY_DELETE: return Key::DEL;
+        case KEY_NUMLOCK: return Key::NUM_LOCK;
+        case KEY_SCROLLLOCK: return Key::SCROLL_LOCK;
+        case KEY_F1: return Key::F1;
+        case KEY_F2: return Key::F2;
+        case KEY_F3: return Key::F3;
+        case KEY_F4: return Key::F4;
+        case KEY_F5: return Key::F5;
+        case KEY_F6: return Key::F6;
+        case KEY_F7: return Key::F7;
+        case KEY_F8: return Key::F8;
+        case KEY_F9: return Key::F9;
+        case KEY_F10: return Key::F10;
+        case KEY_F11: return Key::F11;
+        case KEY_F12: return Key::F12;
+        case KEY_F13: return Key::F13;
+        case KEY_F14: return Key::F14;
+        case KEY_F15: return Key::F15;
+        case KEY_F16: return Key::F16;
+        case KEY_F17: return Key::F17;
+        case KEY_F18: return Key::F18;
+        case KEY_F19: return Key::F19;
+        case KEY_F20: return Key::F20;
+        case KEY_F21: return Key::F21;
+        case KEY_F22: return Key::F22;
+        case KEY_F23: return Key::F23;
+        case KEY_F24: return Key::F24;
+        case KEY_PRINT: return Key::PRINTSCREEN;
+        case KEY_INSERT: return Key::INSERT;
+        case KEY_HELP: return Key::HELP;
+        case KEY_GRAVE: return Key::BACK_QUOTE;
+        case KEY_APOSTROPHE: return Key::QUOTE;
+        case KEY_MENU: return Key::MENU;
         // Key::KANA
-        // Key::VOLUME_UP
-        // Key::VOLUME_DOWN
-        // Key::MUTE
+        case KEY_VOLUMEUP: return Key::VOLUME_UP;
+        case KEY_VOLUMEDOWN: return Key::VOLUME_DOWN;
+        case KEY_MUTE: return Key::MUTE;
         default: return Key::UNDEFINED;
     } 
 }

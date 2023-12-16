@@ -284,7 +284,6 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
         if (o->_output == output) {
             self->_output = o;
             self->_scale = o->scale;
-            wl_surface_set_buffer_scale(surface, o->scale);
             self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
             break;
         }
@@ -299,7 +298,6 @@ void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* sur
     self->_scale = factor;
     // do I pinky promise here?
     // yes : )
-    wl_surface_set_buffer_scale(surface, factor);
     self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
 }
 void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
@@ -378,12 +376,8 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
         }
 
 
-        self->_newWidth = width;
-        self->_newHeight = height;
+        self->_adaptSize(width, height);
         // This flat out breaks window if it isn't throttled
-        wl_callback* callback = wl_surface_frame(self->_waylandWindow);
-        // Throttle frame
-        wl_callback_add_listener(callback, &_frameCallback, self);
     }
     if (!self->_configured && self->_visible) {
         if (self->_layer)
@@ -420,12 +414,14 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
                    )
             );
     dispatch(eventWindowResize.get());
-    if (_scale != _oldScale)
-        _makeCursors();
-    _oldScale = _scale;
+    if (_scale != _oldScale) {
+        _makeCursors(); 
+        _windowManager._processCallbacks();
+    }
     // In Java Wayland doesn't actually cause a frame:
     // however decorFrameCommit will cause a redraw anyway.
     // Not doing it in wayland lets me not cause an exception on hide.
+    _oldScale = _scale;
 }
 // JNI
 

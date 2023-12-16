@@ -77,37 +77,35 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     if (!self->_state || !self->_focus) return;
 
     const xkb_keysym_t *syms;
-    
     uint32_t keyCode = key + 8;
     if (xkb_state_key_get_syms(self->_state, keyCode, &syms) != 1) {
         xkb_compose_state_feed(self->_composeState, XKB_KEY_NoSymbol);
         return;
     }
     auto sym = syms[0];
-    auto lowerSym = xkb_keysym_to_lower(sym);
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
         xkb_compose_state_feed(self->_composeState, sym);
     auto status = xkb_compose_state_get_status(self->_composeState);
     bool composeRelated = status != XKB_COMPOSE_NOTHING;
-    jwm::Key jwmKey = KeyWayland::fromNative(lowerSym);
+    // use raw key code
+    jwm::Key jwmKey = KeyWayland::fromNative(keyCode);
     self->_repeatingText = false;
     self->_repeating = false;
-    if (!composeRelated) {
-        if (jwmKey != jwm::Key::UNDEFINED) {
-            jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
-            JNILocal<jobject> keyEvent(
-                jwm::app.getJniEnv(),
-                classes::EventKey::make(
-                        jwm::app.getJniEnv(),
-                        jwmKey,
-                        state == WL_KEYBOARD_KEY_STATE_PRESSED,
-                        KeyWayland::getModifiers(self->_state),
-                        location
-                    )
-                );
-            self->_focus->dispatch(keyEvent.get());
-        }
-    } else {
+    if (jwmKey != jwm::Key::UNDEFINED) {
+        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+        JNILocal<jobject> keyEvent(
+            jwm::app.getJniEnv(),
+            classes::EventKey::make(
+                    jwm::app.getJniEnv(),
+                    jwmKey,
+                    state == WL_KEYBOARD_KEY_STATE_PRESSED,
+                    KeyWayland::getModifiers(self->_state),
+                    location
+                )
+            );
+        self->_focus->dispatch(keyEvent.get());
+    }
+    if (composeRelated) {
         int dacount;
         switch (status) {
             case XKB_COMPOSE_COMPOSING:

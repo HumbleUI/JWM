@@ -99,6 +99,11 @@ namespace jwm {
             // God is dead if _eglWindow is null 
             if (_eglWindow)
               wl_egl_window_resize(_eglWindow, width, height, 0, 0);
+            
+            if (fWindow->_scale != fWindow->_oldScale) {
+              swapBuffers();
+              wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
+            }
         }
 
         void swapBuffers() override {
