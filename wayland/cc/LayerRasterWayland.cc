@@ -83,7 +83,8 @@ namespace jwm {
         void detach() override {
             if (_attached && fWindow && fWindow->_waylandWindow) {
                 wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
-                wl_surface_commit(fWindow->_waylandWindow);
+                // commit is not meant to be used in intermediate states
+                // wl_surface_commit(fWindow->_waylandWindow);
             }
             _attached = false;
         }

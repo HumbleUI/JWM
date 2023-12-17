@@ -33,6 +33,7 @@ namespace jwm {
             _closed = false;
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
+            // Force a reconfigure; needed to draw title bar correctly
             if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
               fWindow->_windowManager._eglDisplay = eglGetDisplay(window->_windowManager.display);
 

@@ -377,7 +377,6 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
 
 
         self->_adaptSize(width, height);
-        // This flat out breaks window if it isn't throttled
     }
     if (!self->_configured && self->_visible) {
         if (self->_layer)
