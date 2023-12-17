@@ -6,6 +6,7 @@
 #include <chrono>
 #include "KeyWayland.hh"
 #include "StringUTF16.hh"
+#include <list>
 
 namespace jwm {
     class WindowManagerWayland;
@@ -41,10 +42,15 @@ namespace jwm {
         int32_t _repeatRate = 100;
         int32_t _repeatDelay = 300;
 
+        void submitKey(jwm::Key key, uint32_t state);
+
+
         jwm::StringUTF16 _repeatText;
         jwm::Key _repeatKey = jwm::Key::UNDEFINED;
         bool _repeating = false;
         bool _repeatingText = false;
+
+        std::list<jwm::Key> _depressedKeys;
 
         jwm::WindowManagerWayland& _wm;
 

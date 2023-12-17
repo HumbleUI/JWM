@@ -13,6 +13,9 @@
 #include "AppWayland.hh"
 #include <chrono>
 #include <clocale>
+#include <xkbcommon/xkbcommon-names.h>
+#include <algorithm>
+
 using namespace jwm;
 
 // I've noticed that pointers to lambdas are null for some reason. 
@@ -63,11 +66,24 @@ static void kbEnter(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* su
     self->_serial = serial;
     self->_focus = win;
     if (self->_state) {
-        // TODO: keys
+        uint32_t* key;
+        // C++ jank
+        // Normal macro fails to compile bc `void*` can't implicitly convert into `uint32_t*`
+        for (key = (uint32_t*)keys->data;
+                (const char*) key < (const char*)keys->data + keys->size;
+                key++
+            ) {
+            auto jwmKey = jwm::KeyWayland::fromNative(*key + 8);
+            self->submitKey(jwmKey, WL_KEYBOARD_KEY_STATE_PRESSED);
+        }
     }
 }
 static void kbLeave(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* surface) {
     auto self = reinterpret_cast<Keyboard*>(data);
+    std::list<jwm::Key> liftedKeys(self->_depressedKeys);
+    for (auto key : liftedKeys) {
+        self->submitKey(key, WL_KEYBOARD_KEY_STATE_RELEASED);
+    }
     self->_serial = -1;
     self->_focus = nullptr;
 }
@@ -91,20 +107,7 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     jwm::Key jwmKey = KeyWayland::fromNative(keyCode);
     self->_repeatingText = false;
     self->_repeating = false;
-    if (jwmKey != jwm::Key::UNDEFINED) {
-        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
-        JNILocal<jobject> keyEvent(
-            jwm::app.getJniEnv(),
-            classes::EventKey::make(
-                    jwm::app.getJniEnv(),
-                    jwmKey,
-                    state == WL_KEYBOARD_KEY_STATE_PRESSED,
-                    KeyWayland::getModifiers(self->_state),
-                    location
-                )
-            );
-        self->_focus->dispatch(keyEvent.get());
-    }
+    self->submitKey(jwmKey, state);
     if (composeRelated) {
         int dacount;
         switch (status) {
@@ -214,4 +217,29 @@ Keyboard::~Keyboard()
         xkb_context_unref(_context);
     if (_keymap)
         xkb_keymap_unref(_keymap);
+}
+
+void Keyboard::submitKey(jwm::Key key, uint32_t state) {
+    if (key != jwm::Key::UNDEFINED) {
+        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+        JNILocal<jobject> keyEvent(
+            jwm::app.getJniEnv(),
+            classes::EventKey::make(
+                    jwm::app.getJniEnv(),
+                    key,
+                    state == WL_KEYBOARD_KEY_STATE_PRESSED,
+                    KeyWayland::getModifiers(_state),
+                    location
+                )
+            );
+        _focus->dispatch(keyEvent.get());
+        if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+            _depressedKeys.push_back(key);
+        } else {
+            auto it = std::find(_depressedKeys.begin(), _depressedKeys.end(), key);
+            if (it != _depressedKeys.end()) {
+                _depressedKeys.erase(it);
+            }
+        }
+    }
 }

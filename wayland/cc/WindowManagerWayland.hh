@@ -54,6 +54,7 @@ namespace jwm {
         }
         */
         void _processCallbacks();
+        void _processKeyboard();
         void notifyLoop();
         void enqueueTask(const std::function<void()>& task);
 
