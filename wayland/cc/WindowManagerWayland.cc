@@ -460,30 +460,8 @@ static void deviceDataOffer(void* data, wl_data_device* device, wl_data_offer* o
 static void deviceSelection(void* data, wl_data_device* device, wl_data_offer* offer) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     self->_myClipboardContents = {};
-    if (offer == nullptr) {
-        return;
-    }
-    for (auto i : self->_currentMimeTypes) {
-        int fds[2];
-        pipe(fds);
-        wl_data_offer_receive(offer, i.c_str(), fds[1]);
-        wl_display_flush(self->display);
-        close(fds[1]);
-        ByteBuf res;
-
-
-        while (true) {
-            char buf[1024];
-            ssize_t n = read(fds[0], buf, sizeof(buf));
-            if (n <= 0)
-                break;
-            res.insert(res.end(), buf, buf + n);
-
-        }
-        self->_myClipboardContents[i] = res;
-        close(fds[0]);
-    }
-    wl_data_offer_destroy(offer);
+    // if null then w/e
+    self->currentOffer = offer;
 }
 wl_data_device_listener WindowManagerWayland::_deviceListener = {
     .data_offer = deviceDataOffer,
@@ -521,6 +499,30 @@ jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type)
     auto it = _myClipboardContents.find(type);
     if (it != _myClipboardContents.end()) {
         return it->second;
+    } else if (currentOffer) {
+        auto it2 = std::find(_currentMimeTypes.begin(), _currentMimeTypes.end(), type);
+        if (it2 != _currentMimeTypes.end()) {
+            auto mimeType = *it2;
+            // pull down offer
+            int fds[2];
+            pipe(fds);
+            wl_data_offer_receive(currentOffer, mimeType.c_str(), fds[1]);
+            wl_display_flush(display);
+            close(fds[1]);
+            ByteBuf res;
+
+            while (true) {
+                char buf[1024];
+                ssize_t n = read(fds[0], buf, sizeof(buf));
+                if (n <= 0)
+                    break;
+                res.insert(res.end(), buf, buf + n);
+            }
+            // cache
+            _myClipboardContents[mimeType] = res;
+            close(fds[0]);
+            return res;
+        }
     }
     return {};
 }

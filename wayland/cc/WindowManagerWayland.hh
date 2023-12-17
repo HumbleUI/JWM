@@ -108,6 +108,7 @@ namespace jwm {
         Keyboard* _keyboard = nullptr;
         wl_data_device* dataDevice = nullptr;
         wl_data_source* currentSource = nullptr;
+        wl_data_offer* currentOffer = nullptr;
         uint32_t mouseSerial = 0;
         uint32_t getKeyboardSerial() const {
                 if (_keyboard)

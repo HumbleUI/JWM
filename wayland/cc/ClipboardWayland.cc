@@ -44,11 +44,11 @@ namespace jwm {
 
                     ByteBuf contents;
                     // HACK: prefer UTF8_STRING over text/plain and convert it to utf16
-                    /*
                     if (formatId == "text/plain") {
                         contents = app.getWindowManager().getClipboardContents("UTF8_STRING");
+                    } else {
+                        contents = app.getWindowManager().getClipboardContents(formatId.toAscii());
                     }
-                    */
                     // TODO add another formats
                     if (contents.empty()) {
                         return nullptr;
@@ -70,7 +70,6 @@ namespace jwm {
 
 
         void set(JNIEnv* env, jobjectArray entries) {
-            /*
             jsize size = env->GetArrayLength(entries);
             std::map<std::string, ByteBuf> contents;
             for (jsize i = 0; i < size; ++i) {
@@ -94,7 +93,6 @@ namespace jwm {
                 }
             }
             jwm::app.getWindowManager().setClipboardContents(std::move(contents));
-            */ // impl me : )
         }
     };
 }
