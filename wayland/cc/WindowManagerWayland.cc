@@ -138,6 +138,8 @@ void WindowManagerWayland::runLoop() {
                 auto target = _keyboard->_nextRepeat;
                 if (now < target) {
                     timeout = std::chrono::duration_cast<std::chrono::milliseconds>(target - now).count();
+                } else {
+                    _processKeyboard();
                 }
             }
         }
@@ -205,11 +207,6 @@ void WindowManagerWayland::_processCallbacks() {
                 }
             }
         }
-    }
-    if (_keyboard && _keyboard->_repeating) {
-        auto now = std::chrono::steady_clock::now();
-        if (now > _keyboard->_nextRepeat)
-            _processKeyboard();
     }
    
 }
@@ -305,8 +302,7 @@ void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, u
         wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
     self->mouseSerial = serial;
-    if (self->getWindowForNative(surface)) {
-        WindowWayland* window = self->getWindowForNative(surface);
+    if (auto window = self->getWindowForNative(surface)) {
         window->setCursor(jwm::MouseCursor::ARROW);
         self->focusedSurface = surface;
     }

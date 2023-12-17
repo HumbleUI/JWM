@@ -153,8 +153,8 @@ static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
     if (shouldRepeat && (jwmKey != jwm::Key::UNDEFINED)) {
         self->_repeating = true;
         self->_nextRepeat = self->_lastPress + std::chrono::milliseconds(self->_repeatDelay);
+        self->_wm.notifyLoop();
     }
-    self->_wm.notifyLoop();
     char textBuffer[0x40];
     int count = xkb_state_key_get_utf8(self->_state, keyCode, textBuffer, sizeof(textBuffer)-1);
     // ???
