@@ -33,28 +33,26 @@ wl_registry_listener WindowManagerWayland::_registryListener = {
 };
 static void pointerFrame(void* data, wl_pointer* pointer) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->focusedSurface) return;
+    if (!self->getFocusedSurface()) return;
     if (self->_dX != 0.0f || self->_dY != 0.0f) {
         auto env = app.getJniEnv();
-        auto win = self->getWindowForNative(self->focusedSurface);
-        if (win) {
-            jwm::JNILocal<jobject> eventAxis(
-                        env,
-                        jwm::classes::EventMouseScroll::make(
-                                env,
-                                self->_dX * win->_scale,
-                                self->_dY * win->_scale,
-                                0.0f,
-                                0.0f,
-                                0.0f,
-                                self->lastMousePosX,
-                                self->lastMousePosY,
-                                jwm::KeyWayland::getModifiers(self->getXkbState())
-                            )
-                    );
-            win->dispatch(eventAxis.get());
+        auto win = self->getFocusedSurface();
+        jwm::JNILocal<jobject> eventAxis(
+                    env,
+                    jwm::classes::EventMouseScroll::make(
+                            env,
+                            self->_dX * win->_scale,
+                            self->_dY * win->_scale,
+                            0.0f,
+                            0.0f,
+                            0.0f,
+                            self->lastMousePosX,
+                            self->lastMousePosY,
+                            jwm::KeyWayland::getModifiers(self->getXkbState())
+                        )
+                );
+        win->dispatch(eventAxis.get());
 
-        }
         self->_dX = 0.0f;
         self->_dY = 0.0f;
     }
@@ -307,13 +305,13 @@ void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, u
     self->mouseSerial = serial;
     if (auto window = self->getWindowForNative(surface)) {
         window->setCursor(jwm::MouseCursor::ARROW);
-        self->focusedSurface = surface;
+        self->setFocusedSurface(window);
     }
 }
 void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface *surface) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
-    self->focusedSurface = nullptr;
+    self->setFocusedSurface(nullptr);
     // ???
     self->mouseMask = 0;
     self->mouseSerial = -1;
@@ -321,8 +319,8 @@ void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, u
 void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
         uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
     WindowManagerWayland* self = (WindowManagerWayland*)data;
-    if (self->focusedSurface) {
-        ::WindowWayland* window = self->getWindowForNative(self->focusedSurface);
+    if (self->getFocusedSurface()) {
+        ::WindowWayland* window = self->getFocusedSurface();
         // God is dead if window is null
         if (window)
             self->mouseUpdate(window, 
@@ -335,7 +333,8 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
         uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
     using namespace classes;
     WindowManagerWayland* self = (WindowManagerWayland*)data;
-    if (!self->focusedSurface) return;
+    if (!self->getFocusedSurface()) return;
+    auto window = self->getFocusedSurface();
     if (state == 0) {
         // release
         switch (button) {
@@ -355,7 +354,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                 break;
         }
         
-        if (MouseButtonWayland::isButton(button) && self->focusedSurface) {
+        if (MouseButtonWayland::isButton(button)) {
             jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
                     EventMouseButton::make(
@@ -367,9 +366,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                             jwm::KeyWayland::getModifiers(self->getXkbState())
                         )
                     );
-            WindowWayland* window = self->getWindowForNative(self->focusedSurface);
-            if (window)
-                window->dispatch(eventButton.get());
+            window->dispatch(eventButton.get());
         }
     } else {
         // down
@@ -390,7 +387,7 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                 break;
         }
         
-        if (MouseButtonWayland::isButton(button) && self->focusedSurface) {
+        if (MouseButtonWayland::isButton(button)) {
             jwm::JNILocal<jobject> eventButton(
                     app.getJniEnv(),
                     EventMouseButton::make(
@@ -402,18 +399,14 @@ void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer,
                             jwm::KeyWayland::getModifiers(self->getXkbState())
                         )
                     );
-            // me when this stuff is NULL : (
-            WindowWayland* window = self->getWindowForNative(self->focusedSurface);
-            if (window)
-                window->dispatch(eventButton.get());
+            window->dispatch(eventButton.get());
         }
     }
 }
 void WindowManagerWayland::pointerHandleAxis(void* data, wl_pointer* pointer, 
         uint32_t time, uint32_t axis, wl_fixed_t value) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->focusedSurface) return;
-
+    if (!self->getFocusedSurface()) return;
     switch (axis) {
         case WL_POINTER_AXIS_VERTICAL_SCROLL:
             self->_dY += static_cast<float>(wl_fixed_to_double(value));

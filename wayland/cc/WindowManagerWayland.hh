@@ -124,6 +124,7 @@ namespace jwm {
         EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;
 
+        wl_cursor* currentCursor = nullptr;
         bool _runLoop;
         int notifyFD = -1;
         std::atomic_bool notifyBool{false};
@@ -142,7 +143,13 @@ namespace jwm {
 
 
         wl_surface* cursorSurface;
-        wl_surface* focusedSurface = nullptr;
+        WindowWayland* _focusedSurface = nullptr;
+        WindowWayland* getFocusedSurface() const {
+                return _focusedSurface;
+        }
+        void setFocusedSurface(WindowWayland* surface) {
+                _focusedSurface = surface;
+        }
         // Is holding all cursors in memory a good idea?
         wl_cursor_image* _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];
 
