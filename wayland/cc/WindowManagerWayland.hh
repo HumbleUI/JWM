@@ -19,6 +19,7 @@
 #include <wayland-egl.h>
 #include <EGL/egl.h> 
 #include "Keyboard.hh"
+#include "Pointer.hh"
 
 namespace jwm {
     class WindowWayland;
@@ -67,21 +68,6 @@ namespace jwm {
         static void registryHandleGlobalRemove(void* data, wl_registry *registry,
                 uint32_t name);
 
-        static wl_pointer_listener _pointerListener;
-
-        static void pointerHandleEnter(void* data, wl_pointer *pointer, 
-                uint32_t serial, wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
-        static void pointerHandleLeave(void* data, wl_pointer *pointer,
-                uint32_t serial, wl_surface* surface);
-        static void pointerHandleMotion(void* data, wl_pointer *pointer,
-                uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
-        static void pointerHandleButton(void* data, wl_pointer *pointer,
-                uint32_t serial, uint32_t time, uint32_t button,
-                uint32_t state);
-        static void pointerHandleAxis(void* data, wl_pointer *pointer,
-                uint32_t time, uint32_t axis, wl_fixed_t value);
-
-       
         static libdecor_interface _decorInterface;
         static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
 
@@ -104,12 +90,19 @@ namespace jwm {
         wl_data_device_manager* deviceManager = nullptr;
         // no multiseat?
         wl_seat* seat = nullptr;
-        wl_pointer* pointer = nullptr;
+        Pointer* _pointer = nullptr;
+        Pointer* getPointer() const {
+                return _pointer;
+        }
         Keyboard* _keyboard = nullptr;
         wl_data_device* dataDevice = nullptr;
         wl_data_source* currentSource = nullptr;
         wl_data_offer* currentOffer = nullptr;
-        uint32_t mouseSerial = 0;
+        uint32_t getMouseSerial() const {
+                if (_pointer)
+                        return _pointer->getSerial();
+                return 0;
+        }
         uint32_t getKeyboardSerial() const {
                 if (_keyboard)
                         return _keyboard->getSerial();
@@ -124,31 +117,24 @@ namespace jwm {
         EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;
 
-        wl_cursor* currentCursor = nullptr;
         bool _runLoop;
         int notifyFD = -1;
         std::atomic_bool notifyBool{false};
-        int lastMousePosX = 0;
-        int lastMousePosY = 0;
-        // god forgive me for using float
-        float _dX = 0.0f;
-        float _dY = 0.0f;
-        int mouseMask = 0;
-        void mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask);
 
         std::map<wl_surface*, WindowWayland*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
         std::map<std::string, ByteBuf> _myClipboardSource;
         std::list<std::string> _currentMimeTypes;
 
-
-        wl_surface* cursorSurface;
-        WindowWayland* _focusedSurface = nullptr;
-        WindowWayland* getFocusedSurface() const {
-                return _focusedSurface;
+        wl_surface* getCursorSurface() const {
+                if (_pointer)
+                        return _pointer->getSurface();
+                return nullptr;
         }
-        void setFocusedSurface(WindowWayland* surface) {
-                _focusedSurface = surface;
+        WindowWayland* getFocusedSurface() const {
+                if (_pointer)
+                        return _pointer->getFocusedSurface();
+                return nullptr;
         }
         // Is holding all cursors in memory a good idea?
         wl_cursor_image* _cursors[static_cast<int>(jwm::MouseCursor::COUNT)];

@@ -31,48 +31,6 @@ wl_registry_listener WindowManagerWayland::_registryListener = {
     .global = WindowManagerWayland::registryHandleGlobal,
     .global_remove = WindowManagerWayland::registryHandleGlobalRemove
 };
-static void pointerFrame(void* data, wl_pointer* pointer) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->getFocusedSurface()) return;
-    if (self->_dX != 0.0f || self->_dY != 0.0f) {
-        auto env = app.getJniEnv();
-        auto win = self->getFocusedSurface();
-        jwm::JNILocal<jobject> eventAxis(
-                    env,
-                    jwm::classes::EventMouseScroll::make(
-                            env,
-                            self->_dX * win->_scale,
-                            self->_dY * win->_scale,
-                            0.0f,
-                            0.0f,
-                            0.0f,
-                            self->lastMousePosX,
-                            self->lastMousePosY,
-                            jwm::KeyWayland::getModifiers(self->getXkbState())
-                        )
-                );
-        win->dispatch(eventAxis.get());
-
-        self->_dX = 0.0f;
-        self->_dY = 0.0f;
-    }
-}
-static void pointerAxisSource(void* data, wl_pointer* pointer, uint32_t source) {}
-static void pointerAxisStop(void* data, wl_pointer* pointer, uint32_t time, uint32_t axis) {}
-static void pointerAxisDiscrete(void* data, wl_pointer* pointer, uint32_t axis, int discrete) {}
-// Lambdas turn into null pointers at runtime. God knows why.
-wl_pointer_listener WindowManagerWayland::_pointerListener = {
-  .enter = WindowManagerWayland::pointerHandleEnter,
-  .leave = WindowManagerWayland::pointerHandleLeave,
-  .motion = WindowManagerWayland::pointerHandleMotion,
-  .button = WindowManagerWayland::pointerHandleButton,
-  .axis = WindowManagerWayland::pointerHandleAxis,
-  .frame = pointerFrame,
-  .axis_source = pointerAxisSource,
-  .axis_stop = pointerAxisStop,
-  .axis_discrete = pointerAxisDiscrete
-};
-
 libdecor_interface WindowManagerWayland::_decorInterface = {
     .error = WindowManagerWayland::libdecorError
 };
@@ -102,7 +60,6 @@ WindowManagerWayland::WindowManagerWayland():
 
 
         wl_display_roundtrip(display);
-        cursorSurface = wl_compositor_create_surface(compositor);
 
 }
 
@@ -299,135 +256,13 @@ WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
     return myWindow;
     */
 }
-void WindowManagerWayland::pointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial,
-        wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-    WindowManagerWayland* self = (WindowManagerWayland*)data;
-    self->mouseSerial = serial;
-    if (auto window = self->getWindowForNative(surface)) {
-        window->setCursor(jwm::MouseCursor::ARROW);
-        self->setFocusedSurface(window);
-    }
-}
-void WindowManagerWayland::pointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial,
-        wl_surface *surface) {
-    WindowManagerWayland* self = (WindowManagerWayland*)data;
-    self->setFocusedSurface(nullptr);
-    // ???
-    self->mouseMask = 0;
-    self->mouseSerial = -1;
-}
-void WindowManagerWayland::pointerHandleMotion(void* data, wl_pointer* pointer,
-        uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-    WindowManagerWayland* self = (WindowManagerWayland*)data;
-    if (self->getFocusedSurface()) {
-        ::WindowWayland* window = self->getFocusedSurface();
-        // God is dead if window is null
-        if (window)
-            self->mouseUpdate(window, 
-                    wl_fixed_to_int(surface_x) * window->_scale, 
-                    wl_fixed_to_int(surface_y) * window->_scale, self->mouseMask);
-    }
-    
-}
-void WindowManagerWayland::pointerHandleButton(void* data, wl_pointer* pointer, 
-        uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
-    using namespace classes;
-    WindowManagerWayland* self = (WindowManagerWayland*)data;
-    if (!self->getFocusedSurface()) return;
-    auto window = self->getFocusedSurface();
-    if (state == 0) {
-        // release
-        switch (button) {
-            // primary
-            case BTN_LEFT:
-                self->mouseMask &= ~0x100;
-                break;
-            // secondary
-            case BTN_RIGHT:
-                self->mouseMask &= ~0x400;
-                break;
-            // middle
-            case BTN_MIDDLE:
-                self->mouseMask &= ~0x200;
-                break;
-            default:
-                break;
-        }
-        
-        if (MouseButtonWayland::isButton(button)) {
-            jwm::JNILocal<jobject> eventButton(
-                    app.getJniEnv(),
-                    EventMouseButton::make(
-                            app.getJniEnv(),
-                            MouseButtonWayland::fromNative(button),
-                            false,
-                            self->lastMousePosX,
-                            self->lastMousePosY,
-                            jwm::KeyWayland::getModifiers(self->getXkbState())
-                        )
-                    );
-            window->dispatch(eventButton.get());
-        }
-    } else {
-        // down
-        switch (button) {
-            // primary
-            case BTN_LEFT:
-                self->mouseMask |= 0x100;
-                break;
-            // secondary
-            case BTN_RIGHT:
-                self->mouseMask |= 0x400;
-                break;
-            // middle
-            case BTN_MIDDLE:
-                self->mouseMask |= 0x200;
-                break;
-            default:
-                break;
-        }
-        
-        if (MouseButtonWayland::isButton(button)) {
-            jwm::JNILocal<jobject> eventButton(
-                    app.getJniEnv(),
-                    EventMouseButton::make(
-                            app.getJniEnv(),
-                            MouseButtonWayland::fromNative(button),
-                            true,
-                            self->lastMousePosX,
-                            self->lastMousePosY,
-                            jwm::KeyWayland::getModifiers(self->getXkbState())
-                        )
-                    );
-            window->dispatch(eventButton.get());
-        }
-    }
-}
-void WindowManagerWayland::pointerHandleAxis(void* data, wl_pointer* pointer, 
-        uint32_t time, uint32_t axis, wl_fixed_t value) {
-    auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    if (!self->getFocusedSurface()) return;
-    switch (axis) {
-        case WL_POINTER_AXIS_VERTICAL_SCROLL:
-            self->_dY += static_cast<float>(wl_fixed_to_double(value));
-            break;
-        case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-            self->_dX += static_cast<float>(wl_fixed_to_double(value));
-            break;
-        default:
-            break;
-    }
-}
-
 void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) &&
-            !self->pointer) {
-        self->pointer = wl_seat_get_pointer(seat);
-        wl_pointer_add_listener(self->pointer, &_pointerListener, self);
-    } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && self->pointer) {
-        wl_pointer_release(self->pointer);
-        self->pointer = nullptr;
+            !self->_pointer) {
+        self->_pointer = new Pointer(wl_seat_get_pointer(seat), self);
+    } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && self->_pointer) {
+        self->_pointer = nullptr;
     }
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
@@ -465,30 +300,6 @@ wl_data_device_listener WindowManagerWayland::_deviceListener = {
 };
 std::vector<std::string> WindowManagerWayland::getClipboardFormats() {
     return { _currentMimeTypes.begin(), _currentMimeTypes.end()};
-}
-void WindowManagerWayland::mouseUpdate(WindowWayland* myWindow, uint32_t x, uint32_t y, uint32_t mask) {
-    using namespace classes;
-    if (!myWindow)
-        return;
-    // impl me : )
-    if (lastMousePosX == x && lastMousePosY == y) return;
-    lastMousePosX = x;
-    lastMousePosY = y;
-    int movementX = 0, movementY = 0;
-    jwm::JNILocal<jobject> eventMove(
-        app.getJniEnv(),
-        EventMouseMove::make(app.getJniEnv(),
-            x,
-            y,
-            movementX,
-            movementY,
-            jwm::MouseButtonWayland::fromNativeMask(mask),
-            // impl me!
-            jwm::KeyWayland::getModifiers(getXkbState())
-            )
-        );
-    auto foo = eventMove.get();
-    myWindow->dispatch(foo);
 }
 jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type) {
     auto it = _myClipboardContents.find(type);

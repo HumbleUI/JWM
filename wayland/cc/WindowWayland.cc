@@ -263,16 +263,17 @@ void WindowWayland::setVisible(bool isVisible) {
 }
 
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
+    if (!_windowManager.getPointer()) return;
     auto wayCursor = _getCursorFor(cursor)->images[0];
     auto buf = wl_cursor_image_get_buffer(wayCursor);
-    wl_surface_attach(_windowManager.cursorSurface, 
+    auto cursorSurface = _windowManager.getCursorSurface();
+    wl_surface_attach(cursorSurface, 
             wl_cursor_image_get_buffer(wayCursor),
             0, 0);
-    wl_surface_set_buffer_scale(_windowManager.cursorSurface, _scale);
-    wl_surface_damage_buffer(_windowManager.cursorSurface, 0, 0, INT32_MAX, INT32_MAX);
-    wl_pointer_set_cursor(_windowManager.pointer, _windowManager.mouseSerial, _windowManager.cursorSurface, 
-            wayCursor->hotspot_x / _scale, wayCursor->hotspot_y / _scale);
-    wl_surface_commit(_windowManager.cursorSurface);
+    wl_surface_set_buffer_scale(cursorSurface, _scale);
+    wl_surface_damage_buffer(cursorSurface, 0, 0, INT32_MAX, INT32_MAX);
+    _windowManager.getPointer()->updateHotspot(wayCursor->hotspot_x, wayCursor->hotspot_y);
+    wl_surface_commit(cursorSurface);
 }
 
 // what do???
