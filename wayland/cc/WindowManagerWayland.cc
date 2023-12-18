@@ -501,6 +501,13 @@ jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type)
     auto it = _myClipboardContents.find(type);
     if (it != _myClipboardContents.end()) {
         return it->second;
+    } else if (currentSource) {
+        // Self paste
+        auto it2 = _myClipboardSource.find(type);
+        if (it2 != _myClipboardSource.end()) {
+            _myClipboardContents[type] = it2->second;
+            return it2->second;
+        }
     } else if (currentOffer) {
         auto it2 = std::find(_currentMimeTypes.begin(), _currentMimeTypes.end(), type);
         if (it2 != _currentMimeTypes.end()) {
@@ -547,7 +554,6 @@ void WindowManagerWayland::terminate() {
 static void dataSourceSend(void* data, wl_data_source* source, const char* mimeType, int fd) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     auto it = self->_myClipboardSource.find(std::string(mimeType));
-
     if (it != self->_myClipboardSource.end()) {
         write(fd, it->second.data(), it->second.size());
     }

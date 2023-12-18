@@ -43,13 +43,10 @@ namespace jwm {
 
 
                     ByteBuf contents;
-                    // HACK: prefer UTF8_STRING over text/plain and convert it to utf16
-                    if (formatId == "text/plain") {
-                        contents = app.getWindowManager().getClipboardContents("UTF8_STRING");
-                    } else {
-                        contents = app.getWindowManager().getClipboardContents(formatId.toAscii());
-                    }
-                    // TODO add another formats
+                    // text will ALWAYS be utf8 if we are getting plain text.
+                    // If you are outputting utf16 into something that other apps read from,
+                    // you are going to hell.
+                    contents = app.getWindowManager().getClipboardContents(formatId.toAscii());
                     if (contents.empty()) {
                         return nullptr;
                     }
