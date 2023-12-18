@@ -76,7 +76,6 @@ namespace jwm {
                 }
                 // Don't block on swap
                 // Blocking here will freeze the app on sway.
-                eglSwapInterval(_display, 0); 
             }
             if (fWindow->_configured)
               attachBuffer();
@@ -129,6 +128,7 @@ namespace jwm {
                           _surface,
                           _surface,
                           _context);
+            eglSwapInterval(_display, 0); 
         }
         void attachBuffer() override {
           if (fWindow && fWindow->_waylandWindow) {

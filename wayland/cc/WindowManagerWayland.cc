@@ -126,10 +126,12 @@ void WindowManagerWayland::runLoop() {
         {.fd=libdecor_get_fd(decorCtx), .events=POLLIN}, 
         {.fd=pipes[0], .events=POLLIN},
     };
+
     // who be out here running they loop
     while (_runLoop) {
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
+
         // block until event : )
         int timeout = -1;
         if (_keyboard && _keyboard->_repeating && _keyboard->getFocus()) {
@@ -147,9 +149,11 @@ void WindowManagerWayland::runLoop() {
             printf("error with pipe\n");
             break;
         }
-        
         if (ps[0].revents & POLLIN) {
-            libdecor_dispatch(decorCtx, -1);
+            if (libdecor_dispatch(decorCtx, -1) < 0) {
+                fprintf(stderr, "error with dispatch\n");
+                break;
+            }
         }
 
         if (ps[1].revents & POLLIN) {
@@ -180,14 +184,13 @@ void WindowManagerWayland::_processCallbacks() {
     {
         // process ui thread callbacks
         std::unique_lock<std::mutex> lock(_taskQueueLock);
-
         while (!_taskQueue.empty()) {
             auto callback = std::move(_taskQueue.front());
             _taskQueue.pop();
             lock.unlock();
             callback();
             lock.lock();
-        }        
+        }
     }
     {
         // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
@@ -459,7 +462,6 @@ static void deviceDataOffer(void* data, wl_data_device* device, wl_data_offer* o
 }
 static void deviceSelection(void* data, wl_data_device* device, wl_data_offer* offer) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    self->_myClipboardContents = {};
     // if null then w/e
     self->currentOffer = offer;
 }
@@ -544,8 +546,9 @@ void WindowManagerWayland::terminate() {
 
 static void dataSourceSend(void* data, wl_data_source* source, const char* mimeType, int fd) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
-    auto it = self->_myClipboardContents.find(std::string(mimeType));
-    if (it != self->_myClipboardContents.end()) {
+    auto it = self->_myClipboardSource.find(std::string(mimeType));
+
+    if (it != self->_myClipboardSource.end()) {
         write(fd, it->second.data(), it->second.size());
     }
     close(fd);
@@ -553,6 +556,8 @@ static void dataSourceSend(void* data, wl_data_source* source, const char* mimeT
 static void dataSourceCancelled(void* data, wl_data_source* source) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     wl_data_source_destroy(source);
+    self->currentSource = nullptr;
+    self->_myClipboardSource = {};
 }
 wl_data_source_listener WindowManagerWayland::_sourceListener = {
     .send = dataSourceSend,
@@ -560,10 +565,10 @@ wl_data_source_listener WindowManagerWayland::_sourceListener = {
 };
 void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
     assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
-    _myClipboardContents = c;
+    _myClipboardSource = c;
 
-    // god is dead if data device manager is null
-    
+    if (!deviceManager) return;
+
     currentSource = wl_data_device_manager_create_data_source(deviceManager);
     
     wl_data_source_add_listener(currentSource, &_sourceListener, this);
@@ -573,7 +578,7 @@ void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&&
         _currentMimeTypes.push_back(it.first.c_str());
         wl_data_source_offer(currentSource, it.first.c_str());
     }
-
+    
     if (getKeyboardSerial() > 0)
         wl_data_device_set_selection(dataDevice, currentSource, getKeyboardSerial());
 

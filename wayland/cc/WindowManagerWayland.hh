@@ -137,6 +137,7 @@ namespace jwm {
 
         std::map<wl_surface*, WindowWayland*> _nativeWindowToMy;
         std::map<std::string, ByteBuf> _myClipboardContents;
+        std::map<std::string, ByteBuf> _myClipboardSource;
         std::list<std::string> _currentMimeTypes;
 
 
