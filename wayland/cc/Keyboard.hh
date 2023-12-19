@@ -44,7 +44,6 @@ namespace jwm {
 
         void submitKey(jwm::Key key, uint32_t state);
 
-
         jwm::StringUTF16 _repeatText;
         jwm::Key _repeatKey = jwm::Key::UNDEFINED;
         bool _repeating = false;

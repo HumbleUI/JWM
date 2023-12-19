@@ -16,7 +16,7 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
     self->_serial = serial;
     if (auto window = self->_wm.getWindowForNative(surface)) {
         window->setCursor(jwm::MouseCursor::ARROW);
-        self->_focusedSurface = window;
+        self->_focusedSurface = jwm::ref(window);
     }
 }
 
@@ -24,6 +24,8 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface* surface) 
 {
     auto self = reinterpret_cast<Pointer*>(data);
+    if (self->_focusedSurface)
+        jwm::unref(&self->_focusedSurface);
     self->_focusedSurface = nullptr;
 
     self->_mouseMask = 0;

@@ -64,7 +64,7 @@ static void kbEnter(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* su
     auto win = self->_wm.getWindowForNative(surface);
     if (!win) return;
     self->_serial = serial;
-    self->_focus = win;
+    self->_focus = jwm::ref(win);
     if (self->_state) {
         uint32_t* key;
         // C++ jank
@@ -84,7 +84,11 @@ static void kbLeave(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* su
     for (auto key : liftedKeys) {
         self->submitKey(key, WL_KEYBOARD_KEY_STATE_RELEASED);
     }
-    self->_serial = -1;
+    self->_repeating = false;
+    self->_repeatingText = false;
+    self->_serial = 0;
+    if (self->_focus)
+        jwm::unref(&self->_focus);
     self->_focus = nullptr;
 }
 static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
@@ -233,6 +237,7 @@ void Keyboard::submitKey(jwm::Key key, uint32_t state) {
                 )
             );
         _focus->dispatch(keyEvent.get());
+
         if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
             _depressedKeys.push_back(key);
         } else {
@@ -243,3 +248,4 @@ void Keyboard::submitKey(jwm::Key key, uint32_t state) {
         }
     }
 }
+
