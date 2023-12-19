@@ -77,7 +77,7 @@ void WindowWayland::close() {
 void WindowWayland::hide() {
     _visible = false;
     if (_layer) {
-        _layer->detach();
+        _layer->detachBuffer();
     }
     if (_frame) {
         libdecor_frame_unref(_frame);

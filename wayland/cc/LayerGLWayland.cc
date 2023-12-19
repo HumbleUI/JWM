@@ -116,7 +116,7 @@ namespace jwm {
             if (_closed)
               return;
             _closed = true;
-            detach();
+            detachBuffer();
             eglDestroyContext(_display, _context);
             
             _firstAttach = true;
@@ -145,7 +145,7 @@ namespace jwm {
             makeCurrentForced();
           }
         }
-        void detach() override {
+        void detachBuffer() override {
             eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
             if (_surface) {
               eglDestroySurface(_display, _surface);

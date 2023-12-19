@@ -63,7 +63,7 @@ namespace jwm {
         }
 
         void close() override {
-            detach();
+            detachBuffer();
             jwm::unref(&fWindow);
             fWindow = nullptr;
         }
@@ -80,7 +80,7 @@ namespace jwm {
             swapBuffers();
         }
 
-        void detach() override {
+        void detachBuffer() override {
             if (_attached && fWindow && fWindow->_waylandWindow) {
                 wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
                 // commit is not meant to be used in intermediate states
