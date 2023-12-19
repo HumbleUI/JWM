@@ -89,7 +89,6 @@ static void kbLeave(void* data, wl_keyboard* kb, uint32_t serial, wl_surface* su
     self->_serial = 0;
     if (self->_focus)
         jwm::unref(&self->_focus);
-    self->_focus = nullptr;
 }
 static void kbKey(void* data, wl_keyboard* kb, uint32_t serial, uint32_t time,
                 uint32_t key, uint32_t state) {

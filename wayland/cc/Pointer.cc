@@ -26,7 +26,6 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
     auto self = reinterpret_cast<Pointer*>(data);
     if (self->_focusedSurface)
         jwm::unref(&self->_focusedSurface);
-    self->_focusedSurface = nullptr;
 
     self->_mouseMask = 0;
     self->_serial = 0;

@@ -45,5 +45,10 @@ namespace jwm {
 
         void updateHotspot(int x, int y);
 
+    private:
+        Pointer(const Pointer& other) = delete;
+        Pointer(Pointer&&) = delete;
+        Pointer& operator=(const Pointer& other) = delete;
+        Pointer& operator=(Pointer&&) = delete;
     };
 }

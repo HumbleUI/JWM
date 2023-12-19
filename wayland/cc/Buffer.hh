@@ -29,5 +29,11 @@ namespace jwm {
         static wl_buffer_listener _bufferListener;
 
         static Buffer* createShmBuffer(wl_shm* shm, int width, int height, uint32_t format);
+    private:
+        Buffer(const Buffer&) = delete;
+        Buffer(Buffer&&) = delete;
+        Buffer& operator=(const Buffer&) = delete;
+        Buffer& operator=(Buffer&&) = delete;
+        
     };
 }

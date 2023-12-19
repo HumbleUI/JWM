@@ -107,7 +107,8 @@ void WindowManagerWayland::runLoop() {
         if (ps[0].revents & POLLIN) {
             if (libdecor_dispatch(decorCtx, -1) < 0) {
                 fprintf(stderr, "error with dispatch\n");
-                break;
+                // ???
+                // break;
             }
         }
 

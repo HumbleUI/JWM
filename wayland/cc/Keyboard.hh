@@ -54,6 +54,11 @@ namespace jwm {
         jwm::WindowManagerWayland& _wm;
 
         static wl_keyboard_listener _keyboardListener;
-
+    private:
+        // no copy or move
+        Keyboard(const Keyboard&) = delete;
+        Keyboard(Keyboard&&) = delete;
+        Keyboard& operator=(const Keyboard&) = delete;
+        Keyboard& operator=(Keyboard&&) = delete;
     };
 }
