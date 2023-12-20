@@ -225,3 +225,47 @@ void Pointer::updateHotspot(int x, int y) {
     if (!_focusedSurface) return;
     wl_pointer_set_cursor(_pointer, _serial, _surface, x / _focusedSurface->_scale, y / _focusedSurface->_scale);
 }
+
+wl_cursor_theme* Pointer::_makeCursors(int scale) {
+    auto theme = wl_cursor_theme_load(nullptr, 24 * scale, _wm.shm);
+    _cursorThemes[scale] = theme;
+    return theme;
+}
+
+wl_cursor_theme* Pointer::getThemeFor(int scale) {
+    auto it = _cursorThemes.find(scale);
+    if (it != _cursorThemes.end())
+        return it->second;
+    return _makeCursors(scale);
+}
+wl_cursor* Pointer::getCursorFor(int scale, jwm::MouseCursor cursor) {
+    auto theme = getThemeFor(scale);
+
+    switch (cursor) {
+        case jwm::MouseCursor::ARROW:
+            return wl_cursor_theme_get_cursor(theme, "default");
+        case jwm::MouseCursor::CROSSHAIR:
+            return wl_cursor_theme_get_cursor(theme, "crosshair");
+        case jwm::MouseCursor::HELP:
+            return wl_cursor_theme_get_cursor(theme, "help");
+        case jwm::MouseCursor::POINTING_HAND:
+            return wl_cursor_theme_get_cursor(theme, "pointer");
+        case jwm::MouseCursor::IBEAM:
+            return wl_cursor_theme_get_cursor(theme, "text");
+        case jwm::MouseCursor::NOT_ALLOWED:
+            return wl_cursor_theme_get_cursor(theme, "not-allowed");
+        case jwm::MouseCursor::WAIT:
+            return wl_cursor_theme_get_cursor(theme, "watch");
+        case jwm::MouseCursor::WIN_UPARROW:
+            return wl_cursor_theme_get_cursor(theme, "up-arrow");
+        case jwm::MouseCursor::RESIZE_NS:
+            return wl_cursor_theme_get_cursor(theme, "ns-resize");
+        case jwm::MouseCursor::RESIZE_WE:
+            return wl_cursor_theme_get_cursor(theme, "ew-resize");
+        case jwm::MouseCursor::RESIZE_NESW:
+            return wl_cursor_theme_get_cursor(theme, "nesw-resize");
+        case jwm::MouseCursor::RESIZE_NWSE:
+            return wl_cursor_theme_get_cursor(theme, "nwse-resize");
+    }
+    return nullptr;
+}

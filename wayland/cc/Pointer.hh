@@ -1,6 +1,9 @@
 #pragma once
 
 #include <wayland-client.h>
+#include <map>
+#include <wayland-cursor.h>
+#include "MouseCursor.hh"
 
 namespace jwm {
     class WindowManagerWayland;
@@ -44,6 +47,12 @@ namespace jwm {
         void mouseUpdateUnscaled(uint32_t x, uint32_t y, uint32_t mask);
 
         void updateHotspot(int x, int y);
+
+        std::map<int, wl_cursor_theme*> _cursorThemes;
+
+        wl_cursor_theme* _makeCursors(int scale);
+        wl_cursor_theme* getThemeFor(int scale);
+        wl_cursor* getCursorFor(int scale, jwm::MouseCursor cursor);
 
     private:
         Pointer(const Pointer& other) = delete;

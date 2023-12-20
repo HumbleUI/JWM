@@ -35,7 +35,6 @@ WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     _title("")
 
 {
-    _makeCursors();
 }
 
 WindowWayland::~WindowWayland() {
@@ -140,47 +139,6 @@ bool WindowWayland::resize(int width, int height) {
     return true;
 }
 
-void WindowWayland::_makeCursors() {
-    
-    if (theme)
-        wl_cursor_theme_destroy(theme);
-    theme = wl_cursor_theme_load(nullptr, 24 * _scale, _windowManager.shm);
-}
-// cursed
-wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
-    switch (cursor) {
-        case jwm::MouseCursor::ARROW:
-            // works
-            return wl_cursor_theme_get_cursor(theme, "default");
-        case jwm::MouseCursor::CROSSHAIR:
-            // works
-            return wl_cursor_theme_get_cursor(theme, "crosshair");
-        case jwm::MouseCursor::HELP:
-            // sometimes works?
-            return wl_cursor_theme_get_cursor(theme, "help");
-        case jwm::MouseCursor::POINTING_HAND:
-            // SHOULD work
-            return wl_cursor_theme_get_cursor(theme, "pointer");
-        case jwm::MouseCursor::IBEAM:
-            // doesn't work at all
-            return wl_cursor_theme_get_cursor(theme, "text");
-        case jwm::MouseCursor::NOT_ALLOWED:
-            return wl_cursor_theme_get_cursor(theme, "not-allowed");
-        case jwm::MouseCursor::WAIT:
-            return wl_cursor_theme_get_cursor(theme, "watch");
-        case jwm::MouseCursor::WIN_UPARROW:
-            return wl_cursor_theme_get_cursor(theme, "up-arrow");
-        case jwm::MouseCursor::RESIZE_NS:
-            return wl_cursor_theme_get_cursor(theme, "ns-resize");
-        case jwm::MouseCursor::RESIZE_WE:
-            return wl_cursor_theme_get_cursor(theme, "ew-resize");
-        case jwm::MouseCursor::RESIZE_NESW:
-            return wl_cursor_theme_get_cursor(theme, "nesw-resize");
-        case jwm::MouseCursor::RESIZE_NWSE:
-            return wl_cursor_theme_get_cursor(theme, "nwse-resize");
-    }
-    return nullptr;
-}
 int WindowWayland::getLeft() {
     int x, y;
     getContentPosition(x, y);
@@ -208,6 +166,11 @@ int WindowWayland::getUnscaledHeight() {
 
 float WindowWayland::getScale() {
     return _scale;
+}
+wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
+    if (auto ptr = _windowManager.getPointer())
+        return ptr->getCursorFor(_scale, cursor);
+    return nullptr;
 }
 bool WindowWayland::init() {
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
@@ -393,7 +356,6 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
             );
     dispatch(eventWindowResize.get());
     if (_scale != _oldScale) {
-        _makeCursors(); 
         _windowManager._processCallbacks();
     }
     // In Java Wayland doesn't actually cause a frame:
