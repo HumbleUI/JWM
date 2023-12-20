@@ -6,6 +6,8 @@
 jwm::AppWayland jwm::app;
 
 
+const char* jwm::AppWayland::proxyTag = "JWM";
+
 void jwm::AppWayland::init(JNIEnv* jniEnv) {
     _jniEnv = jniEnv;
 }

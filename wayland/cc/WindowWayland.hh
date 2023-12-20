@@ -97,7 +97,7 @@ namespace jwm {
         ILayerWayland* _layer = nullptr;
         wl_surface* _waylandWindow = nullptr;
         libdecor_frame* _frame = nullptr;
-        Output* _output = nullptr;
+        std::list<Output*> _outputs;
         wl_cursor_theme* theme = nullptr;
 
         static wl_surface_listener _surfaceListener;

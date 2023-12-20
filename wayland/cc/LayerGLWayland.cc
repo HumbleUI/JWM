@@ -70,7 +70,6 @@ namespace jwm {
             }
             if (fWindow->_configured)
               attachBuffer();
-            makeCurrentForced();
         }
 
         void setVsyncMode(VSync v) override {
@@ -116,6 +115,11 @@ namespace jwm {
                             _surface,
                             _context);
               eglSwapInterval(_display, 0); 
+            } else {
+              eglMakeCurrent(_display,
+                  EGL_NO_SURFACE,
+                  EGL_NO_SURFACE,
+                  EGL_NO_CONTEXT);
             }
         }
         void attachBuffer() override {

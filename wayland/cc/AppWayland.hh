@@ -23,5 +23,7 @@ namespace jwm {
 
         JNIEnv* _jniEnv;
         WindowManagerWayland wm;
+
+        static const char* proxyTag;
     } app;
 }

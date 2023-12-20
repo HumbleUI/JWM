@@ -27,6 +27,8 @@ namespace jwm {
         static void outputScale(void* data, wl_output* output, int factor);
         static void outputName(void* data, wl_output* output, const char* name);
         static void outputDescription(void* data, wl_output* output, const char* desc);
+
+        static Output* getForNative(wl_output* output);
     private:
         Output(const Output&) = delete;
         Output(Output&&) = delete;

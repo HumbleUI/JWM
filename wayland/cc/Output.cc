@@ -1,4 +1,6 @@
 #include "Output.hh"
+#include "AppWayland.hh"
+
 
 using namespace jwm;
 
@@ -15,6 +17,7 @@ Output::Output(wl_output* output, uint32_t name):
     _name(name)
     {
         wl_output_add_listener(output, &_outputListener, this);
+        wl_proxy_set_tag((wl_proxy*) output, &AppWayland::proxyTag);
     }
 Output::~Output()
 {
@@ -46,4 +49,13 @@ void Output::outputName(void* data, wl_output* output, const char* name) {
 
 }
 void Output::outputDescription(void* data, wl_output* output, const char* desc) {}
+
+Output* Output::getForNative(wl_output* output) {
+    if (!output) return nullptr;
+
+    if (wl_proxy_get_tag((wl_proxy*) output) == &AppWayland::proxyTag) {
+        return reinterpret_cast<Output*>(wl_output_get_user_data(output));
+    }
+    return nullptr;
+}
 

@@ -7,6 +7,7 @@
 #include "impl/JNILocal.hh"
 #include <locale>
 #include <codecvt>
+#include <algorithm>
 
 using namespace jwm;
 
@@ -136,6 +137,7 @@ bool WindowWayland::resize(int width, int height) {
         _adaptSize(_width, _height);    
     }
     */
+    _oldScale = _scale;
     return true;
 }
 
@@ -194,8 +196,8 @@ void WindowWayland::show()
 }
 
 ScreenInfo WindowWayland::getScreen() {
-    if (_output) {
-        return _output->getScreenInfo();
+    if (!_outputs.empty()) {
+        return _outputs.front()->getScreenInfo();
     } else {
         return {
             .id = -1,
@@ -235,16 +237,35 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
     // doesn't crash : )
     WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
     
-    for (auto o : self->_windowManager.outputs) {
-        if (o->_output == output) {
-            self->_output = o;
-            self->_scale = o->scale;
-            self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
-            break;
+    if (auto out = Output::getForNative(output)) {
+        self->_outputs.push_back(out);
+        int scale = 1;
+        for (auto i : self->_outputs) {
+            if (i->scale > scale)
+                scale = i->scale;
         }
+        self->_scale = scale;
+        self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
     }
 }
-void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {}
+void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {
+    auto self = reinterpret_cast<WindowWayland*>(data);
+    
+    if (auto out = Output::getForNative(output)) {
+        auto it = std::find(self->_outputs.begin(), self->_outputs.end(), out);
+
+        if (it != self->_outputs.end())
+            self->_outputs.erase(it);
+
+        int scale = 1;
+        for (auto i : self->_outputs) {
+            if (i->scale > scale)
+                scale = i->scale;
+        }
+        self->_scale = scale;
+        self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
+    }
+}
 void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* surface, int factor) {
     WindowWayland* self = (WindowWayland*) data;
     if (factor < 1) {
@@ -355,13 +376,9 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
                    )
             );
     dispatch(eventWindowResize.get());
-    if (_scale != _oldScale) {
-        _windowManager._processCallbacks();
-    }
     // In Java Wayland doesn't actually cause a frame:
     // however decorFrameCommit will cause a redraw anyway.
     // Not doing it in wayland lets me not cause an exception on hide.
-    _oldScale = _scale;
 }
 // JNI
 

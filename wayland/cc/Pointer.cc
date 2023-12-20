@@ -24,11 +24,13 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface* surface) 
 {
     auto self = reinterpret_cast<Pointer*>(data);
-    if (self->_focusedSurface)
-        jwm::unref(&self->_focusedSurface);
-
-    self->_mouseMask = 0;
-    self->_serial = 0;
+    if (auto window = self->_wm.getWindowForNative(surface)) {
+        if (window == self->_focusedSurface) {
+            jwm::unref(&self->_focusedSurface);
+            self->_mouseMask = 0;
+            self->_serial = 0;
+        }
+    }
 }
 static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time, 
         wl_fixed_t surface_x, wl_fixed_t surface_y) 
@@ -188,10 +190,13 @@ Pointer::~Pointer()
 {
     if (_pointer)
         wl_pointer_release(_pointer);
+    if (_surface)
+        wl_surface_destroy(_surface);
 }
 
 void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
     auto window = _focusedSurface;
+    // printf("???\n");
     if (!window)
         return;
     if (_lastMouseX == x && _lastMouseY == y)
@@ -216,9 +221,9 @@ void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
 }
 
 void Pointer::mouseUpdateUnscaled(uint32_t x, uint32_t y, uint32_t mask) {
-    auto window = _focusedSurface;
-    if (!window) return;
-    mouseUpdate(x * window->_scale, y * window->_scale, mask);
+    if (!_focusedSurface) return;
+    // printf("%i %i\n", x, y);
+    mouseUpdate(x * _focusedSurface->_scale, y * _focusedSurface->_scale, mask);
 }
 
 void Pointer::updateHotspot(int x, int y) {

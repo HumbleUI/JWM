@@ -108,7 +108,7 @@ void WindowManagerWayland::runLoop() {
             if (libdecor_dispatch(decorCtx, -1) < 0) {
                 fprintf(stderr, "error with dispatch\n");
                 // ???
-                // break;
+                break;
             }
         }
 
@@ -246,6 +246,7 @@ void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *r
     }
 }
 WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
+    if (!surface) return nullptr;
     // the tag makes it safe. Should:TM: be faster than searching a list every time
     const char* const* tag = wl_proxy_get_tag((wl_proxy*) surface);
     if (tag != &WindowWayland::_windowTag) {
