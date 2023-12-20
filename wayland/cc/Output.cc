@@ -16,12 +16,17 @@ Output::Output(wl_output* output, uint32_t name):
     {
         wl_output_add_listener(output, &_outputListener, this);
     }
+Output::~Output()
+{
+    if (_output)
+        wl_output_release(_output);
+}
 
 ScreenInfo Output::getScreenInfo() const {
     return {
         .id = _name,
         .bounds = jwm::IRect::makeXYWH(0, 0, width, height),
-        .isPrimary = false,
+        .isPrimary = primary,
         .scale = scale
     };
 }

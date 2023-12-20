@@ -20,15 +20,6 @@ wl_surface_listener WindowWayland::_surfaceListener = {
 #endif
 };
  
-        
-wl_output_listener WindowWayland::_outputListener = {
-  .geometry = WindowWayland::outputGeometry,
-  .mode = WindowWayland::outputMode,
-  .done = WindowWayland::outputDone,
-  .scale = WindowWayland::outputScale,
-  .name = WindowWayland::outputName,
-  .description = WindowWayland::outputDescription
-};
 libdecor_frame_interface WindowWayland::_libdecorFrameInterface = {
     .configure = WindowWayland::decorFrameConfigure,
     .close = WindowWayland::decorFrameClose,
@@ -303,20 +294,6 @@ void jwm::WindowWayland::surfacePreferredBufferScale(void* data, wl_surface* sur
 }
 void jwm::WindowWayland::surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform) {}
 
-void jwm::WindowWayland::outputGeometry(void* data, wl_output* output, int x, int y, int pWidth, int pHeight,
-        int subpixel, const char* make, const char* model, int transform) {}
-void jwm::WindowWayland::outputMode(void* data, wl_output* output, uint32_t flags, int width, int height,
-        int refresh) {}
-void jwm::WindowWayland::outputDone(void* data, wl_output* output) {}
-void jwm::WindowWayland::outputScale(void* data, wl_output* output, int factor) {
-    WindowWayland* self = reinterpret_cast<WindowWayland*>(data);
-    self->_scale = factor;
-    if (self->_waylandWindow)
-        self->dispatch(classes::EventWindowScreenChange::kInstance);
-}
-void jwm::WindowWayland::outputName(void* data, wl_output* output, const char* name) {}
-void jwm::WindowWayland::outputDescription(void* data, wl_output* output, const char* desc) {}
-
 static void frameCallbackDone(void* data, wl_callback* cb, uint32_t cb_data) {
     auto self = reinterpret_cast<WindowWayland*>(data);
     self->_adaptSize(self->_newWidth, self->_newHeight);
@@ -368,6 +345,11 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
         self->_fullscreen = fullscreen;
         self->_floating = libdecor_frame_is_floating(frame);
     }
+    // before width
+    if (!self->_configured) {
+        if (self->_layer)
+            self->_layer->attachBuffer();
+    }
     if (self->_width != width || self->_height != height) {
         if (libdecor_frame_is_floating(frame)) {
             if (width > 0) 
@@ -379,10 +361,6 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
 
         self->_adaptSize(width, height);
     }
-    if (!self->_configured && self->_visible) {
-        if (self->_layer)
-            self->_layer->attachBuffer();
-    }
     self->_configured = true;
 }
 void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
@@ -393,12 +371,12 @@ void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData)
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
     if (self->_waylandWindow) {
         wl_surface_commit(self->_waylandWindow);
-        wl_display_roundtrip(self->_windowManager.display);
     }
 }
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     using namespace classes;
+    if (newWidth == _width && newHeight == _height && _scale == _oldScale) return;
     _width = newWidth;
     _height = newHeight;
     int scaledWidth = _width * _scale;

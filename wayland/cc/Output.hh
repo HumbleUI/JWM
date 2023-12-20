@@ -8,9 +8,11 @@ namespace jwm {
     class Output {
     public:
         Output(wl_output* output, uint32_t name);
+        ~Output();
 
         wl_output* _output;
         uint32_t _name;
+        bool primary = false;
         int scale = 1;
         int width = 0;
         int height = 0;
@@ -25,5 +27,10 @@ namespace jwm {
         static void outputScale(void* data, wl_output* output, int factor);
         static void outputName(void* data, wl_output* output, const char* name);
         static void outputDescription(void* data, wl_output* output, const char* desc);
+    private:
+        Output(const Output&) = delete;
+        Output(Output&&) = delete;
+        Output& operator=(const Output&) = delete;
+        Output& operator=(Output&&) = delete;
     };
 }

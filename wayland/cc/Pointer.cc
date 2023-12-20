@@ -12,11 +12,11 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
             wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y
         )
 {
-    Pointer* self = reinterpret_cast<Pointer*>(data);
+    auto self = reinterpret_cast<Pointer*>(data);
     self->_serial = serial;
     if (auto window = self->_wm.getWindowForNative(surface)) {
-        window->setCursor(jwm::MouseCursor::ARROW);
         self->_focusedSurface = jwm::ref(window);
+        window->setCursor(jwm::MouseCursor::ARROW);
     }
 }
 

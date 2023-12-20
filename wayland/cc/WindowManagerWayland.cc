@@ -170,41 +170,41 @@ void WindowManagerWayland::_processCallbacks() {
    
 }
 void WindowManagerWayland::_processKeyboard() {
-    if (_keyboard && _keyboard->_repeating && _keyboard->getFocus()) {
-        auto now = std::chrono::steady_clock::now();
-        _keyboard->_nextRepeat = now + std::chrono::milliseconds(_keyboard->_repeatRate);
-        auto focus = _keyboard->getFocus();
-        auto env = jwm::app.getJniEnv();
-        jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
-        JNILocal<jobject> keyOffEvent(
-            env,
-            classes::EventKey::make(
-                    env,
-                    _keyboard->_repeatKey,
-                    false,
-                    KeyWayland::getModifiers(_keyboard->_state),
-                    location
-                )
-            );
+    if (!_keyboard || !_keyboard->_repeating) return;
+    auto focus = _keyboard->getFocus();
+    if (!focus) return;
+    auto now = std::chrono::steady_clock::now();
+    _keyboard->_nextRepeat = now + std::chrono::milliseconds(_keyboard->_repeatRate);
+    auto env = jwm::app.getJniEnv();
+    jwm::KeyLocation location = jwm::KeyLocation::DEFAULT;
+    JNILocal<jobject> keyOffEvent(
+        env,
+        classes::EventKey::make(
+                env,
+                _keyboard->_repeatKey,
+                false,
+                KeyWayland::getModifiers(_keyboard->_state),
+                location
+            )
+        );
 
-        JNILocal<jobject> keyEvent(
-            env,
-            classes::EventKey::make(
-                    env,
-                    _keyboard->_repeatKey,
-                    true,
-                    KeyWayland::getModifiers(_keyboard->_state),
-                    location
-                )
-            );
-        focus->dispatch(keyOffEvent.get());
-        focus->dispatch(keyEvent.get());
-        if (_keyboard->_repeatingText) {
-            jwm::JNILocal<jstring> jtext = _keyboard->_repeatText.toJString(env);
-            jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
+    JNILocal<jobject> keyEvent(
+        env,
+        classes::EventKey::make(
+                env,
+                _keyboard->_repeatKey,
+                true,
+                KeyWayland::getModifiers(_keyboard->_state),
+                location
+            )
+        );
+    focus->dispatch(keyOffEvent.get());
+    focus->dispatch(keyEvent.get());
+    if (_keyboard->_repeatingText) {
+        jwm::JNILocal<jstring> jtext = _keyboard->_repeatText.toJString(env);
+        jwm::JNILocal<jobject> eventTextInput(env, classes::EventTextInput::make(env, jtext.get()));
 
-            focus->dispatch(eventTextInput.get());
-        }
+        focus->dispatch(eventTextInput.get());
     }
 
 }
@@ -229,6 +229,9 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
         wl_output* output = (wl_output*)wl_registry_bind(registry, name,
                 &wl_output_interface, 2);
         Output* good = new Output(output, name);
+        if (self->outputs.empty())
+            // ??? this is a race condition (probably) but i have to do this to prevent crashes
+            good->primary = true;
         self->outputs.push_back(good);
     }
 }

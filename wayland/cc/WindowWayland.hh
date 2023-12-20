@@ -61,16 +61,6 @@ namespace jwm {
         static void surfacePreferredBufferScale(void* data, wl_surface* surface, int factor);
         static void surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform);
 
-        static void outputGeometry(void* data, wl_output* output, int x, int y, int physWidth, int physHeight,
-                int subpixelOrient, const char* make, const char* model, int transform);
-        static void outputMode(void* data, wl_output* output, uint32_t flags, int width, int height, int refresh);
-        static void outputDone(void* data, wl_output* output);
-        // YEAH THAT'S WHAT I'VE BEEN WAITING FOR
-        static void outputScale(void* data, wl_output* output, int factor);
-        static void outputName(void* data, wl_output* output, const char* name);
-        static void outputDescription(void* data, wl_output* output, const char* desc);
-
-
         static void decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* config, void* userData);
         static void decorFrameClose(libdecor_frame* frame, void* userData);
         static void decorFrameCommit(libdecor_frame* frame, void* userData);
@@ -113,7 +103,6 @@ namespace jwm {
 
         static wl_surface_listener _surfaceListener;
 
-        static wl_output_listener _outputListener;
         static libdecor_frame_interface _libdecorFrameInterface;
 
         static wl_callback_listener _frameCallback;

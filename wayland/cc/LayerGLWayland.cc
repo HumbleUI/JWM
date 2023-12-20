@@ -22,15 +22,11 @@ namespace jwm {
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
         EGLConfig _config = nullptr;
-        bool _firstAttach = true;
-        bool _closed = false;
 
         LayerGL() = default;
         virtual ~LayerGL() = default;
 
         void attach(WindowWayland* window) {
-            // no idea why you would reopen it???
-            _closed = false;
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
             // Force a reconfigure; needed to draw title bar correctly
@@ -39,9 +35,6 @@ namespace jwm {
 
               eglInitialize(fWindow->_windowManager._eglDisplay, nullptr, nullptr);
 
-            }
-            if (_firstAttach) {
-              _firstAttach = false;
             }
             _display = fWindow->_windowManager._eglDisplay;
             if ( eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
@@ -74,8 +67,6 @@ namespace jwm {
                 if ( _context == EGL_NO_CONTEXT ) {
                     throw std::runtime_error("Couldn't make context");
                 }
-                // Don't block on swap
-                // Blocking here will freeze the app on sway.
             }
             if (fWindow->_configured)
               attachBuffer();
@@ -95,42 +86,37 @@ namespace jwm {
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // ???
-            // glViewport(0, 0, width, height);
+            glViewport(0, 0, width, height);
             // God is dead if _eglWindow is null 
             if (_eglWindow)
               wl_egl_window_resize(_eglWindow, width, height, 0, 0);
             
-            if (fWindow->_scale != fWindow->_oldScale) {
-              swapBuffers();
-              wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
-            }
+            wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
         }
 
         void swapBuffers() override {
             makeCurrent();
-
-            eglSwapBuffers(_display, _surface);
+            if (_surface)
+              eglSwapBuffers(_display, _surface);
         }
 
         void close() override {
-            if (_closed)
-              return;
-            _closed = true;
             detachBuffer();
             eglDestroyContext(_display, _context);
             
-            _firstAttach = true;
-            jwm::unref(&fWindow);
-            fWindow = nullptr;
+            if (fWindow)
+              jwm::unref(&fWindow);
         }
 
         void makeCurrentForced() override {
             ILayer::makeCurrentForced();
-            eglMakeCurrent(_display,
-                          _surface,
-                          _surface,
-                          _context);
-            eglSwapInterval(_display, 0); 
+            if (_surface) {
+              eglMakeCurrent(_display,
+                            _surface,
+                            _surface,
+                            _context);
+              eglSwapInterval(_display, 0); 
+            }
         }
         void attachBuffer() override {
           if (fWindow && fWindow->_waylandWindow) {
