@@ -6,15 +6,19 @@
 #include "KeyWayland.hh"
 #include <impl/Library.hh>
 #include <linux/input-event-codes.h>
+
 using namespace jwm;
 
 static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
             wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y
         )
 {
+    if (!Pointer::ownPointer(pointer)) {
+        return;
+    }
     auto self = reinterpret_cast<Pointer*>(data);
-    self->_serial = serial;
     if (auto window = self->_wm.getWindowForNative(surface)) {
+        self->_serial = serial;
         self->_focusedSurface = jwm::ref(window);
         window->setCursor(jwm::MouseCursor::ARROW);
     }
@@ -23,18 +27,22 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
 static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
         wl_surface* surface) 
 {
+    if (!Pointer::ownPointer(pointer)) {
+        return;
+    }
     auto self = reinterpret_cast<Pointer*>(data);
-    if (auto window = self->_wm.getWindowForNative(surface)) {
-        if (window == self->_focusedSurface) {
-            jwm::unref(&self->_focusedSurface);
-            self->_mouseMask = 0;
-            self->_serial = 0;
-        }
+    if (self->_focusedSurface && self->_focusedSurface->isNativeSelf(surface)) { 
+        jwm::unref(&self->_focusedSurface);
+        self->_mouseMask = 0;
+        self->_serial = 0;
     }
 }
 static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time, 
         wl_fixed_t surface_x, wl_fixed_t surface_y) 
 {
+    if (!Pointer::ownPointer(pointer)) {
+        return;
+    }
     auto self = reinterpret_cast<Pointer*>(data);
     self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->_mouseMask);
 }
@@ -184,6 +192,7 @@ Pointer::Pointer(wl_pointer* pointer, WindowManagerWayland* wm):
 {
     _surface = wl_compositor_create_surface(_wm.compositor);
     wl_pointer_add_listener(pointer, &_pointerListener, this);
+    wl_proxy_set_tag((wl_proxy*)pointer, &AppWayland::proxyTag);
 }
 
 Pointer::~Pointer()
@@ -196,7 +205,6 @@ Pointer::~Pointer()
 
 void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
     auto window = _focusedSurface;
-    // printf("???\n");
     if (!window)
         return;
     if (_lastMouseX == x && _lastMouseY == y)
@@ -222,8 +230,9 @@ void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
 
 void Pointer::mouseUpdateUnscaled(uint32_t x, uint32_t y, uint32_t mask) {
     if (!_focusedSurface) return;
-    // printf("%i %i\n", x, y);
-    mouseUpdate(x * _focusedSurface->_scale, y * _focusedSurface->_scale, mask);
+    auto newX = x * _focusedSurface->_scale;
+    auto newY = y * _focusedSurface->_scale;
+    mouseUpdate(newX, newY, mask);
 }
 
 void Pointer::updateHotspot(int x, int y) {
@@ -273,4 +282,8 @@ wl_cursor* Pointer::getCursorFor(int scale, jwm::MouseCursor cursor) {
             return wl_cursor_theme_get_cursor(theme, "nwse-resize");
     }
     return nullptr;
+}
+
+bool Pointer::ownPointer(wl_pointer* pointer) {
+    return AppWayland::ownProxy((wl_proxy*) pointer);
 }

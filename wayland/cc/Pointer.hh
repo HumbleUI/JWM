@@ -13,7 +13,7 @@ namespace jwm {
         Pointer(wl_pointer* pointer, jwm::WindowManagerWayland* wm);
         ~Pointer();
 
-        wl_pointer* _pointer;
+        wl_pointer* _pointer = nullptr;
         wl_pointer* getPointer() const {
             return _pointer;
         }
@@ -23,12 +23,12 @@ namespace jwm {
             return _serial;
         }
 
-        wl_surface* _surface;
+        wl_surface* _surface = nullptr;
         wl_surface* getSurface() const {
             return _surface;
         }
 
-        WindowWayland* _focusedSurface;
+        WindowWayland* _focusedSurface = nullptr;
         WindowWayland* getFocusedSurface() const {
             return _focusedSurface;
         }
@@ -53,6 +53,9 @@ namespace jwm {
         wl_cursor_theme* _makeCursors(int scale);
         wl_cursor_theme* getThemeFor(int scale);
         wl_cursor* getCursorFor(int scale, jwm::MouseCursor cursor);
+
+        static bool ownPointer(wl_pointer* pointer);
+
 
     private:
         Pointer(const Pointer& other) = delete;

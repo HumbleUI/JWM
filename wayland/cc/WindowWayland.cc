@@ -28,8 +28,6 @@ libdecor_frame_interface WindowWayland::_libdecorFrameInterface = {
     .dismiss_popup = WindowWayland::decorFrameDismissPopup
 };
 
-const char* WindowWayland::_windowTag = "WindowWayland";
-
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
     _windowManager(windowManager),
@@ -57,12 +55,13 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
 }
 
 void WindowWayland::close() {
-    _windowManager.unregisterWindow(this);
+    _closed = true;
     hide();
     if (_waylandWindow) {
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
+    _windowManager.unregisterWindow(this);
     // TODO: more destruction!
 }
 void WindowWayland::hide() {
@@ -179,7 +178,7 @@ bool WindowWayland::init() {
     wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
     // unsure if listener data and user data are the same, so i do this for safety : )
     wl_surface_set_user_data(_waylandWindow, this);
-    wl_proxy_set_tag((wl_proxy*) _waylandWindow, &_windowTag);
+    wl_proxy_set_tag((wl_proxy*) _waylandWindow, &AppWayland::proxyTag);
 
     _windowManager.registerWindow(this);
     _configured = false;
@@ -190,6 +189,8 @@ void WindowWayland::show()
     _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     libdecor_frame_map(_frame);
     wl_display_roundtrip(_windowManager.display);
+
+
     setTitle(_title);
     setTitlebarVisible(_titlebarVisible);
     _visible = true;
@@ -247,6 +248,13 @@ void jwm::WindowWayland::surfaceEnter(void* data, wl_surface* surface, wl_output
         self->_scale = scale;
         self->_adaptSize(self->getUnscaledWidth(), self->getUnscaledHeight());
     }
+}
+bool jwm::WindowWayland::isNativeSelf(wl_surface* surface) {
+    if (!_waylandWindow) return false;
+    return surface == _waylandWindow;
+}
+bool jwm::WindowWayland::ownSurface(wl_surface* surface) {
+    return AppWayland::ownProxy((wl_proxy*) surface);
 }
 void jwm::WindowWayland::surfaceLeave(void* data, wl_surface* surface, wl_output* output) {
     auto self = reinterpret_cast<WindowWayland*>(data);

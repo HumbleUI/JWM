@@ -12,6 +12,7 @@ namespace jwm {
     class WindowWayland: public jwm::Window {
     public:
         WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager);
+        WindowWayland() = delete;
         ~WindowWayland() override;
 
         void getDecorations(int& left, int& top, int& right, int& bottom);
@@ -67,6 +68,9 @@ namespace jwm {
 
         void _adaptSize(int newWidth, int newHeight);
 
+        bool isNativeSelf(wl_surface* surface);
+        static bool ownSurface(wl_surface* surface);
+
 
         int _posX = -1;
         int _posY = -1;
@@ -93,6 +97,12 @@ namespace jwm {
         std::string _title;
         bool _titlebarVisible = true;
 
+        bool _closed = false;
+
+        bool isClosed() const {
+            return _closed;
+        }
+
         WindowManagerWayland& _windowManager;
         ILayerWayland* _layer = nullptr;
         wl_surface* _waylandWindow = nullptr;
@@ -105,8 +115,6 @@ namespace jwm {
         static libdecor_frame_interface _libdecorFrameInterface;
 
         static wl_callback_listener _frameCallback;
-
-        static const char* _windowTag;
 
     };
 }

@@ -10,7 +10,7 @@ namespace jwm {
         Output(wl_output* output, uint32_t name);
         ~Output();
 
-        wl_output* _output;
+        wl_output* _output = nullptr;
         uint32_t _name;
         bool primary = false;
         int scale = 1;
@@ -29,6 +29,7 @@ namespace jwm {
         static void outputDescription(void* data, wl_output* output, const char* desc);
 
         static Output* getForNative(wl_output* output);
+        static bool ownOutput(wl_output* output);
     private:
         Output(const Output&) = delete;
         Output(Output&&) = delete;

@@ -53,9 +53,12 @@ void Output::outputDescription(void* data, wl_output* output, const char* desc) 
 Output* Output::getForNative(wl_output* output) {
     if (!output) return nullptr;
 
-    if (wl_proxy_get_tag((wl_proxy*) output) == &AppWayland::proxyTag) {
+    if (ownOutput(output)) {
         return reinterpret_cast<Output*>(wl_output_get_user_data(output));
     }
     return nullptr;
 }
 
+bool Output::ownOutput(wl_output* output) {
+    return AppWayland::ownProxy((wl_proxy*) output);
+}

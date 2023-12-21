@@ -11,7 +11,7 @@ namespace jwm {
                 void *data,
                 size_t dataSize);
         ~Buffer();
-        wl_buffer* _buffer;
+        wl_buffer* _buffer = nullptr;
         wl_buffer* getBuffer() const {
             return _buffer;
         }

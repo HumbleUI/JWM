@@ -6,6 +6,7 @@
 #include <vector>
 #include "impl/Library.hh"
 #include "ScreenInfo.hh"
+#include <wayland-client.h>
 
 namespace jwm {
     extern class AppWayland {
@@ -25,5 +26,7 @@ namespace jwm {
         WindowManagerWayland wm;
 
         static const char* proxyTag;
+
+        static bool ownProxy(wl_proxy* proxy);
     } app;
 }

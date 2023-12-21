@@ -23,6 +23,12 @@ void jwm::AppWayland::terminate() {
 JNIEnv* jwm::AppWayland::getJniEnv() {
     return _jniEnv;
 }
+
+bool jwm::AppWayland::ownProxy(wl_proxy* proxy) {
+    if (!proxy)
+        return false;
+    return wl_proxy_get_tag(proxy) == &proxyTag;
+}
 // JNI
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart(JNIEnv* env, jclass jclass, jobject launcher) {

@@ -86,7 +86,11 @@ void WindowManagerWayland::runLoop() {
     while (_runLoop) {
         if (jwm::classes::Throwable::exceptionThrown(app.getJniEnv()))
             _runLoop = false;
+        while (wl_display_prepare_read(display) != 0) {
+            wl_display_dispatch_pending(display);
 
+        }
+        wl_display_flush(display);
         // block until event : )
         int timeout = -1;
         if (_keyboard && _keyboard->_repeating && _keyboard->getFocus()) {
@@ -102,14 +106,13 @@ void WindowManagerWayland::runLoop() {
         }
         if (poll(&ps[0], 2, timeout) < 0) {
             printf("error with pipe\n");
+            wl_display_cancel_read(display);
             break;
         }
         if (ps[0].revents & POLLIN) {
-            if (libdecor_dispatch(decorCtx, -1) < 0) {
-                fprintf(stderr, "error with dispatch\n");
-                // ???
-                break;
-            }
+            wl_display_read_events(display);
+        } else {
+            wl_display_cancel_read(display);
         }
 
         if (ps[1].revents & POLLIN) {
@@ -248,10 +251,8 @@ void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *r
 WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
     if (!surface) return nullptr;
     // the tag makes it safe. Should:TM: be faster than searching a list every time
-    const char* const* tag = wl_proxy_get_tag((wl_proxy*) surface);
-    if (tag != &WindowWayland::_windowTag) {
+    if (!WindowWayland::ownSurface(surface))
         return nullptr;
-    }
     return reinterpret_cast<WindowWayland*>(wl_surface_get_user_data(surface));
     /*
     WindowWayland* myWindow = nullptr;

@@ -29,7 +29,6 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            // Force a reconfigure; needed to draw title bar correctly
             if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
               fWindow->_windowManager._eglDisplay = eglGetDisplay(window->_windowManager.display);
 
@@ -128,7 +127,7 @@ namespace jwm {
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
               _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
              
-              if ( _eglWindow == EGL_NO_SURFACE ) {
+              if ( _surface == EGL_NO_SURFACE ) {
                   throw std::runtime_error("couldn't get surface");
               } 
             }
@@ -136,11 +135,12 @@ namespace jwm {
           }
         }
         void detachBuffer() override {
-            eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
             if (_surface) {
               eglDestroySurface(_display, _surface);
             }
             _surface = nullptr;
+            // force the current layer to update
+            makeCurrentForced();
             if (_eglWindow) {
               wl_egl_window_destroy(_eglWindow);
             }
