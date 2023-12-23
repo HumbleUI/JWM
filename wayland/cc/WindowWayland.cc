@@ -68,9 +68,14 @@ void WindowWayland::hide() {
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
+    // HACK: memory corruption issue in libdecor:
+    // https://gitlab.freedesktop.org/libdecor/libdecor/-/issues/59
+    // Also causes protocol error that doesn't really make sense
+    /*
     if (_frame) {
         libdecor_frame_unref(_frame);
     }
+    */
     _frame = nullptr;
     _windowManager.unregisterWindow(this);
     _configured = false;
