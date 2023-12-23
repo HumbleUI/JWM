@@ -20,6 +20,7 @@
 #include <EGL/egl.h> 
 #include "Keyboard.hh"
 #include "Pointer.hh"
+#include <memory>
 
 namespace jwm {
     class WindowWayland;
@@ -33,27 +34,6 @@ namespace jwm {
         void registerWindow(WindowWayland* window);
         void unregisterWindow(WindowWayland* window);
         
-        // XVisualInfo* pickVisual();
-        // static int _xerrorhandler(Display* dsp, XErrorEvent* error);
-        // void _xi2IterateDevices();
-
-        // XVisualInfo* getVisualInfo() const { return x11VisualInfo; }
-        // XSetWindowAttributes& getSWA() { return x11SWA; }
-        // XIM getIM() const { return _im; }
-        /*
-        int getX11VisualDepth() const {
-            if (x11VisualInfo) {
-                return x11VisualInfo->depth;
-            }
-            return DefaultDepth(display, 0);
-        }
-        Visual* getX11Visual() const {         
-            if (x11VisualInfo) {
-                return x11VisualInfo->visual;
-            }
-            return DefaultVisual(display, 0);
-        }
-        */
         void _processCallbacks();
         void _processKeyboard();
         void notifyLoop();
@@ -90,11 +70,11 @@ namespace jwm {
         wl_data_device_manager* deviceManager = nullptr;
         // no multiseat?
         wl_seat* seat = nullptr;
-        Pointer* _pointer = nullptr;
+        std::unique_ptr<Pointer> _pointer = nullptr;
         Pointer* getPointer() const {
-                return _pointer;
+                return _pointer.get();
         }
-        Keyboard* _keyboard = nullptr;
+        std::unique_ptr<Keyboard> _keyboard = nullptr;
         wl_data_device* dataDevice = nullptr;
         wl_data_source* currentSource = nullptr;
         wl_data_offer* currentOffer = nullptr;

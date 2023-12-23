@@ -280,17 +280,17 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) &&
             !self->_pointer) {
-        self->_pointer = new Pointer(wl_seat_get_pointer(seat), self);
+        self->_pointer.reset(new Pointer(wl_seat_get_pointer(seat), self));
     } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && self->_pointer) {
-        self->_pointer = nullptr;
+        self->_pointer.reset();
     }
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
             !self->_keyboard) {
-        self->_keyboard = new Keyboard(wl_seat_get_keyboard(seat), self);
+        self->_keyboard.reset(new Keyboard(wl_seat_get_keyboard(seat), self));
     } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
             self->_keyboard) {
-        self->_keyboard = nullptr;
+        self->_keyboard.reset();
     }
 }
 void WindowManagerWayland::seatName(void* data, wl_seat* seat, const char* name) {
