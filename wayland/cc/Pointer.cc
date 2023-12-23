@@ -131,7 +131,7 @@ static void pointerAxis(void* data, wl_pointer* pointer, uint32_t time,
     float fvalue = static_cast<float>(wl_fixed_to_double(value));
     switch (axis) {
         case WL_POINTER_AXIS_VERTICAL_SCROLL:
-            self->_dY += fvalue;
+            self->_dY += -fvalue;
             break;
         case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
             self->_dX += fvalue;
