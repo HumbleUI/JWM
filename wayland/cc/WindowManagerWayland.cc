@@ -1,5 +1,6 @@
 #include "WindowManagerWayland.hh"
 #include "WindowWayland.hh"
+#include <cerrno>
 #include <cstdio>
 #include <limits>
 #include <impl/Library.hh>
@@ -15,7 +16,6 @@
 #include <system_error>
 #include "Log.hh"
 #include <cstring>
-#include <cerrno>
 #include "Output.hh"
 #include <libdecor-0/libdecor.h>
 #include <linux/input-event-codes.h>
@@ -77,8 +77,9 @@ void WindowManagerWayland::runLoop() {
     }
     notifyFD = pipes[1];
     fcntl(pipes[1], F_SETFL, O_NONBLOCK); // notifyLoop no blockie : )
+    struct pollfd wayland_out = {.fd=wl_display_get_fd(display),.events=POLLOUT};
     struct pollfd ps[] = {
-        {.fd=libdecor_get_fd(decorCtx), .events=POLLIN}, 
+        {.fd=wl_display_get_fd(display), .events=POLLIN}, 
         {.fd=pipes[0], .events=POLLIN},
     };
 
@@ -90,7 +91,27 @@ void WindowManagerWayland::runLoop() {
             wl_display_dispatch_pending(display);
 
         }
-        wl_display_flush(display);
+        while (true) {
+            int res = wl_display_flush(display);
+            if (res >= 0)
+                break;
+            
+            switch (errno) {
+                case EPIPE:
+                    wl_display_read_events(display);
+                    throw std::system_error(errno, std::generic_category(), "connection to wayland server unexpectedly terminated");
+                    break;
+                case EAGAIN:
+                    if (poll(&wayland_out, 1, -1) < 0) {
+                        throw std::system_error(EPIPE, std::generic_category(), "poll failed");
+                    }
+                    break;
+                default: 
+                    throw std::system_error(errno, std::generic_category(), "failed to flush requests");
+                    break;
+            }
+
+        }
         // block until event : )
         int timeout = -1;
         if (_keyboard && _keyboard->_repeating && _keyboard->getFocus()) {
@@ -110,7 +131,10 @@ void WindowManagerWayland::runLoop() {
             break;
         }
         if (ps[0].revents & POLLIN) {
-            wl_display_read_events(display);
+            if (wl_display_read_events(display) < 0) {
+                std::perror("events failed");
+                break;
+            }
         } else {
             wl_display_cancel_read(display);
         }
@@ -124,7 +148,8 @@ void WindowManagerWayland::runLoop() {
             // don't test if we already calculated earlier
             _processKeyboard();
         }
-
+        
+        wl_display_dispatch_pending(display);
         notifyBool.store(false);
     }
 
@@ -152,11 +177,7 @@ void WindowManagerWayland::_processCallbacks() {
         }
     }
     {
-        // copy window list in case one closes any other, invalidating some iterator in _nativeWindowToMy
-        std::vector<WindowWayland*> copy;
-        for (auto& p : _nativeWindowToMy) {
-            copy.push_back(p.second);
-        }
+        std::list<WindowWayland*> copy(_windows);
         // process redraw requests
         for (auto p : copy) {
             if (p->isRedrawRequested()) {
@@ -254,13 +275,6 @@ WindowWayland* WindowManagerWayland::getWindowForNative(wl_surface* surface) {
     if (!WindowWayland::ownSurface(surface))
         return nullptr;
     return reinterpret_cast<WindowWayland*>(wl_surface_get_user_data(surface));
-    /*
-    WindowWayland* myWindow = nullptr;
-    auto it = _nativeWindowToMy.find(surface);
-    if (it != _nativeWindowToMy.end())
-        myWindow = it->second;
-    return myWindow;
-    */
 }
 void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities) {
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
@@ -347,13 +361,13 @@ jwm::ByteBuf WindowManagerWayland::getClipboardContents(const std::string& type)
 }
 
 void WindowManagerWayland::registerWindow(WindowWayland* window) {
-    _nativeWindowToMy[window->_waylandWindow] = window;
+    _windows.push_back(window);
 }
 
 void WindowManagerWayland::unregisterWindow(WindowWayland* window) {
-    auto it = _nativeWindowToMy.find(window->_waylandWindow);
-    if (it != _nativeWindowToMy.end()) {
-        _nativeWindowToMy.erase(it);
+    auto it = std::find(_windows.begin(), _windows.end(), window);
+    if (it != _windows.end()) {
+        _windows.erase(it);
     }
 }
 
@@ -380,7 +394,6 @@ wl_data_source_listener WindowManagerWayland::_sourceListener = {
     .cancelled = dataSourceCancelled 
 };
 void WindowManagerWayland::setClipboardContents(std::map<std::string, ByteBuf>&& c) {
-    assert(("create at least one window in order to use clipboard" && !_nativeWindowToMy.empty()));
     _myClipboardSource = c;
 
     if (!deviceManager) return;

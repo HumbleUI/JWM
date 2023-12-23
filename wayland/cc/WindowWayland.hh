@@ -30,6 +30,7 @@ namespace jwm {
         int getHeight();
         int getUnscaledHeight();
         float getScale();
+        int getIntScale();
         void requestRedraw() {
             _isRedrawRequested = true;
             _windowManager.notifyLoop();

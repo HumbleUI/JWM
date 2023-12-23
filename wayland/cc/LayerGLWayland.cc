@@ -22,11 +22,16 @@ namespace jwm {
         EGLDisplay _display = nullptr;
         EGLSurface _surface = nullptr;
         EGLConfig _config = nullptr;
+        bool _closed = false;
 
         LayerGL() = default;
         virtual ~LayerGL() = default;
 
         void attach(WindowWayland* window) {
+            if (_closed) {
+              fprintf(stderr, "already closed\n");
+              throw std::runtime_error("Already closed");
+            }
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
             if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
@@ -67,8 +72,11 @@ namespace jwm {
                     throw std::runtime_error("Couldn't make context");
                 }
             }
+            if (fWindow->_waylandWindow)
+              wl_surface_set_buffer_scale(fWindow->_waylandWindow, 1);
             if (fWindow->_configured)
               attachBuffer();
+            makeCurrentForced();
         }
 
         void setVsyncMode(VSync v) override {
@@ -76,29 +84,42 @@ namespace jwm {
         }
 
         void resize(int width, int height) override {
+            if (!_surface || !_eglWindow) return;
             // Make current to avoid artifacts in other windows
-            makeCurrent();
+            makeCurrentForced();
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
             glStencilMask(0xffffffff);
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-            // ???
+            
             glViewport(0, 0, width, height);
             // God is dead if _eglWindow is null 
-            if (_eglWindow)
-              wl_egl_window_resize(_eglWindow, width, height, 0, 0);
-            
-            wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->_scale);
+            if (_eglWindow && fWindow && fWindow->_waylandWindow) {
+              // HACK: make new window with new scale
+              // https://gitlab.freedesktop.org/mesa/mesa/-/issues/7217
+              if (fWindow->_scale != fWindow->_oldScale) {
+                fprintf(stderr, "HACK: remaking egl window\n");
+                detachBuffer();
+                attachBuffer();
+              } else wl_egl_window_resize(_eglWindow, width, height, 0, 0);
+              wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->getIntScale());
+              fWindow->_oldScale = fWindow->_scale;
+            }
         }
 
         void swapBuffers() override {
-            makeCurrent();
-            if (_surface)
+            if (_surface) {
+              makeCurrent();
               eglSwapBuffers(_display, _surface);
+            }
         }
 
         void close() override {
+            if (_closed) {
+              fprintf(stderr, "already closed\n");
+              return;
+            }
+            _closed = true;
             detachBuffer();
             eglDestroyContext(_display, _context);
             
@@ -125,16 +146,21 @@ namespace jwm {
           if (fWindow && fWindow->_waylandWindow) {
             if (!_eglWindow) {
               _eglWindow = wl_egl_window_create(fWindow->_waylandWindow, fWindow->getWidth(), fWindow->getHeight());
+
+              if (_eglWindow == nullptr) {
+                fprintf(stderr, "failed to get window\n");
+              }
               _surface = eglCreateWindowSurface(_display, _config, _eglWindow, nullptr);
              
               if ( _surface == EGL_NO_SURFACE ) {
-                  throw std::runtime_error("couldn't get surface");
+                fprintf(stderr, "failed to get surface\n");
               } 
+              makeCurrentForced();
             }
-            makeCurrentForced();
           }
         }
         void detachBuffer() override {
+            ILayerWayland::detachBuffer();
             if (_surface) {
               eglDestroySurface(_display, _surface);
             }

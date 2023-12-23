@@ -57,11 +57,6 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
 void WindowWayland::close() {
     _closed = true;
     hide();
-    if (_waylandWindow) {
-        wl_surface_destroy(_waylandWindow);
-    }
-    _waylandWindow = nullptr;
-    _windowManager.unregisterWindow(this);
     // TODO: more destruction!
 }
 void WindowWayland::hide() {
@@ -69,10 +64,15 @@ void WindowWayland::hide() {
     if (_layer) {
         _layer->detachBuffer();
     }
+    if (_waylandWindow) {
+        wl_surface_destroy(_waylandWindow);
+    }
+    _waylandWindow = nullptr;
     if (_frame) {
         libdecor_frame_unref(_frame);
     }
     _frame = nullptr;
+    _windowManager.unregisterWindow(this);
     _configured = false;
 }
 void WindowWayland::maximize() {
@@ -131,12 +131,6 @@ bool WindowWayland::resize(int width, int height) {
         return false;
     _width = width / _scale;
     _height = height / _scale;
-    /*
-    if (_visible) {
-        _adaptSize(_width, _height);    
-    }
-    */
-    _oldScale = _scale;
     return true;
 }
 
@@ -166,6 +160,9 @@ int WindowWayland::getUnscaledHeight() {
 }
 
 float WindowWayland::getScale() {
+    return getIntScale();
+}
+int WindowWayland::getIntScale() {
     return _scale;
 }
 wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
@@ -174,25 +171,21 @@ wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
     return nullptr;
 }
 bool WindowWayland::init() {
-    _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
-    wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
-    // unsure if listener data and user data are the same, so i do this for safety : )
-    wl_surface_set_user_data(_waylandWindow, this);
-    wl_proxy_set_tag((wl_proxy*) _waylandWindow, &AppWayland::proxyTag);
-
-    _windowManager.registerWindow(this);
-    _configured = false;
     return true;
 }
 void WindowWayland::show()
 {
-    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
-    libdecor_frame_map(_frame);
+    _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
+    wl_surface_add_listener(_waylandWindow, &_surfaceListener, this);
+    wl_proxy_set_tag((wl_proxy*) _waylandWindow, &AppWayland::proxyTag);
+    _windowManager.registerWindow(this);
     wl_display_roundtrip(_windowManager.display);
-
-
+    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
     setTitle(_title);
     setTitlebarVisible(_titlebarVisible);
+    libdecor_frame_map(_frame);
+
+    _configured = false;
     _visible = true;
 }
 
@@ -202,7 +195,7 @@ ScreenInfo WindowWayland::getScreen() {
     } else {
         return {
             .id = -1,
-            .bounds = jwm::IRect::makeXYWH(0, 0, _width, _height),
+            .bounds = jwm::IRect::makeXYWH(0, 0, getWidth(), getHeight()),
             .isPrimary = false,
             .scale = _scale
         };
@@ -342,6 +335,7 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
         if (self->_layer)
             self->_layer->attachBuffer();
     }
+    self->_configured = true;
     if (self->_width != width || self->_height != height) {
         if (libdecor_frame_is_floating(frame)) {
             if (width > 0) 
@@ -353,7 +347,6 @@ void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_con
 
         self->_adaptSize(width, height);
     }
-    self->_configured = true;
 }
 void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
     WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
@@ -368,6 +361,10 @@ void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData)
 void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     using namespace classes;
+    if (!_configured) {
+        printf("???\n");
+        return;
+    }
     if (newWidth == _width && newHeight == _height && _scale == _oldScale) return;
     _width = newWidth;
     _height = newHeight;

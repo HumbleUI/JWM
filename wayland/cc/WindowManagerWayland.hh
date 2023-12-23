@@ -121,7 +121,7 @@ namespace jwm {
         int notifyFD = -1;
         std::atomic_bool notifyBool{false};
 
-        std::map<wl_surface*, WindowWayland*> _nativeWindowToMy;
+        std::list<WindowWayland*> _windows;
         std::map<std::string, ByteBuf> _myClipboardContents;
         std::map<std::string, ByteBuf> _myClipboardSource;
         std::list<std::string> _currentMimeTypes;

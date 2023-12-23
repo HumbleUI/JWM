@@ -81,6 +81,7 @@ namespace jwm {
         }
 
         void detachBuffer() override {
+            ILayerWayland::detachBuffer();
             if (_attached && fWindow && fWindow->_waylandWindow) {
                 wl_surface_attach(fWindow->_waylandWindow, nullptr, 0, 0);
                 // commit is not meant to be used in intermediate states
