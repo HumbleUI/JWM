@@ -219,16 +219,7 @@ void WindowWayland::setVisible(bool isVisible) {
 
 void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
     if (!_windowManager.getPointer()) return;
-    auto wayCursor = _getCursorFor(cursor)->images[0];
-    auto buf = wl_cursor_image_get_buffer(wayCursor);
-    auto cursorSurface = _windowManager.getCursorSurface();
-    wl_surface_attach(cursorSurface, 
-            wl_cursor_image_get_buffer(wayCursor),
-            0, 0);
-    wl_surface_set_buffer_scale(cursorSurface, _scale);
-    wl_surface_damage_buffer(cursorSurface, 0, 0, INT32_MAX, INT32_MAX);
-    _windowManager.getPointer()->updateHotspot(wayCursor->hotspot_x, wayCursor->hotspot_y);
-    wl_surface_commit(cursorSurface);
+    _windowManager.getPointer()->setCursor(_scale, cursor);
 }
 
 // what do???
@@ -401,6 +392,16 @@ void jwm::WindowWayland::lockCursor(bool locked) {
             pointer->unlock();
     }
 }
+void jwm::WindowWayland::hideCursor(bool hidden) {
+    auto pointer = _windowManager.getPointer();
+    if (!pointer) return;
+    if (pointer->getFocusedSurface() == this) {
+        if (hidden)
+            pointer->hide();
+        else
+            pointer->unhide();
+    }
+}
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nMake
@@ -538,4 +539,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nL
 {
     jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
     instance->lockCursor(locked);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nHideMouseCursor
+        (JNIEnv* env, jobject obj, jboolean hidden)
+{
+    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
+    instance->hideCursor(hidden);
 }

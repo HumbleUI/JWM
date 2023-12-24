@@ -74,6 +74,8 @@ namespace jwm {
 
         void lockCursor(bool locked);
 
+        void hideCursor(bool hidden);
+
 
         int _posX = -1;
         int _posY = -1;

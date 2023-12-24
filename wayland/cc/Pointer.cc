@@ -45,6 +45,7 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
         return;
     }
     auto self = reinterpret_cast<Pointer*>(data);
+    self->unhide();
     self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->_mouseMask);
 }
 
@@ -147,6 +148,8 @@ static void pointerFrame(void* data, wl_pointer* pointer)
     auto self = reinterpret_cast<Pointer*>(data);
     auto win = self->_focusedSurface;
     if (!win) return;
+    // this is always sent so I can safely issue an unhide here
+    self->unhide();
     if (self->_dX != 0.0f || self->_dY != 0.0f) {
         auto env = app.getJniEnv();
         
@@ -318,12 +321,41 @@ void Pointer::lock() {
         _lock = zwp_pointer_constraints_v1_lock_pointer(_wm.pointerConstraints, _focusedSurface->_waylandWindow, 
                 _pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
         zwp_locked_pointer_v1_add_listener(_lock, &lockListener, this);
+        hide();
     }
 }
 void Pointer::unlock() {
     if (_lock) {
         zwp_locked_pointer_v1_destroy(_lock);
     }
+    unhide();
     _lock = nullptr;
     _locked = false;
+}
+
+void Pointer::hide() {
+    if (_hidden) return;
+    _hidden = true;
+    if (_surface) {
+        wl_surface_attach(_surface, nullptr, 0, 0);
+        wl_surface_commit(_surface);
+    }
+}
+
+void Pointer::unhide() {
+    if (!_hidden) return;
+    _hidden = false;
+    setCursor(_scale, _cursor);
+}
+
+void Pointer::setCursor(int scale, jwm::MouseCursor cursor) {
+    _cursor = cursor;
+    _scale = scale;
+    auto wayCursor = getCursorFor(scale, cursor)->images[0];
+    auto buf = wl_cursor_image_get_buffer(wayCursor);
+    wl_surface_attach(_surface, buf, 0, 0);
+    wl_surface_set_buffer_scale(_surface, scale);
+    wl_surface_damage_buffer(_surface, 0, 0, INT32_MAX, INT32_MAX);
+    updateHotspot(wayCursor->hotspot_x, wayCursor->hotspot_y);
+    wl_surface_commit(_surface);
 }

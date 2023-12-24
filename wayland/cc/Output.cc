@@ -29,7 +29,7 @@ ScreenInfo Output::getScreenInfo() const {
     return {
         .id = _name,
         .bounds = jwm::IRect::makeXYWH(0, 0, width, height),
-        .isPrimary = primary,
+        .isPrimary = false,
         .scale = scale
     };
 }

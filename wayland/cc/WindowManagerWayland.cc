@@ -253,10 +253,7 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
         wl_output* output = (wl_output*)wl_registry_bind(registry, name,
                 &wl_output_interface, 2);
         Output* good = new Output(output, name);
-        if (self->outputs.empty())
-            // ??? this is a race condition (probably) but i have to do this to prevent crashes
-            good->primary = true;
-        self->outputs.push_back(good);
+        self->outputs.push_back(std::move(good));
     } else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
         self->pointerConstraints = (zwp_pointer_constraints_v1*)wl_registry_bind(registry, name,
                 &zwp_pointer_constraints_v1_interface, 1);

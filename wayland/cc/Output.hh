@@ -12,7 +12,6 @@ namespace jwm {
 
         wl_output* _output = nullptr;
         uint32_t _name;
-        bool primary = false;
         int scale = 1;
         int width = 0;
         int height = 0;

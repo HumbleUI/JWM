@@ -42,6 +42,13 @@ namespace jwm {
             return _locked;
         }
 
+        bool _hidden = false;
+        void hide();
+        void unhide();
+        bool isHidden() {
+            return _hidden;
+        }
+
         uint32_t _lastMouseX;
         uint32_t _lastMouseY;
         float _dX = 0.0;
@@ -62,6 +69,11 @@ namespace jwm {
         wl_cursor_theme* _makeCursors(int scale);
         wl_cursor_theme* getThemeFor(int scale);
         wl_cursor* getCursorFor(int scale, jwm::MouseCursor cursor);
+
+        jwm::MouseCursor _cursor = jwm::MouseCursor::ARROW;
+        int _scale = 1;
+
+        void setCursor(int scale, jwm::MouseCursor cursor);
 
         static bool ownPointer(wl_pointer* pointer);
 
