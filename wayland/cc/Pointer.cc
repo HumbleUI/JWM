@@ -21,7 +21,8 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
         self->_serial = serial;
         self->_focusedSurface = jwm::ref(window);
         window->setCursor(jwm::MouseCursor::ARROW);
-        self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->_mouseMask);
+        // frame probably isn't called so I immediately call
+        self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), 0, 0, self->_mouseMask);
     }
 }
 
@@ -46,7 +47,12 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
     }
     auto self = reinterpret_cast<Pointer*>(data);
     self->unhide();
-    self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->_mouseMask);
+    self->_absX = wl_fixed_to_int(surface_x);
+    self->_absY = wl_fixed_to_int(surface_y);
+    self->_movement = true;
+    // I only unhide here, bc i'm unsure of what exactly is wanted with mouse lock.
+    // This event isn't sent on mouse lock, only relative events are sent.
+    self->unhide();
 }
 
 static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
@@ -82,8 +88,8 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             false,
-                            self->_lastMouseX,
-                            self->_lastMouseY,
+                            self->_absX,
+                            self->_absY,
                             jwm::KeyWayland::getModifiers(self->_wm.getXkbState())
                         )
                     );
@@ -115,8 +121,8 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             true,
-                            self->_lastMouseX,
-                            self->_lastMouseY,
+                            self->_absX,
+                            self->_absY,
                             jwm::KeyWayland::getModifiers(self->_wm.getXkbState())
                         )
                     );
@@ -148,8 +154,6 @@ static void pointerFrame(void* data, wl_pointer* pointer)
     auto self = reinterpret_cast<Pointer*>(data);
     auto win = self->_focusedSurface;
     if (!win) return;
-    // this is always sent so I can safely issue an unhide here
-    self->unhide();
     if (self->_dX != 0.0f || self->_dY != 0.0f) {
         auto env = app.getJniEnv();
         
@@ -162,8 +166,8 @@ static void pointerFrame(void* data, wl_pointer* pointer)
                             0.0f,
                             0.0f,
                             0.0f,
-                            self->_lastMouseX,
-                            self->_lastMouseY,
+                            self->_absX * win->_scale,
+                            self->_absY * win->_scale,
                             jwm::KeyWayland::getModifiers(self->_wm.getXkbState())
                         )
                 );
@@ -171,6 +175,13 @@ static void pointerFrame(void* data, wl_pointer* pointer)
 
         self->_dX = 0.0f;
         self->_dY = 0.0f;
+    }
+    if (self->_movement || self->_dXPos != 0.0 || self->_dYPos != 0.0) {
+        auto scale = win->_scale;
+        self->mouseUpdateUnscaled(self->_absX * scale, self->_absY * scale, static_cast<int>(self->_dXPos * scale), static_cast<int>(self->_dYPos * scale), self->_mouseMask);
+        self->_movement = false;
+        self->_dXPos = 0.0;
+        self->_dYPos = 0.0;
     }
 }
 
@@ -190,6 +201,16 @@ wl_pointer_listener Pointer::_pointerListener = {
     .axis_discrete = pointerAxisDiscrete
 };
 
+static void relativePointerRelativeMotion(void* data, zwp_relative_pointer_v1* relative, uint32_t utime_hi, uint32_t utime_lo, 
+        wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
+    auto self = reinterpret_cast<Pointer*>(data);
+
+    self->_dXPos += static_cast<float>(wl_fixed_to_double(dx));
+    self->_dYPos += static_cast<float>(wl_fixed_to_double(dy));
+}
+static zwp_relative_pointer_v1_listener relativePointerListener = {
+    .relative_motion = relativePointerRelativeMotion
+};
 Pointer::Pointer(wl_pointer* pointer, WindowManagerWayland* wm):
     _pointer(pointer),
     _wm(*wm) 
@@ -197,6 +218,10 @@ Pointer::Pointer(wl_pointer* pointer, WindowManagerWayland* wm):
     _surface = wl_compositor_create_surface(_wm.compositor);
     wl_pointer_add_listener(pointer, &_pointerListener, this);
     wl_proxy_set_tag((wl_proxy*)pointer, &AppWayland::proxyTag);
+    if (_wm.relativePointerManager) {
+        _relative = zwp_relative_pointer_manager_v1_get_relative_pointer(_wm.relativePointerManager, pointer);
+        zwp_relative_pointer_v1_add_listener(_relative, &relativePointerListener, this);
+    }
 }
 
 Pointer::~Pointer()
@@ -207,23 +232,18 @@ Pointer::~Pointer()
         wl_surface_destroy(_surface);
 }
 
-void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
+void Pointer::mouseUpdate(uint32_t x, uint32_t y, int32_t relX, int32_t relY, uint32_t mask) {
     auto window = _focusedSurface;
     if (!window)
         return;
-    if (_lastMouseX == x && _lastMouseY == y)
-        return;
-    int movementX = x - _lastMouseX, movementY = y - _lastMouseY;
-    _lastMouseX = x;
-    _lastMouseY = y;
 
     jwm::JNILocal<jobject> eventMove(
         app.getJniEnv(),
         jwm::classes::EventMouseMove::make(app.getJniEnv(),
             x,
             y,
-            movementX,
-            movementY,
+            relX,
+            relY,
             jwm::MouseButtonWayland::fromNativeMask(mask),
             // impl me!
             jwm::KeyWayland::getModifiers(_wm.getXkbState())
@@ -232,11 +252,14 @@ void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
     window->dispatch(eventMove.get());
 }
 
-void Pointer::mouseUpdateUnscaled(uint32_t x, uint32_t y, uint32_t mask) {
+void Pointer::mouseUpdateUnscaled(uint32_t x, uint32_t y, int32_t relX, int32_t relY, uint32_t mask) {
     if (!_focusedSurface) return;
     auto newX = x * _focusedSurface->_scale;
     auto newY = y * _focusedSurface->_scale;
-    mouseUpdate(newX, newY, mask);
+    auto newDX = relX * _focusedSurface->_scale;
+    auto newDY = relY * _focusedSurface->_scale;
+
+    mouseUpdate(newX, newY, newDX, newDY, mask);
 }
 
 void Pointer::updateHotspot(int x, int y) {

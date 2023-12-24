@@ -36,10 +36,15 @@ file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 add_library(cursorlock STATIC)
+add_library(relativepointer STATIC)
 # set_property(TARGET cursorlock PROPERTY POSITION_INDEPENDENT_CODE ON)
 ecm_add_wayland_client_protocol(cursorlock 
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml"
     BASENAME pointer-constraints-unstable-v1
+)
+ecm_add_wayland_client_protocol(relativepointer
+    PROTOCOL "${WaylandProtocols_DATADIR}/unstable/relative-pointer/relative-pointer-unstable-v1.xml"
+    BASENAME relative-pointer-unstable-v1
 )
 find_library(WAYLAND_CLIENT_LIB wayland-client)
 find_library(DECOR_LIB decor-0)
@@ -67,4 +72,4 @@ target_link_libraries(jwm PRIVATE ${WAYLAND_CLIENT_LIB} ${DECOR_LIB}
     ${WAYLAND_CURSOR} ${XKBCOMMON})
 target_link_libraries(jwm PRIVATE ${EGL} ${WAYLAND_EGL})
 target_link_libraries(jwm PRIVATE OpenGL::GL)
-target_link_libraries(jwm PRIVATE cursorlock)
+target_link_libraries(jwm PRIVATE cursorlock relativepointer)

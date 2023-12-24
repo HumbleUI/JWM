@@ -257,6 +257,9 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
     } else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
         self->pointerConstraints = (zwp_pointer_constraints_v1*)wl_registry_bind(registry, name,
                 &zwp_pointer_constraints_v1_interface, 1);
+    } else if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
+        self->relativePointerManager = (zwp_relative_pointer_manager_v1*)wl_registry_bind(registry, name,
+                &zwp_relative_pointer_manager_v1_interface, 1);
     }
 }
 void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *registry, uint32_t name) {

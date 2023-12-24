@@ -22,6 +22,7 @@
 #include "Pointer.hh"
 #include <memory>
 #include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
+#include <wayland-relative-pointer-unstable-v1-client-protocol.h>
 
 namespace jwm {
     class WindowWayland;
@@ -72,6 +73,7 @@ namespace jwm {
         // no multiseat?
         wl_seat* seat = nullptr;
         zwp_pointer_constraints_v1* pointerConstraints = nullptr;
+        zwp_relative_pointer_manager_v1* relativePointerManager = nullptr;
         std::unique_ptr<Pointer> _pointer = nullptr;
         Pointer* getPointer() const {
                 return _pointer.get();

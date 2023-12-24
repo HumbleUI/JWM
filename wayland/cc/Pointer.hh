@@ -5,6 +5,7 @@
 #include <wayland-cursor.h>
 #include "MouseCursor.hh"
 #include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
+#include <wayland-relative-pointer-unstable-v1-client-protocol.h>
 
 namespace jwm {
     class WindowManagerWayland;
@@ -49,8 +50,12 @@ namespace jwm {
             return _hidden;
         }
 
-        uint32_t _lastMouseX;
-        uint32_t _lastMouseY;
+        zwp_relative_pointer_v1* _relative = nullptr;
+        bool _movement = false;
+        int _absX = 0;
+        int _absY = 0;
+        float _dXPos = 0.0;
+        float _dYPos = 0.0;
         float _dX = 0.0;
         float _dY = 0.0;
 
@@ -59,8 +64,8 @@ namespace jwm {
 
         static wl_pointer_listener _pointerListener;
 
-        void mouseUpdate(uint32_t x, uint32_t y, uint32_t mask);
-        void mouseUpdateUnscaled(uint32_t x, uint32_t y, uint32_t mask);
+        void mouseUpdate(uint32_t x, uint32_t y, int32_t relX, int32_t relY, uint32_t mask);
+        void mouseUpdateUnscaled(uint32_t x, uint32_t y, int32_t relX, int32_t relY, uint32_t mask);
 
         void updateHotspot(int x, int y);
 
