@@ -21,6 +21,7 @@
 #include "Keyboard.hh"
 #include "Pointer.hh"
 #include <memory>
+#include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
 
 namespace jwm {
     class WindowWayland;
@@ -70,6 +71,7 @@ namespace jwm {
         wl_data_device_manager* deviceManager = nullptr;
         // no multiseat?
         wl_seat* seat = nullptr;
+        zwp_pointer_constraints_v1* pointerConstraints = nullptr;
         std::unique_ptr<Pointer> _pointer = nullptr;
         Pointer* getPointer() const {
                 return _pointer.get();
@@ -93,6 +95,8 @@ namespace jwm {
                         return _keyboard->getState();
                 return nullptr;
         }
+
+
         libdecor* decorCtx = nullptr;
         EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;

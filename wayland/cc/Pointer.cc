@@ -287,3 +287,39 @@ wl_cursor* Pointer::getCursorFor(int scale, jwm::MouseCursor cursor) {
 bool Pointer::ownPointer(wl_pointer* pointer) {
     return AppWayland::ownProxy((wl_proxy*) pointer);
 }
+
+static void lockLocked(void* data, zwp_locked_pointer_v1* pointer) {
+    auto self = reinterpret_cast<Pointer*>(data);
+
+    self->_locked = true;
+}
+static void lockUnlocked(void* data, zwp_locked_pointer_v1* pointer) {
+    zwp_locked_pointer_v1_destroy(pointer);
+
+    auto self = reinterpret_cast<Pointer*>(data);
+
+    self->_locked = false;
+    self->_lock = nullptr;
+}
+
+static zwp_locked_pointer_v1_listener lockListener = {
+    .locked = lockLocked,
+    .unlocked = lockUnlocked
+};
+void Pointer::lock() {
+    if (_wm.pointerConstraints && _focusedSurface && _focusedSurface->_waylandWindow) {
+        if (_lock) {
+            zwp_locked_pointer_v1_destroy(_lock);
+        }
+        _lock = zwp_pointer_constraints_v1_lock_pointer(_wm.pointerConstraints, _focusedSurface->_waylandWindow, 
+                _pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+        zwp_locked_pointer_v1_add_listener(_lock, &lockListener, this);
+    }
+}
+void Pointer::unlock() {
+    if (_lock) {
+        zwp_locked_pointer_v1_destroy(_lock);
+    }
+    _lock = nullptr;
+    _locked = false;
+}

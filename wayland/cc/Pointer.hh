@@ -4,6 +4,7 @@
 #include <map>
 #include <wayland-cursor.h>
 #include "MouseCursor.hh"
+#include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
 
 namespace jwm {
     class WindowManagerWayland;
@@ -31,6 +32,14 @@ namespace jwm {
         WindowWayland* _focusedSurface = nullptr;
         WindowWayland* getFocusedSurface() const {
             return _focusedSurface;
+        }
+
+        zwp_locked_pointer_v1* _lock = nullptr;
+        bool _locked = false;
+        void lock();
+        void unlock();
+        bool isLocked() {
+            return _locked;
         }
 
         uint32_t _lastMouseX;

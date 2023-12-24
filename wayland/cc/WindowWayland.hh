@@ -72,6 +72,8 @@ namespace jwm {
         bool isNativeSelf(wl_surface* surface);
         static bool ownSurface(wl_surface* surface);
 
+        void lockCursor(bool locked);
+
 
         int _posX = -1;
         int _posY = -1;

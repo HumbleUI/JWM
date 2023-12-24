@@ -390,6 +390,17 @@ void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     // however decorFrameCommit will cause a redraw anyway.
     // Not doing it in wayland lets me not cause an exception on hide.
 }
+
+void jwm::WindowWayland::lockCursor(bool locked) {
+    auto pointer = _windowManager.getPointer();
+    if (!pointer) return;
+    if (pointer->getFocusedSurface() == this) {
+        if (locked)
+            pointer->lock();
+        else
+            pointer->unlock();
+    }
+}
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nMake
@@ -520,4 +531,11 @@ extern "C" JNIEXPORT jfloat JNICALL Java_io_github_humbleui_jwm_WindowWayland__1
         (JNIEnv* env, jobject obj) {
     jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
     return instance->getScale();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nLockMouseCursor
+        (JNIEnv* env, jobject obj, jboolean locked) 
+{
+    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
+    instance->lockCursor(locked);
 }

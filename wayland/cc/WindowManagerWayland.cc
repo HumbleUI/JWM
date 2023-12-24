@@ -257,6 +257,9 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
             // ??? this is a race condition (probably) but i have to do this to prevent crashes
             good->primary = true;
         self->outputs.push_back(good);
+    } else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
+        self->pointerConstraints = (zwp_pointer_constraints_v1*)wl_registry_bind(registry, name,
+                &zwp_pointer_constraints_v1_interface, 1);
     }
 }
 void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *registry, uint32_t name) {
