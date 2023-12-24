@@ -21,6 +21,7 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
         self->_serial = serial;
         self->_focusedSurface = jwm::ref(window);
         window->setCursor(jwm::MouseCursor::ARROW);
+        self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), self->_mouseMask);
     }
 }
 
@@ -209,9 +210,9 @@ void Pointer::mouseUpdate(uint32_t x, uint32_t y, uint32_t mask) {
         return;
     if (_lastMouseX == x && _lastMouseY == y)
         return;
+    int movementX = x - _lastMouseX, movementY = y - _lastMouseY;
     _lastMouseX = x;
     _lastMouseY = y;
-    int movementX = 0, movementY = 0;
 
     jwm::JNILocal<jobject> eventMove(
         app.getJniEnv(),
@@ -298,8 +299,11 @@ static void lockUnlocked(void* data, zwp_locked_pointer_v1* pointer) {
 
     auto self = reinterpret_cast<Pointer*>(data);
 
-    self->_locked = false;
     self->_lock = nullptr;
+    if (self->_locked) {
+        // Request a new lock on surface reenter
+        self->lock();
+    }
 }
 
 static zwp_locked_pointer_v1_listener lockListener = {
