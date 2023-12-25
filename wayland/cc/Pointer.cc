@@ -61,6 +61,7 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
     auto self = reinterpret_cast<Pointer*>(data);
     auto window = self->_focusedSurface;
     if (!window) return;
+    int scale = window->getIntScale();
     if (state == 0) {
         // release
         switch (button) {
@@ -87,8 +88,8 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             false,
-                            self->_absX,
-                            self->_absY,
+                            self->_absX * scale,
+                            self->_absY * scale,
                             jwm::KeyWayland::getModifiers(self->_wm.getXkbState())
                         )
                     );
@@ -120,8 +121,8 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
                             app.getJniEnv(),
                             MouseButtonWayland::fromNative(button),
                             true,
-                            self->_absX,
-                            self->_absY,
+                            self->_absX * scale,
+                            self->_absY * scale,
                             jwm::KeyWayland::getModifiers(self->_wm.getXkbState())
                         )
                     );
