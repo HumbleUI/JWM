@@ -38,7 +38,7 @@ WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
 
 WindowWayland::~WindowWayland() {
     // TODO: close gets called twice?
-    // close();
+    close();
 }
 
 
@@ -56,6 +56,7 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
 
 void WindowWayland::close() {
     _closed = true;
+    if (_closed) return;
     hide();
     // TODO: more destruction!
 }

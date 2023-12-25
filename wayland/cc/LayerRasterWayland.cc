@@ -64,8 +64,8 @@ namespace jwm {
 
         void close() override {
             detachBuffer();
-            jwm::unref(&fWindow);
-            fWindow = nullptr;
+            if (fWindow)
+                jwm::unref(&fWindow);
         }
 
         void makeCurrentForced() override {

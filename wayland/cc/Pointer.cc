@@ -46,7 +46,6 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
         return;
     }
     auto self = reinterpret_cast<Pointer*>(data);
-    self->unhide();
     self->_absX = wl_fixed_to_int(surface_x);
     self->_absY = wl_fixed_to_int(surface_y);
     self->_movement = true;
@@ -178,7 +177,8 @@ static void pointerFrame(void* data, wl_pointer* pointer)
     }
     if (self->_movement || self->_dXPos != 0.0 || self->_dYPos != 0.0) {
         auto scale = win->_scale;
-        self->mouseUpdateUnscaled(self->_absX * scale, self->_absY * scale, static_cast<int>(self->_dXPos * scale), static_cast<int>(self->_dYPos * scale), self->_mouseMask);
+        // rounding inaccuracy?
+        self->mouseUpdateUnscaled(self->_absX, self->_absY, static_cast<int>(self->_dXPos), static_cast<int>(self->_dYPos), self->_mouseMask);
         self->_movement = false;
         self->_dXPos = 0.0;
         self->_dYPos = 0.0;
