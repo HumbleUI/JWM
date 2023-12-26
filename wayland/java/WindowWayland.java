@@ -77,6 +77,7 @@ public class WindowWayland extends Window {
 
     @Override
     public Window setTitlebarVisible(boolean value) {
+        assert _onUIThread() : "Should be run on UI thread";
         _nSetTitlebarVisible(value);
         return this;
     }

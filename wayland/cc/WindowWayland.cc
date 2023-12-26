@@ -55,8 +55,8 @@ void WindowWayland::setTitlebarVisible(bool isVisible) {
 }
 
 void WindowWayland::close() {
-    _closed = true;
     if (_closed) return;
+    _closed = true;
     hide();
     // TODO: more destruction!
 }
