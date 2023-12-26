@@ -63,7 +63,9 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
         if (layer != null) {
             layer.attach(this);
             _layer = layer;
-            accept(EventWindowScreenChange.INSTANCE);
+            // accepting this immediately causes crashes on wayland
+            if (Platform.CURRENT != Platform.WAYLAND)
+                accept(EventWindowScreenChange.INSTANCE);
         }
         return this;
     }
@@ -423,7 +425,7 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
 
         if (e instanceof EventWindowScreenChange) {
             accept(new EventWindowResize(this));
-        } else if (e instanceof EventWindowResize && Platform.CURRENT != Platform.X11 && Platform.CURRENT != Platform.WAYLAND) {
+        } else if (e instanceof EventWindowResize && Platform.CURRENT != Platform.X11) {
             accept(EventFrame.INSTANCE);
         }
     }

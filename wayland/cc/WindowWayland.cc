@@ -359,7 +359,6 @@ void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const cha
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     using namespace classes;
     if (!_configured) {
-        printf("???\n");
         return;
     }
     if (newWidth == _width && newHeight == _height && _scale == _oldScale) return;

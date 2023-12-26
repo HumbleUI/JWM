@@ -85,7 +85,9 @@ public class WindowWayland extends Window {
     public Window setVisible(boolean isVisible) {
         assert _onUIThread() : "Should be run on UI thread";
         _nSetVisible(isVisible);
-        return super.setVisible(true);
+        // this calls a screen change, which will cause a crash because GL context isn't ready yet
+        // return super.setVisible(true);
+        return this;
     }
 
     @Override
