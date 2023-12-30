@@ -101,9 +101,10 @@ namespace jwm {
                 fprintf(stderr, "HACK: remaking egl window\n");
                 detachBuffer();
                 attachBuffer();
-              } else wl_egl_window_resize(_eglWindow, width, height, 0, 0);
-              wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->getIntScale());
-              fWindow->_oldScale = fWindow->_scale;
+                wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->getIntScale());
+                fWindow->_oldScale = fWindow->_scale;
+              } else 
+                wl_egl_window_resize(_eglWindow, width, height, 0, 0);
             }
         }
 
