@@ -22,9 +22,11 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            resize(window->getWidth(), window->getHeight());
-            if (fWindow->_configured)
+            if (fWindow->_configured) {
                 attachBuffer();
+                // delay this as much as possible
+                fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
+            }
         }
 
         void resize(int width, int height) override {
@@ -64,8 +66,10 @@ namespace jwm {
 
         void close() override {
             detachBuffer();
-            if (fWindow)
+            if (fWindow) {
+                fWindow->setLayer(nullptr);
                 jwm::unref(&fWindow);
+            }
         }
 
         void makeCurrentForced() override {
@@ -77,7 +81,6 @@ namespace jwm {
 
         void attachBuffer() override {
             _attached = true;
-            swapBuffers();
         }
 
         void detachBuffer() override {
@@ -88,9 +91,6 @@ namespace jwm {
                 // wl_surface_commit(fWindow->_waylandWindow);
             }
             _attached = false;
-        }
-        void reconfigure() {
-            swapBuffers();
         }
     };
 
@@ -111,8 +111,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nAtt
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nReconfigure
         (JNIEnv* env, jobject obj) {
-    jwm::LayerRaster* instance = reinterpret_cast<jwm::LayerRaster*>(jwm::classes::Native::fromJava(env, obj));
-    instance->reconfigure();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerRaster__1nResize

@@ -74,8 +74,10 @@ namespace jwm {
             }
             if (fWindow->_waylandWindow)
               wl_surface_set_buffer_scale(fWindow->_waylandWindow, 1);
-            if (fWindow->_configured)
+            if (fWindow->_configured) {
               attachBuffer();
+              fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
+            }
             makeCurrentForced();
         }
 
@@ -124,8 +126,10 @@ namespace jwm {
             detachBuffer();
             eglDestroyContext(_display, _context);
             
-            if (fWindow)
+            if (fWindow) {
+              fWindow->setLayer(nullptr);
               jwm::unref(&fWindow);
+            }
         }
 
         void makeCurrentForced() override {
@@ -198,7 +202,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nAttach
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nReconfigure
-  (JNIEnv* env, jobject obj, jint width, jint height) {
+  (JNIEnv* env, jobject obj) {
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_LayerGL__1nResize

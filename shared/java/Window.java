@@ -61,8 +61,8 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
             _layer = null;
         }
         if (layer != null) {
-            layer.attach(this);
             _layer = layer;
+            layer.attach(this);
             // accepting this immediately causes crashes on wayland
             if (Platform.CURRENT != Platform.WAYLAND)
                 accept(EventWindowScreenChange.INSTANCE);
