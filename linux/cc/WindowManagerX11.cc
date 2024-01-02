@@ -720,10 +720,6 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             XSendEvent(display, ev.xselectionrequest.requestor, True, NoEventMask, (XEvent *)&ssev);
             break;
         }
-        case Expose: {
-            myWindow->requestFrame();
-            break;
-        }
     }
 }
 
