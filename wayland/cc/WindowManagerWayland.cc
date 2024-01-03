@@ -17,7 +17,6 @@
 #include "Log.hh"
 #include <cstring>
 #include "Output.hh"
-#include <libdecor-0/libdecor.h>
 #include <linux/input-event-codes.h>
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon.h>
@@ -31,12 +30,16 @@ wl_registry_listener WindowManagerWayland::_registryListener = {
     .global = WindowManagerWayland::registryHandleGlobal,
     .global_remove = WindowManagerWayland::registryHandleGlobalRemove
 };
-libdecor_interface WindowManagerWayland::_decorInterface = {
-    .error = WindowManagerWayland::libdecorError
-};
 wl_seat_listener WindowManagerWayland::_seatListener = {
     .capabilities = WindowManagerWayland::seatCapabilities,
     .name = WindowManagerWayland::seatName
+};
+
+static void xdgWmBasePing(void* data, xdg_wm_base* wm, uint32_t serial) {
+    xdg_wm_base_pong(wm, serial);    
+}
+static xdg_wm_base_listener _wmListener = {
+    .ping = xdgWmBasePing
 };
 WindowManagerWayland::WindowManagerWayland():
     display(wl_display_connect(nullptr)) {
@@ -46,17 +49,17 @@ WindowManagerWayland::WindowManagerWayland():
         
 
 
-        if (!(shm && compositor && deviceManager && seat)) {
+        if (!(shm && compositor && deviceManager && seat && xdgWm && subcompositor && viewporter)) {
             // ???
             // Bad. Means our compositor no supportie : (
             throw std::system_error(ENOTSUP, std::generic_category(), "Unsupported compositor");
         }
-       
+        
+        xdg_wm_base_add_listener(xdgWm, &_wmListener, nullptr);
         // ???: Moving this after libdecor_new causes input to not work
         wl_seat_add_listener(seat, &_seatListener, this);
         dataDevice = wl_data_device_manager_get_data_device(deviceManager, seat);
         wl_data_device_add_listener(dataDevice, &_deviceListener, this);
-        decorCtx = libdecor_new(display, &_decorInterface);
 
 
         wl_display_roundtrip(display);
@@ -159,11 +162,6 @@ void WindowManagerWayland::runLoop() {
     
 }
 
-void WindowManagerWayland::libdecorError(libdecor* context, enum libdecor_error error, const char* message) {
-    // ???
-    fprintf(stderr, "Caught error (%d): %s\n", error, message);
-    throw std::runtime_error("lib decor error > : (");
-}
 void WindowManagerWayland::_processCallbacks() {
     {
         // process ui thread callbacks
@@ -182,7 +180,7 @@ void WindowManagerWayland::_processCallbacks() {
         for (auto p : copy) {
             if (p->isRedrawRequested()) {
                 p->unsetRedrawRequest();
-                if (p->_visible && p->_configured) {
+                if (p->_visible && p->isConfigured()) {
                     if (p->_layer) {
                         p->_layer->makeCurrent();
                     }
@@ -260,6 +258,18 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
     } else if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
         self->relativePointerManager = (zwp_relative_pointer_manager_v1*)wl_registry_bind(registry, name,
                 &zwp_relative_pointer_manager_v1_interface, 1);
+    } else if (strcmp(interface, wp_viewporter_interface.name) == 0) {
+        self->viewporter = (wp_viewporter*)wl_registry_bind(registry, name,
+                &wp_viewporter_interface, 1);
+    } else if (strcmp(interface, wl_subcompositor_interface.name) == 0) {
+        self->subcompositor = (wl_subcompositor*)wl_registry_bind(registry, name,
+                &wl_subcompositor_interface, 1);
+    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+        self->xdgWm = (xdg_wm_base*)wl_registry_bind(registry, name,
+                &xdg_wm_base_interface, 1);
+    } else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
+        self->decorationManager = (zxdg_decoration_manager_v1*)wl_registry_bind(registry, name,
+                &zxdg_decoration_manager_v1_interface, 1);
     }
 }
 void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *registry, uint32_t name) {
@@ -283,7 +293,7 @@ void WindowManagerWayland::seatCapabilities(void* data, wl_seat* seat, uint32_t 
     auto self = reinterpret_cast<WindowManagerWayland*>(data);
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) &&
             !self->_pointer) {
-        self->_pointer.reset(new Pointer(wl_seat_get_pointer(seat), self));
+        self->_pointer.reset(new Pointer(seat, wl_seat_get_pointer(seat), self));
     } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && self->_pointer) {
         self->_pointer.reset();
     }

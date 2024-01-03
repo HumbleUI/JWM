@@ -1,3 +1,5 @@
+#pragma once
+
 #include <wayland-client.h>
 #include <vector>
 #include <cstdint>

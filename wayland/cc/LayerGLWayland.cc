@@ -74,7 +74,7 @@ namespace jwm {
             }
             if (fWindow->_waylandWindow)
               wl_surface_set_buffer_scale(fWindow->_waylandWindow, 1);
-            if (fWindow->_configured) {
+            if (fWindow->isConfigured()) {
               attachBuffer();
               fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
             }

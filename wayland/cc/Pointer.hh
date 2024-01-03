@@ -6,14 +6,17 @@
 #include "MouseCursor.hh"
 #include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
 #include <wayland-relative-pointer-unstable-v1-client-protocol.h>
+#include "Decoration.hh"
 
 namespace jwm {
     class WindowManagerWayland;
     class WindowWayland;
     class Pointer {
     public:
-        Pointer(wl_pointer* pointer, jwm::WindowManagerWayland* wm);
+        Pointer(wl_seat* seat, wl_pointer* pointer, jwm::WindowManagerWayland* wm);
         ~Pointer();
+
+        wl_seat* _seat = nullptr;
 
         wl_pointer* _pointer = nullptr;
         wl_pointer* getPointer() const {
@@ -31,6 +34,7 @@ namespace jwm {
         }
 
         WindowWayland* _focusedSurface = nullptr;
+        DecorationFocus _decorationFocus = DECORATION_FOCUS_MAIN;
         WindowWayland* getFocusedSurface() const {
             return _focusedSurface;
         }
@@ -78,7 +82,7 @@ namespace jwm {
         jwm::MouseCursor _cursor = jwm::MouseCursor::ARROW;
         int _scale = 1;
 
-        void setCursor(int scale, jwm::MouseCursor cursor);
+        void setCursor(int scale, jwm::MouseCursor cursor, bool force);
 
         static bool ownPointer(wl_pointer* pointer);
 

@@ -21,13 +21,6 @@ wl_surface_listener WindowWayland::_surfaceListener = {
 #endif
 };
  
-libdecor_frame_interface WindowWayland::_libdecorFrameInterface = {
-    .configure = WindowWayland::decorFrameConfigure,
-    .close = WindowWayland::decorFrameClose,
-    .commit = WindowWayland::decorFrameCommit,
-    .dismiss_popup = WindowWayland::decorFrameDismissPopup
-};
-
 WindowWayland::WindowWayland(JNIEnv* env, WindowManagerWayland& windowManager):
     jwm::Window(env),
     _windowManager(windowManager),
@@ -44,14 +37,14 @@ WindowWayland::~WindowWayland() {
 
 void WindowWayland::setTitle(const std::string& title) {
     _title = title;
-    if (_frame)
-        libdecor_frame_set_title(_frame, _title.c_str());
+    if (_decoration)
+        _decoration->setTitle(title);
 }
 
 void WindowWayland::setTitlebarVisible(bool isVisible) {
     _titlebarVisible = isVisible;
-    if (_frame)
-        libdecor_frame_set_visibility(_frame, isVisible);
+    if (_decoration)
+        _decoration->setVisible(isVisible);
 }
 
 void WindowWayland::close() {
@@ -69,17 +62,11 @@ void WindowWayland::hide() {
         wl_surface_destroy(_waylandWindow);
     }
     _waylandWindow = nullptr;
-    // HACK: memory corruption issue in libdecor:
-    // https://gitlab.freedesktop.org/libdecor/libdecor/-/issues/59
-    // Also causes protocol error that doesn't really make sense
-    /*
-    if (_frame) {
-        libdecor_frame_unref(_frame);
+    if (_decoration) {
+        _decoration->close();
     }
-    */
-    _frame = nullptr;
+    _decoration = nullptr;
     _windowManager.unregisterWindow(this);
-    _configured = false;
 }
 void WindowWayland::maximize() {
     // impl me :) 
@@ -98,7 +85,9 @@ void WindowWayland::setFullScreen(bool isFullScreen) {
 }
 
 bool WindowWayland::isFullScreen() {
-    return _fullscreen;
+    if (_decoration)
+        return _decoration->_fullscreen;
+    return false;
 }
 
 void WindowWayland::setLayer(ILayerWayland* layer) {
@@ -107,10 +96,14 @@ void WindowWayland::setLayer(ILayerWayland* layer) {
 }
 void WindowWayland::getDecorations(int& left, int& top, int& right, int& bottom) {
     // impl me : )
-    left = 0;
-    right = 0;
-    top = 0;
-    bottom = 0;
+    if (_decoration) {
+        _decoration->getBorders(left, top, right, bottom);
+    } else {
+        left = 0;
+        right = 0;
+        top = 0;
+        bottom = 0;
+    }
 
 }
 
@@ -122,9 +115,6 @@ void WindowWayland::getContentPosition(int& posX, int& posY) {
 
 bool WindowWayland::resize(int width, int height) {
     if (width < 0 || height < 0)
-        return false;
-    // don't allow size to be set if currently tiled
-    if (!_floating)
         return false;
     // Width and height are in absolute pixel units, and wayland will
     // complain if you try to set a width/height that isn't a multiple of scale.
@@ -179,6 +169,11 @@ wl_cursor* WindowWayland::_getCursorFor(jwm::MouseCursor cursor) {
 bool WindowWayland::init() {
     return true;
 }
+bool WindowWayland::isConfigured() {
+    if (_decoration)
+        return _decoration->_configured;
+    return false;
+}
 void WindowWayland::show()
 {
     _waylandWindow = wl_compositor_create_surface(_windowManager.compositor);
@@ -186,12 +181,11 @@ void WindowWayland::show()
     wl_proxy_set_tag((wl_proxy*) _waylandWindow, &AppWayland::proxyTag);
     _windowManager.registerWindow(this);
     wl_display_roundtrip(_windowManager.display);
-    _frame = libdecor_decorate(_windowManager.decorCtx, _waylandWindow, &_libdecorFrameInterface, this);
+    _decoration = new Decoration(*this);
     setTitle(_title);
     setTitlebarVisible(_titlebarVisible);
-    libdecor_frame_map(_frame);
-
-    _configured = false;
+    // map
+    wl_surface_commit(_waylandWindow);
     _visible = true;
 }
 
@@ -218,9 +212,12 @@ void WindowWayland::setVisible(bool isVisible) {
     }
 }
 
-void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
+void jwm::WindowWayland::setCursorMaybe(jwm::MouseCursor cursor, bool force) {
     if (!_windowManager.getPointer()) return;
-    _windowManager.getPointer()->setCursor(_scale, cursor);
+    _windowManager.getPointer()->setCursor(_scale, cursor, force);
+}
+void jwm::WindowWayland::setCursor(jwm::MouseCursor cursor) {
+    setCursorMaybe(cursor, false);
 }
 
 // what do???
@@ -283,82 +280,9 @@ static void frameCallbackDone(void* data, wl_callback* cb, uint32_t cb_data) {
 wl_callback_listener jwm::WindowWayland::_frameCallback = {
     .done = frameCallbackDone
 };
-
-void jwm::WindowWayland::decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* configuration,
-        void *userData) {
-    auto self = reinterpret_cast<WindowWayland*>(userData);
-    int width = 0, height = 0;
-    libdecor_window_state winState;
-
-    libdecor_configuration_get_content_size(configuration, frame, &width, &height);
-
-
-    width = (width <= 0) ? self->_floatingWidth : width;
-    height = (height <= 0) ? self->_floatingHeight : height;
-
-    libdecor_state* state = libdecor_state_new(width, height);
-    libdecor_frame_commit(frame, state, configuration);
-    libdecor_state_free(state);
-
-    if (libdecor_configuration_get_window_state(configuration, &winState)) {
-        bool active = (winState & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
-        bool maximized = (winState & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
-        bool fullscreen = (winState & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
-        // Some compositors (like weston) don't actually tell me on focus in and focus out.
-        // Libdecor simply sends an active at the beginning and keeps chugging.
-        if (active != self->_active)
-            if (active)
-                self->dispatch(classes::EventWindowFocusIn::kInstance);
-            else
-                self->dispatch(classes::EventWindowFocusOut::kInstance);
-        self->_active = active;
-        if (maximized != self->_maximized)
-            if (maximized)
-                self->dispatch(classes::EventWindowMaximize::kInstance);
-        self->_maximized = maximized;
-        // ???
-        /*
-        if (fullscreen != self->_fullscreen)
-            if (fullscreen)
-                self->dispatch(classes::EventWindowFullScreenEnter::kInstance);
-            else
-                self->dispatch(classes::EventWindowFullScreenLeave::kInstance);
-                */
-        self->_fullscreen = fullscreen;
-        self->_floating = libdecor_frame_is_floating(frame);
-    }
-    // before width
-    if (!self->_configured) {
-        if (self->_layer)
-            self->_layer->attachBuffer();
-    }
-    self->_configured = true;
-    if (self->_width != width || self->_height != height) {
-        if (libdecor_frame_is_floating(frame)) {
-            if (width > 0) 
-                self->_floatingWidth = width;
-            if (height > 0)
-                self->_floatingHeight = height;
-        }
-
-
-        self->_adaptSize(width, height);
-    }
-}
-void jwm::WindowWayland::decorFrameClose(libdecor_frame* frame, void* userData) {
-    WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
-    self->dispatch(classes::EventWindowCloseRequest::kInstance);
-}
-void jwm::WindowWayland::decorFrameCommit(libdecor_frame* frame, void* userData) {
-    WindowWayland* self = reinterpret_cast<WindowWayland*>(userData);
-    if (self->_waylandWindow) {
-        wl_surface_commit(self->_waylandWindow);
-    }
-}
-void jwm::WindowWayland::decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData) {}
 void jwm::WindowWayland::_adaptSize(int newWidth, int newHeight) {
     using namespace classes;
-    if (!_configured) {
+    if (!isConfigured()) {
         return;
     }
     if (newWidth == _width && newHeight == _height && _scale == _oldScale) return;

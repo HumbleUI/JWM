@@ -18,7 +18,7 @@ if (NOT WaylandScanner_FOUND)
     message(FATAL_ERROR "No wayland-scanner")
 endif()
 project(jwm LANGUAGES CXX)
-project(cursorlock LANGUAGES C)
+project(protocols LANGUAGES C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -35,19 +35,29 @@ file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc )
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
-add_library(cursorlock STATIC)
-add_library(relativepointer STATIC)
+add_library(protocols STATIC)
 # set_property(TARGET cursorlock PROPERTY POSITION_INDEPENDENT_CODE ON)
-ecm_add_wayland_client_protocol(cursorlock 
+ecm_add_wayland_client_protocol(protocols 
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml"
     BASENAME pointer-constraints-unstable-v1
 )
-ecm_add_wayland_client_protocol(relativepointer
+ecm_add_wayland_client_protocol(protocols
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/relative-pointer/relative-pointer-unstable-v1.xml"
     BASENAME relative-pointer-unstable-v1
 )
+ecm_add_wayland_client_protocol(protocols
+    PROTOCOL "${WaylandProtocols_DATADIR}/stable/xdg-shell/xdg-shell.xml"
+    BASENAME xdg-shell
+)
+ecm_add_wayland_client_protocol(protocols
+    PROTOCOL "${WaylandProtocols_DATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml"
+    BASENAME xdg-decoration-unstable-v1
+)
+ecm_add_wayland_client_protocol(protocols
+    PROTOCOL "${WaylandProtocols_DATADIR}/stable/viewporter/viewporter.xml"
+    BASENAME viewporter
+)
 find_library(WAYLAND_CLIENT_LIB wayland-client)
-find_library(DECOR_LIB decor-0)
 find_library(WAYLAND_CURSOR wayland-cursor)
 find_library(XKBCOMMON xkbcommon)
 find_library(EGL EGL)
@@ -68,8 +78,8 @@ target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc ${
     ${CMAKE_CURRENT_LIST_DIR}/build)
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}_wayland")
 
-target_link_libraries(jwm PRIVATE ${WAYLAND_CLIENT_LIB} ${DECOR_LIB}
+target_link_libraries(jwm PRIVATE ${WAYLAND_CLIENT_LIB}
     ${WAYLAND_CURSOR} ${XKBCOMMON})
 target_link_libraries(jwm PRIVATE ${EGL} ${WAYLAND_EGL})
 target_link_libraries(jwm PRIVATE OpenGL::GL)
-target_link_libraries(jwm PRIVATE cursorlock relativepointer)
+target_link_libraries(jwm PRIVATE protocols)

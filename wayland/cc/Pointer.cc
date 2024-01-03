@@ -6,6 +6,7 @@
 #include "KeyWayland.hh"
 #include <impl/Library.hh>
 #include <linux/input-event-codes.h>
+#include <wayland-xdg-shell-client-protocol.h>
 
 using namespace jwm;
 
@@ -17,13 +18,20 @@ static void pointerEnter(void* data, wl_pointer* pointer, uint32_t serial,
         return;
     }
     auto self = reinterpret_cast<Pointer*>(data);
+    DecorationFocus focus = DECORATION_FOCUS_MAIN;
     if (auto window = self->_wm.getWindowForNative(surface)) {
         self->_serial = serial;
         self->_focusedSurface = jwm::ref(window);
-        window->setCursor(jwm::MouseCursor::ARROW);
+        window->setCursorMaybe(jwm::MouseCursor::ARROW, true);
         // frame probably isn't called so I immediately call
         self->mouseUpdateUnscaled(wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y), 0, 0, self->_mouseMask);
+    } else if (auto decoration = Decoration::getDecorationForSurface(surface, &focus)) {
+        self->_serial = serial;
+        auto window = jwm::ref(&decoration->_window);
+        self->_focusedSurface = window;
+        window->setCursorMaybe(jwm::MouseCursor::ARROW, true);
     }
+    self->_decorationFocus = focus;
 }
 
 static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
@@ -33,10 +41,43 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
         return;
     }
     auto self = reinterpret_cast<Pointer*>(data);
-    if (self->_focusedSurface && self->_focusedSurface->isNativeSelf(surface)) { 
+    DecorationFocus focus = DECORATION_FOCUS_MAIN;
+    Decoration* decoration = Decoration::getDecorationForSurface(surface, &focus);
+    if (self->_focusedSurface && self->_focusedSurface->isNativeSelf(surface) && (!decoration || !decoration->_window.isNativeSelf(surface))) { 
         jwm::unref(&self->_focusedSurface);
         self->_mouseMask = 0;
         self->_serial = 0;
+        self->_decorationFocus = DECORATION_FOCUS_MAIN;
+    }
+}
+static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland& window, int x, int y) {
+    switch (focus) {
+        case DECORATION_FOCUS_MAIN:
+            // ???
+            return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+        case DECORATION_FOCUS_TOP:
+            if (y < DECORATION_TOP_HEIGHT / 2)
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+            else
+                return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+        case DECORATION_FOCUS_LEFT:
+            if (y < DECORATION_TOP_HEIGHT / 2)
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
+            else if (y > DECORATION_BOTTOM_Y(window))
+                return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
+            else
+                return XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
+        case DECORATION_FOCUS_RIGHT:
+            if (y < DECORATION_TOP_HEIGHT / 2)
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
+            else if (y > DECORATION_BOTTOM_Y(window))
+                return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
+            else
+                return XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
+        case DECORATION_FOCUS_BOTTOM:
+            return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
+        default:
+            return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
     }
 }
 static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time, 
@@ -46,12 +87,46 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
         return;
     }
     auto self = reinterpret_cast<Pointer*>(data);
-    self->_absX = wl_fixed_to_int(surface_x);
-    self->_absY = wl_fixed_to_int(surface_y);
-    self->_movement = true;
+    self->unhide();
+    if (self->_decorationFocus != DECORATION_FOCUS_MAIN && !self->_focusedSurface)
+        return;
+    int x = wl_fixed_to_int(surface_x);
+    int y = wl_fixed_to_int(surface_y);
+    // ???
+    self->_absX = x;
+    self->_absY = y;
+    switch (self->_decorationFocus) {
+        case DECORATION_FOCUS_MAIN:
+            self->_movement = true;
+            break;
+        default:
+            auto edge = resizeEdge(self->_decorationFocus, *self->_focusedSurface, x, y);
+            switch (edge) {
+                case XDG_TOPLEVEL_RESIZE_EDGE_TOP:
+                case XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM:
+                    self->_focusedSurface->setCursor(jwm::MouseCursor::RESIZE_NS);
+                    break;
+                case XDG_TOPLEVEL_RESIZE_EDGE_LEFT:
+                case XDG_TOPLEVEL_RESIZE_EDGE_RIGHT:
+                    self->_focusedSurface->setCursor(jwm::MouseCursor::RESIZE_WE);
+                    break;
+                case XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT:
+                case XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT:
+                    self->_focusedSurface->setCursor(jwm::MouseCursor::RESIZE_NWSE);
+                    break;
+                case XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT:
+                case XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT:
+                    self->_focusedSurface->setCursor(jwm::MouseCursor::RESIZE_NESW);
+                    break;
+                default:
+                    self->_focusedSurface->setCursor(jwm::MouseCursor::POINTING_HAND);
+                    break;
+            }
+            break;
+
+    }
     // I only unhide here, bc i'm unsure of what exactly is wanted with mouse lock.
     // This event isn't sent on mouse lock, only relative events are sent.
-    self->unhide();
 }
 
 static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
@@ -62,6 +137,32 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
     auto window = self->_focusedSurface;
     if (!window) return;
     int scale = window->getIntScale();
+    if (self->_decorationFocus != DECORATION_FOCUS_MAIN) {
+        if (button != BTN_LEFT || state == 0)
+            return;
+        switch (self->_decorationFocus) {
+            case DECORATION_FOCUS_CLOSE_BUTTON:
+                window->dispatch(EventWindowCloseRequest::kInstance);
+                break;
+            case DECORATION_FOCUS_MIN_BUTTON:
+                xdg_toplevel_set_minimized(window->_decoration->_xdgToplevel);
+                break;
+            case DECORATION_FOCUS_MAX_BUTTON:
+                if (window->_decoration->_maximized)
+                    xdg_toplevel_unset_maximized(window->_decoration->_xdgToplevel);
+                else
+                    xdg_toplevel_set_maximized(window->_decoration->_xdgToplevel);
+                break;
+            default:
+                xdg_toplevel_resize_edge edge = resizeEdge(self->_decorationFocus, *window, self->_absX, self->_absY);
+                if (edge == XDG_TOPLEVEL_RESIZE_EDGE_NONE)
+                    xdg_toplevel_move(window->_decoration->_xdgToplevel, self->_seat, serial);
+                else
+                    xdg_toplevel_resize(window->_decoration->_xdgToplevel, self->_seat, serial, static_cast<uint32_t>(edge));
+                break;
+        }
+        return;
+    }
     if (state == 0) {
         // release
         switch (button) {
@@ -212,9 +313,10 @@ static void relativePointerRelativeMotion(void* data, zwp_relative_pointer_v1* r
 static zwp_relative_pointer_v1_listener relativePointerListener = {
     .relative_motion = relativePointerRelativeMotion
 };
-Pointer::Pointer(wl_pointer* pointer, WindowManagerWayland* wm):
+Pointer::Pointer(wl_seat* seat, wl_pointer* pointer, WindowManagerWayland* wm):
     _pointer(pointer),
-    _wm(*wm) 
+    _wm(*wm),
+    _seat(seat)
 {
     _surface = wl_compositor_create_surface(_wm.compositor);
     wl_pointer_add_listener(pointer, &_pointerListener, this);
@@ -369,10 +471,12 @@ void Pointer::hide() {
 void Pointer::unhide() {
     if (!_hidden) return;
     _hidden = false;
-    setCursor(_scale, _cursor);
+    setCursor(_scale, _cursor, true);
 }
 
-void Pointer::setCursor(int scale, jwm::MouseCursor cursor) {
+void Pointer::setCursor(int scale, jwm::MouseCursor cursor, bool force) {
+    if (!force && _cursor == cursor && _scale == scale)
+        return;
     _cursor = cursor;
     _scale = scale;
     auto wayCursor = getCursorFor(scale, cursor)->images[0];

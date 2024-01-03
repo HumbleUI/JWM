@@ -6,8 +6,9 @@
 #include "WindowManagerWayland.hh"
 #include "ILayerWayland.hh"
 #include "ScreenInfo.hh"
-#include <libdecor-0/libdecor.h>
 #include <string>
+#include "Decoration.hh"
+
 namespace jwm {
     class WindowWayland: public jwm::Window {
     public:
@@ -51,6 +52,7 @@ namespace jwm {
         void setFullScreen(bool isFullScreen);
         bool isFullScreen();
 
+        void setCursorMaybe(jwm::MouseCursor cursor, bool force);
         void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayerWayland* layer);
 
@@ -62,11 +64,6 @@ namespace jwm {
         static void surfacePreferredBufferScale(void* data, wl_surface* surface, int factor);
         static void surfacePreferredBufferTransform(void* data, wl_surface* surface, uint32_t transform);
 
-        static void decorFrameConfigure(libdecor_frame* frame, libdecor_configuration* config, void* userData);
-        static void decorFrameClose(libdecor_frame* frame, void* userData);
-        static void decorFrameCommit(libdecor_frame* frame, void* userData);
-        static void decorFrameDismissPopup(libdecor_frame* frame, const char* seatName, void* userData);
-
         void _adaptSize(int newWidth, int newHeight);
 
         bool isNativeSelf(wl_surface* surface);
@@ -76,6 +73,7 @@ namespace jwm {
 
         void hideCursor(bool hidden);
 
+        bool isConfigured();
 
         int _posX = -1;
         int _posY = -1;
@@ -93,11 +91,6 @@ namespace jwm {
         bool _canMaximize = false;
         bool _canFullscreen = false;
         bool _visible = false;
-        bool _configured = false;
-        bool _active = false;
-        bool _maximized = false;
-        bool _fullscreen = false;
-        bool _floating = false;
         bool _isRedrawRequested = false;
         std::string _title;
         bool _titlebarVisible = true;
@@ -111,13 +104,11 @@ namespace jwm {
         WindowManagerWayland& _windowManager;
         ILayerWayland* _layer = nullptr;
         wl_surface* _waylandWindow = nullptr;
-        libdecor_frame* _frame = nullptr;
+        Decoration* _decoration = nullptr;
         std::list<Output*> _outputs;
         wl_cursor_theme* theme = nullptr;
 
         static wl_surface_listener _surfaceListener;
-
-        static libdecor_frame_interface _libdecorFrameInterface;
 
         static wl_callback_listener _frameCallback;
 

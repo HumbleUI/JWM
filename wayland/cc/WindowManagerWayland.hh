@@ -14,7 +14,6 @@
 #include <wayland-cursor.h>
 #include <list>
 #include "Output.hh"
-#include <libdecor-0/libdecor.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h> 
@@ -23,6 +22,9 @@
 #include <memory>
 #include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
 #include <wayland-relative-pointer-unstable-v1-client-protocol.h>
+#include <wayland-xdg-shell-client-protocol.h>
+#include <wayland-xdg-decoration-unstable-v1-client-protocol.h>
+#include <wayland-viewporter-client-protocol.h>
 
 namespace jwm {
     class WindowWayland;
@@ -50,9 +52,6 @@ namespace jwm {
         static void registryHandleGlobalRemove(void* data, wl_registry *registry,
                 uint32_t name);
 
-        static libdecor_interface _decorInterface;
-        static void libdecorError(libdecor* context, enum libdecor_error error, const char* message);
-
         static wl_seat_listener _seatListener;
 
         static void seatCapabilities(void* data, wl_seat* seat, uint32_t capabilities);
@@ -74,6 +73,11 @@ namespace jwm {
         wl_seat* seat = nullptr;
         zwp_pointer_constraints_v1* pointerConstraints = nullptr;
         zwp_relative_pointer_manager_v1* relativePointerManager = nullptr;
+        xdg_wm_base* xdgWm = nullptr;
+        wp_viewporter* viewporter = nullptr;
+        zxdg_decoration_manager_v1* decorationManager = nullptr;
+        wl_subcompositor* subcompositor = nullptr;
+
         std::unique_ptr<Pointer> _pointer = nullptr;
         Pointer* getPointer() const {
                 return _pointer.get();
@@ -99,7 +103,6 @@ namespace jwm {
         }
 
 
-        libdecor* decorCtx = nullptr;
         EGLDisplay _eglDisplay = EGL_NO_DISPLAY;
         std::list<Output*> outputs;
 

@@ -22,7 +22,7 @@ namespace jwm {
         void attach(WindowWayland* window) {
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
-            if (fWindow->_configured) {
+            if (fWindow->isConfigured()) {
                 attachBuffer();
                 // delay this as much as possible
                 fWindow->dispatch(jwm::classes::EventWindowScreenChange::kInstance);
