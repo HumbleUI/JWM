@@ -255,6 +255,7 @@ static void pointerFrame(void* data, wl_pointer* pointer)
     auto self = reinterpret_cast<Pointer*>(data);
     auto win = self->_focusedSurface;
     if (!win) return;
+    if (self->_decorationFocus != DECORATION_FOCUS_MAIN) return;
     if (self->_dX != 0.0f || self->_dY != 0.0f) {
         auto env = app.getJniEnv();
         
@@ -306,7 +307,7 @@ wl_pointer_listener Pointer::_pointerListener = {
 static void relativePointerRelativeMotion(void* data, zwp_relative_pointer_v1* relative, uint32_t utime_hi, uint32_t utime_lo, 
         wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
     auto self = reinterpret_cast<Pointer*>(data);
-
+    if (self->_decorationFocus != DECORATION_FOCUS_MAIN) return;
     self->_dXPos += static_cast<float>(wl_fixed_to_double(dx));
     self->_dYPos += static_cast<float>(wl_fixed_to_double(dy));
 }

@@ -1,0 +1,63 @@
+Date: 2024-01-03 EST
+[17:20:09.252] weston 13.0.0
+               https://wayland.freedesktop.org
+               Bug reports to: https://gitlab.freedesktop.org/wayland/weston/issues/
+               Build: 13.0.0
+[17:20:09.252] Command line: weston --logging-scopes proto,log
+[17:20:09.252] OS: Linux, 5.19.8-arch1-1-surface, #1 SMP PREEMPT_DYNAMIC Wed, 14 Sep 2022 22:06:46 +0000, x86_64
+[17:20:09.252] Flight recorder: enabled
+[17:20:09.252] Using config file '/home/bulby/.config/weston.ini'
+[17:20:09.252] Output repaint window is 7 ms maximum.
+[17:20:09.252] Loading module '/usr/lib/libweston-13/wayland-backend.so'
+[17:20:09.289] Loading module '/usr/lib/libweston-13/gl-renderer.so'
+[17:20:09.335] Using rendering device: /dev/dri/renderD128
+[17:20:09.335] EGL version: 1.5
+[17:20:09.335] EGL vendor: Mesa Project
+[17:20:09.335] EGL client APIs: OpenGL OpenGL_ES 
+[17:20:09.335] EGL features:
+               EGL Wayland extension: yes
+               context priority: yes
+               buffer age: yes
+               partial update: no
+               swap buffers with damage: yes
+               configless context: yes
+               surfaceless context: yes
+               dmabuf support: modifiers
+[17:20:09.337] GL version: OpenGL ES 3.2 Mesa 23.3.1-arch1.1
+[17:20:09.337] GLSL version: OpenGL ES GLSL ES 3.20
+[17:20:09.337] GL vendor: Intel
+[17:20:09.337] GL renderer: Mesa Intel(R) UHD Graphics 620 (KBL GT2)
+[17:20:09.343] GL ES 3.2 - renderer features:
+               read-back format: ARGB8888
+               glReadPixels supports y-flip: yes
+               wl_shm 10 bpc formats: yes
+               wl_shm 16 bpc formats: yes
+               wl_shm half-float formats: yes
+               internal R and RG formats: yes
+               OES_EGL_image_external: yes
+[17:20:09.343] Using GL renderer
+[17:20:09.343] Registered plugin API 'weston_windowed_output_api_v2' of size 16
+[17:20:09.343] Color manager: no-op
+[17:20:09.343] Output 'wayland0' attempts EOTF mode: SDR
+[17:20:09.343] Output 'wayland0' using color profile: stock sRGB color profile
+[17:20:09.343] Creating 1024x640 wayland output at (0, 0)
+[17:20:09.346] wayland-backend: Using xdg_wm_base
+[17:20:09.347] Chosen EGL config details: id:  41 rgba: 8 8 8 8 buf: 32 dep:  0 stcl: 0 int: 0-1 type: win vis_id: 0
+[17:20:09.355] Output 'wayland0' enabled with head(s) wayland0
+[17:20:09.355] Compositor capabilities:
+               arbitrary surface rotation: yes
+               screen capture uses y-flip: yes
+               cursor planes: no
+               arbitrary resolutions: no
+               view mask clipping: yes
+               explicit sync: yes
+               color operations: yes
+               presentation clock: CLOCK_MONOTONIC_RAW, id 4
+               presentation clock resolution: 0.000000001 s
+[17:20:09.355] libwayland: unable to lock lockfile /run/user/1000/wayland-1.lock, maybe another compositor is running
+[17:20:09.355] Loading module '/usr/lib/weston/desktop-shell.so'
+[17:20:09.358] launching '/usr/lib/weston/weston-keyboard'
+[17:20:09.360] launching '/usr/lib/weston/weston-desktop-shell'
+[17:20:09.365] Chosen EGL config details: id:  41 rgba: 8 8 8 8 buf: 32 dep:  0 stcl: 0 int: 0-1 type: win vis_id: 0
+[17:20:20.076] caught signal 12
+[17:20:20.077] BUG: finalizing a layer with views still on it.

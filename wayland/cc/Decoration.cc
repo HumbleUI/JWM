@@ -94,6 +94,10 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         if (window._layer)
             window._layer->attachBuffer();
     }
+    // ask to configure _before_ commit. jank.
+    if (self->_floating) {
+        xdg_surface_ack_configure(self->_xdgSurface, serial);
+    }
     if (window.getUnscaledWidth() != width || window.getUnscaledHeight() != height) {
         if (self->_floating) {
             if (width > 0) {
@@ -113,9 +117,13 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         if (!self->_top.surface)
             self->_showDecorations();
     }
-    wl_surface_commit(window._waylandWindow);
-    xdg_surface_ack_configure(self->_xdgSurface, serial);
+    // at the end so that the size isn't adapted on first render
     self->_configured = true;
+    wl_surface_commit(window._waylandWindow);
+    if (!self->_floating) {
+
+        xdg_surface_ack_configure(self->_xdgSurface, serial);
+    }
 }
 
 static xdg_surface_listener _xdgSurfaceListener = {
@@ -127,7 +135,7 @@ static void _xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width,
 
     self->_pendingWidth = width;
     self->_pendingHeight = height;
-    if (!self->_serverSide) {
+    if (!self->_serverSide && self->_isVisible) {
         self->_pendingWidth -= DECORATION_LEFT_WIDTH + DECORATION_RIGHT_WIDTH;
         self->_pendingHeight -= DECORATION_TOP_HEIGHT + DECORATION_BOTTOM_HEIGHT;
     }
@@ -297,9 +305,17 @@ void Decoration::_adaptSize() {
     _resizeDecoration(&_close, DECORATION_CLOSE_X(_window), DECORATION_CLOSE_Y, DECORATION_CLOSE_WIDTH, DECORATION_CLOSE_HEIGHT);
     _resizeDecoration(&_min, DECORATION_MIN_X(_window), DECORATION_MIN_Y, DECORATION_MIN_WIDTH, DECORATION_MIN_HEIGHT);
     _resizeDecoration(&_max, DECORATION_MAX_X(_window), DECORATION_MAX_Y, DECORATION_MAX_WIDTH, DECORATION_MAX_HEIGHT);
+
+    if (!_serverSide && _isVisible)
+        xdg_surface_set_window_geometry(_xdgSurface, -DECORATION_LEFT_WIDTH, -DECORATION_TOP_HEIGHT, 
+                _window.getUnscaledWidth() + DECORATION_RIGHT_WIDTH + DECORATION_LEFT_WIDTH, 
+                _window.getUnscaledHeight() + DECORATION_BOTTOM_HEIGHT + DECORATION_TOP_HEIGHT);
+    else
+        xdg_surface_set_window_geometry(_xdgSurface, 0, 0, _window.getUnscaledWidth(), _window.getUnscaledHeight());
 }
 
 bool Decoration::ownDecorationSurface(wl_surface* surface) {
+    if (!surface) return false;
     return wl_proxy_get_tag((wl_proxy*)surface) == &proxyTag;
 }
 
@@ -335,15 +351,18 @@ void Decoration::setVisible(bool isVisible) {
         if (isVisible) {
             if (_decoration) {
                 zxdg_toplevel_decoration_v1_set_mode(_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+            } else {
+                _showDecorations();
             }
         } else {
+            _destroyDecorations();
             if (_decoration) {
                 zxdg_toplevel_decoration_v1_set_mode(_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
+            } else {
+                // TODO: request reconfigure
+                wl_surface_commit(_window._waylandWindow);
             }
-            _destroyDecorations();
         }
-
-            
     }
 }
 
@@ -354,7 +373,7 @@ void Decoration::setTitle(const std::string& title) {
 }
 
 void Decoration::getBorders(int& left, int& top, int& right, int& bottom) {
-    if (_serverSide) {
+    if (_serverSide || !_isVisible) {
         left = 0;
         top = 0;
         right = 0;
