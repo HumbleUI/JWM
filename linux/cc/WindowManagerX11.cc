@@ -721,7 +721,7 @@ void WindowManagerX11::_processXEvent(XEvent& ev) {
             break;
         }
         case Expose: {
-            myWindow->requestFrame();
+            myWindow->requestRedraw();
             break;
         }
     }
