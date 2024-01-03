@@ -69,19 +69,28 @@ void WindowWayland::hide() {
     _windowManager.unregisterWindow(this);
 }
 void WindowWayland::maximize() {
-    // impl me :) 
+    if (!_visible || !_decoration) return;
+    xdg_toplevel_set_maximized(_decoration->_xdgToplevel);
 }
 
 void WindowWayland::minimize() {
-    // impl me : )
+    if (!_visible || !_decoration) return;
+    xdg_toplevel_set_minimized(_decoration->_xdgToplevel);
 }
 
 void WindowWayland::restore() {
-    // impl me
+    // Not possible for minimize
+    if (!_visible || !_decoration) return;
+    xdg_toplevel_unset_maximized(_decoration->_xdgToplevel);
 }
 
 void WindowWayland::setFullScreen(bool isFullScreen) {
-    // impl me : )
+    if (!_visible || !_decoration) return;
+    if (_decoration->_fullscreen == isFullScreen) return; 
+    if (isFullScreen)
+        xdg_toplevel_set_fullscreen(_decoration->_xdgToplevel, nullptr);
+    else
+        xdg_toplevel_unset_fullscreen(_decoration->_xdgToplevel);
 }
 
 bool WindowWayland::isFullScreen() {
