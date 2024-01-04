@@ -10,16 +10,21 @@
 
 #define DECORATION_WIDTH 10
 
+#define DECORATION_HIDDEN_TOP_Y -(DECORATION_BOTTOM_HEIGHT)
 #define DECORATION_TOP_X 0
 #define DECORATION_TOP_Y -(DECORATION_TOP_HEIGHT)
 #define DECORATION_TOP_WIDTH(window) window.getUnscaledWidth()
 #define DECORATION_TOP_HEIGHT DECORATION_WIDTH * 3
 
+#define DECORATION_HIDDEN_LEFT_Y DECORATION_HIDDEN_TOP_Y
+#define DECORATION_HIDDEN_LEFT_HEIGHT(window) window.getUnscaledHeight() + DECORATION_WIDTH + DECORATION_WIDTH
 #define DECORATION_LEFT_X -(DECORATION_WIDTH)
 #define DECORATION_LEFT_Y -(DECORATION_TOP_HEIGHT)
 #define DECORATION_LEFT_WIDTH DECORATION_WIDTH
 #define DECORATION_LEFT_HEIGHT(window) window.getUnscaledHeight() + DECORATION_TOP_HEIGHT + DECORATION_WIDTH
 
+#define DECORATION_HIDDEN_RIGHT_Y DECORATION_HIDDEN_LEFT_Y
+#define DECORATION_HIDDEN_RIGHT_HEIGHT(window) DECORATION_HIDDEN_LEFT_HEIGHT(window)
 #define DECORATION_RIGHT_X(window) window.getUnscaledWidth()
 #define DECORATION_RIGHT_Y -(DECORATION_TOP_HEIGHT)
 #define DECORATION_RIGHT_WIDTH DECORATION_WIDTH
@@ -114,7 +119,7 @@ namespace jwm {
 
         void _adaptSize();
         void _destroyDecorations();
-        void _showDecorations();
+        void _showDecorations(bool hidden);
 
         static const char* proxyTag;
         static bool ownDecorationSurface(wl_surface* surface);
@@ -125,7 +130,7 @@ namespace jwm {
         void setTitle(const std::string& title);
 
         bool _isVisible = true;
-        void setVisible(bool isVisible);
+        void setTitlebarVisible(bool isVisible);
 
         void getBorders(int& left, int& top, int& right, int& bottom);
 

@@ -44,7 +44,7 @@ void WindowWayland::setTitle(const std::string& title) {
 void WindowWayland::setTitlebarVisible(bool isVisible) {
     _titlebarVisible = isVisible;
     if (_decoration)
-        _decoration->setVisible(isVisible);
+        _decoration->setTitlebarVisible(isVisible);
 }
 
 void WindowWayland::close() {
