@@ -56,19 +56,19 @@ static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland&
             // ???
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_TOP:
-            if (y < DECORATION_TOP_HEIGHT / 2)
+            if (y < window._decoration->getTopSize() / 2)
                 return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
             else
                 return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_LEFT:
-            if (y < DECORATION_TOP_HEIGHT / 2)
+            if (y < window._decoration->getTopSize() / 2)
                 return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
             else if (y > DECORATION_BOTTOM_Y(window))
                 return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
             else
                 return XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
         case DECORATION_FOCUS_RIGHT:
-            if (y < DECORATION_TOP_HEIGHT / 2)
+            if (y < window._decoration->getTopSize() / 2)
                 return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
             else if (y > DECORATION_BOTTOM_Y(window))
                 return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
@@ -138,7 +138,19 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
     if (!window) return;
     int scale = window->getIntScale();
     if (self->_decorationFocus != DECORATION_FOCUS_MAIN) {
-        if (button != BTN_LEFT || state == 0)
+        if (state == 0)
+            return;
+        if (button == BTN_RIGHT) {
+            switch (self->_decorationFocus) {
+                case DECORATION_FOCUS_TOP:
+                    // not showing but this code is being reached
+                    xdg_toplevel_show_window_menu(window->_decoration->_xdgToplevel, self->_seat, serial, self->_absX, self->_absY);
+                    return;
+                default: 
+                    return;
+            }
+        }
+        if (button != BTN_LEFT)
             return;
         switch (self->_decorationFocus) {
             case DECORATION_FOCUS_CLOSE_BUTTON:

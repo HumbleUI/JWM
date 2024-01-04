@@ -134,6 +134,8 @@ namespace jwm {
 
         void getBorders(int& left, int& top, int& right, int& bottom);
 
+        int getTopSize();
+
 
     private:
         Decoration(Decoration&& other) = delete;

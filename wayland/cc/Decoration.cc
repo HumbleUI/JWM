@@ -403,11 +403,17 @@ void Decoration::getBorders(int& left, int& top, int& right, int& bottom) {
         bottom = 0;
     } else {
         left = DECORATION_LEFT_WIDTH;
-        if (_isVisible)
-            top = DECORATION_TOP_HEIGHT;
-        else
-            top = DECORATION_BOTTOM_HEIGHT;
+        top = getTopSize();
         right = DECORATION_RIGHT_WIDTH;
         bottom = DECORATION_BOTTOM_HEIGHT;
     }
+}
+
+int Decoration::getTopSize() {
+    if (_serverSide)
+        return 0;
+    if (_isVisible)
+        return DECORATION_TOP_HEIGHT;
+    else
+        return DECORATION_BOTTOM_HEIGHT;
 }
