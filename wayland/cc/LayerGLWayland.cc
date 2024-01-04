@@ -85,7 +85,7 @@ namespace jwm {
           // vsync? what vsync?
         }
 
-        void resize(int width, int height) override {
+        void resize(int width, int height) {
             if (!_surface || !_eglWindow) return;
             // Make current to avoid artifacts in other windows
             makeCurrentForced();
@@ -100,7 +100,6 @@ namespace jwm {
               // HACK: make new window with new scale
               // https://gitlab.freedesktop.org/mesa/mesa/-/issues/7217
               if (fWindow->_scale != fWindow->_oldScale) {
-                fprintf(stderr, "HACK: remaking egl window\n");
                 detachBuffer();
                 attachBuffer();
                 wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->getIntScale());

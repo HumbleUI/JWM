@@ -29,7 +29,7 @@ namespace jwm {
             }
         }
 
-        void resize(int width, int height) override {
+        void resize(int width, int height) {
             // god is dead
             _width = width;
             _height = height;
