@@ -51,31 +51,37 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
     }
 }
 static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland& window, int x, int y) {
+    int rightEdge = window.getUnscaledWidth();
+    int bottomEdge = window.getUnscaledHeight();
     switch (focus) {
         case DECORATION_FOCUS_MAIN:
             // ???
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
-        case DECORATION_FOCUS_TOP:
-            if (y < window._decoration->getTopSize() / 2)
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
-            else
-                return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
-        case DECORATION_FOCUS_LEFT:
-            if (y < window._decoration->getTopSize() / 2)
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
-            else if (y > DECORATION_BOTTOM_Y(window))
-                return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
-            else
-                return XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
-        case DECORATION_FOCUS_RIGHT:
-            if (y < window._decoration->getTopSize() / 2)
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
-            else if (y > DECORATION_BOTTOM_Y(window))
-                return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
-            else
-                return XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
-        case DECORATION_FOCUS_BOTTOM:
-            return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
+        case DECORATION_FOCUS_BORDER:
+            if (y < -window._decoration->getTopSize() / 2) {
+                if (x < 0)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
+                else if (x > rightEdge)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
+                else
+                    return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+            }
+            else if (y > bottomEdge) {
+                if (x < 0)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
+                else if (x > rightEdge)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
+                else
+                    return XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
+            } else {
+                if (x < 0)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
+                else if (x > rightEdge)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
+                else
+                    return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+            }
+            return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         default:
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
     }
@@ -93,14 +99,18 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
     int x = wl_fixed_to_int(surface_x);
     int y = wl_fixed_to_int(surface_y);
     // ???
-    self->_absX = x;
-    self->_absY = y;
     switch (self->_decorationFocus) {
         case DECORATION_FOCUS_MAIN:
+            self->_absX = x;
+            self->_absY = y;
             self->_movement = true;
             break;
         default:
-            auto edge = resizeEdge(self->_decorationFocus, *self->_focusedSurface, x, y);
+            if (self->_decorationFocus == DECORATION_FOCUS_BORDER) {
+                self->_absX = x - DECORATION_WIDTH;
+                self->_absY = y - self->_focusedSurface->_decoration->getTopSize();
+            }
+            auto edge = resizeEdge(self->_decorationFocus, *self->_focusedSurface, self->_absX, self->_absY);
             switch (edge) {
                 case XDG_TOPLEVEL_RESIZE_EDGE_TOP:
                 case XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM:
@@ -141,14 +151,10 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
         if (state == 0)
             return;
         if (button == BTN_RIGHT) {
-            switch (self->_decorationFocus) {
-                case DECORATION_FOCUS_TOP:
-                    // not showing but this code is being reached
-                    xdg_toplevel_show_window_menu(window->_decoration->_xdgToplevel, self->_seat, serial, self->_absX, self->_absY);
-                    return;
-                default: 
-                    return;
-            }
+            if (self->_absY < 0)
+                xdg_toplevel_show_window_menu(window->_decoration->_xdgToplevel, self->_seat, serial, 
+                        self->_absX + DECORATION_WIDTH, self->_absY + window->_decoration->getTopSize());
+            return;
         }
         if (button != BTN_LEFT)
             return;
