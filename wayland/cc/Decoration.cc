@@ -206,7 +206,6 @@ Decoration::Decoration(WindowWayland& window):
         zxdg_toplevel_decoration_v1_add_listener(_decoration, &_decorationListener, this);
         // for the love of GOD do it for me
         zxdg_toplevel_decoration_v1_set_mode(_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-
     }
     // delay making parts until configure : )
 }
@@ -263,6 +262,7 @@ void Decoration::_destroyDecoration(DecorationPart* decoration) {
 
 void Decoration::_destroyDecorations() {
     _destroyDecoration(&_border);
+    _destroyDecoration(&_titleComp);
     _destroyDecoration(&_close);
     _destroyDecoration(&_min);
     _destroyDecoration(&_max);
@@ -279,15 +279,13 @@ void Decoration::_showDecorations(bool hidden) {
     memcpy(_maxBuffer->getData(), max_data, 9 * 9 * sizeof(uint32_t));
     _minBuffer = Buffer::createShmBuffer(_wm.shm, 9, 9, WL_SHM_FORMAT_ARGB8888);
     memcpy(_minBuffer->getData(), min_data, 9 * 9 * sizeof(uint32_t));
-    if (hidden) {
-        _makePart(&_border, _decBuffer, true, DECORATION_BORDER_X, DECORATION_HIDDEN_BORDER_Y, 
-                DECORATION_BORDER_WIDTH(_window), DECORATION_HIDDEN_BORDER_HEIGHT(_window));
-    } else {
-        _makePart(&_border, _decBuffer, true, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
-                DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
-    }
+    _makePart(&_border, _decBuffer, true, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
+            DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
     wl_subsurface_place_below(_border.subsurface, _window._waylandWindow); 
     if (!hidden) {
+        _makePart(&_titleComp, _decBuffer, true, DECORATION_TITLE_X, DECORATION_TITLE_Y, 
+                DECORATION_TITLE_WIDTH(_window), DECORATION_TITLE_HEIGHT);
+        wl_subsurface_place_above(_titleComp.subsurface, _border.surface);
         _makePart(&_close, _closeBuffer, false, DECORATION_CLOSE_X(_window), DECORATION_CLOSE_Y, DECORATION_CLOSE_WIDTH, DECORATION_CLOSE_HEIGHT);
         _makePart(&_max, _maxBuffer, false, DECORATION_MAX_X(_window), DECORATION_MAX_Y, DECORATION_MAX_WIDTH, DECORATION_MAX_HEIGHT);
         _makePart(&_min, _minBuffer, false, DECORATION_MIN_X(_window), DECORATION_MIN_Y, DECORATION_MIN_WIDTH, DECORATION_MIN_HEIGHT);
@@ -296,24 +294,20 @@ void Decoration::_showDecorations(bool hidden) {
 }
 
 void Decoration::_adaptSize() {
-    if (!_isVisible) {
-        _resizeDecoration(&_border, DECORATION_BORDER_X, DECORATION_HIDDEN_BORDER_Y, DECORATION_BORDER_WIDTH(_window), 
-                DECORATION_HIDDEN_BORDER_HEIGHT(_window));
-    } else {
-        _resizeDecoration(&_border, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
-                DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
-    }
-
+    _resizeDecoration(&_border, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
+            DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
     if (_isVisible) {
+        _resizeDecoration(&_titleComp, DECORATION_TITLE_X, DECORATION_TITLE_Y,
+                DECORATION_TITLE_WIDTH(_window), DECORATION_TITLE_HEIGHT);
         _resizeDecoration(&_close, DECORATION_CLOSE_X(_window), DECORATION_CLOSE_Y, DECORATION_CLOSE_WIDTH, DECORATION_CLOSE_HEIGHT);
         _resizeDecoration(&_min, DECORATION_MIN_X(_window), DECORATION_MIN_Y, DECORATION_MIN_WIDTH, DECORATION_MIN_HEIGHT);
         _resizeDecoration(&_max, DECORATION_MAX_X(_window), DECORATION_MAX_Y, DECORATION_MAX_WIDTH, DECORATION_MAX_HEIGHT);
     }
 
     if (!_serverSide)
-        xdg_surface_set_window_geometry(_xdgSurface, DECORATION_BORDER_X, _isVisible ? DECORATION_BORDER_Y : DECORATION_HIDDEN_BORDER_Y, 
+        xdg_surface_set_window_geometry(_xdgSurface, DECORATION_BORDER_X, _isVisible ? DECORATION_TITLE_Y : DECORATION_BORDER_Y, 
                 DECORATION_BORDER_WIDTH(_window), 
-                _isVisible ? DECORATION_BORDER_HEIGHT(_window) : DECORATION_HIDDEN_BORDER_HEIGHT(_window));
+                _isVisible ? DECORATION_BORDER_FULL_HEIGHT(_window) : DECORATION_BORDER_HEIGHT(_window));
     else
         xdg_surface_set_window_geometry(_xdgSurface, 0, 0, _window.getUnscaledWidth(), _window.getUnscaledHeight());
 }
@@ -328,6 +322,8 @@ Decoration* Decoration::getDecorationForSurface(wl_surface* surface, DecorationF
         Decoration* decoration = (Decoration*)wl_proxy_get_user_data((wl_proxy*) surface);
         if (surface == decoration->_border.surface) {
             *focus = DECORATION_FOCUS_BORDER;
+        } else if (surface == decoration->_titleComp.surface) {
+            *focus = DECORATION_FOCUS_TITLE;
         } else if (surface == decoration->_close.surface) {
             *focus = DECORATION_FOCUS_CLOSE_BUTTON;
         } else if (surface == decoration->_min.surface) {
@@ -355,11 +351,10 @@ void Decoration::setTitlebarVisible(bool isVisible) {
             }
         } else {
             _destroyDecorations();
-            _showDecorations(true);
             if (_decoration) {
                 zxdg_toplevel_decoration_v1_set_mode(_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
             } else {
-                // TODO: request reconfigure
+                _showDecorations(true);
                 wl_surface_commit(_window._waylandWindow);
             }
         }

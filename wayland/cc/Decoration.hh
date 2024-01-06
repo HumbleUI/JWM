@@ -12,12 +12,15 @@
 #define DECORATION_TOP_HEIGHT 30
 
 #define DECORATION_BORDER_X -(DECORATION_WIDTH)
-#define DECORATION_BORDER_Y -(DECORATION_TOP_HEIGHT)
+#define DECORATION_BORDER_Y -(DECORATION_WIDTH)
 #define DECORATION_BORDER_WIDTH(window) window.getUnscaledWidth() + DECORATION_WIDTH + DECORATION_WIDTH
-#define DECORATION_BORDER_HEIGHT(window) window.getUnscaledHeight() + DECORATION_TOP_HEIGHT + DECORATION_WIDTH
+#define DECORATION_BORDER_HEIGHT(window) window.getUnscaledHeight() + DECORATION_WIDTH + DECORATION_WIDTH
+#define DECORATION_BORDER_FULL_HEIGHT(window) window.getUnscaledHeight() + DECORATION_TOP_HEIGHT + DECORATION_WIDTH
 
-#define DECORATION_HIDDEN_BORDER_Y -(DECORATION_WIDTH)
-#define DECORATION_HIDDEN_BORDER_HEIGHT(window) window.getUnscaledHeight() + DECORATION_WIDTH + DECORATION_WIDTH
+#define DECORATION_TITLE_X -(DECORATION_WIDTH)
+#define DECORATION_TITLE_Y -(DECORATION_TOP_HEIGHT)
+#define DECORATION_TITLE_WIDTH(window) window.getUnscaledWidth() + DECORATION_WIDTH + DECORATION_WIDTH
+#define DECORATION_TITLE_HEIGHT DECORATION_TOP_HEIGHT
 
 #define DECORATION_CLOSE_X(window) window.getUnscaledWidth() - 10
 #define DECORATION_CLOSE_Y -20
@@ -45,6 +48,7 @@ namespace jwm {
     enum DecorationFocus {
         DECORATION_FOCUS_MAIN,
         DECORATION_FOCUS_BORDER,
+        DECORATION_FOCUS_TITLE,
         DECORATION_FOCUS_CLOSE_BUTTON,
         DECORATION_FOCUS_MAX_BUTTON,
         DECORATION_FOCUS_MIN_BUTTON
@@ -66,6 +70,7 @@ namespace jwm {
         Buffer* _minBuffer;
 
         DecorationPart _border;
+        DecorationPart _titleComp;
 
         DecorationPart _close;
         DecorationPart _max;

@@ -7,6 +7,8 @@
 #include <impl/Library.hh>
 #include <linux/input-event-codes.h>
 #include <wayland-xdg-shell-client-protocol.h>
+#include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-names.h>
 
 using namespace jwm;
 
@@ -50,21 +52,33 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
         self->_decorationFocus = DECORATION_FOCUS_MAIN;
     }
 }
-static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland& window, int x, int y) {
+static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland& window, int x, int y, xkb_state* state) {
     int rightEdge = window.getUnscaledWidth();
     int bottomEdge = window.getUnscaledHeight();
     switch (focus) {
         case DECORATION_FOCUS_MAIN:
             // ???
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+        case DECORATION_FOCUS_TITLE:
+            if (y < -DECORATION_TOP_HEIGHT / 2)
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+            else
+                return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_BORDER:
-            if (y < -window._decoration->getTopSize() / 2) {
+            
+            if (y < 0) {
                 if (x < 0)
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
                 else if (x > rightEdge)
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
-                else
+                else {
+                    if (state) {
+                       if (xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE))
+                           // grab
+                           return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+                    }
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+                }
             }
             else if (y > bottomEdge) {
                 if (x < 0)
@@ -108,9 +122,13 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
         default:
             if (self->_decorationFocus == DECORATION_FOCUS_BORDER) {
                 self->_absX = x - DECORATION_WIDTH;
-                self->_absY = y - self->_focusedSurface->_decoration->getTopSize();
+                self->_absY = y - DECORATION_WIDTH;
+            } else if (self->_decorationFocus == DECORATION_FOCUS_TITLE) {
+                self->_absX = x - DECORATION_WIDTH;
+                self->_absY = y - DECORATION_TOP_HEIGHT;
             }
-            auto edge = resizeEdge(self->_decorationFocus, *self->_focusedSurface, self->_absX, self->_absY);
+            auto edge = resizeEdge(self->_decorationFocus, *self->_focusedSurface, self->_absX, self->_absY, 
+                    self->_wm.getXkbState());
             switch (edge) {
                 case XDG_TOPLEVEL_RESIZE_EDGE_TOP:
                 case XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM:
@@ -171,8 +189,9 @@ static void pointerButton(void* data, wl_pointer* pointer, uint32_t serial,
                 else
                     xdg_toplevel_set_maximized(window->_decoration->_xdgToplevel);
                 break;
-            default:
-                xdg_toplevel_resize_edge edge = resizeEdge(self->_decorationFocus, *window, self->_absX, self->_absY);
+            case DECORATION_FOCUS_BORDER:
+            case DECORATION_FOCUS_TITLE:
+                xdg_toplevel_resize_edge edge = resizeEdge(self->_decorationFocus, *window, self->_absX, self->_absY, self->_wm.getXkbState());
                 if (edge == XDG_TOPLEVEL_RESIZE_EDGE_NONE)
                     xdg_toplevel_move(window->_decoration->_xdgToplevel, self->_seat, serial);
                 else
