@@ -94,6 +94,8 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         if (window._layer)
             window._layer->attachBuffer();
     }
+    // resize on first configure
+    self->_configured = true;
     // ask to configure _before_ commit. jank.
     if (self->_floating) {
         xdg_surface_ack_configure(self->_xdgSurface, serial);
@@ -117,8 +119,6 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         if (!self->_border.surface)
             self->_showDecorations(!self->_isVisible);
     }
-    // at the end so that the size isn't adapted on first render
-    self->_configured = true;
     wl_surface_commit(window._waylandWindow);
     if (!self->_floating) {
 
