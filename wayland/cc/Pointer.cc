@@ -60,10 +60,16 @@ static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland&
             // ???
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_TITLE:
-            if (y < -DECORATION_TOP_HEIGHT / 2)
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
-            else
-                return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+            if (x < 0) {
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
+            } else if (x > rightEdge) {
+                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
+            } else {
+                if (y < -DECORATION_TOP_HEIGHT / 2)
+                    return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+                else
+                    return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+            }
         case DECORATION_FOCUS_BORDER:
             
             if (y < 0) {
