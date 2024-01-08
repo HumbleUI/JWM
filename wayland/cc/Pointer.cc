@@ -71,18 +71,17 @@ static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland&
                     return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
             }
         case DECORATION_FOCUS_BORDER:
-            
+            if (state) {
+                if (xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE)) {
+                    return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+                }
+            } 
             if (y < 0) {
                 if (x < 0)
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
                 else if (x > rightEdge)
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
                 else {
-                    if (state) {
-                       if (xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE))
-                           // grab
-                           return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
-                    }
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
                 }
             }
