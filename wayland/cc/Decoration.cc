@@ -74,7 +74,8 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         height = pendingHeight;
     else
         height = window._floatingHeight;
-
+    if (self->_floating)
+        self->constrainSize(width, height);
     self->_pendingWidth = 0;
     self->_pendingHeight = 0;
     if (self->_oldActive != self->_active) {
@@ -100,6 +101,13 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         if (window._layer)
             window._layer->attachBuffer();
     }
+    if (self->_serverSide) {
+        if (self->_border.surface)
+            self->_destroyDecorations();
+    } else {
+        if (!self->_border.surface)
+            self->_showDecorations(!self->_isVisible);
+    }
     // resize on first configure
     self->_configured = true;
     // ask to configure _before_ commit. jank.
@@ -118,13 +126,7 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
         window._adaptSize(width, height);
         self->_adaptSize();
     }
-    if (self->_serverSide) {
-        if (self->_border.surface)
-            self->_destroyDecorations();
-    } else {
-        if (!self->_border.surface)
-            self->_showDecorations(!self->_isVisible);
-    }
+
     wl_surface_commit(window._waylandWindow);
     if (!self->_floating) {
 
@@ -287,7 +289,7 @@ void Decoration::_showDecorations(bool hidden) {
     int borderHeight = hidden ? DECORATION_BORDER_HEIGHT(_window) : DECORATION_BORDER_FULL_HEIGHT(_window);
     _makePart(&_border, _zeroBuffer, false, DECORATION_BORDER_X, borderY, 
             DECORATION_BORDER_WIDTH(_window), borderHeight);
-    wl_subsurface_place_below(_border.subsurface, _window._waylandWindow); 
+    wl_subsurface_place_below(_border.subsurface, _window._waylandWindow);
     if (!hidden) {
         _makePart(&_titleComp, _decBuffer, true, DECORATION_TITLE_X, DECORATION_TITLE_Y, 
                 DECORATION_TITLE_WIDTH(_window), DECORATION_TITLE_HEIGHT);
@@ -396,4 +398,19 @@ int Decoration::getTopSize() {
         return DECORATION_TOP_HEIGHT;
     else
         return 0;
+}
+
+void Decoration::setMinSize(int width, int height) {
+    _minWidth = width;
+    _minHeight = height;
+}
+
+void Decoration::constrainSize(int& width, int& height) {
+    if (width < _minWidth)
+        width = _minWidth;
+    // hard coded for buttons
+    if (width < 40)
+        width = 40;
+    if (height < _minHeight)
+        height = _minHeight;
 }

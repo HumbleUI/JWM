@@ -121,6 +121,11 @@ namespace jwm {
 
         int getTopSize();
 
+        int _minWidth = 10;
+        int _minHeight = 10;
+        void setMinSize(int width, int height);
+        void constrainSize(int& width, int& height);
+
 
     private:
         Decoration(Decoration&& other) = delete;
