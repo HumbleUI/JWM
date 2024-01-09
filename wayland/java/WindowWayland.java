@@ -155,7 +155,7 @@ public class WindowWayland extends Window {
     @Override
     public Window focus() {
         assert _onUIThread() : "Should be run on UI thread";
-        // TODO implement
+        _nFocus();
         return this;
     }
 
@@ -242,4 +242,5 @@ public class WindowWayland extends Window {
     @ApiStatus.Internal public native float _nGetScale();
     @ApiStatus.Internal public native void _nLockMouseCursor(boolean locked);
     @ApiStatus.Internal public native void _nHideMouseCursor(boolean hidden);
+    @ApiStatus.Internal public native void _nFocus();
 }

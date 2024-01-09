@@ -58,14 +58,20 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
     auto self = reinterpret_cast<Decoration*>(data);
     auto& window = self->_window;
     int width = 0, height = 0;
-
-    if (self->_pendingWidth > 0)
-        width = self->_pendingWidth;
+    int pendingWidth = self->_pendingWidth;
+    int pendingHeight = self->_pendingHeight;
+    // do it here bc we don't know configure order
+    if (!self->_serverSide) {
+        pendingWidth -= DECORATION_WIDTH + DECORATION_WIDTH;
+        pendingHeight -= DECORATION_WIDTH + self->getTopSize();
+    }
+    if (pendingWidth > 0)
+        width = pendingWidth;
     else
         width = window._floatingWidth;
 
-    if (self->_pendingHeight > 0)
-        height = self->_pendingHeight;
+    if (pendingHeight > 0)
+        height = pendingHeight;
     else
         height = window._floatingHeight;
 
@@ -135,10 +141,6 @@ static void _xdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int width,
 
     self->_pendingWidth = width;
     self->_pendingHeight = height;
-    if (!self->_serverSide) {
-        self->_pendingWidth -= DECORATION_WIDTH + DECORATION_WIDTH;
-        self->_pendingHeight -= DECORATION_WIDTH + self->getTopSize();
-    }
 
     bool active = false;
     bool maximized = false;

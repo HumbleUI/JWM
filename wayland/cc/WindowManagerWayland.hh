@@ -25,6 +25,7 @@
 #include <wayland-xdg-shell-client-protocol.h>
 #include <wayland-xdg-decoration-unstable-v1-client-protocol.h>
 #include <wayland-viewporter-client-protocol.h>
+#include <wayland-xdg-activation-v1-client-protocol.h>
 
 namespace jwm {
     class WindowWayland;
@@ -77,7 +78,7 @@ namespace jwm {
         wp_viewporter* viewporter = nullptr;
         zxdg_decoration_manager_v1* decorationManager = nullptr;
         wl_subcompositor* subcompositor = nullptr;
-
+        xdg_activation_v1* xdgActivation = nullptr;
         std::unique_ptr<Pointer> _pointer = nullptr;
         Pointer* getPointer() const {
                 return _pointer.get();

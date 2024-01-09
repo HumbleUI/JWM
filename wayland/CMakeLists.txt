@@ -57,6 +57,10 @@ ecm_add_wayland_client_protocol(protocols
     PROTOCOL "${WaylandProtocols_DATADIR}/stable/viewporter/viewporter.xml"
     BASENAME viewporter
 )
+ecm_add_wayland_client_protocol(protocols
+    PROTOCOL "${WaylandProtocols_DATADIR}/staging/xdg-activation/xdg-activation-v1.xml"
+    BASENAME xdg-activation-v1
+    )
 find_library(WAYLAND_CLIENT_LIB wayland-client)
 find_library(WAYLAND_CURSOR wayland-cursor)
 find_library(XKBCOMMON xkbcommon)

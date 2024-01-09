@@ -55,6 +55,7 @@ namespace jwm {
         void setCursorMaybe(jwm::MouseCursor cursor, bool force);
         void setCursor(jwm::MouseCursor cursor);
         void setLayer(ILayerWayland* layer);
+        void focus();
 
         wl_cursor* _getCursorFor(jwm::MouseCursor cursor);
         ScreenInfo getScreen();

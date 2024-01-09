@@ -270,6 +270,9 @@ void WindowManagerWayland::registryHandleGlobal(void* data, wl_registry *registr
     } else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
         self->decorationManager = (zxdg_decoration_manager_v1*)wl_registry_bind(registry, name,
                 &zxdg_decoration_manager_v1_interface, 1);
+    } else if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
+        self->xdgActivation = (xdg_activation_v1*)wl_registry_bind(registry, name,
+                &xdg_activation_v1_interface, 1);
     }
 }
 void WindowManagerWayland::registryHandleGlobalRemove(void* data, wl_registry *registry, uint32_t name) {

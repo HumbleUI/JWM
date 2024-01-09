@@ -8,6 +8,7 @@
 #include <locale>
 #include <codecvt>
 #include <algorithm>
+#include "Token.hh"
 
 using namespace jwm;
 
@@ -335,6 +336,12 @@ void jwm::WindowWayland::hideCursor(bool hidden) {
             pointer->unhide();
     }
 }
+
+void jwm::WindowWayland::focus() {
+    if (!_waylandWindow) return;
+    auto token = Token::make(_windowManager, _waylandWindow);
+    token.grab(_windowManager, _waylandWindow);
+}
 // JNI
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nMake
@@ -479,4 +486,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nH
 {
     jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
     instance->hideCursor(hidden);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWayland__1nFocus
+    (JNIEnv* env, jobject obj)
+{
+    jwm::WindowWayland* instance = reinterpret_cast<jwm::WindowWayland*>(jwm::classes::Native::fromJava(env, obj));
+    instance->focus();
 }
