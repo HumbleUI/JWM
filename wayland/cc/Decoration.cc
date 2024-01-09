@@ -6,6 +6,7 @@
 using namespace jwm;
 
 static unsigned int grey_data[] = {0xFF333333};
+static unsigned int zero_data[] = {0x00000000};
 // no image editor
 // pure unadulterated programming
 static unsigned int close_data[] = {
@@ -62,8 +63,7 @@ static void _xdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t seri
     int pendingHeight = self->_pendingHeight;
     // do it here bc we don't know configure order
     if (!self->_serverSide) {
-        pendingWidth -= DECORATION_WIDTH + DECORATION_WIDTH;
-        pendingHeight -= DECORATION_WIDTH + self->getTopSize();
+        pendingHeight -= self->getTopSize();
     }
     if (pendingWidth > 0)
         width = pendingWidth;
@@ -275,14 +275,18 @@ void Decoration::_showDecorations(bool hidden) {
     // When destroyed these get released
     _decBuffer = Buffer::createShmBuffer(_wm.shm, 1, 1, WL_SHM_FORMAT_ARGB8888);
     memcpy(_decBuffer->getData(), grey_data, 1 * sizeof(uint32_t));
+    _zeroBuffer = Buffer::createShmBuffer(_wm.shm, 1, 1, WL_SHM_FORMAT_ARGB8888);
+    memcpy(_zeroBuffer->getData(), zero_data, 1 * sizeof(uint32_t));
     _closeBuffer = Buffer::createShmBuffer(_wm.shm, 9, 9, WL_SHM_FORMAT_ARGB8888);
     memcpy(_closeBuffer->getData(), close_data, 9 * 9 * sizeof(uint32_t));
     _maxBuffer = Buffer::createShmBuffer(_wm.shm, 9, 9, WL_SHM_FORMAT_ARGB8888);
     memcpy(_maxBuffer->getData(), max_data, 9 * 9 * sizeof(uint32_t));
     _minBuffer = Buffer::createShmBuffer(_wm.shm, 9, 9, WL_SHM_FORMAT_ARGB8888);
     memcpy(_minBuffer->getData(), min_data, 9 * 9 * sizeof(uint32_t));
-    _makePart(&_border, _decBuffer, true, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
-            DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
+    int borderY = hidden ? DECORATION_BORDER_HIDDEN_Y : DECORATION_BORDER_Y;
+    int borderHeight = hidden ? DECORATION_BORDER_HEIGHT(_window) : DECORATION_BORDER_FULL_HEIGHT(_window);
+    _makePart(&_border, _zeroBuffer, false, DECORATION_BORDER_X, borderY, 
+            DECORATION_BORDER_WIDTH(_window), borderHeight);
     wl_subsurface_place_below(_border.subsurface, _window._waylandWindow); 
     if (!hidden) {
         _makePart(&_titleComp, _decBuffer, true, DECORATION_TITLE_X, DECORATION_TITLE_Y, 
@@ -296,8 +300,10 @@ void Decoration::_showDecorations(bool hidden) {
 }
 
 void Decoration::_adaptSize() {
-    _resizeDecoration(&_border, DECORATION_BORDER_X, DECORATION_BORDER_Y, 
-            DECORATION_BORDER_WIDTH(_window), DECORATION_BORDER_HEIGHT(_window));
+    int borderY = _isVisible ? DECORATION_BORDER_Y : DECORATION_BORDER_HIDDEN_Y;
+    int borderHeight = _isVisible ? DECORATION_BORDER_FULL_HEIGHT(_window) : DECORATION_BORDER_HEIGHT(_window);
+    _resizeDecoration(&_border, DECORATION_BORDER_X, borderY, 
+            DECORATION_BORDER_WIDTH(_window), borderHeight);
     if (_isVisible) {
         _resizeDecoration(&_titleComp, DECORATION_TITLE_X, DECORATION_TITLE_Y,
                 DECORATION_TITLE_WIDTH(_window), DECORATION_TITLE_HEIGHT);
@@ -307,9 +313,9 @@ void Decoration::_adaptSize() {
     }
 
     if (!_serverSide)
-        xdg_surface_set_window_geometry(_xdgSurface, DECORATION_BORDER_X, _isVisible ? DECORATION_TITLE_Y : DECORATION_BORDER_Y, 
-                DECORATION_BORDER_WIDTH(_window), 
-                _isVisible ? DECORATION_BORDER_FULL_HEIGHT(_window) : DECORATION_BORDER_HEIGHT(_window));
+        xdg_surface_set_window_geometry(_xdgSurface, 0, _isVisible ? DECORATION_TITLE_Y : 0, 
+                _window.getUnscaledWidth(), 
+                (_isVisible ? DECORATION_TITLE_HEIGHT : 0) + _window.getUnscaledHeight() );
     else
         xdg_surface_set_window_geometry(_xdgSurface, 0, 0, _window.getUnscaledWidth(), _window.getUnscaledHeight());
 }
@@ -376,10 +382,10 @@ void Decoration::getBorders(int& left, int& top, int& right, int& bottom) {
         right = 0;
         bottom = 0;
     } else {
-        left = DECORATION_WIDTH;
+        left = 0;
         top = getTopSize();
-        right = DECORATION_WIDTH;
-        bottom = DECORATION_WIDTH;
+        right = 0;
+        bottom = 0;
     }
 }
 
@@ -389,5 +395,5 @@ int Decoration::getTopSize() {
     if (_isVisible)
         return DECORATION_TOP_HEIGHT;
     else
-        return DECORATION_WIDTH;
+        return 0;
 }

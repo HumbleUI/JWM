@@ -9,17 +9,18 @@
 #include <string>
 
 #define DECORATION_WIDTH 4
-#define DECORATION_TOP_HEIGHT 30
+#define DECORATION_TOP_HEIGHT 25
 
 #define DECORATION_BORDER_X -(DECORATION_WIDTH)
-#define DECORATION_BORDER_Y -(DECORATION_WIDTH)
+#define DECORATION_BORDER_HIDDEN_Y -(DECORATION_WIDTH)
+#define DECORATION_BORDER_Y -(DECORATION_WIDTH + DECORATION_TOP_HEIGHT)
 #define DECORATION_BORDER_WIDTH(window) window.getUnscaledWidth() + DECORATION_WIDTH + DECORATION_WIDTH
 #define DECORATION_BORDER_HEIGHT(window) window.getUnscaledHeight() + DECORATION_WIDTH + DECORATION_WIDTH
-#define DECORATION_BORDER_FULL_HEIGHT(window) window.getUnscaledHeight() + DECORATION_TOP_HEIGHT + DECORATION_WIDTH
+#define DECORATION_BORDER_FULL_HEIGHT(window) window.getUnscaledHeight() + DECORATION_TOP_HEIGHT + DECORATION_WIDTH + DECORATION_WIDTH
 
-#define DECORATION_TITLE_X -(DECORATION_WIDTH)
+#define DECORATION_TITLE_X 0
 #define DECORATION_TITLE_Y -(DECORATION_TOP_HEIGHT)
-#define DECORATION_TITLE_WIDTH(window) window.getUnscaledWidth() + DECORATION_WIDTH + DECORATION_WIDTH
+#define DECORATION_TITLE_WIDTH(window) window.getUnscaledWidth()
 #define DECORATION_TITLE_HEIGHT DECORATION_TOP_HEIGHT
 
 #define DECORATION_CLOSE_X(window) window.getUnscaledWidth() - 10
@@ -28,12 +29,12 @@
 #define DECORATION_CLOSE_HEIGHT 9
 
 #define DECORATION_MAX_X(window) (DECORATION_CLOSE_X(window)) - 10
-#define DECORATION_MAX_Y -20
+#define DECORATION_MAX_Y DECORATION_CLOSE_Y
 #define DECORATION_MAX_WIDTH 9
 #define DECORATION_MAX_HEIGHT 9
 
 #define DECORATION_MIN_X(window) (DECORATION_MAX_X(window)) - 10
-#define DECORATION_MIN_Y -20
+#define DECORATION_MIN_Y DECORATION_CLOSE_Y
 #define DECORATION_MIN_WIDTH 9
 #define DECORATION_MIN_HEIGHT 9
 
@@ -65,6 +66,7 @@ namespace jwm {
         WindowWayland& _window;
 
         Buffer* _decBuffer;
+        Buffer* _zeroBuffer;
         Buffer* _closeBuffer;
         Buffer* _maxBuffer;
         Buffer* _minBuffer;

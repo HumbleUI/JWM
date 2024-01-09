@@ -53,6 +53,7 @@ static void pointerLeave(void* data, wl_pointer* pointer, uint32_t serial,
     }
 }
 static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland& window, int x, int y, xkb_state* state) {
+    int topEdge = window._decoration->_isVisible ? DECORATION_TITLE_Y : 0;
     int rightEdge = window.getUnscaledWidth();
     int bottomEdge = window.getUnscaledHeight();
     switch (focus) {
@@ -60,23 +61,14 @@ static xdg_toplevel_resize_edge resizeEdge(DecorationFocus focus, WindowWayland&
             // ???
             return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_TITLE:
-            if (x < 0) {
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
-            } else if (x > rightEdge) {
-                return XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
-            } else {
-                if (y < -DECORATION_TOP_HEIGHT / 2)
-                    return XDG_TOPLEVEL_RESIZE_EDGE_TOP;
-                else
-                    return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
-            }
+            return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         case DECORATION_FOCUS_BORDER:
             if (state) {
                 if (xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE)) {
                     return XDG_TOPLEVEL_RESIZE_EDGE_NONE;
                 }
             } 
-            if (y < 0) {
+            if (y < topEdge) {
                 if (x < 0)
                     return XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
                 else if (x > rightEdge)
@@ -128,6 +120,8 @@ static void pointerMotion(void* data, wl_pointer* pointer, uint32_t time,
             if (self->_decorationFocus == DECORATION_FOCUS_BORDER) {
                 self->_absX = x - DECORATION_WIDTH;
                 self->_absY = y - DECORATION_WIDTH;
+                if (self->_focusedSurface->_decoration->_isVisible)
+                    self->_absY -= DECORATION_TOP_HEIGHT;
             } else if (self->_decorationFocus == DECORATION_FOCUS_TITLE) {
                 self->_absX = x - DECORATION_WIDTH;
                 self->_absY = y - DECORATION_TOP_HEIGHT;
