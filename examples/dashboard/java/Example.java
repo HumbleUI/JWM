@@ -200,6 +200,18 @@ public class Example implements Consumer<Event> {
                         window.minimize();
                     case B ->
                         setProgressBar(progressBars.next());
+                    case S -> {
+                        var timer = new Timer();
+                        // delay to allow workspace/focus switching
+                        timer.schedule(new TimerTask() {
+                            public void run() {
+                                App.runOnUIThread(() -> {
+                                        window.focus();
+                                        timer.cancel();
+                                });
+                            }
+                        }, 2000);
+                    }
                 }
             }
         } else if (e instanceof EventFrame) {
