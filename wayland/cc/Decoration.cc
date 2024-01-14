@@ -183,17 +183,9 @@ static void _xdgToplevelClose(void* data, xdg_toplevel* toplevel) {
     window.dispatch(classes::EventWindowCloseRequest::kInstance);
 }
 
-static void _xdgToplevelConfigureBounds(void* data, xdg_toplevel* toplevel, int width, int height) {
-    // above version
-}
-static void _xdgToplevelWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* capabilities) {
-    // above version
-}
 static xdg_toplevel_listener _xdgToplevelListener = {
     .configure = _xdgToplevelConfigure,
     .close = _xdgToplevelClose,
-    .configure_bounds = _xdgToplevelConfigureBounds,
-    .wm_capabilities = _xdgToplevelWmCapabilities
 };
 
 const char* Decoration::proxyTag = "DecorationJWM";
