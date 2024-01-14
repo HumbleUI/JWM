@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(FindWaylandProtocols)
 include(FindWaylandScanner)
-find_package(WaylandProtocols 1.32)
+find_package(WaylandProtocols 1.25)
 set_package_properties(WaylandProtocols PROPERTIES
     TYPE REQUIRED
 )
@@ -35,32 +35,31 @@ file(GLOB SOURCES_CXX ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/*.cc
     ${CMAKE_CURRENT_LIST_DIR}/cc/*.cc )
 file(GLOB SOURCES_CXX_IMPL ${CMAKE_CURRENT_LIST_DIR}/../shared/cc/impl/*.cc)
 add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
-add_library(protocols STATIC)
-# set_property(TARGET cursorlock PROPERTY POSITION_INDEPENDENT_CODE ON)
-ecm_add_wayland_client_protocol(protocols 
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE 
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml"
     BASENAME pointer-constraints-unstable-v1
 )
-ecm_add_wayland_client_protocol(protocols
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/relative-pointer/relative-pointer-unstable-v1.xml"
     BASENAME relative-pointer-unstable-v1
 )
-ecm_add_wayland_client_protocol(protocols
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE
     PROTOCOL "${WaylandProtocols_DATADIR}/stable/xdg-shell/xdg-shell.xml"
     BASENAME xdg-shell
 )
-ecm_add_wayland_client_protocol(protocols
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE
     PROTOCOL "${WaylandProtocols_DATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml"
     BASENAME xdg-decoration-unstable-v1
 )
-ecm_add_wayland_client_protocol(protocols
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE
     PROTOCOL "${WaylandProtocols_DATADIR}/stable/viewporter/viewporter.xml"
     BASENAME viewporter
 )
-ecm_add_wayland_client_protocol(protocols
+ecm_add_wayland_client_protocol(PROTOCOLS_SOURCE
     PROTOCOL "${WaylandProtocols_DATADIR}/staging/xdg-activation/xdg-activation-v1.xml"
     BASENAME xdg-activation-v1
     )
+add_library(protocols STATIC ${PROTOCOLS_SOURCE})
 find_library(WAYLAND_CLIENT_LIB wayland-client)
 find_library(WAYLAND_CURSOR wayland-cursor)
 find_library(XKBCOMMON xkbcommon)
