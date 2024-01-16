@@ -12,7 +12,7 @@ def deps_compile():
   (args, _) = parser.parse_known_args()
 
   deps = [
-    build_utils.fetch_maven('org.projectlombok', 'lombok', '1.18.22'),
+    build_utils.fetch_maven('org.projectlombok', 'lombok', '1.18.30'),
     build_utils.fetch_maven('org.jetbrains', 'annotations', '20.1.0')
   ]
 

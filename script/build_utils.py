@@ -102,6 +102,7 @@ def javac(sources, target, classpath = [], modulepath = [], add_modules = [], re
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',
+      '-Xlint:-options',
       *opts,
       '--release', release,
       *(['--class-path', classpath_join(classpath + [target])] if classpath else []),
@@ -122,7 +123,7 @@ def jar(target: str, *content: List[Tuple[str, str]]) -> str:
 
 @functools.lru_cache(maxsize=1)
 def lombok():
-  return fetch_maven('org.projectlombok', 'lombok', '1.18.22')
+  return fetch_maven('org.projectlombok', 'lombok', '1.18.30')
 
 def delombok(dirs: List[str], target: str, classpath: List[str] = [], modulepath: List[str] = []):
   sources = files(*[dir + "/**/*.java" for dir in dirs])
