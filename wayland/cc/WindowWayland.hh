@@ -84,8 +84,6 @@ namespace jwm {
         int _oldScale = 1;
         int _height = -1;
         int _newHeight = -1;
-        int _WM_ADD = 1L;
-        int _WM_REMOVE = 0L;
         int _floatingWidth = 400;
         int _floatingHeight = 400;
         bool _canMinimize = false;
