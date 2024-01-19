@@ -16,7 +16,8 @@
 #include "Output.hh"
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-egl.h>
-#include <EGL/egl.h> 
+#include <EGL/egl.h>
+#include <GL/gl.h>
 #include "Keyboard.hh"
 #include "Pointer.hh"
 #include <memory>
@@ -115,6 +116,7 @@ namespace jwm {
         std::map<std::string, ByteBuf> _myClipboardContents;
         std::map<std::string, ByteBuf> _myClipboardSource;
         std::list<std::string> _currentMimeTypes;
+        const char* vendor = nullptr;
 
         wl_surface* getCursorSurface() const {
                 if (_pointer)

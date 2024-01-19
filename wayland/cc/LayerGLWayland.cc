@@ -10,6 +10,9 @@
 #include <EGL/eglplatform.h>
 #include <GL/gl.h>
 #include "ILayerWayland.hh"
+#include <cerrno>
+#include <stdlib.h>
+#include <cstring>
 
 namespace jwm {
 
@@ -32,6 +35,7 @@ namespace jwm {
               fprintf(stderr, "already closed\n");
               throw std::runtime_error("Already closed");
             }
+
             fWindow = jwm::ref(window);
             fWindow->setLayer(this);
             if (fWindow->_windowManager._eglDisplay == EGL_NO_DISPLAY) {
@@ -39,11 +43,19 @@ namespace jwm {
 
               eglInitialize(fWindow->_windowManager._eglDisplay, nullptr, nullptr);
 
+              fWindow->_windowManager.vendor = eglQueryString(_display, EGL_VENDOR);
+
+              if (fWindow->_windowManager.vendor != nullptr && (strcmp(fWindow->_windowManager.vendor, "NVIDIA") == 0)) {
+                // Thankfully observed from minecraft's sodium
+                // https://github.com/CaffeineMC/sodium-fabric/blob/dev/src/main/java/me/jellysquid/mods/sodium/client/compatibility/workarounds/nvidia/NvidiaWorkarounds.java#L29
+                setenv("__GL_THREADED_OPTIMIZATIONS", "0", true);
+              }
             }
             _display = fWindow->_windowManager._eglDisplay;
             if ( eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
               throw new std::runtime_error("Cannot bind EGL Api");
             }
+
             if (_context == nullptr) {
                 EGLint attrList[] = {
                   EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
