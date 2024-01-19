@@ -209,10 +209,16 @@ Decoration::Decoration(WindowWayland& window):
 void Decoration::close() {
     if (_border.surface)
         _destroyDecorations();
-    if (_decoration)
-        zxdg_toplevel_decoration_v1_destroy(_decoration);
+    if (_decoration) {
+        // ???
+        // zxdg_toplevel_decoration_v1_destroy(_decoration);
+        _decoration = nullptr;
+    }
     xdg_toplevel_destroy(_xdgToplevel);
+    _xdgToplevel = nullptr;
     xdg_surface_destroy(_xdgSurface);
+    _xdgSurface = nullptr;
+
 }
 
 void Decoration::_makePart(DecorationPart* decoration, Buffer* buf, bool opaque, int x, int y, int width, int height) {
