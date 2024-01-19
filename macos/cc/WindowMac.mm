@@ -97,6 +97,8 @@ bool jwm::WindowMac::init() {
         return false;
     }
 
+    [fNSWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+
     fCursor = [kCursorCache objectAtIndex:0];
 
     // create view

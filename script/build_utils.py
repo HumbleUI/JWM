@@ -102,6 +102,7 @@ def javac(sources, target, classpath = [], modulepath = [], add_modules = [], re
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',
+      '-Xlint:-options',
       *opts,
       '--release', release,
       *(['--class-path', classpath_join(classpath + [target])] if classpath else []),
