@@ -51,6 +51,7 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void setTitle(const std::wstring& title);
+        void setTitlebarVisible(bool isVisible);
         void setIcon(const std::wstring& iconPath);
         void setOpacity(float opacity);
         float getOpacity();

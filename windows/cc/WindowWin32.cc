@@ -70,6 +70,31 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
     SetWindowTextW(_hWnd, title.c_str());
 }
 
+void jwm::WindowWin32::setTitlebarVisible(bool isVisible) {
+    JWM_VERBOSE("Set titlebar visible=" << isVisible << " for window 0x" << this);
+    if (isVisible == true) {
+        LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
+        lStyle |= (WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
+
+        IRect rect = getWindowRect();
+        int windowWidth = rect.getWidth();
+        int windowHeight = rect.getHeight();
+
+        setContentSize(windowWidth, windowHeight);
+    } else {
+        IRect rect = getContentRect();
+        int contentWidth = rect.getWidth();
+        int contentHeight = rect.getHeight();
+
+        LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
+        lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
+
+        setWindowSize(contentWidth, contentHeight);
+    }
+}
+
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     JWM_VERBOSE("Set window icon '" << iconPath << "'");
     // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the default icon size.
@@ -656,7 +681,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             dispatch(classes::EventWindowFocusOut::kInstance);
             break;
 
-
         case WM_CLOSE:
             JWM_VERBOSE("Event close");
             dispatch(classes::EventWindowCloseRequest::kInstance);
@@ -1011,6 +1035,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
     jsize length = env->GetStringLength(title);
     instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
     env->ReleaseStringChars(title, titleStr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTitlebarVisible
+        (JNIEnv* env, jobject obj, jboolean isVisible) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setTitlebarVisible(isVisible);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIcon
