@@ -1,3 +1,14 @@
+# 0.4.18 - Jul 9, 2024
+
+- macOS: Stable screen ids
+- macOS: Do not stop CVDisplayLink, improves frame pacing
+
+# 0.4.17 - Jan 16, 2024
+
+- X11: add KeyLocation, additional keys via @dzaima
+- X11: fix i3 workspace switching #283 via @bulby
+- macOS: Fix fullscreen
+
 # 0.4.16 - Dec 1, 2023
 
 Added:

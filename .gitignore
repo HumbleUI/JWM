@@ -9,7 +9,7 @@ docs/apidocs
 .idea
 
 # clion build directories
-/*build*
+# /*build*
 /macos/cmake-build-debug
 
 # jvm crash logs
