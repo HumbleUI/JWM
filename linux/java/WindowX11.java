@@ -225,7 +225,7 @@ public class WindowX11 extends Window {
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
-    @ApiStatus.Internal public native Screen _nSetTitle(byte[] title);
+    @ApiStatus.Internal public native void _nSetTitle(byte[] title);
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
     @ApiStatus.Internal public native boolean _nIsFullScreen();
