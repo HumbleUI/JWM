@@ -38,6 +38,7 @@ namespace jwm {
             return _isRedrawRequested;
         }
         void setTitle(const std::string& title);
+        void setClass(const std::string& name, const std::string& class_);
         void setTitlebarVisible(bool isVisible);
 
         void maximize();
