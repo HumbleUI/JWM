@@ -87,7 +87,7 @@ Alpha. Expect API breakages.
 | makeWindow        | ✅   | [#121](https://github.com/HumbleUI/JWM/issues/121)   | ✅   |
 | getScreens        | ✅   | ✅   | ✅   |
 | getPrimaryScreen  | ✅   | ✅   | ✅   |
-| runOnUIThread     | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
+| runOnUIThread     | ✅   | ✅   | ✅ |
 | terminate         | ✅   | ✅   | ✅   |
 | Show notification | ❌   | ❌   | ❌   |
 
@@ -113,14 +113,14 @@ Alpha. Expect API breakages.
 | setWindowSize       | ✅   | ✅   | ✅   |
 | setContentSize      | ✅   | ✅   | ✅   |
 | getScreen           | ✅   | ✅   | ✅   |
-| requestFrame        | ✅   | ✅   | [#113](https://github.com/HumbleUI/JWM/issues/113) |
+| requestFrame        | ✅   | ✅   | ✅ |
 | close               | ✅   | [#107](https://github.com/HumbleUI/JWM/issues/107) | ✅   |
 | minimize            | ✅   | ✅  |  ✅   |
 | maximize            | ✅   | ✅  |  ✅   |
 | restore             | ✅   | ✅  |  ✅   |
 | setTitle            | ✅   | ✅   | ✅   |
 | setIcon             | ✅   | ✅   | [#95](https://github.com/HumbleUI/JWM/issues/95)  |
-| Set system cursor   | ✅   | ✅   | [#99](https://github.com/HumbleUI/JWM/issues/99)  |
+| Set system cursor   | ✅   | ✅   | ✅  |
 | Customize titlebar  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  | [#75](https://github.com/HumbleUI/JWM/issues/75)  |
 | focus               | ✅   | ✅   | ❌   |
 | Get ZOrder          | ❌   | ✅   | ❌   |
@@ -142,7 +142,7 @@ Alpha. Expect API breakages.
 | EventKey                | ✅   | ✅   | ✅   |
 | EventMouseButton        | ✅   | ✅   | ✅   |
 | EventMouseMove          | ✅   | ✅   | ✅   |
-| EventMouseScroll        | [#115](https://github.com/HumbleUI/JWM/issues/115) | ✅   | [#115](https://github.com/HumbleUI/JWM/issues/115) |
+| EventMouseScroll        | [#115](https://github.com/HumbleUI/JWM/issues/115) | ✅   | ✅   |
 | EventTextInput          | ✅   | [#105](https://github.com/HumbleUI/JWM/issues/105) | ✅   |
 | EventTextInputMarked    | ✅   | ✅   | ✅   |
 | EventWindowCloseRequest | ✅   | ✅   | ✅   |
