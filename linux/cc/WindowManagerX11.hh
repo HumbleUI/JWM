@@ -121,6 +121,7 @@ namespace jwm {
             DEFINE_ATOM(_MOTIF_WM_HINTS);
             DEFINE_ATOM(_NET_WM_STATE);
             DEFINE_ATOM(_NET_WM_NAME);
+            DEFINE_ATOM(_NET_WM_ICON);
             DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_VERT);
             DEFINE_ATOM(_NET_WM_STATE_MAXIMIZED_HORZ);
             DEFINE_ATOM(_NET_FRAME_EXTENTS);

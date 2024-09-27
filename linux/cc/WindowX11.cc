@@ -42,6 +42,29 @@ void WindowX11::setClass(const std::string& name, const std::string& appClass) {
     }
 }
 
+void WindowX11::setIconData(int width, int height, const unsigned char* argb) {
+    size_t size = width * height;
+    size_t count = size + 2;
+    std::unique_ptr<long[]> buffer{new long[count]};
+    buffer[0] = width;
+    buffer[1] = height;
+    for (size_t i = 0; i < size; i++) {
+        uint32_t c = static_cast<uint32_t>(argb[i*4]) |
+                     static_cast<uint32_t>(argb[i*4 + 1]) << 8 |
+                     static_cast<uint32_t>(argb[i*4 + 2]) << 16 |
+                     static_cast<uint32_t>(argb[i*4 + 3]) << 24;
+        buffer[i+2] = c;
+    }
+    XChangeProperty(_windowManager.getDisplay(),
+                    _x11Window,
+                    _windowManager.getAtoms()._NET_WM_ICON,
+                    XA_CARDINAL,
+                    32,
+                    PropModeReplace,
+                    reinterpret_cast<const unsigned char*>(buffer.get()),
+                    count);
+}
+
 void WindowX11::setTitlebarVisible(bool isVisible) {
     MotifHints motifHints = {0};
 
@@ -584,6 +607,15 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetCl
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
 
     instance->setClass(bytesToString(env, name), bytesToString(env, appClass));
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetIconData
+        (JNIEnv* env, jobject obj, jint width, jint height, jbyteArray data) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+
+    jbyte* bytes = env->GetByteArrayElements(data, nullptr);
+    instance->setIconData(width, height, reinterpret_cast<const unsigned char*>(bytes));
+    env->ReleaseByteArrayElements(data, bytes, 0);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTitlebarVisible
