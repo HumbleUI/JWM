@@ -32,6 +32,16 @@ void WindowX11::setTitle(const std::string& title) {
                     title.length());
 }
 
+void WindowX11::setClass(const std::string& name, const std::string& appClass) {
+    XClassHint *classHint = XAllocClassHint();
+    if (classHint) {
+        classHint->res_name = const_cast<char*>(name.c_str());
+        classHint->res_class = const_cast<char*>(appClass.c_str());
+        XSetClassHint(_windowManager.getDisplay(), _x11Window, classHint);
+        XFree(classHint);
+    }
+}
+
 void WindowX11::setTitlebarVisible(bool isVisible) {
     MotifHints motifHints = {0};
 
@@ -555,15 +565,25 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nClose
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
+
+static std::string bytesToString(JNIEnv* env, jbyteArray arr) {
+    jbyte* bytes = env->GetByteArrayElements(arr, nullptr);
+    std::string res = { bytes, bytes + env->GetArrayLength(arr) };
+    env->ReleaseByteArrayElements(arr, bytes, 0);
+    return res;
+}
+
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTitle
         (JNIEnv* env, jobject obj, jbyteArray title) {
     jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setTitle(bytesToString(env, title));
+}
 
-    jbyte* bytes = env->GetByteArrayElements(title, nullptr);
-    std::string titleS = { bytes, bytes + env->GetArrayLength(title) };
-    env->ReleaseByteArrayElements(title, bytes, 0);
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetClassHint
+        (JNIEnv* env, jobject obj, jbyteArray name, jbyteArray appClass) {
+    jwm::WindowX11* instance = reinterpret_cast<jwm::WindowX11*>(jwm::classes::Native::fromJava(env, obj));
 
-    instance->setTitle(titleS);
+    instance->setClass(bytesToString(env, name), bytesToString(env, appClass));
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowX11__1nSetTitlebarVisible
