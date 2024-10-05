@@ -59,13 +59,13 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         dispatch_async(dispatch_get_main_queue(), ^{
             window->fFrameRequested = false;
             window->dispatch(jwm::classes::EventFrame::kInstance);
-            if (!window->fFrameRequested) {
-              std::lock_guard<std::mutex> lock(window->fDisplayLinkMutex);
-              if (!window->fFrameRequested && window->fDisplayLinkRunning) {
-                CVDisplayLinkStop(window->fDisplayLink);
-                window->fDisplayLinkRunning = false;
-              }
-            }
+            // if (!window->fFrameRequested) {
+              // std::lock_guard<std::mutex> lock(window->fDisplayLinkMutex);
+              // if (!window->fFrameRequested && window->fDisplayLinkRunning) {
+              //   CVDisplayLinkStop(window->fDisplayLink);
+              //   window->fDisplayLinkRunning = false;
+              // }
+            // }
             window->unref();
             window->fFrameScheduled = false;
         });

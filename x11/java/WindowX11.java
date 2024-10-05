@@ -76,6 +76,43 @@ public class WindowX11 extends Window {
         return this;
     }
 
+    /**
+     * <p>Set the WM_CLASS window property.</p>
+     *
+     * @param appClass  application class
+     * @return          this
+     */
+    public Window setClassHint(String appClass) {
+        setClassHint(appClass, appClass);
+        return this;
+    }
+
+    public Window setClassHint(String name, String appClass) {
+        assert _onUIThread() : "Should be run on UI thread";
+        try {
+            _nSetClassHint(name.getBytes("UTF-8"), appClass.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ignored) {}
+        return this;
+    }
+
+    /**
+     * <p>Set window icon from raw image bytes.</p>
+     *
+     * <p>{@code data} must have a length of {@code width * height * 4}, representing per-pixel ARGB data.</p>
+     *
+     * @param width     icon width in pixels
+     * @param height    icon height in pixels
+     * @param data      icon image data
+     * @return          this
+     */
+    @NotNull @Contract("-> this")
+    public Window setIconData(int width, int height, byte[] data) {
+        assert _onUIThread() : "Should be run on UI thread";
+        assert data.length == width*height*4 : "Incorrect icon data array length";
+        _nSetIconData(width, height, data);
+        return this;
+    }
+
     @Override
     public Window setTitlebarVisible(boolean value) {
         _nSetTitlebarVisible(value);
@@ -231,7 +268,9 @@ public class WindowX11 extends Window {
     @ApiStatus.Internal public native void _nMaximize();
     @ApiStatus.Internal public native void _nMinimize();
     @ApiStatus.Internal public native void _nRestore();
-    @ApiStatus.Internal public native Screen _nSetTitle(byte[] title);
+    @ApiStatus.Internal public native void _nSetTitle(byte[] title);
+    @ApiStatus.Internal public native void _nSetClassHint(byte[] name, byte[] appClass);
+    @ApiStatus.Internal public native void _nSetIconData(int width, int height, byte[] data);
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
     @ApiStatus.Internal public native boolean _nIsFullScreen();

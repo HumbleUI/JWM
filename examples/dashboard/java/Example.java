@@ -10,6 +10,9 @@ import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Example implements Consumer<Event> {
     public static int PADDING = 10;
@@ -82,6 +85,17 @@ public class Example implements Consumer<Event> {
             }
             case MACOS -> {
                 window.setIcon(new File("examples/dashboard/resources/macos.icns"));
+            }
+            case X11 -> {
+                ((WindowX11) window).setClassHint("jwm-dashboard-example"); // allows OS-wide identification of the window (e.g. icon themes, .desktop files)
+                try {
+                    Bitmap i = Bitmap.makeFromImage(Image.makeDeferredFromEncodedBytes(Files.readAllBytes(Path.of("examples/dashboard/resources/linux/icon_48x48.png"))));
+                    ImageInfo info = i.getImageInfo();
+
+                    ((WindowX11) window).setIconData(info.getWidth(), info.getHeight(), i.readPixels());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

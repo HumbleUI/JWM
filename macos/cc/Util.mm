@@ -35,7 +35,8 @@ jobject jwm::screenFromNSScreen(JNIEnv* env, NSScreen* screen) {
     jwm::IRect bounds = jwm::transformRectRelativeToPrimaryScreen([screen frame], scale);
     jwm::IRect workArea = jwm::transformRectRelativeToPrimaryScreen([screen visibleFrame], scale);
     NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
-    return jwm::classes::Screen::make(env, reinterpret_cast<long>(screen), screen == primary, bounds, workArea, scale);
+    NSNumber* id = [[screen deviceDescription] valueForKey:@"NSScreenNumber"];
+    return jwm::classes::Screen::make(env, [id longValue], screen == primary, bounds, workArea, scale);
 }
 
 NSPoint jwm::nsWindowPosition(NSWindow* window) {
