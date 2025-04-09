@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 4.0)
 project(jwm-project LANGUAGES CXX)
 
 ####################################################################
@@ -14,6 +14,7 @@ if(APPLE)
     add_subdirectory(macos)
     message(STATUS "Configure macos platform module")
 endif()
+
 
 if (UNIX AND NOT APPLE)
     add_subdirectory(linux)
