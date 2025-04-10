@@ -70,7 +70,7 @@ jwm::StringUTF16::StringUTF16(const uint32_t *str) {
 }
 
 jwm::JNILocal<jstring> jwm::StringUTF16::toJString(JNIEnv* env) const {
-    return jwm::JNILocal<jstring>(env, env->NewString((const jchar*)c_str(), static_cast<jsize>(length())));
+    return jwm::JNILocal<jstring>(env, env->NewString(reinterpret_cast<const jchar*>(c_str()), static_cast<jsize>(length())));
 }
 
 jwm::StringUTF16 jwm::StringUTF16::makeFromJString(JNIEnv* env, jstring js) {
