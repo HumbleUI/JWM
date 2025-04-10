@@ -78,7 +78,7 @@ jwm::StringUTF16 jwm::StringUTF16::makeFromJString(JNIEnv* env, jstring js) {
     jsize length = env->GetStringLength(js);
     const jchar* chars = env->GetStringChars(js, nullptr);
 
-    const char16_t* signed_chars = (const char16_t*)(chars);
+    const char16_t* signed_chars = reinterpret_cast<const char16_t*>(chars);
     result = jwm::StringUTF16(signed_chars, length);
     env->ReleaseStringChars(js, chars);
     return result;
