@@ -15,6 +15,7 @@ if(APPLE)
     message(STATUS "Configure macos platform module")
 endif()
 
+
 if (UNIX AND NOT APPLE)
     add_subdirectory(linux)
     message(STATUS "Configure linux platform module")
