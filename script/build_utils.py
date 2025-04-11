@@ -66,6 +66,8 @@ def copy_newer(src, dst):
 
 def has_newer(sources, targets):
   mtime = time.time()
+  if not any(os.path.exists(f) for f in targets):
+    return True
   for target in targets:
     if os.path.exists(target):
       mtime = min(mtime, os.path.getmtime(target))

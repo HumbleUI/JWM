@@ -1,3 +1,7 @@
+# 0.4.19 - Apr 11, 2025
+
+- macOS: fix build #296 via @SergeevPavel, @Alex2772
+
 # 0.4.18 - Jul 9, 2024
 
 - macOS: Stable screen ids
