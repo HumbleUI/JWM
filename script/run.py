@@ -28,7 +28,7 @@ def main():
   
   if args.jwm_version:
     classpath += [
-      build_utils.fetch_maven('io.github.humbleui.jwm', 'jwm', args.jwm_version)
+      build_utils.fetch_maven('io.github.humbleui', 'jwm', args.jwm_version)
     ]
   else:
     classpath += [
