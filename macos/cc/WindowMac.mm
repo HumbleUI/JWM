@@ -536,6 +536,9 @@ extern "C" JNIEXPORT bool JNICALL Java_io_github_humbleui_jwm_WindowMac__1nIsFro
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nBringToFront
   (JNIEnv* env, jobject obj) {
+    jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
+    NSWindow* nsWindow = instance->fNSWindow;
+    [nsWindow makeMainWindow];
     [NSApp activateIgnoringOtherApps:YES];
 }
 
