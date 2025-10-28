@@ -34,7 +34,7 @@ public class LayerGLSkija extends LayerGL {
 
         _window.accept(new EventFrameSkija(_surface));
 
-        _surface.flushAndSubmit();
+        _directContext.flushAndSubmit(_surface);
         swapBuffers();
     }
 

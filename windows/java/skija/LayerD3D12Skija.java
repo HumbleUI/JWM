@@ -22,16 +22,16 @@ public class LayerD3D12Skija extends LayerD3D12 {
     @Override
     public void frame() {
         try (BackendRenderTarget _renderTarget = BackendRenderTarget.makeDirect3D(_width, _height, nextDrawableTexturePtr(), getFormat(), getSampleCount(), getLevelCount());
-             Surface _surface = Surface.makeFromBackendRenderTarget( _directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
+             Surface _surface = Surface.wrapBackendRenderTarget( _directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
         {
             _window.accept(new EventFrameSkija(_surface));
 
-            _surface.flushAndSubmit();
+            _directContext.flushAndSubmit(_surface);
             swapBuffers();
 
             // todo: call flush for present (instead of default flush)
             // since we want to have BackendSurfaceAccess::kPresent final render target layout
-            _surface.flush();
+            _directContext.flush(_surface);
             _directContext.submit(false);
 
             swapBuffers();

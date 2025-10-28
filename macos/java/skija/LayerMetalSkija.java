@@ -26,7 +26,7 @@ public class LayerMetalSkija extends LayerMetal {
         {
             _window.accept(new EventFrameSkija(_surface));
 
-            _surface.flushAndSubmit();
+            _directContext.flushAndSubmit(_surface);
             swapBuffers();
         }
     }
