@@ -1,3 +1,7 @@
+# 0.4.20 - Oct 28, 2025
+
+- Update Skija compatibility to 0.123.0
+
 # 0.4.19 - Apr 11, 2025
 
 - macOS: fix build #296 via @SergeevPavel, @Alex2772

@@ -9,7 +9,7 @@ def build_native():
     "-G", "Ninja",
     "-DJWM_ARCH=" + build_utils.arch,
     *(["-DCMAKE_OSX_ARCHITECTURES=" + {"x64": "x86_64", "arm64": "arm64"}[build_utils.arch]] if build_utils.system == "macos" else [])])
-  subprocess.check_call(["ninja"], cwd = "build")
+  build_utils.ninja("build")
   
   if os.path.exists('build/libjwm_x64.dylib'):
     build_utils.copy_newer('build/libjwm_x64.dylib', '../target/classes/libjwm_x64.dylib')
