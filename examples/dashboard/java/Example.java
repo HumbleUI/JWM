@@ -37,7 +37,7 @@ public class Example implements Consumer<Event> {
 
     public Window window;
 
-    public boolean paused = true;
+    public boolean paused = false;
 
     public Options progressBars = new Options("Default", "0%", "50%", "100%", "Indeterminate");
 

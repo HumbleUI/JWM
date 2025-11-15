@@ -12,8 +12,8 @@ public class LayerGLSkija extends LayerGL {
     @Getter @Setter @ApiStatus.Internal public int _fbFormat = FramebufferFormat.GR_GL_RGBA8;
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.BOTTOM_LEFT;
     @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.RGBA_8888;
-    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = ColorSpace.getSRGB(); // TODO load monitor profile
-    @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.RGB_H);
+    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
+    @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(Platform.CURRENT == Platform.MACOS ? PixelGeometry.UNKNOWN : PixelGeometry.RGB_H);
 
     @Getter @ApiStatus.Internal public DirectContext _directContext = null;
     @Getter @ApiStatus.Internal public BackendRenderTarget _renderTarget = null;
@@ -23,19 +23,35 @@ public class LayerGLSkija extends LayerGL {
     public void frame() {
         makeCurrent();
         
-        if (_directContext == null)
+        if (_directContext == null) {
             _directContext = DirectContext.makeGL();
+        }
 
-        if (_renderTarget == null)
+        if (_renderTarget == null) {
             _renderTarget = BackendRenderTarget.makeGL(_width, _height, _samples, _stencil, _fbId, _fbFormat);
+        }
 
-        if (_surface == null)
-            _surface = Surface.makeFromBackendRenderTarget(_directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);
+        if (_colorSpace == null) {
+            _colorSpace = LayerSkija.windowColorSpace(_window);
+        }
+
+        if (_surface == null) {
+            _surface = Surface.wrapBackendRenderTarget(_directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);
+        }
 
         _window.accept(new EventFrameSkija(_surface));
 
         _directContext.flushAndSubmit(_surface);
         swapBuffers();
+    }
+
+    @Override
+    public void reconfigure() {
+        if (_colorSpace != null) {
+            _colorSpace.close();
+        };
+        _colorSpace = null;
+        super.reconfigure();
     }
 
     @Override

@@ -36,9 +36,9 @@ def main():
   parser.add_argument('--only', choices = ['native', 'java'])
   (args, _) = parser.parse_known_args()
   res = 0
-  if None == args.only or 'native' == args.only:
+  if args.only is None or 'native' == args.only:
     res += build_native()
-  if None == args.only or 'java' == args.only:
+  if args.only is None or 'java' == args.only:
     res += build_java()
   return res
 

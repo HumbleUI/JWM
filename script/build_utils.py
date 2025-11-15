@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import argparse, base64, functools, glob, hashlib, itertools, json, os, pathlib, platform, random, re, shutil, subprocess, tempfile, time, urllib.request, zipfile
+import argparse, base64, collections, functools, glob, hashlib, itertools, json, os, pathlib, platform, random, re, shutil, subprocess, sys, tempfile, time, urllib.request, zipfile
 from typing import List, Tuple
 
 def get_arg(name):
@@ -14,6 +14,7 @@ arch   = get_arg("arch")   or native_arch
 system = get_arg("system") or {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows'}[platform.system()]
 classpath_separator = ';' if platform.system() == 'Windows' else ':'
 mvn = "mvn.cmd" if platform.system() == "Windows" else "mvn"
+lombok_version = '1.18.42'
 
 def classpath_join(entries):
   return classpath_separator.join(entries)
@@ -27,6 +28,35 @@ def parse_sha() -> str:
   sha = get_arg("sha") or os.getenv('GITHUB_SHA')
   if sha:
     return sha[:10]
+
+def release_notes(version: str):
+  with open('CHANGELOG.md', 'r') as f:
+    lines = f.readlines()
+
+  # Find the header that starts with "# {version}"
+  start_idx = None
+  for i, line in enumerate(lines):
+    if line.startswith(f'# {version}'):
+      start_idx = i
+      break
+
+  if start_idx is None:
+    raise Exception(f"Version {version} not found in CHANGELOG.md")
+
+  # Extract lines after the header until the next header (line starting with #) or end of file
+  content_lines = []
+  for i in range(start_idx + 1, len(lines)):
+    line = lines[i]
+    if line.startswith('#'):
+      break
+    content_lines.append(line)
+
+  # Write to RELEASE_NOTES.md
+  content = ''.join(content_lines).strip() + '\n'
+  with open('RELEASE_NOTES.md', 'w') as f:
+    f.write(content)
+
+  print(f"Wrote release notes for {version} to RELEASE_NOTES.md", flush=True)
 
 def makedirs(path):
   os.makedirs(path, exist_ok=True)
@@ -88,7 +118,7 @@ def ninja(dir):
   total_errors = 0
 
   process = subprocess.Popen(
-    ['ninja'],
+    ['ninja', '-k', '0'],
     cwd=dir,
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
@@ -132,19 +162,62 @@ def fetch_maven(group, name, version, classifier=None, repo='https://repo1.maven
 def fetch_all_maven(deps, repo='https://repo1.maven.org/maven2'):
   return [fetch_maven(dep['group'], dep['name'], dep['version'], repo=dep.get('repo', repo)) for dep in deps]
 
+@functools.lru_cache(maxsize=1)
+def jdk_version() -> Tuple[int, int, int]:
+  output = subprocess.run(['java', '-version'], capture_output=True, text=True).stderr
+  match = re.search(r'"([^"]+)"', output)
+  if not match:
+    raise Exception(f"Could not parse java version from: {output}")
+  version_str = match.group(1)
+  if version_str.startswith('1.'):
+    # Old format: 1.8.0_181 -> (8, 0, 181)
+    parts = version_str.split('.')
+    major = int(parts[1])
+    if len(parts) > 2:
+      minor_patch = parts[2].split('_')
+      minor = int(minor_patch[0])
+      patch = int(minor_patch[1]) if len(minor_patch) > 1 else 0
+    else:
+      minor = 0
+      patch = 0
+  else:
+    # New format: 11.0.2 -> (11, 0, 2), 17.0.1+12 -> (17, 0, 1)
+    parts = version_str.split('.')
+    major = int(parts[0])
+    minor = int(parts[1]) if len(parts) > 1 else 0
+    if len(parts) > 2:
+      patch_str = re.split(r'[+\-]', parts[2])[0]
+      patch = int(patch_str) if patch_str else 0
+    else:
+      patch = 0
+  return (major, minor, patch)
+
+def javac_sources(sources):
+  groups = collections.defaultdict(list)
+  for path in sources:
+    groups[os.path.dirname(path)].append(os.path.basename(path))
+  sorted_keys = sorted(groups.keys(), key=str.lower)
+  lines = []
+  for key in sorted_keys:
+    sorted_values = sorted(groups[key], key=str.lower)
+    lines.append('  ' + key + '/ ' + ' '.join(sorted_values))
+
+  return '\n'.join(lines)
+
 def javac(sources, target, classpath = [], modulepath = [], add_modules = [], release = '11', opts=[]):
   makedirs(target)
   classes = {path.stem: path.stat().st_mtime for path in pathlib.Path(target).rglob('*.class') if '$' not in path.stem}
   newer = lambda path: path.stem not in classes or path.stat().st_mtime > classes.get(path.stem)
-  new_sources = [path for path in sources if newer(pathlib.Path(path))]
+  new_sources = sorted([path for path in sources if newer(pathlib.Path(path))], key=str.lower)
   if new_sources:
-    print('Compiling', len(new_sources), 'java files to', target + ':\n ', '\n  '.join(new_sources), flush=True)
+    print('Compiling', len(new_sources), 'java files to', target + ':\n' + javac_sources(new_sources), flush=True)
     subprocess.check_call([
       'javac',
       '-encoding', 'UTF8',
       '-Xlint:-options',
-      *opts,
       '-Xlint:deprecation',
+      *(['-proc:full', '-J--sun-misc-unsafe-memory-access=allow'] if jdk_version()[0] >= 23 else []),
+      *opts,
       '--release', release,
       *(['--class-path', classpath_join(classpath + [target])] if classpath else []),
       *(['--module-path', classpath_join(modulepath)] if modulepath else []),
@@ -164,14 +237,16 @@ def jar(target: str, *content: List[Tuple[str, str]], opts=[]) -> str:
 
 @functools.lru_cache(maxsize=1)
 def lombok():
-  return fetch_maven('org.projectlombok', 'lombok', '1.18.30')
+  return fetch_maven('org.projectlombok', 'lombok', lombok_version)
 
 def delombok(dirs: List[str], target: str, classpath: List[str] = [], modulepath: List[str] = []):
   sources = files(*[dir + "/**/*.java" for dir in dirs])
   if has_newer(sources, files(target + "/**")):
     print("Delomboking", *dirs, "to", target, flush=True)
-    subprocess.check_call(["java",
+    subprocess.check_call([
+      "java",
       "-Dfile.encoding=UTF8",
+      *(['--sun-misc-unsafe-memory-access=allow'] if jdk_version()[0] >= 23 else []),
       "-jar", lombok(),
       "delombok",
       *dirs,

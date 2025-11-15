@@ -13,7 +13,7 @@ public class LayerRasterSkija extends LayerRaster {
     public void frame() {
         if (_surface == null) {
             ImageInfo imageInfo = new ImageInfo(_colorInfo, getWidth(), getHeight());
-            _surface = Surface.makeRasterDirect(imageInfo, getPixelsPtr(), getRowBytes());
+            _surface = Surface.wrapPixels(imageInfo, getPixelsPtr(), getRowBytes());
         }
 
         _window.accept(new EventFrameSkija(_surface));

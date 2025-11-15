@@ -5,7 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--example', default='dashboard')
   parser.add_argument('--jwm-version', default=None)
-  parser.add_argument('--skija-version', default='0.123.0')
+  parser.add_argument('--skija-version', default=common.default_skija_version)
   parser.add_argument('--skija-dir', default=None)
   parser.add_argument('--skija-shared-jar', default=None)
   parser.add_argument('--skija-platform-jar', default=None)
@@ -38,8 +38,8 @@ def main():
 
   if args.skija_dir:
     classpath += [
-      skija_dir + '/platform/build',
-      skija_dir + '/platform/target/classes',
+      f'{skija_dir}/platform/target/{build_utils.system + '-' + build_utils.arch}/native',
+      f'{skija_dir}/platform/target/{build_utils.system + '-' + build_utils.arch}/classes',
     ]
   elif args.skija_platform_jar:
     classpath += [
@@ -61,6 +61,7 @@ def main():
     '-enableassertions',
     '-enablesystemassertions',
     '-Dfile.encoding=UTF-8',
+    *(['--enable-native-access=ALL-UNNAMED'] if build_utils.jdk_version()[0] >= 24 else []),
     '-Xcheck:jni',
     'io.github.humbleui.jwm.examples.Example'
   ])
