@@ -35,13 +35,13 @@ public class Screen {
 
     /**
      * <p>Get the ICC color profile data for this screen.</p>
-     * <p>Currently only supported on macOS. Returns null on other platforms.</p>
+     * <p>Currently supported on macOS and Windows. Returns null on other platforms.</p>
      *
      * @return ICC profile data as byte array, or null if not available
      */
     @Nullable
     public byte[] getICCProfile() {
-        if (Platform.CURRENT == Platform.MACOS) {
+        if (Platform.CURRENT == Platform.MACOS || Platform.CURRENT == Platform.WINDOWS) {
             return _nGetICCProfile(_id);
         }
         return null;
