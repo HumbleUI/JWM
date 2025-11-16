@@ -1,3 +1,9 @@
+# 0.4.21 - Nov 16, 2025
+
+- Skija 0.143.3
+- Windows, macOS: `Screen::getICCProfile`
+- Windows, macOS: `LayerGLSkija`, `LayerGLSkija` and `LayerD3D12Skija` now use render to correct color space
+
 # 0.4.20 - Oct 28, 2025
 
 - Update Skija compatibility to 0.123.0
