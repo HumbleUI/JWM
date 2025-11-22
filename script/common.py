@@ -2,7 +2,7 @@
 import argparse, build_utils, functools, os
 
 basedir = os.path.abspath(os.path.dirname(__file__) + '/..')
-default_skija_version = '0.143.3'
+default_skija_version = '0.143.4'
 
 @functools.lru_cache(maxsize=1)
 def deps_compile():
