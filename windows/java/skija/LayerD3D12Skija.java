@@ -7,7 +7,7 @@ import org.jetbrains.annotations.*;
 
 public class LayerD3D12Skija extends LayerD3D12 {
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.TOP_LEFT;
-    @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.RGBA_8888;
+    @Getter @Setter @ApiStatus.Internal public ColorType _colorFormat = ColorType.RGBA_8888;
     @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
     @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.RGB_H);
 

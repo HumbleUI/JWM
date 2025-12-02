@@ -11,7 +11,7 @@ public class LayerGLSkija extends LayerGL {
     @Getter @Setter @ApiStatus.Internal public int _fbId = 0;
     @Getter @Setter @ApiStatus.Internal public int _fbFormat = FramebufferFormat.GR_GL_RGBA8;
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.BOTTOM_LEFT;
-    @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.RGBA_8888;
+    @Getter @Setter @ApiStatus.Internal public ColorType _colorFormat = ColorType.RGBA_8888;
     @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
     @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(Platform.CURRENT == Platform.MACOS ? PixelGeometry.UNKNOWN : PixelGeometry.RGB_H);
 

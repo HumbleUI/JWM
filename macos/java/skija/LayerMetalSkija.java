@@ -7,7 +7,7 @@ import org.jetbrains.annotations.*;
 
 public class LayerMetalSkija extends LayerMetal {
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.TOP_LEFT;
-    @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.BGRA_8888;
+    @Getter @Setter @ApiStatus.Internal public ColorType _colorFormat = ColorType.BGRA_8888;
     @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
     @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.UNKNOWN);
 
