@@ -65,14 +65,10 @@ public class LayerGLSkija extends LayerGL {
             _renderTarget.close();
             _renderTarget = null;
         }
-
         if (_directContext != null) {
-            // https://bugs.chromium.org/p/skia/issues/detail?id=12814
-            // _directContext.abandon();
-            _directContext.close();
-            _directContext = null;
+            _directContext.resetGLAll();
         }
-        
+
         super.resize(width, height);
     }
 
