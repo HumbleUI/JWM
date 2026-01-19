@@ -1,3 +1,7 @@
+# 0.4.23 - Jan 18, 2025
+
+- Don't reset DirectContext on LayerGLSkija resize #301 via @dzaima
+
 # 0.4.22 - Dec 2, 2025
 
 - Skija 0.143.5
