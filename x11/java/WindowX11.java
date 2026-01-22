@@ -248,6 +248,12 @@ public class WindowX11 extends Window {
         return _nIsFullScreen();
     }
 
+    @Override
+    public float getScale() {
+        assert _onUIThread() : "Should be run on UI thread";
+        return _nGetScale();
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native IRect _nGetWindowRect();
@@ -268,4 +274,5 @@ public class WindowX11 extends Window {
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetFullScreen(boolean isFullScreen);
     @ApiStatus.Internal public native boolean _nIsFullScreen();
+    @ApiStatus.Internal public native float _nGetScale();
 }

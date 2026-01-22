@@ -172,7 +172,10 @@ public class WindowWin32 extends Window {
         _nBringToFront();
         return this;
     }
-
+    
+    public float getScale() {
+        return this.getScreen().getScale();
+    }
     @Override
     public boolean isFront() {
         assert _onUIThread() : "Should be run on UI thread";

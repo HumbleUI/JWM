@@ -10,9 +10,10 @@ def main():
   parser.add_argument('--skija-shared-jar', default=None)
   parser.add_argument('--skija-platform-jar', default=None)
   parser.add_argument('--types-dir', default=None)
+  parser.add_argument('--just-run', action='store_true')
   args = parser.parse_args()
 
-  if not args.jwm_version:
+  if not args.jwm_version and not args.just_run:
     build.main()
 
   if args.skija_dir:
@@ -32,9 +33,17 @@ def main():
     ]
   else:
     classpath += [
-      'target/classes',
-      build_utils.system + '/build'
-    ]
+          'target/classes'
+        ]
+    if build_utils.system == "linux":
+        classpath += [
+          "wayland/build",
+          "x11/build"
+        ]
+    else:
+      classpath += [
+        build_utils.system + '/build'
+      ]
 
   if args.skija_dir:
     classpath += [
