@@ -1,0 +1,6 @@
+#FileLock
+#Thu Jan 22 09:55:44 EST 2026
+hostName=localhost
+id=19be6344720a31039ee91c2d45d1c13e1c6005deee8
+method=file
+server=localhost\:40481

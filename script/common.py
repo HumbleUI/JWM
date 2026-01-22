@@ -2,17 +2,18 @@
 import argparse, build_utils, functools, os
 
 basedir = os.path.abspath(os.path.dirname(__file__) + '/..')
+default_skija_version = '0.143.5'
 
 @functools.lru_cache(maxsize=1)
 def deps_compile():
   parser = argparse.ArgumentParser()
   parser.add_argument('--skija-dir', default=None)
   parser.add_argument('--skija-shared-jar', default=None)
-  parser.add_argument('--skija-version', default='0.116.2')
+  parser.add_argument('--skija-version', default=default_skija_version)
   (args, _) = parser.parse_known_args()
 
   deps = [
-    build_utils.fetch_maven('org.projectlombok', 'lombok', '1.18.30'),
+    build_utils.fetch_maven('org.projectlombok', 'lombok', build_utils.lombok_version),
     build_utils.fetch_maven('org.jetbrains', 'annotations', '20.1.0')
   ]
 

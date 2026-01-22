@@ -7,9 +7,9 @@ import org.jetbrains.annotations.*;
 
 public class LayerMetalSkija extends LayerMetal {
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.TOP_LEFT;
-    @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.BGRA_8888;
-    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = ColorSpace.getSRGB(); // TODO load monitor profile
-    @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.RGB_H);
+    @Getter @Setter @ApiStatus.Internal public ColorType _colorFormat = ColorType.BGRA_8888;
+    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
+    @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.UNKNOWN);
 
     @Getter @ApiStatus.Internal public DirectContext _directContext;
 
@@ -21,14 +21,27 @@ public class LayerMetalSkija extends LayerMetal {
 
     @Override
     public void frame() {
+        if (_colorSpace == null) {
+            _colorSpace = LayerSkija.windowColorSpace(_window);
+        }
+
         try (BackendRenderTarget _renderTarget = BackendRenderTarget.makeMetal(_width, _height, nextDrawableTexturePtr());
-             Surface _surface = Surface.makeFromBackendRenderTarget(_directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
+             Surface _surface = Surface.wrapBackendRenderTarget(_directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
         {
             _window.accept(new EventFrameSkija(_surface));
 
-            _surface.flushAndSubmit();
+            _directContext.flushAndSubmit(_surface);
             swapBuffers();
         }
+    }
+
+    @Override
+    public void reconfigure() {
+        if (_colorSpace != null) {
+            _colorSpace.close();
+        };
+        _colorSpace = null;
+        super.reconfigure();
     }
 
     @Override

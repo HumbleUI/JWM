@@ -8,7 +8,7 @@ public enum Platform {
 
     public static final Platform CURRENT;
     static {
-        String os = System.getProperty("os.name").toLowerCase();        
+        String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac") || os.contains("darwin"))
             CURRENT = MACOS;
         else if (os.contains("windows"))

@@ -99,7 +99,15 @@ namespace jwm {
 
         void resize(int width, int height) {
             if (!_surface || !_eglWindow) return;
+
+
             // Make current to avoid artifacts in other windows
+
+            if (_eglWindow && fWindow && fWindow->_waylandWindow) {
+              wl_egl_window_resize(_eglWindow, width, height, 0, 0);
+            }
+            /*
+            swapBuffers();
             makeCurrentForced();
             glClearStencil(0);
             glClearColor(0, 0, 0, 255);
@@ -107,24 +115,14 @@ namespace jwm {
             glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             
             glViewport(0, 0, width, height);
-            // God is dead if _eglWindow is null 
-            if (_eglWindow && fWindow && fWindow->_waylandWindow) {
-              // HACK: make new window with new scale
-              // https://gitlab.freedesktop.org/mesa/mesa/-/issues/7217
-              if (fWindow->_scale != fWindow->_oldScale) {
-                detachBuffer();
-                attachBuffer();
-                wl_surface_set_buffer_scale(fWindow->_waylandWindow, fWindow->getIntScale());
-                fWindow->_oldScale = fWindow->_scale;
-              } else 
-                wl_egl_window_resize(_eglWindow, width, height, 0, 0);
-            }
+            */
         }
 
         void swapBuffers() override {
-            if (_surface) {
+            if (_surface && fWindow) {
               makeCurrent();
               eglSwapBuffers(_display, _surface);
+              wl_display_flush(fWindow->_windowManager.display);
             }
         }
 
@@ -145,11 +143,12 @@ namespace jwm {
 
         void makeCurrentForced() override {
             ILayer::makeCurrentForced();
-            if (_surface) {
+            if (_surface && fWindow) {
               eglMakeCurrent(_display,
                             _surface,
                             _surface,
                             _context);
+              wl_display_flush(fWindow->_windowManager.display);
               eglSwapInterval(_display, 0); 
             } else {
               eglMakeCurrent(_display,

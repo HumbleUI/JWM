@@ -9,7 +9,7 @@ def build_native_system(system):
     "-G", "Ninja",
     "-DJWM_ARCH=" + build_utils.arch,
     *(["-DCMAKE_OSX_ARCHITECTURES=" + {"x64": "x86_64", "arm64": "arm64"}[build_utils.arch]] if build_utils.system == "macos" else [])])
-  subprocess.check_call(["ninja"], cwd = "build")
+  build_utils.ninja("build")
   
   if os.path.exists('build/libjwm_x64.dylib'):
     build_utils.copy_newer('build/libjwm_x64.dylib', '../target/classes/libjwm_x64.dylib')
@@ -50,9 +50,9 @@ def main():
   parser.add_argument('--only', choices = ['native', 'java'])
   (args, _) = parser.parse_known_args()
   res = 0
-  if None == args.only or 'native' == args.only:
+  if args.only is None or 'native' == args.only:
     res += build_native()
-  if None == args.only or 'java' == args.only:
+  if args.only is None or 'java' == args.only:
     res += build_java()
   return res
 

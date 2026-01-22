@@ -7,8 +7,8 @@ import org.jetbrains.annotations.*;
 
 public class LayerD3D12Skija extends LayerD3D12 {
     @Getter @Setter @ApiStatus.Internal public SurfaceOrigin _origin = SurfaceOrigin.TOP_LEFT;
-    @Getter @Setter @ApiStatus.Internal public SurfaceColorFormat _colorFormat = SurfaceColorFormat.RGBA_8888;
-    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = ColorSpace.getSRGB(); // TODO load monitor profile
+    @Getter @Setter @ApiStatus.Internal public ColorType _colorFormat = ColorType.RGBA_8888;
+    @Getter @Setter @ApiStatus.Internal public ColorSpace _colorSpace = null;
     @Getter @Setter @ApiStatus.Internal public SurfaceProps _surfaceProps = new SurfaceProps(PixelGeometry.RGB_H);
 
     @Getter @ApiStatus.Internal public DirectContext _directContext = null;
@@ -21,21 +21,34 @@ public class LayerD3D12Skija extends LayerD3D12 {
 
     @Override
     public void frame() {
+        if (_colorSpace == null) {
+            _colorSpace = LayerSkija.windowColorSpace(_window);
+        }
+
         try (BackendRenderTarget _renderTarget = BackendRenderTarget.makeDirect3D(_width, _height, nextDrawableTexturePtr(), getFormat(), getSampleCount(), getLevelCount());
-             Surface _surface = Surface.makeFromBackendRenderTarget( _directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
+             Surface _surface = Surface.wrapBackendRenderTarget( _directContext, _renderTarget, _origin, _colorFormat, _colorSpace, _surfaceProps);)
         {
             _window.accept(new EventFrameSkija(_surface));
 
-            _surface.flushAndSubmit();
+            _directContext.flushAndSubmit(_surface);
             swapBuffers();
 
             // todo: call flush for present (instead of default flush)
             // since we want to have BackendSurfaceAccess::kPresent final render target layout
-            _surface.flush();
+            _directContext.flush(_surface);
             _directContext.submit(false);
 
             swapBuffers();
         }
+    }
+
+    @Override
+    public void reconfigure() {
+        if (_colorSpace != null) {
+            _colorSpace.close();
+        };
+        _colorSpace = null;
+        super.reconfigure();
     }
 
     @Override

@@ -10,9 +10,9 @@ namespace jwm
     /**
      * @brief std::string which uses jchar as a character type
      */
-    class StringUTF16: public std::basic_string<jchar> {
+    class StringUTF16: public std::basic_string<char16_t> {
     public:
-        using std::basic_string<jchar>::basic_string;
+        using std::basic_string<char16_t>::basic_string;
 
         /**
          * Constructs StringUTF16 from C style string.

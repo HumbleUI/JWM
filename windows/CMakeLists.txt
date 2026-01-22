@@ -47,6 +47,7 @@ set(JWM_WINDOWS_SOURCES_CXX
     cc/LayerWGL.hh
     cc/ThemeWin32.cc
     cc/PlatformWin32.hh
+    cc/Screen.cc
     cc/ScreenWin32.cc
     cc/ScreenWin32.hh
     cc/WindowManagerWin32.cc

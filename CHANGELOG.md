@@ -1,3 +1,25 @@
+# 0.4.23 - Jan 18, 2025
+
+- Don't reset DirectContext on LayerGLSkija resize #301 via @dzaima
+
+# 0.4.22 - Dec 2, 2025
+
+- Skija 0.143.5
+
+# 0.4.21 - Nov 16, 2025
+
+- Skija 0.143.3
+- Windows, macOS: `Screen::getICCProfile`
+- Windows, macOS: `LayerGLSkija`, `LayerGLSkija` and `LayerD3D12Skija` now use render to correct color space
+
+# 0.4.20 - Oct 28, 2025
+
+- Update Skija compatibility to 0.123.0
+
+# 0.4.19 - Apr 11, 2025
+
+- macOS: fix build #296 via @SergeevPavel, @Alex2772
+
 # 0.4.18 - Jul 9, 2024
 
 - macOS: Stable screen ids

@@ -5,10 +5,10 @@ def main() -> int:
   jars = package.main()
   os.chdir(common.basedir)
 
-  for jar in jars:
-    build_utils.deploy(jar, tempdir = "target/deploy")
+  build_utils.release_notes(common.version)
 
-  return build_utils.release()
+  build_utils.collect_jars('io.github.humbleui', 'jwm', common.version, jars, 'target/release')
+  return build_utils.release(f"jwm.zip", 'target/release')
 
 if __name__ == "__main__":
   sys.exit(main())
