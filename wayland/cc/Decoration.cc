@@ -211,7 +211,7 @@ void Decoration::close() {
         _destroyDecorations();
     if (_decoration) {
         // ???
-        // zxdg_toplevel_decoration_v1_destroy(_decoration);
+        zxdg_toplevel_decoration_v1_destroy(_decoration);
         _decoration = nullptr;
     }
     xdg_toplevel_destroy(_xdgToplevel);

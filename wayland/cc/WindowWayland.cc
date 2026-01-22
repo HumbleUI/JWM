@@ -59,14 +59,14 @@ void WindowWayland::hide() {
     if (_layer) {
         _layer->detachBuffer();
     }
-    if (_waylandWindow) {
-        wl_surface_destroy(_waylandWindow);
-    }
-    _waylandWindow = nullptr;
     if (_decoration) {
         _decoration->close();
     }
     _decoration = nullptr;
+    if (_waylandWindow) {
+        wl_surface_destroy(_waylandWindow);
+    }
+    _waylandWindow = nullptr;
     _windowManager.unregisterWindow(this);
 }
 void WindowWayland::maximize() {
