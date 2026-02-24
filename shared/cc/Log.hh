@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -79,6 +80,10 @@ namespace jwm {
 #define JWM_LEVEL_VERBOSE true
 #define JWM_LEVEL_LOG false
 
+// https://github.com/HumbleUI/JWM/issues/302
+#define JWM_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : \
+                      strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+
 // Macro to check if message can be logged, if can than
 // create builder and assemble message
 #define JWM_LOG_CAT(verbose, message)                       \
@@ -86,7 +91,7 @@ namespace jwm {
         auto& __log = ::jwm::Log::getInstance();            \
         if (__log.checkLevel(verbose)) {                    \
             ::jwm::LogBuilder __builder(                           \
-                __FILE__,                                   \
+                JWM_FILENAME,                               \
                 __FUNCTION__,                               \
                 static_cast<unsigned long int>(__LINE__),   \
                 verbose,                                    \

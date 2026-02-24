@@ -22,17 +22,8 @@ namespace jwm {
 
         void notify(const LogEntry& entry) const {
             std::wstringstream finalMessageBuilder;
-            const std::string& file = entry.getFile();
-
-#ifdef WIN32
-            const char sep[] = "\\";
-#else
-            const char sep[] = "/";
-#endif
-
-            auto pos = file.find_last_of(sep);
             finalMessageBuilder
-                << (pos == std::string::npos? file.c_str(): file.substr(pos + 1).c_str()) << ":"
+                << entry.getFile().c_str() << ":"
                 << entry.getLine() << " "
                 << entry.getMessage();
 

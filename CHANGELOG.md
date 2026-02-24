@@ -1,4 +1,8 @@
-# 0.4.23 - Jan 18, 2025
+# 0.4.24 - Feb 24, 2026
+
+- Strip absolute paths from binaries #302
+
+# 0.4.23 - Jan 18, 2026
 
 - Don't reset DirectContext on LayerGLSkija resize #301 via @dzaima
 

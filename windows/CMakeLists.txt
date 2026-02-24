@@ -102,8 +102,10 @@ target_compile_definitions(jwm
     PRIVATE _CRT_SECURE_NO_WARNINGS
     PRIVATE _SCL_SECURE_NO_WARNINGS)
 
+# https://github.com/HumbleUI/JWM/issues/302
 target_compile_options(jwm
-    PRIVATE /source-charset:utf-8)
+    PRIVATE /source-charset:utf-8
+    PRIVATE "/d1trimfile:${CMAKE_SOURCE_DIR}/")
 
 target_link_options(jwm
     PRIVATE /INCREMENTAL:NO

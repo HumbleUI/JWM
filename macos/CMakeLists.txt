@@ -18,6 +18,9 @@ add_library(jwm SHARED ${SOURCES_OBJC} ${SOURCES_CXX} ${SOURCES_CXX_IMPL})
 target_include_directories(jwm PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../shared/cc $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/darwin)
 set_target_properties(jwm PROPERTIES OUTPUT_NAME "jwm_${JWM_ARCH}")
 
+# https://github.com/HumbleUI/JWM/issues/302
+target_compile_options(jwm PRIVATE -ffile-prefix-map=${CMAKE_SOURCE_DIR}/=)
+
 target_link_libraries(jwm
     "-framework AppKit"
     "-framework Cocoa"
