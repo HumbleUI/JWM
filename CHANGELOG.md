@@ -1,3 +1,7 @@
+# 0.4.25 - Mar 20, 2026
+
+- Added setPressAndHoldEnabled to allow users to toggle that behaviour on the Mac #303
+
 # 0.4.24 - Feb 24, 2026
 
 - Strip absolute paths from binaries #302

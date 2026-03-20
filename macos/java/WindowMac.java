@@ -296,6 +296,11 @@ public class WindowMac extends Window {
         super.close();
     }
 
+    public static void setPressAndHoldEnabled(boolean enabled) {
+        assert _onUIThread() : "Should be run on UI thread";
+        _nSetPressAndHoldEnabled(enabled);
+    }
+
     @ApiStatus.Internal public static native long _nMake();
     @ApiStatus.Internal public native IRect _nGetWindowRect();
     @ApiStatus.Internal public native IRect _nGetContentRect();
@@ -328,4 +333,5 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
     @ApiStatus.Internal public native void _nSetProgressBar(float value);
     @ApiStatus.Internal public native void _nClose();
+    @ApiStatus.Internal public static native void _nSetPressAndHoldEnabled(boolean enabled);
 }
