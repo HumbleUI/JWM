@@ -655,3 +655,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nClose
     jwm::WindowMac* instance = reinterpret_cast<jwm::WindowMac*>(jwm::classes::Native::fromJava(env, obj));
     instance->close();
 }
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowMac__1nSetPressAndHoldEnabled
+  (JNIEnv *env, jclass cls, jboolean enabled) {
+    jwm::kPressAndHoldEnabled = enabled;
+}

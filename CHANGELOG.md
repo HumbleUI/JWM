@@ -1,5 +1,6 @@
 # WIP
 
+- Added setPressAndHoldEnabled to allow users to toggle that behaviour on the Mac #303
 - macOS: reset fDisplayLinkRunning when releasing CVDisplayLink on hide #305 via @bumfo
 - Added Windows ARM build #306 #307 via @chirontt
 
