@@ -516,7 +516,17 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     }
 
     // Allow TSM to look at the event and potentially send back NSTextInputClient messages.
-    [self interpretKeyEvents:[NSArray arrayWithObject:event]];
+    if (jwm::kPressAndHoldEnabled) {
+      [self interpretKeyEvents:[NSArray arrayWithObject:event]];
+    } else {
+      // Bypass text input system to avoid press-and-hold popup,
+      // but still deliver typed characters
+      NSString *characters = [event characters];
+      if ([characters length] > 0) {
+          [self insertText:characters replacementRange:NSMakeRange(NSNotFound,
+    0)];
+      }
+    }
 
     if (wasInPressAndHold) {
         switch(keyCode) {
