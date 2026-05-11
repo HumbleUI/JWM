@@ -134,6 +134,7 @@ void jwm::WindowMac::setVisible(bool value) {
         CVDisplayLinkStop(fDisplayLink);
         CVDisplayLinkRelease(fDisplayLink);
         fDisplayLink = 0;
+        fDisplayLinkRunning = false;
         unref();
     }
     fVisible = value;
