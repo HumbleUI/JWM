@@ -20,6 +20,9 @@ def build_native():
   if os.path.exists('build/libjwm_x64.so'):
     build_utils.copy_newer('build/libjwm_x64.so', '../target/classes/libjwm_x64.so')
   
+  if os.path.exists('build/libjwm_arm64.so'):
+    build_utils.copy_newer('build/libjwm_arm64.so', '../target/classes/libjwm_arm64.so')
+
   if os.path.exists('build/jwm_x64.dll'):
     build_utils.copy_newer('build/jwm_x64.dll', '../target/classes/jwm_x64.dll')
 
