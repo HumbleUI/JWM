@@ -28,6 +28,23 @@ jobs:
           name: native-linux
           path: linux/build/libjwm_x64.so
 
+  build_linux_arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - run: |
+          sudo apt update
+          sudo apt install -y mesa-common-dev libgl1-mesa-dev libx11-dev libxcursor-dev libxi-dev libxrandr-dev
+      - run: python3 script/build.py --only native
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-linux-arm64
+          path: linux/build/libjwm_arm64.so
+
   build_windows:
     strategy:
       matrix:

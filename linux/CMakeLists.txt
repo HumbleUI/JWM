@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 
 # prefer the newer GL library (GLVND)
 cmake_policy(SET CMP0072 NEW)
