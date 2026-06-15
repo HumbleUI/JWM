@@ -1,3 +1,8 @@
+# WIP
+
+- macOS: reset fDisplayLinkRunning when releasing CVDisplayLink on hide #305 via @bumfo
+- Added Windows ARM build #306 #307 via @chirontt
+
 # 0.4.24 - Feb 24, 2026
 
 - Strip absolute paths from binaries #302
