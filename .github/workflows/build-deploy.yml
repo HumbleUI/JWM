@@ -29,22 +29,29 @@ jobs:
           path: linux/build/libjwm_x64.so
 
   build_windows:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [ windows-2022, windows-11-arm ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: actions/checkout@v6
       - run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
-        shell: bash
+          ninja --version
+          $os_arch = "${{ runner.arch }}".ToLower()
+          echo "os_arch=$os_arch" >> $env:GITHUB_ENV
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: amd64
+          arch: ${{ env.os_arch }}
       - run: python3 script/build.py --only native
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: native-windows
-          path: windows/build/jwm_x64.dll
+          name: native-windows-${{ env.os_arch }}
+          path: windows/build/jwm_${{ env.os_arch }}.dll
 
   build_macos:
     runs-on: macos-latest

@@ -34,17 +34,16 @@ public class Library {
 
         String version = readResource("/jwm.version");
         File tempDir = new File(System.getProperty("java.io.tmpdir"), "jwm_" + (version == null ? "" + System.nanoTime() : version));
-        String os = System.getProperty("os.name").toLowerCase();
-        
+        String arch = "aarch64".equals(System.getProperty("os.arch")) ? "arm64" : "x64";
+
         if (Platform.CURRENT == Platform.MACOS) {
-            String file = "aarch64".equals(System.getProperty("os.arch")) ? "libjwm_arm64.dylib" : "libjwm_x64.dylib";
-            File library = _extract("/", file, tempDir);
+            File library = _extract("/", "libjwm_" + arch + ".dylib", tempDir);
             System.load(library.getAbsolutePath());
         } else if (Platform.CURRENT == Platform.WINDOWS) {
-            File library = _extract("/", "jwm_x64.dll", tempDir);
+            File library = _extract("/", "jwm_" + arch + ".dll", tempDir);
             System.load(library.getAbsolutePath());
         } else if (Platform.CURRENT == Platform.X11) {
-            File library = _extract("/", "libjwm_x64.so", tempDir);
+            File library = _extract("/", "libjwm_" + arch + ".so", tempDir);
             System.load(library.getAbsolutePath());
         }
 
