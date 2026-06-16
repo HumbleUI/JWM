@@ -51,6 +51,7 @@ namespace jwm {
         void unmarkText();
         void setImeEnabled(bool enabled);
         void setTitle(const std::wstring& title);
+        void setTitlebarVisible(bool isVisible);
         void setIcon(const std::wstring& iconPath);
         void setOpacity(float opacity);
         float getOpacity();
@@ -104,6 +105,7 @@ namespace jwm {
         void _imeGetCompositionStringConvertedRange(HIMC hImc, int &selFrom, int &selTo) const;
         bool _imeGetRectForMarkedRange(IRect& rect) const;
         std::wstring _imeGetCompositionString(HIMC hImc, DWORD compType) const;
+        RECT _getWindowRectSimple() const;
 
     private:
         friend class WindowManagerWin32;

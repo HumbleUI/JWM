@@ -9,6 +9,8 @@
 #include <MouseButton.hh>
 #include <Log.hh>
 #include <memory>
+#include <dwmapi.h>
+#pragma comment(lib,"dwmapi.lib")
 
 jwm::WindowWin32::WindowWin32(JNIEnv *env, class WindowManagerWin32 &windowManagerWin32)
         : Window(env), _windowManager(windowManagerWin32) {
@@ -68,6 +70,56 @@ void jwm::WindowWin32::setImeEnabled(bool enabled) {
 void jwm::WindowWin32::setTitle(const std::wstring& title) {
     JWM_VERBOSE("Set window title '" << title << "'");
     SetWindowTextW(_hWnd, title.c_str());
+}
+
+void jwm::WindowWin32::setTitlebarVisible(bool isVisible) {
+    JWM_VERBOSE("Set titlebar visible=" << isVisible << " for window 0x" << this);
+
+    const DWORD titlebarStyles = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+
+    // The rectangle we must preserve across the toggle is the *visible* window
+    // boundary, i.e. the DWM extended frame bounds (no invisible resize border).
+    // Both DWMWA_EXTENDED_FRAME_BOUNDS and GetWindowRect are reported in physical
+    // pixels under PER_MONITOR_AWARE_V2, so no DPI conversion is needed.
+    RECT visible;
+    if (DwmGetWindowAttribute(_hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &visible, sizeof(visible)) != S_OK) {
+        GetWindowRect(_hWnd, &visible);
+    }
+
+    LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
+    if (isVisible)
+        lStyle |= titlebarStyles;
+    else
+        lStyle &= ~titlebarStyles;
+    SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
+
+    // Apply the new frame so the non-client area (and its invisible border) is
+    // recomputed before we measure it. Keep current pos/size for the measurement.
+    SetWindowPos(_hWnd, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+    // Measure the new per-edge offset between GetWindowRect (what SetWindowPos
+    // positions in) and the visible DWM bounds. These are asymmetric: typically
+    // ~0 at the top and a few pixels on left/right/bottom.
+    RECT wr;
+    GetWindowRect(_hWnd, &wr);
+    RECT dwm;
+    if (DwmGetWindowAttribute(_hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &dwm, sizeof(dwm)) != S_OK) {
+        dwm = wr;
+    }
+    int dL = dwm.left - wr.left;
+    int dT = dwm.top - wr.top;
+    int dR = wr.right - dwm.right;
+    int dB = wr.bottom - dwm.bottom;
+
+    // Place once: expand the target visible rect by the per-edge offsets so that
+    // the resulting visible (DWM) bounds match `visible` exactly.
+    SetWindowPos(_hWnd, nullptr,
+                 visible.left - dL,
+                 visible.top - dT,
+                 (visible.right - visible.left) + dL + dR,
+                 (visible.bottom - visible.top) + dT + dB,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
@@ -220,17 +272,28 @@ void jwm::WindowWin32::requestFrame() {
     }
 }
 
-jwm::IRect jwm::WindowWin32::getWindowRect() const {
+// Internal function to return simple C rect
+RECT jwm::WindowWin32::_getWindowRectSimple() const {
     RECT rect;
-    GetWindowRect(_hWnd, &rect);
+    // Get window rect without dropshadow
+    HRESULT result = DwmGetWindowAttribute(_hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
+    // Guard against odd situations where DwmGetWindowAttribute fails
+    if (result != S_OK ||
+        ((rect.right - rect.left) == 0)) {
+        GetWindowRect(_hWnd, &rect);
+    }
+    return rect;
+}
+
+jwm::IRect jwm::WindowWin32::getWindowRect() const {
+    RECT rect = _getWindowRectSimple();
     return IRect{rect.left, rect.top, rect.right, rect.bottom};
 }
 
 jwm::IRect jwm::WindowWin32::getContentRect() const {
     RECT clientRect;
     GetClientRect(_hWnd, &clientRect);
-    RECT windowRect;
-    GetWindowRect(_hWnd, &windowRect);
+    RECT windowRect = _getWindowRectSimple();
 
     // Convert client area rect to screen space and
     POINT corners[] = {POINT{clientRect.left, clientRect.top}, POINT{clientRect.right, clientRect.bottom}};
@@ -256,10 +319,21 @@ void jwm::WindowWin32::setWindowPosition(int left, int top) {
 void jwm::WindowWin32::setWindowSize(int width, int height) {
     JWM_VERBOSE("Set window size w=" << width << " h=" << height);
 
+    // `width`/`height` are the visible (DWM) size; GetWindowRect includes the
+    // invisible resize border ("shadow"), so add its difference back in.
+    RECT rect = _getWindowRectSimple();
+    JWM_VERBOSE("rect left=" << rect.left << " right=" << rect.right);
+
+    RECT rectShadow;
+    GetWindowRect(_hWnd, &rectShadow);
+
+    int shadowWidth = (rectShadow.right - rectShadow.left) - (rect.right - rect.left);
+    int shadowHeight = (rectShadow.bottom - rectShadow.top) - (rect.bottom - rect.top);
+
     SetWindowPos(_hWnd, HWND_TOP,
                  0, 0,
-                 width,
-                 height,
+                 width + shadowWidth,
+                 height + shadowHeight,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 }
 
@@ -634,8 +708,7 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 ClientToScreen(getHWnd(), &cursorPos);
 
                 // Area of the window (interpreted as document area (where we can place ime window))
-                RECT documentArea;
-                GetWindowRect(getHWnd(), &documentArea);
+                RECT documentArea = _getWindowRectSimple();
 
                 // Fill lParam structure
                 // its content will be read after this proc function returns
@@ -655,7 +728,6 @@ LRESULT jwm::WindowWin32::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) 
             JWM_VERBOSE("OFF FOCUS");
             dispatch(classes::EventWindowFocusOut::kInstance);
             break;
-
 
         case WM_CLOSE:
             JWM_VERBOSE("Event close");
@@ -691,7 +763,10 @@ void jwm::WindowWin32::notifyEvent(Event event) {
 }
 
 DWORD jwm::WindowWin32::_getWindowStyle() const {
-    return WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+    LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
+    DWORD windowStyle;
+    LongPtrToDWord(lStyle, &windowStyle);
+    return windowStyle;
 }
 
 DWORD jwm::WindowWin32::_getWindowExStyle() const {
@@ -1011,6 +1086,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
     jsize length = env->GetStringLength(title);
     instance->setTitle(std::wstring(reinterpret_cast<const wchar_t*>(titleStr), length));
     env->ReleaseStringChars(title, titleStr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetTitlebarVisible
+        (JNIEnv* env, jobject obj, jboolean isVisible) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    instance->setTitlebarVisible(isVisible);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIcon
