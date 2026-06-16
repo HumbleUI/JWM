@@ -1,8 +1,9 @@
-# WIP
+# 0.4.25 - Jun 16, 2026
 
-- macOS: Added `WindowMac::setPressAndHoldEnabled`, `resetPressAndHoldEnabled`, `isPressAndHoldEnabled`, `isPressAndHoldEnabledGlobally` #303 via @Folcon
+- macOS: Added `WindowMac::setPressAndHoldEnabled`, `resetPressAndHoldEnabled`, `isPressAndHoldEnabled`, `isPressAndHoldEnabledGlobally` #303 #304 via @Folcon
 - macOS: reset `fDisplayLinkRunning` when releasing `CVDisplayLink` on hide #305 via @bumfo
-- Added Windows ARM build #306 #307 via @chirontt
+- Windows, Linux: added ARM builds #306 #307 #308 via @chirontt
+- Windows: `setTitlebarVisible` #75 #286 via @Quezion
 
 # 0.4.24 - Feb 24, 2026
 

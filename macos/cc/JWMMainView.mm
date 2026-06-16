@@ -14,6 +14,9 @@
 
 #include <stdio.h>
 
+// for NSEvent::willBeHandledByComplexInputMethod
+#import <JavaRuntimeSupport/JRSEvent.h>
+
 namespace jwm {
 Key kKeyTable[128];
 KeyLocation kKeyLocations[128];
