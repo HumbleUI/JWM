@@ -74,38 +74,52 @@ void jwm::WindowWin32::setTitle(const std::wstring& title) {
 
 void jwm::WindowWin32::setTitlebarVisible(bool isVisible) {
     JWM_VERBOSE("Set titlebar visible=" << isVisible << " for window 0x" << this);
-    LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
 
-    if (isVisible == true) {
-        IRect windowRect = getWindowRect();
+    const DWORD titlebarStyles = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
 
-        lStyle |= (WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-        SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
-
-        setWindowSize(windowRect.getWidth(), windowRect.getHeight());
-        JWM_VERBOSE("window shadow width '" << _windowShadowWidth << "'");
-
-        // Reposition window to fix Windows SWP_NOMOVE still causing move in setWindowSize
-        setWindowPosition(windowRect.fLeft - (int)(_windowShadowWidth * 0.5),
-                          windowRect.fTop - (int)(_windowShadowHeight * 0.5));
-        _windowShadowHeight = 0;
-        _windowShadowWidth = 0;
-    } else {
-        IRect rect = getWindowRect();
-        int windowWidth = rect.getWidth();
-        int windowHeight = rect.getHeight();
-
-        RECT shadowRect;
-        GetWindowRect(_hWnd, &shadowRect);
-
-        lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-        SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
-
-        _windowShadowHeight = (shadowRect.bottom - shadowRect.top) - windowHeight;
-        _windowShadowWidth = (shadowRect.right - shadowRect.left) - windowWidth;
-        setContentSize(windowWidth, windowHeight);
-        setWindowPosition(rect.fLeft, rect.fTop);
+    // The rectangle we must preserve across the toggle is the *visible* window
+    // boundary, i.e. the DWM extended frame bounds (no invisible resize border).
+    // Both DWMWA_EXTENDED_FRAME_BOUNDS and GetWindowRect are reported in physical
+    // pixels under PER_MONITOR_AWARE_V2, so no DPI conversion is needed.
+    RECT visible;
+    if (DwmGetWindowAttribute(_hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &visible, sizeof(visible)) != S_OK) {
+        GetWindowRect(_hWnd, &visible);
     }
+
+    LONG_PTR lStyle = GetWindowLongPtr(_hWnd, GWL_STYLE);
+    if (isVisible)
+        lStyle |= titlebarStyles;
+    else
+        lStyle &= ~titlebarStyles;
+    SetWindowLongPtr(_hWnd, GWL_STYLE, lStyle);
+
+    // Apply the new frame so the non-client area (and its invisible border) is
+    // recomputed before we measure it. Keep current pos/size for the measurement.
+    SetWindowPos(_hWnd, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+    // Measure the new per-edge offset between GetWindowRect (what SetWindowPos
+    // positions in) and the visible DWM bounds. These are asymmetric: typically
+    // ~0 at the top and a few pixels on left/right/bottom.
+    RECT wr;
+    GetWindowRect(_hWnd, &wr);
+    RECT dwm;
+    if (DwmGetWindowAttribute(_hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &dwm, sizeof(dwm)) != S_OK) {
+        dwm = wr;
+    }
+    int dL = dwm.left - wr.left;
+    int dT = dwm.top - wr.top;
+    int dR = wr.right - dwm.right;
+    int dB = wr.bottom - dwm.bottom;
+
+    // Place once: expand the target visible rect by the per-edge offsets so that
+    // the resulting visible (DWM) bounds match `visible` exactly.
+    SetWindowPos(_hWnd, nullptr,
+                 visible.left - dL,
+                 visible.top - dT,
+                 (visible.right - visible.left) + dL + dR,
+                 (visible.bottom - visible.top) + dT + dB,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
@@ -305,7 +319,8 @@ void jwm::WindowWin32::setWindowPosition(int left, int top) {
 void jwm::WindowWin32::setWindowSize(int width, int height) {
     JWM_VERBOSE("Set window size w=" << width << " h=" << height);
 
-    // Calculate current shadow (reusing last stored values if set)
+    // `width`/`height` are the visible (DWM) size; GetWindowRect includes the
+    // invisible resize border ("shadow"), so add its difference back in.
     RECT rect = _getWindowRectSimple();
     JWM_VERBOSE("rect left=" << rect.left << " right=" << rect.right);
 
@@ -313,9 +328,7 @@ void jwm::WindowWin32::setWindowSize(int width, int height) {
     GetWindowRect(_hWnd, &rectShadow);
 
     int shadowWidth = (rectShadow.right - rectShadow.left) - (rect.right - rect.left);
-    shadowWidth = (_windowShadowWidth > shadowWidth ) ? _windowShadowWidth : shadowWidth;
     int shadowHeight = (rectShadow.bottom - rectShadow.top) - (rect.bottom - rect.top);
-    shadowHeight = (_windowShadowHeight > shadowHeight ) ? _windowShadowHeight : shadowHeight;
 
     SetWindowPos(_hWnd, HWND_TOP,
                  0, 0,

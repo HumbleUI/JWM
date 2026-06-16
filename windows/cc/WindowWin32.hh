@@ -126,7 +126,5 @@ namespace jwm {
         bool _maximized = false;
         int _nextCallbackID = 0;
         wchar_t _highSurrogate = 0;
-        int _windowShadowWidth = 0;
-        int _windowShadowHeight = 0;
     };
 }
