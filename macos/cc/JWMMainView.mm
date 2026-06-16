@@ -18,7 +18,11 @@ namespace jwm {
 Key kKeyTable[128];
 KeyLocation kKeyLocations[128];
 TouchType kTouchTypes[2];
-BOOL kPressAndHoldEnabled;
+
+BOOL isPressAndHoldEnabledGlobally() {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    return nullptr == [userDefaults objectForKey:@"ApplePressAndHoldEnabled"] ? YES : [userDefaults boolForKey:@"ApplePressAndHoldEnabled"];
+}
 
 void initKeyTable() {
     std::fill(kKeyTable, kKeyTable + 128, Key::UNDEFINED);
@@ -192,9 +196,6 @@ void initKeyTable() {
 
     kTouchTypes[NSTouchTypeDirect] = TouchType::DIRECT;
     kTouchTypes[NSTouchTypeIndirect] = TouchType::INDIRECT;
-
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    kPressAndHoldEnabled = nullptr == [userDefaults objectForKey:@"ApplePressAndHoldEnabled"] ? YES : [userDefaults boolForKey:@"ApplePressAndHoldEnabled"];
 }
 
 jint modifierMask(NSEventModifierFlags flags) {
@@ -356,9 +357,20 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     fTouchDeviceIds = [[NSMutableDictionary alloc] init];
     fTouchCount = 0;
 
+    // Default to the macOS-wide setting; consumers may override per window.
+    fPressAndHoldEnabled = jwm::isPressAndHoldEnabledGlobally();
+
     [self updateTrackingAreas];
 
     return self;
+}
+
+- (BOOL)isPressAndHoldEnabled {
+    return fPressAndHoldEnabled;
+}
+
+- (void)setPressAndHoldEnabled:(BOOL)enabled {
+    fPressAndHoldEnabled = enabled;
 }
 
 - (void)dealloc {
@@ -505,7 +517,12 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
     [NSCursor setHiddenUntilMouseMoves:YES];
 
-    if (jwm::kPressAndHoldEnabled && [event willBeHandledByComplexInputMethod] && !fInPressAndHold) {
+    // Check willBeHandledByComplexInputMethod here, before interpretKeyEvents
+    // potentially invalidates it. It is YES for keys that would be routed to a
+    // complex input method, e.g. the press-and-hold accent popup or an IME.
+    BOOL willBeHandledByComplexInputMethod = [event willBeHandledByComplexInputMethod];
+
+    if (fPressAndHoldEnabled && willBeHandledByComplexInputMethod && !fInPressAndHold) {
         fInPressAndHold = YES;
     }
 
@@ -515,17 +532,20 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         fKeyEventsNeeded = NO;
     }
 
-    // Allow TSM to look at the event and potentially send back NSTextInputClient messages.
-    if (jwm::kPressAndHoldEnabled) {
-      [self interpretKeyEvents:[NSArray arrayWithObject:event]];
+    if (fPressAndHoldEnabled || !willBeHandledByComplexInputMethod) {
+        // Allow TSM to look at the event and potentially send back
+        // NSTextInputClient messages. This delivers typed characters via
+        // insertText: and routes editing keys (backspace, enter, tab, arrows)
+        // through doCommandBySelector:, so they keep working.
+        [self interpretKeyEvents:[NSArray arrayWithObject:event]];
     } else {
-      // Bypass text input system to avoid press-and-hold popup,
-      // but still deliver typed characters
-      NSString *characters = [event characters];
-      if ([characters length] > 0) {
-          [self insertText:characters replacementRange:NSMakeRange(NSNotFound,
-    0)];
-      }
+        // Press-and-hold is disabled and this key would otherwise be routed to
+        // a complex input method (the accent popup). Bypass the text input
+        // system so no popup appears, but still deliver the typed character.
+        NSString *characters = [event characters];
+        if ([characters length] > 0) {
+            [self insertText:characters replacementRange:NSMakeRange(NSNotFound, 0)];
+        }
     }
 
     if (wasInPressAndHold) {

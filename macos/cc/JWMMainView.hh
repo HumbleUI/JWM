@@ -5,15 +5,19 @@
 
 namespace jwm {
     extern Key kKeyTable[];
-    extern BOOL kPressAndHoldEnabled;
+    BOOL isPressAndHoldEnabledGlobally();
     void initKeyTable();
 }
 
 @interface JWMMainView : NSView <NSTextInputClient> {
     BOOL fInPressAndHold;
     BOOL fKeyEventsNeeded;
+    BOOL fPressAndHoldEnabled;
 }
 
 - (JWMMainView*)initWithWindow:(jwm::WindowMac*)initWindow;
+
+- (BOOL)isPressAndHoldEnabled;
+- (void)setPressAndHoldEnabled:(BOOL)enabled;
 
 @end

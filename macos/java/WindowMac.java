@@ -296,9 +296,38 @@ public class WindowMac extends Window {
         super.close();
     }
 
-    public static void setPressAndHoldEnabled(boolean enabled) {
+    /**
+     * Overrides press-and-hold behaviour for this window.
+     */
+    @NotNull @Contract("_ -> this")
+    public WindowMac setPressAndHoldEnabled(boolean enabled) {
         assert _onUIThread() : "Should be run on UI thread";
         _nSetPressAndHoldEnabled(enabled);
+        return this;
+    }
+
+    /**
+     * Restores the system value for press-and-hold for this window.
+     */
+    @NotNull @Contract("-> this")
+    public WindowMac resetPressAndHoldEnabled() {
+        return setPressAndHoldEnabled(isPressAndHoldEnabledGlobally());
+    }
+
+    /**
+     * Returns whether press-and-hold is currently enabled for this window
+     */
+    public boolean isPressAndHoldEnabled() {
+        assert _onUIThread() : "Should be run on UI thread";
+        return _nIsPressAndHoldEnabled();
+    }
+
+    /**
+     * Returns the value of the macOS-wide "ApplePressAndHoldEnabled" setting
+     */
+    public static boolean isPressAndHoldEnabledGlobally() {
+        assert _onUIThread() : "Should be run on UI thread";
+        return _nIsPressAndHoldEnabledGlobally();
     }
 
     @ApiStatus.Internal public static native long _nMake();
@@ -333,5 +362,7 @@ public class WindowMac extends Window {
     @ApiStatus.Internal public native void _nSetZOrder(int zOrder);
     @ApiStatus.Internal public native void _nSetProgressBar(float value);
     @ApiStatus.Internal public native void _nClose();
-    @ApiStatus.Internal public static native void _nSetPressAndHoldEnabled(boolean enabled);
+    @ApiStatus.Internal public native void _nSetPressAndHoldEnabled(boolean enabled);
+    @ApiStatus.Internal public native boolean _nIsPressAndHoldEnabled();
+    @ApiStatus.Internal public static native boolean _nIsPressAndHoldEnabledGlobally();
 }
