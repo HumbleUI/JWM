@@ -213,6 +213,13 @@ public class Example implements Consumer<Event> {
                         window.minimize();
                     case B ->
                         setProgressBar(progressBars.next());
+                    case A -> {
+                        if (window instanceof WindowMac windowMac) {
+                            boolean enabled = !windowMac.isPressAndHoldEnabled();
+                            windowMac.setPressAndHoldEnabled(enabled);
+                            System.out.println("PressAndHold enabled: " + enabled + " (globally: " + WindowMac.isPressAndHoldEnabledGlobally() + ")");
+                        }
+                    }
                 }
             }
         } else if (e instanceof EventFrame) {

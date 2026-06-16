@@ -10,6 +10,7 @@ public class PanelLegend extends Panel {
 
     public PanelLegend(Window window) {
         super(window);
+        shortcuts.put("A", "Toggle Press and Hold");
         shortcuts.put("L", "Toggle Layer");
         shortcuts.put("P", "Pause");
         shortcuts.put("N", "New Window");
