@@ -85,10 +85,10 @@ See it all together in [GettingStarted.java](GettingStarted.java).
 On Windows and Linux, just run:
 
 ```sh
-java -cp jwm-0.4.8.jar:types-0.1.1.jar GettingStarted.java
+java -cp jwm-0.4.25.jar:types-0.2.0.jar GettingStarted.java
 ```
 
-`types-0.1.1.jar` here are from https://github.com/HumbleUI/Types. They will be included as a transitive dependency if you are using Maven or Gradle.
+`types-0.2.0.jar` here are from https://github.com/HumbleUI/Types. They will be included as a transitive dependency if you are using Maven or Gradle.
 
 ## Positioning the window
 

@@ -1,3 +1,7 @@
+# WIP
+
+- Bumped types in pom.xml to 0.2.0
+
 # 0.4.25 - Jun 16, 2026
 
 - macOS: Added `WindowMac::setPressAndHoldEnabled`, `resetPressAndHoldEnabled`, `isPressAndHoldEnabled`, `isPressAndHoldEnabledGlobally` #303 #304 via @Folcon
