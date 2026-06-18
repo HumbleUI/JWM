@@ -53,6 +53,7 @@ namespace jwm {
         void setTitle(const std::wstring& title);
         void setTitlebarVisible(bool isVisible);
         void setIcon(const std::wstring& iconPath);
+        void setIcon(const unsigned char* iconData, int dataLength);
         void setOpacity(float opacity);
         float getOpacity();
         bool isHighContrast();

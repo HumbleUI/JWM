@@ -129,6 +129,18 @@ void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 }
 
+void jwm::WindowWin32::setIcon(const unsigned char* iconData, int dataLength) {
+    // Get the identifier (i.e. offset) of the icon that is most appropriate
+    // for the current video display
+    int nID = LookupIconIdFromDirectoryEx(const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData)),
+                                          TRUE, 0, 0, LR_DEFAULTCOLOR);
+    if (nID > 0) {
+        HICON hicon = CreateIconFromResourceEx(const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData + nID)),
+                dataLength - nID, TRUE, 0x00030000, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE);
+        SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+    }
+}
+
 void jwm::WindowWin32::setOpacity(float opacity) {
     JWM_VERBOSE("Set window opacity'" << opacity << "'");
     LONG_PTR previousStyle = GetWindowLongPtr(_hWnd, GWL_EXSTYLE);
@@ -1101,6 +1113,14 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
     jsize length = env->GetStringLength(iconPath);
     instance->setIcon(std::wstring(reinterpret_cast<const wchar_t*>(iconPathStr), length));
     env->ReleaseStringChars(iconPath, iconPathStr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIconData
+        (JNIEnv* env, jobject obj, jbyteArray iconData, jint dataLength) {
+    jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
+    jbyte* bytes = env->GetByteArrayElements(iconData, nullptr);
+    instance->setIcon(reinterpret_cast<const unsigned char*>(bytes), dataLength);
+    env->ReleaseByteArrayElements(iconData, bytes, 0);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetVisible
