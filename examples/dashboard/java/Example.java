@@ -11,6 +11,7 @@ import java.util.function.*;
 import java.util.stream.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -78,17 +79,26 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
 
+        var classLoader = getClass().getClassLoader();
         switch (Platform.CURRENT) {
             case WINDOWS -> {
-                window.setIcon(new File("examples/dashboard/resources/windows.ico"));
+                try {
+                    window.setIcon(new File(classLoader.getResource("windows.ico").toURI()));
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
             }
             case MACOS -> {
-                window.setIcon(new File("examples/dashboard/resources/macos.icns"));
+                try {
+                    window.setIcon(new File(classLoader.getResource("macos.icns").toURI()));
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
             }
             case X11 -> {
                 ((WindowX11) window).setClassHint("jwm-dashboard-example"); // allows OS-wide identification of the window (e.g. icon themes, .desktop files)
-                try {
-                    Bitmap i = Bitmap.makeFromImage(Image.makeDeferredFromEncodedBytes(Files.readAllBytes(Path.of("examples/dashboard/resources/linux/icon_48x48.png"))));
+                try (var in = classLoader.getResourceAsStream("linux/icon_48x48.png")) {
+                    Bitmap i = Bitmap.makeFromImage(Image.makeDeferredFromEncodedBytes(in.readAllBytes()));
                     ImageInfo info = i.getImageInfo();
 
                     ((WindowX11) window).setIconData(info.getWidth(), info.getHeight(), i.readPixels());
