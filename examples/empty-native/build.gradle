@@ -1,0 +1,113 @@
+plugins {
+    id 'application'
+    id 'com.google.osdetector' version '1.7.3'
+    id 'org.graalvm.buildtools.native' version '1.1.2'
+}
+
+group = 'io.github.humbleui.jwm'
+description = 'Native-image for JWM "empty" example'
+version = '1.0'
+
+// returns the [<os>, <arch>] platform pair suitable for retrieval
+// of Skija native dependencies of the current build platform
+def getCurrentPlatform() {
+    def os = osdetector.os
+    def skijaOS = switch (os) {
+        case 'linux' -> 'linux'
+        case 'osx' -> 'macos'
+        case 'windows' -> 'windows'
+        default -> 'unknown'
+    }
+    if (skijaOS == 'unknown')
+        throw new GradleException('Unsupported OS: ' + os)
+
+    def arch = osdetector.arch
+    //consider 64-bit architectures only
+    def skijaArch = switch (arch) {
+        case 'x86_64' -> 'x64'
+        case 'aarch_64' -> 'arm64'
+        default -> 'unknown'
+    }
+    if (skijaArch == 'unknown')
+        throw new GradleException('Unsupported Architecture: ' + arch)
+
+    return [skijaOS, skijaArch]
+}
+
+ext {
+    mainClassName = 'io.github.humbleui.jwm.examples.Example'
+    jwmVersion = project.properties['jwmVersion'] ?: 'None'
+    skijaVersion = '0.143.17'
+    (currentOS, currentArch) = getCurrentPlatform()
+}
+
+compileJava {
+    options.release = 25
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation "io.github.humbleui:skija-$currentOS-$currentArch:$skijaVersion"
+    if (jwmVersion == 'None')
+        // use locally-compiled JWM classes
+        implementation files('../../target/classes')
+    else
+        // use published JWM version in Maven repository
+        implementation "io.github.humbleui:jwm:$jwmVersion"
+}
+
+sourceSets {
+    main {
+        java {
+            // source code of the "empty" example
+            srcDirs = ['../empty/java']
+        }
+    }
+}
+
+application {
+    mainClass = project.mainClassName
+    applicationName = project.name
+}
+
+graalvmNative {
+    def agentOutputDir = "$buildDir/native/agent-output/run"
+
+    toolchainDetection = false
+    binaries {
+        main {
+            imageName = project.name
+            mainClass = project.mainClassName
+            debug = true
+            verbose = true
+            fallback = false
+            sharedLibrary = false
+            configurationFileDirectories.from(file(agentOutputDir))
+
+            buildArgs.add('--enable-native-access=ALL-UNNAMED')
+            buildArgs.add('-march=compatibility')
+
+            useFatJar = false
+        }
+        all {
+            resources.autodetect()
+        }
+    }
+    agent {
+        defaultMode = 'standard'
+        enabled = false
+
+        modes {
+            standard {
+            }
+            direct {
+                options.add("config-output-dir=$agentOutputDir")
+            }
+        }
+    }
+}
