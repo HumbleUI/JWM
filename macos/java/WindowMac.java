@@ -109,6 +109,12 @@ public class WindowMac extends Window {
         return this;
     }
 
+    @Override
+    public Window setIconPixels(int width, int height, byte[] pixels) {
+        // Not implemented
+        return this;
+    }
+
     /**
      * <p>Shortcut for {@link #setTitleVisible(boolean)}, {@link #setFullSizeContentView(boolean)}</p>
      *

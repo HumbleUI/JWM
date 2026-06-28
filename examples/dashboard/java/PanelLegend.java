@@ -22,6 +22,7 @@ public class PanelLegend extends Panel {
         shortcuts.put("U", "Lock mouse cursor");
         shortcuts.put("Z", "Toggle Z-order");
         shortcuts.put("B", "Toggle Progress Bar");
+        shortcuts.put("I", "Toggle icon");
         shortcuts.put("O", "Opacity");
         shortcuts.put("1", "Minimize");
         shortcuts.put("2", "Maximize");

@@ -5,9 +5,11 @@ import io.github.humbleui.types.*;
 import io.github.humbleui.skija.*;
 
 public class PanelTheme extends Panel {
+    public Options icons;
 
-    public PanelTheme(Window window) {
+    public PanelTheme(Window window, Options icons) {
         super(window);
+        this.icons = icons;
     }
 
     @Override
@@ -60,6 +62,11 @@ public class PanelTheme extends Panel {
 
             canvas.drawString("zOrder", Example.PADDING, Example.PADDING * 12, Example.FONT12, paint);
             canvas.drawString("" + window.getZOrder(), width / 2 + Example.PADDING / 2, Example.PADDING * 12, Example.FONT12, paint);
+
+            String icon = icons.get();
+            icon = icon.substring(icon.lastIndexOf('/') + 1);
+            canvas.drawString("icon", Example.PADDING, Example.PADDING * 14, Example.FONT12, paint);
+            canvas.drawString(icon, width / 2 + Example.PADDING / 2, Example.PADDING * 14, Example.FONT12, paint);
         }
     }
 }

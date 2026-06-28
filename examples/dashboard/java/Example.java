@@ -42,6 +42,19 @@ public class Example implements Consumer<Event> {
 
     public Options progressBars = new Options("Default", "0%", "50%", "100%", "Indeterminate");
 
+    // Icons to cycle through with Ctrl+I. .ico/.icns are loaded as files, .png as raw image data.
+    public Options icons = switch (Platform.CURRENT) {
+        case WINDOWS -> new Options("examples/dashboard/resources/windows.ico",
+                                    "windows/icon_16x16.png",
+                                    "windows/icon_24x24.png",
+                                    "windows/icon_32x32.png",
+                                    "windows/icon_48x48.png",
+                                    "windows/icon_256x256.png");
+        case MACOS   -> new Options("examples/dashboard/resources/macos.icns");
+        case X11     -> new Options("linux/icon_24x24.png",
+                                    "linux/icon_48x48.png");
+    };
+
     public Example() {
         window = App.makeWindow();
         window.setEventListener(this);
@@ -54,7 +67,7 @@ public class Example implements Consumer<Event> {
         panelMouseCursors = new PanelMouseCursors(window);
         panelRendering = new PanelRendering(window);
         panelEvents = new PanelEvents(window);
-        panelTheme = new PanelTheme(window);
+        panelTheme = new PanelTheme(window, icons);
         panelTouch = new PanelTouch(window);
 
         var scale = window.getScreen().getScale();
@@ -79,26 +92,11 @@ public class Example implements Consumer<Event> {
             case 4 -> window.setWindowPosition(bounds.getLeft() + bounds.getWidth() / 2, bounds.getTop() + bounds.getHeight() / 2);
         }
 
-        var classLoader = getClass().getClassLoader();
-        switch (Platform.CURRENT) {
-            case WINDOWS -> {
-                window.setIcon(new File("examples/dashboard/resources/windows.ico"));
-            }
-            case MACOS -> {
-                window.setIcon(new File("examples/dashboard/resources/macos.icns"));
-            }
-            case X11 -> {
-                ((WindowX11) window).setClassHint("jwm-dashboard-example"); // allows OS-wide identification of the window (e.g. icon themes, .desktop files)
-                try (var in = classLoader.getResourceAsStream("linux/icon_48x48.png")) {
-                    Bitmap i = Bitmap.makeFromImage(Image.makeDeferredFromEncodedBytes(in.readAllBytes()));
-                    ImageInfo info = i.getImageInfo();
-
-                    ((WindowX11) window).setIconData(info.getWidth(), info.getHeight(), i.readPixels());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (window instanceof WindowX11 windowX11) {
+            // allows OS-wide identification of the window (e.g. icon themes, .desktop files)
+            windowX11.setClassHint("jwm-dashboard-example");
         }
+        applyIcon();
 
         window.setVisible(true);
         initialized = true;
@@ -215,6 +213,10 @@ public class Example implements Consumer<Event> {
                         window.minimize();
                     case B ->
                         setProgressBar(progressBars.next());
+                    case I -> {
+                        icons.next();
+                        applyIcon();
+                    }
                     case A -> {
                         if (window instanceof WindowMac windowMac) {
                             boolean enabled = !windowMac.isPressAndHoldEnabled();
@@ -232,6 +234,23 @@ public class Example implements Consumer<Event> {
             paint(s.getCanvas(), s.getWidth(), s.getHeight());
         } else if (e instanceof EventWindowCloseRequest) {
             window.close();
+        }
+    }
+
+    public void applyIcon() {
+        String path = icons.get();
+        if (path.endsWith(".png")) {
+            try (var in = getClass().getClassLoader().getResourceAsStream(path);
+                 var img = Image.makeDeferredFromEncodedBytes(in.readAllBytes());
+                 var bitmap = Bitmap.makeFromImage(img); ) 
+            {
+                ImageInfo info = bitmap.getImageInfo();
+                window.setIconPixels(info.getWidth(), info.getHeight(), bitmap.readPixels());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            window.setIcon(new File(path));
         }
     }
 
