@@ -82,18 +82,10 @@ public class Example implements Consumer<Event> {
         var classLoader = getClass().getClassLoader();
         switch (Platform.CURRENT) {
             case WINDOWS -> {
-                try {
-                    window.setIcon(new File(classLoader.getResource("windows.ico").toURI()));
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
+                window.setIcon(new File("examples/dashboard/resources/windows.ico"));
             }
             case MACOS -> {
-                try {
-                    window.setIcon(new File(classLoader.getResource("macos.icns").toURI()));
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
+                window.setIcon(new File("examples/dashboard/resources/macos.icns"));
             }
             case X11 -> {
                 ((WindowX11) window).setClassHint("jwm-dashboard-example"); // allows OS-wide identification of the window (e.g. icon themes, .desktop files)
