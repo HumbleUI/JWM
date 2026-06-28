@@ -122,23 +122,50 @@ void jwm::WindowWin32::setTitlebarVisible(bool isVisible) {
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
+void jwm::WindowWin32::_setIconsInternal(HICON hSmall, HICON hBig) {
+    // Apply small icon (title bar / taskbar)
+    if (hSmall) {
+        if (_hIconSmall)
+            DestroyIcon(_hIconSmall);
+        _hIconSmall = hSmall;
+        SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hSmall);
+    } else {
+        JWM_VERBOSE("Failed to create small icon");
+    }
+    // Apply big icon (Alt-Tab / task switcher)
+    if (hBig) {
+        if (_hIconBig)
+            DestroyIcon(_hIconBig);
+        _hIconBig = hBig;
+        SendMessage(_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hBig);
+    } else {
+        JWM_VERBOSE("Failed to create big icon");
+    }
+}
+
+HICON jwm::WindowWin32::_createIconFromData(PBYTE data, int len, int cx, int cy) {
+    // Get the identifier (i.e. offset) of the icon that best matches the
+    // requested size for the current video display
+    int nID = LookupIconIdFromDirectoryEx(data, TRUE, cx, cy, LR_DEFAULTCOLOR);
+    if (nID <= 0)
+        return nullptr;
+    return CreateIconFromResourceEx(data + nID, len - nID, TRUE, 0x00030000, cx, cy, LR_DEFAULTCOLOR);
+}
+
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     JWM_VERBOSE("Set window icon '" << iconPath << "'");
-    // width / height of 0 along with LR_DEFAULTSIZE tells windows to load the default icon size.
-    HICON hicon = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
-    SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+    int cxS = GetSystemMetrics(SM_CXSMICON), cyS = GetSystemMetrics(SM_CYSMICON);
+    int cxB = GetSystemMetrics(SM_CXICON),   cyB = GetSystemMetrics(SM_CYICON);
+    HICON hSmall = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, cxS, cyS, LR_LOADFROMFILE);
+    HICON hBig   = (HICON)LoadImage(NULL, iconPath.c_str(), IMAGE_ICON, cxB, cyB, LR_LOADFROMFILE);
+    _setIconsInternal(hSmall, hBig);
 }
 
 void jwm::WindowWin32::setIcon(const unsigned char* iconData, int dataLength) {
-    // Get the identifier (i.e. offset) of the icon that is most appropriate
-    // for the current video display
-    int nID = LookupIconIdFromDirectoryEx(const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData)),
-                                          TRUE, 0, 0, LR_DEFAULTCOLOR);
-    if (nID > 0) {
-        HICON hicon = CreateIconFromResourceEx(const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData + nID)),
-                dataLength - nID, TRUE, 0x00030000, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE);
-        SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-    }
+    PBYTE data = const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData));
+    _setIconsInternal(
+        _createIconFromData(data, dataLength, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON)),
+        _createIconFromData(data, dataLength, GetSystemMetrics(SM_CXICON),   GetSystemMetrics(SM_CYICON)));
 }
 
 void jwm::WindowWin32::setOpacity(float opacity) {
@@ -906,6 +933,16 @@ void jwm::WindowWin32::_destroyInternal() {
     if (_hMouseCursor) {
         DestroyCursor(_hMouseCursor);
         _hMouseCursor = nullptr;
+    }
+
+    if (_hIconSmall) {
+        DestroyIcon(_hIconSmall);
+        _hIconSmall = nullptr;
+    }
+
+    if (_hIconBig) {
+        DestroyIcon(_hIconBig);
+        _hIconBig = nullptr;
     }
 
     if (_hWnd) {

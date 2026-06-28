@@ -99,6 +99,8 @@ namespace jwm {
         void _killFrameTimer();
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
         void _destroyInternal();
+        void _setIconsInternal(HICON hSmall, HICON hBig);
+        HICON _createIconFromData(PBYTE data, int len, int cx, int cy);
         void _close();
         void _setMouseCursorInternal();
         void _imeResetComposition();
@@ -121,6 +123,8 @@ namespace jwm {
         HWND _hWnd = nullptr;
         HCURSOR _hMouseCursor = nullptr;
         HCURSOR _hDefaultMouseCursor = nullptr;
+        HICON _hIconSmall = nullptr;
+        HICON _hIconBig = nullptr;
         int _lastMousePosX = 0;
         int _lastMousePosY = 0;
         bool _minimized = false;
