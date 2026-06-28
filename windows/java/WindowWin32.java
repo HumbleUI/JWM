@@ -76,14 +76,20 @@ public class WindowWin32 extends Window {
     }
 
     /**
-     * <p>Set window icon from raw ICO bytes.</p>
+     * <p>Set window icon from raw image bytes.</p>
      *
-     * @param iconData  byte array of raw ICO data
-     * @return          this
+     * <p>{@code pixels} must have a length of {@code width * height * 4}, representing per-pixel ARGB data.</p>
+     *
+     * @param width   icon width in pixels
+     * @param height  icon height in pixels
+     * @param pixels  icon image data
+     * @return        this
      */
-    public Window setIcon(byte[] iconData) {
+    @Override
+    public Window setIconPixels(int width, int height, byte[] pixels) {
         assert _onUIThread() : "Should be run on UI thread";
-        _nSetIconData(iconData, iconData.length);
+        assert pixels.length == width * height * 4 : "Incorrect icon data array length";
+        _nSetIconPixels(width, height, pixels);
         return this;
     }
 
@@ -240,7 +246,7 @@ public class WindowWin32 extends Window {
     @ApiStatus.Internal public native void _nSetTitle(String title);
     @ApiStatus.Internal public native void _nSetTitlebarVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetIcon(String iconPath);
-    @ApiStatus.Internal public native void _nSetIconData(byte[] iconData, int dataLength);
+    @ApiStatus.Internal public native void _nSetIconPixels(int width, int height, byte[] pixels);
     @ApiStatus.Internal public native void _nSetVisible(boolean isVisible);
     @ApiStatus.Internal public native void _nSetOpacity(float opacity);
     @ApiStatus.Internal public native float _nGetOpacity();

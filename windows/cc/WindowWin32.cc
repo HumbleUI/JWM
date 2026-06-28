@@ -143,15 +143,6 @@ void jwm::WindowWin32::_setIconsInternal(HICON hSmall, HICON hBig) {
     }
 }
 
-HICON jwm::WindowWin32::_createIconFromData(PBYTE data, int len, int cx, int cy) {
-    // Get the identifier (i.e. offset) of the icon that best matches the
-    // requested size for the current video display
-    int nID = LookupIconIdFromDirectoryEx(data, TRUE, cx, cy, LR_DEFAULTCOLOR);
-    if (nID <= 0)
-        return nullptr;
-    return CreateIconFromResourceEx(data + nID, len - nID, TRUE, 0x00030000, cx, cy, LR_DEFAULTCOLOR);
-}
-
 void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     JWM_VERBOSE("Set window icon '" << iconPath << "'");
     int cxS = GetSystemMetrics(SM_CXSMICON), cyS = GetSystemMetrics(SM_CYSMICON);
@@ -161,11 +152,51 @@ void jwm::WindowWin32::setIcon(const std::wstring& iconPath) {
     _setIconsInternal(hSmall, hBig);
 }
 
-void jwm::WindowWin32::setIcon(const unsigned char* iconData, int dataLength) {
-    PBYTE data = const_cast<PBYTE>(reinterpret_cast<const BYTE*>(iconData));
-    _setIconsInternal(
-        _createIconFromData(data, dataLength, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON)),
-        _createIconFromData(data, dataLength, GetSystemMetrics(SM_CXICON),   GetSystemMetrics(SM_CYICON)));
+HICON jwm::WindowWin32::_createIconFromPixels(int width, int height, const unsigned char* argb) {
+    // The incoming bytes are in B, G, R, A order per pixel (matching the Linux
+    // setIconData layout), which is exactly a Windows 32bpp BGRA DIB, so we can
+    // copy them straight into a top-down DIB section.
+    BITMAPV5HEADER bi = {};
+    bi.bV5Size        = sizeof(BITMAPV5HEADER);
+    bi.bV5Width       = width;
+    bi.bV5Height      = -height; // negative -> top-down
+    bi.bV5Planes      = 1;
+    bi.bV5BitCount    = 32;
+    bi.bV5Compression = BI_BITFIELDS;
+    bi.bV5RedMask     = 0x00FF0000;
+    bi.bV5GreenMask   = 0x0000FF00;
+    bi.bV5BlueMask    = 0x000000FF;
+    bi.bV5AlphaMask   = 0xFF000000;
+
+    HDC   hdc  = GetDC(NULL);
+    void* bits = nullptr;
+    HBITMAP hbmColor = CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&bi), DIB_RGB_COLORS, &bits, NULL, 0);
+    ReleaseDC(NULL, hdc);
+    if (!hbmColor || !bits)
+        return nullptr;
+    memcpy(bits, argb, static_cast<size_t>(width) * height * 4);
+
+    // Monochrome mask is required but unused for 32bpp icons (alpha is honored).
+    HBITMAP hbmMask = CreateBitmap(width, height, 1, 1, NULL);
+
+    ICONINFO ii = {};
+    ii.fIcon    = TRUE;
+    ii.hbmColor = hbmColor;
+    ii.hbmMask  = hbmMask;
+    HICON hIcon = CreateIconIndirect(&ii);
+
+    DeleteObject(hbmColor);
+    DeleteObject(hbmMask);
+    return hIcon;
+}
+
+void jwm::WindowWin32::setIconPixels(int width, int height, const unsigned char* argb) {
+    JWM_VERBOSE("Set window icon from raw image data " << width << "x" << height);
+    // A single source image is used for both icon slots; Windows scales it to
+    // the small (title bar / taskbar) and big (Alt-Tab) metrics as needed.
+    HICON hSmall = _createIconFromPixels(width, height, argb);
+    HICON hBig   = _createIconFromPixels(width, height, argb);
+    _setIconsInternal(hSmall, hBig);
 }
 
 void jwm::WindowWin32::setOpacity(float opacity) {
@@ -1152,12 +1183,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSet
     env->ReleaseStringChars(iconPath, iconPathStr);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIconData
-        (JNIEnv* env, jobject obj, jbyteArray iconData, jint dataLength) {
+extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetIconPixels
+        (JNIEnv* env, jobject obj, jint width, jint height, jbyteArray pixelsArr) {
     jwm::WindowWin32* instance = reinterpret_cast<jwm::WindowWin32*>(jwm::classes::Native::fromJava(env, obj));
-    jbyte* bytes = env->GetByteArrayElements(iconData, nullptr);
-    instance->setIcon(reinterpret_cast<const unsigned char*>(bytes), dataLength);
-    env->ReleaseByteArrayElements(iconData, bytes, 0);
+    jbyte* pixels = env->GetByteArrayElements(pixelsArr, nullptr);
+    instance->setIconPixels(width, height, reinterpret_cast<const unsigned char*>(pixels));
+    env->ReleaseByteArrayElements(pixelsArr, pixels, 0);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_WindowWin32__1nSetVisible

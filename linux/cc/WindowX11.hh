@@ -39,7 +39,7 @@ namespace jwm {
         }
         void setTitle(const std::string& title);
         void setClass(const std::string& name, const std::string& class_);
-        void setIconData(int width, int height, const unsigned char* argb);
+        void setIconPixels(int width, int height, const unsigned char* argb);
         void setTitlebarVisible(bool isVisible);
 
         void maximize();

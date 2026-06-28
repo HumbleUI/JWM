@@ -53,7 +53,7 @@ namespace jwm {
         void setTitle(const std::wstring& title);
         void setTitlebarVisible(bool isVisible);
         void setIcon(const std::wstring& iconPath);
-        void setIcon(const unsigned char* iconData, int dataLength);
+        void setIconPixels(int width, int height, const unsigned char* argb);
         void setOpacity(float opacity);
         float getOpacity();
         bool isHighContrast();
@@ -100,7 +100,7 @@ namespace jwm {
         bool _createInternal(int x, int y, int w, int h, const wchar_t* caption);
         void _destroyInternal();
         void _setIconsInternal(HICON hSmall, HICON hBig);
-        HICON _createIconFromData(PBYTE data, int len, int cx, int cy);
+        HICON _createIconFromPixels(int width, int height, const unsigned char* argb);
         void _close();
         void _setMouseCursorInternal();
         void _imeResetComposition();

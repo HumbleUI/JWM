@@ -205,6 +205,21 @@ public abstract class Window extends RefCounted implements Consumer<Event> {
     public abstract Window setIcon(File icon);
 
     /**
+     * <p>Set window icon from raw image bytes.</p>
+     *
+     * <p>{@code pixels} must have a length of {@code width * height * 4}, representing per-pixel ARGB data.</p>
+     *
+     * <p>Displayed in the top-bar and task switcher on Linux and Windows. No-op on macOS.</p>
+     *
+     * @param width   icon width in pixels
+     * @param height  icon height in pixels
+     * @param pixels  icon image data
+     * @return        this
+     */
+    @NotNull @Contract("_, _, _ -> this")
+    public abstract Window setIconPixels(int width, int height, byte[] pixels);
+
+    /**
      * <p>Completely removes the titlebar from the window including buttons and title.</p>
      *
      * <p>See platform windows for platform specific configuration.</p>
