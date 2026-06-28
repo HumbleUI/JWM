@@ -15,7 +15,11 @@ public class Example implements Consumer<Event> {
         window = App.makeWindow();
         window.setEventListener(this);
         window.setTitle("Empty");
-        window.setLayer(new LayerGLSkija());
+        try {
+            window.setLayer(new LayerGLSkija());
+        } catch (Throwable e) {
+            window.setLayer(new LayerRasterSkija());
+        }
 
         var screen = App.getPrimaryScreen();
         var scale = screen.getScale();

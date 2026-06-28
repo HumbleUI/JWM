@@ -50,6 +50,11 @@ def main():
     classpath += [
       build_utils.fetch_maven('io.github.humbleui', skija_native, args.skija_version),
     ]
+  if args.example == 'dashboard':
+    # add dashboard resources to the classpath
+    classpath += [
+      'examples/dashboard/resources'
+    ]
   sources = build_utils.files(f'examples/{args.example}/java/**/*.java')
   build_utils.javac(sources, f'examples/{args.example}/target/classes', classpath = classpath, release='16')
   
