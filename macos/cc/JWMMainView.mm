@@ -298,7 +298,6 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutab
             touchIdNum = [NSNumber numberWithUnsignedInteger:touchId];
             [touchIds setObject:touchIdNum forKey:touch.identity];
         }
-        [touchIdNum release];
 
         if (phase == NSTouchPhaseBegan) {
             // create a Device ID number and associate it with this touch’s device object address
@@ -318,9 +317,6 @@ void onTouch(jwm::WindowMac* window, NSEvent* event, NSTouchPhase phase, NSMutab
                 size.height,
                 jwm::kTouchTypes[touch.type]));
             window->dispatch(eventObj.get());
-
-            [deviceKey release];
-            [deviceId release];
         } else if (phase == NSTouchPhaseMoved) {
             jwm::JNILocal<jobject> eventObj(window->fEnv, jwm::classes::EventTouchMove::make(window->fEnv, (jint)touchId, x, y));
             window->dispatch(eventObj.get());
