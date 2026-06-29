@@ -1,6 +1,7 @@
 #include "JWMApplicationDelegate.hh"
 
 #include "JWMMainView.hh"
+#include "JWMWindowDelegate.hh"
 #include "Log.hh"
 
 @implementation JWMNSApplication
@@ -41,23 +42,51 @@
     jwm::initKeyTable();
     jwm::initCursorCache();
 
-    JNIEnv *env;
-    JavaVMAttachArgs vmAttachArgs = {JNI_VERSION_1_8, 0, 0};
-    jint ret = self->jvm->AttachCurrentThread((void**) &env, &vmAttachArgs);
-    if (ret == JNI_OK) {
+    JNIEnv *env = nullptr;
+    bool didAttach = false;
+    if (self->jvm->GetEnv((void**) &env, JNI_VERSION_1_8) == JNI_EDETACHED) {
+        JavaVMAttachArgs vmAttachArgs = {JNI_VERSION_1_8, 0, 0};
+        if (self->jvm->AttachCurrentThread((void**) &env, &vmAttachArgs) == JNI_OK) {
+            didAttach = true;
+        } else {
+            std::cerr << "Failed to AttachCurrentThread" << std::endl;
+        }
+    }
+
+    if (env != nullptr) {
         jwm::classes::Runnable::run(env, self->launcher);
         jwm::classes::Throwable::exceptionThrown(env);
         env->DeleteGlobalRef(self->launcher);
         self->launcher = nullptr;
-    } else
-        std::cerr << "Failed to AttachCurrentThread: " << ret << std::endl;
+    }
 
     [NSApp run];
-    self->jvm->DetachCurrentThread();
+
+    if (didAttach) {
+        self->jvm->DetachCurrentThread();
+    }
 }
 
 - (id)initWithJVM:(JavaVM *)pVm andLauncher:(jobject)launcher {
     return nil;
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    // https://github.com/glfw/glfw/blob/ed6452b13c76f7b4da216a9952bc7837aeb0f031/src/cocoa_init.m#L402-L408
+    //
+    // Cmd+Q / menu Quit: deliver a close request to every JWM window — the same
+    // path as the window's close button — and let the app decide whether to quit.
+    // Never return NSTerminateNow: AppKit would call exit() and hard-kill the JVM.
+    // The app quits by closing its windows, which eventually calls App.terminate()
+    // -> [NSApp stop:], unwinding [NSApp run] for a clean shutdown.
+
+    for (NSWindow* window in [NSApp windows]) {
+        id<NSWindowDelegate> delegate = [window delegate];
+        if ([delegate isKindOfClass:[JWMWindowDelegate class]]) {
+            [delegate windowShouldClose:window];
+        }
+    }
+    return NSTerminateCancel;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {

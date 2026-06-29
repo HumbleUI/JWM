@@ -29,8 +29,27 @@ extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nStart
 
 extern "C" JNIEXPORT void JNICALL Java_io_github_humbleui_jwm_App__1nTerminate
   (JNIEnv* env, jclass jclass) {
+    // https://github.com/glfw/glfw/blob/ed6452b13c76f7b4da216a9952bc7837aeb0f031/src/cocoa_init.m#L439-L443
+    // https://github.com/glfw/glfw/blob/ed6452b13c76f7b4da216a9952bc7837aeb0f031/src/cocoa_window.m#L1599-L1615
+    //
+    // Terminate by making [NSApp run] return, not via [NSApp terminate:].
+    // [NSApp terminate:] calls exit(), which hard-kills the process and skips
+    // the JVM's normal shutdown — no shutdown hooks, no clean DestroyJavaVM
+    //
+    // -stop: only takes effect after the loop processes one more event, so we
+    // post a no-op event to wake it immediately.
+
     [NSApp stop:nil];
-    [NSApp terminate:nil];
+    NSEvent* event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                        location:NSMakePoint(0, 0)
+                                   modifierFlags:0
+                                       timestamp:0
+                                    windowNumber:0
+                                         context:nil
+                                         subtype:0
+                                           data1:0
+                                           data2:0];
+    [NSApp postEvent:event atStart:YES];
 }
 
 extern "C" JNIEXPORT jobjectArray JNICALL Java_io_github_humbleui_jwm_App__1nGetScreens

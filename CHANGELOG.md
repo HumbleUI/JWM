@@ -2,6 +2,7 @@
 
 - Bumped types in pom.xml to 0.2.0
 - Windows, Linux: Window::setIconPixels (previously setIconData on Linux) #310 #135 via @chirontt 
+- macOS: fixed incorrect app shutdown
 
 # 0.4.25 - Jun 16, 2026
 

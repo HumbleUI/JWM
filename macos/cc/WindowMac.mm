@@ -24,11 +24,9 @@ NSCursor* cursorFromFile(NSString* name) {
     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:info];
     NSPoint   hotspot = NSMakePoint([[dict valueForKey:@"hotx"] doubleValue],
                                     [[dict valueForKey:@"hoty"] doubleValue]);
-    [dict release];
-    [info release];
-    [file release];
-    [path release];
-    return [[NSCursor alloc] initWithImage:image hotSpot:hotspot];
+    NSCursor *cursor = [[NSCursor alloc] initWithImage:image hotSpot:hotspot];
+    [image release];
+    return cursor;
 }
 
 void initCursorCache() {
